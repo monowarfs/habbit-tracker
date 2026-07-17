@@ -108,19 +108,19 @@ which costs nothing extra to keep in the OS-provided secure store instead
 of the database.
 
 **Future option, explicitly not committed:** DB-level encryption via
-`sqlcipher_flutter_libs` (the SQLCipher build used alongside `sqlite3`/
-Drift). **Checked on pub.dev 2026-07-17: its most recent release,
-`0.7.0+eol`, is tagged `eol`** — an ambiguous signal (it may indicate this
-specific packaging approach is being wound down in favor of a different
-encrypted-SQLite integration within the same ecosystem, rather than that
-encrypted SQLite for Drift is abandoned outright). Per this run's "verify,
-don't guess" rule: this is reported as-is, not resolved further here — if
-DB encryption is ever prioritized (a natural v1.1+ candidate alongside
-`../product/roadmap.md`'s backup/sync candidates, since an encrypted local
-DB also matters more once a backup file might leave the device), the
-current recommended encrypted-SQLite path for Drift should be re-verified
-at that time rather than committing to a specific package today against a
-release tagged in a way this document can't fully interpret.
+SQLCipher. **Resolved on pub.dev 2026-07-17** (following up on this
+document's earlier "eol" flag, now confirmed rather than ambiguous — see
+`../engineering/packages.md`): `sqlcipher_flutter_libs` is explicitly
+marked by its own maintainer as *"not used anymore, update to version 3.x
+of `sqlite3` instead"* — this is a v2→v3 packaging migration across the
+whole `simonbinder.eu` sqlite3/Drift ecosystem (the same change retired
+`sqlite3_flutter_libs`), not evidence that encrypted SQLite for Drift is
+abandoned. At the time DB encryption is actually prioritized (a natural
+v1.1+ candidate once a backup file might leave the device), the current
+v3.x-compatible encrypted-SQLite integration should be checked directly —
+likely a cipher-enabled build configured through `package:sqlite3`'s own
+v3.x native-library hooks rather than a separate `sqlcipher_*` package —
+rather than assuming today's package names still apply.
 
 ## Forgot PIN — full data reset, not a soft recovery
 
