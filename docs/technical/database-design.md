@@ -50,7 +50,6 @@ documentation-only run).
 | theme_mode | TEXT | `'system'` \| `'light'` \| `'dark'` |
 | water_unit | TEXT | `'ml'` \| `'fl_oz'` (D-01) |
 | pin_enabled | INTEGER (bool) | |
-| pin_hash | TEXT NULL | salted hash, never plaintext |
 | pin_lock_timeout_seconds | INTEGER | 0 = immediate |
 | onboarding_completed_at | INTEGER NULL | UTC |
 | created_at, updated_at | INTEGER | |
@@ -60,6 +59,13 @@ documentation-only run).
 is small and fixed (FR-C-04/05/06, D-01), so typed columns give compile-time
 safety and a real Drift query API for free; a generic KV table would only
 be justified if settings were open-ended/plugin-defined, which they aren't.
+
+**Note (D-15, `../strategies/security.md`):** the PIN's salted hash (and
+the lockout failed-attempt counter) deliberately do **not** live in this
+table — they're kept in `flutter_secure_storage` (OS Keychain/Keystore),
+separate from this plaintext SQLite database, at effectively zero extra
+cost. `app_settings` only tracks whether PIN lock is *enabled* and its
+timeout, never the credential itself.
 
 ### `modules`
 

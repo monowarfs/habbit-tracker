@@ -297,3 +297,24 @@ already-resolved instant, while not corrupting the recurring definition
 itself.
 
 **Affects:** `database-design.md`.
+
+---
+
+## D-15: PIN hash storage — app database vs. OS secure storage
+
+**Options:** A. Store the salted PIN hash in `app_settings` alongside other
+settings (as originally sketched in the first pass of `database-design.md`).
+B. Store it in `flutter_secure_storage` (iOS Keychain / Android Keystore-
+backed), separate from the SQLite database entirely.
+
+**Decision: B.**
+
+**Reasoning (full detail in `../strategies/security.md`):** the app's own
+database is explicitly not encrypted in v1.0 (see that document's threat-
+model section) — putting a credential hash in the one plaintext store this
+app has, when an OS-provided encrypted store already exists and costs
+nothing extra to use, is a needless downgrade. `app_settings` keeps only
+`pin_enabled` and the lock timeout; the hash, its salt, and the lockout
+failed-attempt counter live in `flutter_secure_storage` instead.
+
+**Affects:** `database-design.md` (`app_settings` table), `security.md`.
