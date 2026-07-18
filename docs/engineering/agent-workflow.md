@@ -1,6 +1,6 @@
 # Agent Workflow
 
-Rules for AI-assisted implementation runs (05-13). This is meta relative to
+Rules for AI-assisted implementation runs (05-14). This is meta relative to
 the rest of `docs/` — it governs how those runs get *executed*, not what
 they contain — but it's load-bearing: without it, "one run = one
 well-scoped change" is just a filing convention, not something actually
@@ -63,7 +63,7 @@ agent-executed run can be checked against.
 
 ## Template for a new implementation-run prompt file
 
-Every run 05-13 prompt file follows the same shape the documentation runs
+Every run 05-14 prompt file follows the same shape the documentation runs
 already established:
 
 ```

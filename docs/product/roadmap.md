@@ -1,23 +1,31 @@
 # Roadmap
 
-**Assumption:** the run numbering below (05-13) is proposed by this
+**Assumption:** the run numbering below (05-14) is proposed by this
 document, not supplied in the input brief — it's the sequencing referenced
 throughout `feature-breakdown.md` and `user-stories.md`. If a different run
 scheme already exists elsewhere in the project's planning, reconcile against
 that instead of this proposal.
 
-## v0.x internal milestones (runs 05-13)
+**Renumbered during Run 06 implementation:** a "Core infrastructure"
+run (database, settings persistence, error handling, logging, clock) was
+inserted as Run 06 — something this document's original pass didn't
+anticipate needing as its own dedicated run. Every run from the old
+"Run 06" (Water) onward shifted down by one; the table below reflects the
+actual executed sequence.
+
+## v0.x internal milestones (runs 05-14)
 
 | Version | Run(s) | Contents | Exit criteria |
 |---|---|---|---|
 | v0.1 | 05 | App shell, theme, localization scaffold, onboarding skeleton, plugin contract (interface) | App launches, language switch works, onboarding reaches empty dashboard |
-| v0.2 | 06 | Water module complete | Water FRs (W-01 to W-10) pass manual QA; unit tests green for domain logic |
-| v0.3 | 07 | Medicine domain & data | Domain unit tests pass for every schedule pattern incl. every-other-day/DST edge case; no UI yet |
-| v0.4 | 08 | Medicine presentation & notifications | Medicine FRs (M-01 to M-10) pass manual QA incl. notification actions with app killed |
-| v0.5 | 09 | Prayer domain & data | Calculation engine verified against known reference times for at least 3 methods; Qadha/Jumu'ah logic unit-tested |
-| v0.6 | 10, 11 | Prayer presentation, notification hardening | Prayer FRs (P-01 to P-10) pass manual QA; device test matrix (NFR-07/08/09) passes on all 5 environments |
-| v0.7 | 12 | Dashboard, module toggle, PIN lock | FR-C-02/03/04/10 pass manual QA; a module can be disabled/re-enabled with data intact |
-| v0.8 (RC) | 13 | Polish, a11y, localization QA, store prep | All NFRs in `non-functional-requirements.md` verified; store listing assets ready |
+| v0.15 | 06 | Core infrastructure: database, settings persistence, error handling, logging, clock | Theme/language survive app restart; domain-logic clock/day-bucketing tests pass |
+| v0.2 | 07 | Water module complete | Water FRs (W-01 to W-10) pass manual QA; unit tests green for domain logic |
+| v0.3 | 08 | Medicine domain & data | Domain unit tests pass for every schedule pattern incl. every-other-day/DST edge case; no UI yet |
+| v0.4 | 09 | Medicine presentation & notifications | Medicine FRs (M-01 to M-10) pass manual QA incl. notification actions with app killed |
+| v0.5 | 10 | Prayer domain & data | Calculation engine verified against known reference times for at least 3 methods; Qadha/Jumu'ah logic unit-tested |
+| v0.6 | 11, 12 | Prayer presentation, notification hardening | Prayer FRs (P-01 to P-10) pass manual QA; device test matrix (NFR-07/08/09) passes on all 5 environments |
+| v0.7 | 13 | Dashboard, module toggle, PIN lock | FR-C-02/03/04/10 pass manual QA; a module can be disabled/re-enabled with data intact |
+| v0.8 (RC) | 14 | Polish, a11y, localization QA, store prep | All NFRs in `non-functional-requirements.md` verified; store listing assets ready |
 
 ## v1.1+ candidates, sequenced by user value
 

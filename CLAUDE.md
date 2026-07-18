@@ -15,15 +15,15 @@ Drift database (common tables only: `app_settings`/`notification_ledger`/
 restart), `AppException`/`Result<T>` error taxonomy, rotating-file logger,
 injected-clock (`package:clock`) + DST-safe `localDayKey` day-bucketing,
 top-level error boundary (`runZonedGuarded` + `ErrorWidget.builder`).
-No module (Water/Medicine/Prayer), no notifications, no PIN lock yet.
-`docs/engineering/phases-and-dod.md`'s run numbering predates this run
-being inserted — see the Architecture section's note before trusting its
-exact run numbers for what comes next.
+No module (Water/Medicine/Prayer), no notifications, no PIN lock yet —
+those are Runs 07-14 per `docs/engineering/phases-and-dod.md` (its run
+numbering was reconciled to match this run's actual insertion as Run 06 —
+Water is now Run 07, not the original plan's Run 06).
 
 Org id: `dev.shurjomoy.habittracker` (Android `applicationId`
 `dev.shurjomoy.habit_tracker`, iOS bundle id `dev.shurjomoy.habitTracker`).
 Android minSdk 26 (Oreo — notification channels, needed once
-`flutter_local_notifications` lands in Run 08).
+`flutter_local_notifications` lands in Run 09).
 
 ## Commands
 
@@ -51,7 +51,7 @@ Feature-first, Clean Architecture (`domain`/`data`/`presentation`) per
   (`MaterialApp.router` wired to the theme/locale controllers and the router).
 - `lib/core/router/app_router.dart` — `GoRouter` root, `StatefulShellRoute`
   with one branch per bottom-nav tab, typed `AppRoutes` path constants, a
-  `/lock` redirect stub (always allows — real PIN check lands in Run 12).
+  `/lock` redirect stub (always allows — real PIN check lands in Run 13).
 - `lib/core/theme/app_theme.dart` — `ColorScheme.fromSeed` light/dark
   themes, per-module `ModuleAccents`, the `AppSemanticColors` theme
   extension (the "success" green), the bn line-height `TextTheme` adjustment.
@@ -79,10 +79,7 @@ Feature-first, Clean Architecture (`domain`/`data`/`presentation`) per
   stream, map to/from Flutter's `ThemeMode`/`Locale` at this boundary).
 - `lib/features/{dashboard,water,medicine,prayer}/` — placeholder screens
   per tab; Water/Medicine/Prayer get their real `domain/data` slices in
-  later runs. Note: `docs/engineering/phases-and-dod.md` still numbers
-  Water as "Run 06," but the actual run prompts being executed inserted
-  this core-infrastructure run as 06 instead — the numbering in that doc
-  no longer matches execution order and should be reconciled.
+  Runs 07/08-09/10-11 respectively (per `docs/engineering/phases-and-dod.md`).
 - Lint rules come from `package:very_good_analysis/analysis_options.yaml`
   (`public_member_api_docs` enforced; generated code and `lib/core/l10n/**`
   excluded from analysis) — see `docs/engineering/coding-standards.md`.

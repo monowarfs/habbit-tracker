@@ -60,7 +60,7 @@ status-change, plus the ongoing risk of rollup drift if some future write
 path forgets to update it) for a read-time guarantee this app's actual data
 volume doesn't need yet. Building the rollup table now would be optimizing
 for a scale problem before measuring whether it exists — revisit only if
-Run 13's real-device performance pass (`../product/roadmap.md`) shows the
+Run 14's real-device performance pass (`../product/roadmap.md`) shows the
 raw query genuinely missing NFR-02/03 at realistic 5-year data volumes,
 which is the point at which a rollup table would earn its added
 write-path complexity.

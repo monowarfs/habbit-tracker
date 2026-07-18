@@ -29,7 +29,7 @@ Enforced as a fixed minimum size on every tappable widget
 targets — quick-add preset buttons, dose-list row action icons, the Qadha
 screen's per-prayer "−1" control — are explicitly sized, not left to
 shrink to their icon's natural size). Verified by layout inspection during
-Run 13's polish pass (`../product/roadmap.md`), no exceptions carved out
+Run 14's polish pass (`../product/roadmap.md`), no exceptions carved out
 for "it looks cleaner smaller."
 
 ## Text scaling to 200% — the three densest screens, named

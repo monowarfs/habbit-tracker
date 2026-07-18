@@ -85,6 +85,6 @@ individual screen needs locale-specific styling logic. This is layered on
 top of `localization.md`'s Noto Sans Bengali font choice — Noto's own
 metrics are designed for reasonable cross-script harmony, but the app-level
 height multiplier is still the mechanism that prevents visually cramped
-Bangla text, verified during the Run 13 accessibility/localization QA pass
+Bangla text, verified during the Run 14 accessibility/localization QA pass
 (`../product/roadmap.md`) rather than asserted as a fixed number here
 without a real device check.

@@ -1,12 +1,23 @@
 # Phases and Definition of Done
 
-Nine implementation runs, 05-13, per the sequencing proposed in
+Ten implementation runs, 05-14, per the sequencing proposed in
 `../product/roadmap.md`/`feature-breakdown.md`/`user-stories.md` (flagged
 there as an assumption since the input brief didn't fix this numbering —
 still followed consistently here). Each run's entry criteria, scope
 boundary, feature-demo checklist, and rollback note are below; the
 Definition of Done checklist is identical across every run and stated once
-here rather than repeated nine times.
+here rather than repeated ten times.
+
+**Renumbered during Run 06 implementation:** the original pass through
+this document only had nine runs (05-13), with Run 06 = Water. Once Run 05
+was actually built, it became clear a dedicated "core infrastructure" run
+(database, settings persistence, error handling, logging, clock) needed to
+land *before* the first real module, not be folded into Water's own run —
+so it was inserted as Run 06, and every run from the old Run 06 onward
+shifted down by one (old 06→07, 07→08, 08→09, 09→10, 10→11, 11→12, 12→13,
+13→14). The run list below is the actual executed sequence; cross-links
+in other docs (`roadmap.md`, `feature-breakdown.md`, `user-stories.md`)
+have been updated to match.
 
 ## Universal Definition of Done (every run, no exceptions)
 
@@ -55,9 +66,30 @@ a separate rollback mechanism bolted on afterward.
 - **Rollback:** unmet DoD leaves `dev` at the pre-run state (docs only,
   bare scaffold) — nothing to ship yet, but nothing broken either.
 
-## Run 06 — Water module (full vertical slice)
+## Run 06 — Core infrastructure
 
 - **Entry criteria:** Run 05 merged to `dev`.
+- **Scope in:** Drift database with the common tables only
+  (`app_settings`, `notification_ledger`, `achievements` — schema only for
+  the latter two), migration scaffolding from schema v1, a settings
+  repository backing theme/locale (replacing Run 05's in-memory seam —
+  theme/language now survive app restart), the `AppException`/`Result<T>`
+  error taxonomy + a top-level error widget/zone guard, a leveled logger
+  with a rotating on-disk log file, and an injected-clock
+  (`package:clock`) + DST-safe local-day bucketing helper every later
+  run's streak/schedule logic depends on.
+- **Scope out:** no module-specific DB tables (`modules` table itself
+  also deferred — arrives with Run 13's enable/disable feature, not
+  needed until then). No notifications, no PIN logic, no feature UI.
+- **Feature demo checklist:** set theme to Dark and language to Bangla in
+  Settings → force-quit the app (not just background it) → relaunch →
+  confirm it reopens in Dark/Bangla, proving the DB-backed settings
+  survived restart, not just in-memory state.
+- **Rollback:** unmet DoD leaves `dev` at Run 05's state.
+
+## Run 07 — Water module (full vertical slice)
+
+- **Entry criteria:** Run 06 merged to `dev`.
 - **Scope in:** full `domain/data/presentation` slice per
   `feature-breakdown.md` — goal history (D-01), entries, streak/goal-
   resolution use cases, quick-add, unit toggle, stats, optional interval
@@ -65,7 +97,7 @@ a separate rollback mechanism bolted on afterward.
 - **Scope out:** Medicine/Prayer untouched. Water's own reminder
   notifications ship without the full cross-module N-day window tuning
   (`notifications.md`) — they're low-volume enough to work correctly in
-  isolation; the shared tuning pass happens in Run 11 once real
+  isolation; the shared tuning pass happens in Run 12 once real
   multi-module volume exists to tune against.
 - **Feature demo checklist:** enable Water, set a 2000ml goal → tap
   quick-add 250ml three times, ring shows 750/2000 → add a backdated
@@ -74,37 +106,37 @@ a separate rollback mechanism bolted on afterward.
   recalculates but a seeded past completed day's streak status doesn't
   retroactively change (FR-W-04) → switch to fl oz, confirm display
   converts, stored data doesn't.
-- **Rollback:** unmet DoD leaves `dev` at Run 05's state.
+- **Rollback:** unmet DoD leaves `dev` at Run 06's state.
 
-## Run 07 — Medicine module: domain & data
+## Run 08 — Medicine module: domain & data
 
-- **Entry criteria:** Run 06 merged (first proof the plugin pattern
-  produces a real module; Run 07 begins the second).
+- **Entry criteria:** Run 07 merged (first proof the plugin pattern
+  produces a real module; Run 08 begins the second).
 - **Scope in:** `Medicine`/`MedicineSchedule` (`RepeatRule` sealed union)/
   `MedicineDose`/`MedicineStockEvent` entities, repository + Drift tables,
   D-13's materialization job, D-03's every-other-day anchoring (incl. the
   DST test case), D-05's grace-window state machine, D-04's stock
   deduction/undo. **No UI.**
 - **Scope out:** no medicine screens, no OS notification scheduling yet
-  (Run 08) — this run is verified through tests, not a manual UI demo.
+  (Run 09) — this run is verified through tests, not a manual UI demo.
 - **Feature demo checklist (test-suite-based, no UI exists yet):**
   `repeat_rule_every_n_days_test.dart`, `mark_dose_done_test.dart`, and
   `medicine_stock_events_test.dart` (`testing.md` suites 3-5) all green,
   plus a throwaway script demonstrating the materialization job produces
   30 correctly-timed days of dose rows for a sample schedule.
-- **Rollback:** unmet DoD leaves `dev` at Run 06's state (Water still
+- **Rollback:** unmet DoD leaves `dev` at Run 07's state (Water still
   fully functional).
 
-## Run 08 — Medicine module: presentation & notifications
+## Run 09 — Medicine module: presentation & notifications
 
-- **Entry criteria:** Run 07 merged.
+- **Entry criteria:** Run 08 merged.
 - **Scope in:** medicine screens (list/detail/new/edit/schedule create-
   edit/dose detail/stats), `flutter_local_notifications` integration
   (exact-alarm scheduling, Doze mode, Done/Snooze/Skip → background
   isolate → DB write → ledger update), low-stock banner, `MedicineModule`
   registered.
 - **Scope out:** the OEM battery-killer guidance screen and full
-  cross-module notification-window tuning deferred to Run 11 — Medicine's
+  cross-module notification-window tuning deferred to Run 12 — Medicine's
   notifications must work correctly in isolation first.
 - **Feature demo checklist:** add a medicine, fixed-daily 8am/8pm →
   today's dose list shows both slots → mark 8am Done, stock decrements (if
@@ -112,33 +144,33 @@ a separate rollback mechanism bolted on afterward.
   Snooze from the shade, confirm it re-fires ~10 min later → tap Done from
   the notification with the app fully closed → reopen the app, confirm the
   dose already shows Done.
-- **Rollback:** unmet DoD leaves `dev` at Run 07's state.
+- **Rollback:** unmet DoD leaves `dev` at Run 08's state.
 
-## Run 09 — Prayer module: domain & data
+## Run 10 — Prayer module: domain & data
 
-- **Entry criteria:** Run 08 merged (Medicine complete end to end).
+- **Entry criteria:** Run 09 merged (Medicine complete end to end).
 - **Scope in:** `PrayerSettings`/`PrayerRecord`/`PrayerQadhaCounter`
   entities, `adhan_dart` integration, calculation-method + Asr-method
   resolution, Jumu'ah toggle logic, Qadha auto-increment/floor logic,
   manual-city/GPS location resolution, materialization reusing D-13's
   pattern. **No UI.**
-- **Scope out:** no prayer screens, no notification scheduling (Run 10).
+- **Scope out:** no prayer screens, no notification scheduling (Run 11).
 - **Feature demo checklist (test-suite-based):**
   `prayer_time_golden_values_test.dart` green against ≥3 calculation
   methods, `qadha_counter_test.dart` green, plus a throwaway comparison of
   `adhan_dart`'s computed times against a real published timetable for a
   known city/date, within ±1 minute tolerance.
-- **Rollback:** unmet DoD leaves `dev` at Run 08's state.
+- **Rollback:** unmet DoD leaves `dev` at Run 09's state.
 
-## Run 10 — Prayer module: presentation & notifications
+## Run 11 — Prayer module: presentation & notifications
 
-- **Entry criteria:** Run 09 merged.
+- **Entry criteria:** Run 10 merged.
 - **Scope in:** prayer screens (checklist/detail/qadha/settings/stats),
-  notification integration **reusing Run 08's shared Done/Snooze/Skip
+  notification integration **reusing Run 09's shared Done/Snooze/Skip
   component** (the concrete validation of `architecture.md`'s reuse
   claim), `PrayerModule` registered.
 - **Scope out:** OEM guidance screen and full cross-module window tuning
-  still deferred to Run 11, which now has real two-module volume to tune
+  still deferred to Run 12, which now has real two-module volume to tune
   against.
 - **Feature demo checklist:** enable Prayer, confirm locale-appropriate
   defaults pre-filled (Karachi method, Hanafi Asr for `bn`) → mark Fajr
@@ -146,11 +178,11 @@ a separate rollback mechanism bolted on afterward.
   unmarked, confirm its Qadha counter increments by 1 → toggle "observes
   Jumu'ah" on a Friday, confirm only that day's Dhuhr label changes to
   Jumu'ah.
-- **Rollback:** unmet DoD leaves `dev` at Run 09's state.
+- **Rollback:** unmet DoD leaves `dev` at Run 10's state.
 
-## Run 11 — Notification system hardening (cross-module)
+## Run 12 — Notification system hardening (cross-module)
 
-- **Entry criteria:** Runs 08 and 10 both merged — real multi-module
+- **Entry criteria:** Runs 09 and 11 both merged — real multi-module
   notification volume now exists to tune the shared window against.
 - **Scope in:** boot-receiver manifest config verified end-to-end (reboot
   test), the N=3-day sliding window + conveyor-belt top-up tuned and
@@ -167,13 +199,13 @@ a separate rollback mechanism bolted on afterward.
   opening the app → force-idle the device (Doze simulation), confirm
   exact-alarm delivery still occurs → open the new guidance screen from
   Settings, confirm it renders.
-- **Rollback:** unmet DoD leaves `dev` at Run 10's state — a lower-risk
+- **Rollback:** unmet DoD leaves `dev` at Run 11's state — a lower-risk
   rollback than most, since this run is additive tuning, not a rewrite;
   Medicine/Prayer notifications still work individually either way.
 
-## Run 12 — Dashboard, module enable/disable, PIN lock
+## Run 13 — Dashboard, module enable/disable, PIN lock
 
-- **Entry criteria:** all three modules (06/08/10) merged and individually
+- **Entry criteria:** all three modules (07/09/11) merged and individually
   functional.
 - **Scope in:** full dashboard aggregation, Settings → Modules
   enable/disable with data preserved, PIN lock (set/change, lockout
@@ -189,12 +221,12 @@ a separate rollback mechanism bolted on afterward.
   → enter the correct PIN, confirm unlock → enable biometric, confirm it
   unlocks without PIN entry → tap "Forgot PIN," confirm the full-reset
   warning appears before anything is touched.
-- **Rollback:** unmet DoD leaves `dev` at the pre-Run-12 state — three
+- **Rollback:** unmet DoD leaves `dev` at the pre-Run-13 state — three
   working modules, no aggregation/PIN yet, still a shippable state.
 
-## Run 13 — Polish, accessibility, localization QA, store prep
+## Run 14 — Polish, accessibility, localization QA, store prep
 
-- **Entry criteria:** Run 12 merged — the full v1.0 feature set exists.
+- **Entry criteria:** Run 13 merged — the full v1.0 feature set exists.
 - **Scope in:** accessibility pass (the three densest screens named in
   `../strategies/accessibility.md`), localization QA (pseudo-locale pass,
   Bangla numeral/line-height verification), performance pass against
@@ -202,7 +234,7 @@ a separate rollback mechanism bolted on afterward.
   data-safety forms (`../product/release-plan.md`), the full device test
   matrix for notification reliability (NFR-07-09).
 - **Scope out:** no new features — this run verifies and polishes what
-  Runs 05-12 built. A bug found here that needs new logic gets its own
+  Runs 05-13 built. A bug found here that needs new logic gets its own
   small follow-up branch rather than silently expanding this run.
 - **Feature demo checklist:** manual NFR checklist run against the
   reference device classes → TalkBack/VoiceOver pass on the "logging a

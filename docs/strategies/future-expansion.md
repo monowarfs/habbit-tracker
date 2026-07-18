@@ -67,7 +67,7 @@ wake time) rather than free-form entries.
 - **Reuses directly, unchanged:** D-13's materialization pattern (copy
   Prayer's rolling-window job configuration), and — the more interesting
   reuse — the **shared Done/Snooze/Skip notification-action component**
-  already proven once when Prayer (Run 10) reused Medicine's (Run 08)
+  already proven once when Prayer (Run 11) reused Medicine's (Run 09)
   version. Sleep reusing it a third time is what actually validates the
   component generalizes, rather than having been coincidentally reusable
   exactly twice.

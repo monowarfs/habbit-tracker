@@ -38,7 +38,7 @@ without workarounds.
 - **Android manifest declarations:** `RECEIVE_BOOT_COMPLETED`,
   `SCHEDULE_EXACT_ALARM` (or equivalent per current Android target SDK
   policy at build time — verify against the Android version current when
-  Run 11 is implemented, since exact-alarm permission requirements have
+  Run 12 is implemented, since exact-alarm permission requirements have
   changed across Android releases), `POST_NOTIFICATIONS` (Android 13+).
 - **Store listing assets:** screenshots for both languages (en/bn),
   short/long description, feature graphic; no mention of features not in
@@ -57,7 +57,7 @@ without workarounds.
   week) to catch any device-specific notification-delivery regression
   (NFR-07/08) before full exposure, given how OEM-dependent that risk is.
 - iOS has no phased-rollout mechanism at the same granularity; mitigate
-  by ensuring the Run 13 device test matrix explicitly includes iOS
+  by ensuring the Run 14 device test matrix explicitly includes iOS
   before submission, since there's no post-launch staged fallback.
 
 ## Success gate before wider marketing push

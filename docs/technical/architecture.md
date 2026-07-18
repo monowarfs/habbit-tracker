@@ -67,7 +67,7 @@ Every module (present or future) registers itself by implementing one
 interface and adding one line to one list. This is the concrete answer to
 `00-project-context.md`'s "addable later without modifying existing module
 code" requirement — it is built here, informed by Water's real
-implementation (per `../product/roadmap.md`'s Run 05→06 sequencing), not
+implementation (per `../product/roadmap.md`'s Run 05→07 sequencing), not
 designed in the abstract before any module exists.
 
 ```dart
