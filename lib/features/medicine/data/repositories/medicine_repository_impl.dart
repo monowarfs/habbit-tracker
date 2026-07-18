@@ -630,7 +630,10 @@ class MedicineRepositoryImpl implements MedicineRepository {
   Future<List<Medicine>> medicinesNeedingLowStockAlert() async {
     final rows =
         await (_db.select(_db.medicinesTable)..where(
-              (t) => t.deletedAt.isNull() & t.lowStockNotifiedAt.isNotNull(),
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.archivedAt.isNull() &
+                  t.lowStockNotifiedAt.isNotNull(),
             ))
             .get();
     return rows.map(_medicineFromRow).toList(growable: false);

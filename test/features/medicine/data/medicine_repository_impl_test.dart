@@ -314,4 +314,37 @@ void main() {
     expect(remaining.single.id, todaysDoseId);
     expect(remaining.single.storedStatus, MedicineDoseStatus.done);
   });
+
+  test('an archived medicine never surfaces a low-stock alert, even if it '
+      'crossed threshold before being archived', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 1,
+      stockThreshold: 5,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await doseIdFor(repo, medicineId);
+    await repo.markDoseDone(doseId, fromOtherSource: false); // crosses
+
+    expect(
+      (await repo.medicinesNeedingLowStockAlert()).map((m) => m.id),
+      contains(medicineId),
+    );
+
+    await repo.archiveMedicine(medicineId);
+
+    expect(
+      (await repo.medicinesNeedingLowStockAlert()).map((m) => m.id),
+      isNot(contains(medicineId)),
+    );
+  });
 }
