@@ -987,11 +987,18 @@ StockAdjustment calculateDoseTakenAdjustment({
       writesEvent: false,
     );
   }
-  final delta = -medicine.consumptionPerDose;
-  final newCount = (medicine.stockCount ?? 0) + delta;
+  final startCount = medicine.stockCount ?? 0;
+  final rawNewCount = startCount - medicine.consumptionPerDose;
+  final newCount = rawNewCount < 0 ? 0 : rawNewCount;
   return (
-    newStockCount: newCount < 0 ? 0 : newCount,
-    stockDelta: delta,
+    // stockDelta is the actual applied change, not the raw
+    // -consumptionPerDose — when stock is clamped to 0, the two diverge,
+    // and an undo must reverse exactly what was applied (implementation
+    // correction: found by task review, since a corrected StockAdjustment
+    // is what calculateDoseUndoneAdjustment's exact-reversal invariant
+    // requires).
+    newStockCount: newCount,
+    stockDelta: newCount - startCount,
     writesEvent: true,
   );
 }
