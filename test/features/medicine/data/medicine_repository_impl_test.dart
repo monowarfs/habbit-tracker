@@ -133,4 +133,99 @@ void main() {
         .first;
     expect(doses, hasLength(2));
   });
+
+  Future<String> _doseIdFor(
+    MedicineRepositoryImpl repo,
+    String medicineId,
+  ) async {
+    final doses = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    return doses.firstWhere((d) => d.medicineId == medicineId).id;
+  }
+
+  test('markDoseDone decrements stock, writes a ledger event, and the '
+      'ledger reconciles back to medicines.stock_count', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 10,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await _doseIdFor(repo, medicineId);
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 8, 5)), () async {
+      final result = await repo.markDoseDone(doseId, fromOtherSource: false);
+      expect(result, isA<Success<void>>());
+    });
+
+    final medicine = await repo.medicineById(medicineId);
+    expect(medicine!.stockCount, 9);
+  });
+
+  test('undoDose reverses the exact stock amount previously applied', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 10,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await _doseIdFor(repo, medicineId);
+    await repo.markDoseDone(doseId, fromOtherSource: false);
+
+    await repo.undoDose(doseId);
+
+    final medicine = await repo.medicineById(medicineId);
+    expect(medicine!.stockCount, 10);
+  });
+
+  test('crossing the low-stock threshold surfaces the medicine exactly '
+      'once, and a refill clears it', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 1,
+      stockThreshold: 5,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await _doseIdFor(repo, medicineId);
+
+    await repo.markDoseDone(
+      doseId,
+      fromOtherSource: false,
+    ); // 1 -> 0, crosses threshold 5
+
+    var alerts = await repo.medicinesNeedingLowStockAlert();
+    expect(alerts.map((m) => m.id), contains(medicineId));
+
+    await repo.refillStock(medicineId, 20);
+
+    alerts = await repo.medicinesNeedingLowStockAlert();
+    expect(alerts.map((m) => m.id), isNot(contains(medicineId)));
+  });
 }

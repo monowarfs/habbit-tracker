@@ -11,9 +11,11 @@ import 'package:habit_tracker/core/utils/uuid.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/plan_dose_materialization.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/stock_adjustment.dart';
 
 /// How far ahead `materializeDoses` tops up the dose window (D-13).
 const _materializationWindowDays = 30;
@@ -297,16 +299,18 @@ class MedicineRepositoryImpl implements MedicineRepository {
     final windowStart = localDayKey(now);
     final windowEnd = windowStart.addDays(_materializationWindowDays);
 
-    final medicines = await (_db.select(
-      _db.medicinesTable,
-    )..where((t) => t.deletedAt.isNull())).get().then(
-      (rows) => rows.map(_medicineFromRow).toList(),
-    );
-    final schedules = await (_db.select(
-      _db.medicineSchedulesTable,
-    )..where((t) => t.deletedAt.isNull())).get().then(
-      (rows) => rows.map(_scheduleFromRow).toList(),
-    );
+    final medicines =
+        await (_db.select(
+          _db.medicinesTable,
+        )..where((t) => t.deletedAt.isNull())).get().then(
+          (rows) => rows.map(_medicineFromRow).toList(),
+        );
+    final schedules =
+        await (_db.select(
+          _db.medicineSchedulesTable,
+        )..where((t) => t.deletedAt.isNull())).get().then(
+          (rows) => rows.map(_scheduleFromRow).toList(),
+        );
     final existingDoses = await dosesInRange(windowStart, windowEnd);
 
     final planned = planDoseMaterialization(
@@ -384,30 +388,223 @@ class MedicineRepositoryImpl implements MedicineRepository {
   Future<Result<void>> markDoseDone(
     String doseId, {
     required bool fromOtherSource,
-  }) {
-    throw UnimplementedError('markDoseDone: implemented in Task 11');
-  }
+  }) => _resolveDose(
+    doseId,
+    resolve: (medicine, dose) async {
+      final adjustment = calculateDoseTakenAdjustment(
+        medicine: medicine,
+        fromOtherSource: fromOtherSource,
+      );
+      final now = clock.now();
+      final nowMillis = now.toUtc().millisecondsSinceEpoch;
+
+      await (_db.update(
+        _db.medicineDosesTable,
+      )..where((t) => t.id.equals(dose.id))).write(
+        MedicineDosesTableCompanion(
+          status: const Value('done'),
+          statusChangedAt: Value(nowMillis),
+          stockDeltaApplied: Value(adjustment.stockDelta),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+      await _applyStockAdjustment(
+        medicine: medicine,
+        dose: dose,
+        newStockCount: adjustment.newStockCount,
+        stockDelta: adjustment.stockDelta,
+        writesEvent: adjustment.writesEvent,
+        reason: MedicineStockEventReason.doseTaken,
+        occurredAt: now,
+      );
+    },
+  );
 
   @override
-  Future<Result<void>> markDoseSkipped(String doseId) {
-    throw UnimplementedError('markDoseSkipped: implemented in Task 11');
-  }
+  Future<Result<void>> markDoseSkipped(String doseId) => _resolveDose(
+    doseId,
+    resolve: (medicine, dose) async {
+      final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.medicineDosesTable,
+      )..where((t) => t.id.equals(dose.id))).write(
+        MedicineDosesTableCompanion(
+          status: const Value('skipped'),
+          statusChangedAt: Value(nowMillis),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+    },
+  );
 
   @override
-  Future<Result<void>> undoDose(String doseId) {
-    throw UnimplementedError('undoDose: implemented in Task 11');
+  Future<Result<void>> undoDose(String doseId) => _resolveDose(
+    doseId,
+    resolve: (medicine, dose) async {
+      final adjustment = calculateDoseUndoneAdjustment(
+        medicine: medicine,
+        stockDeltaApplied: dose.stockDeltaApplied,
+      );
+      final now = clock.now();
+      final nowMillis = now.toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.medicineDosesTable,
+      )..where((t) => t.id.equals(dose.id))).write(
+        MedicineDosesTableCompanion(
+          status: const Value('upcoming'),
+          statusChangedAt: const Value(null),
+          stockDeltaApplied: const Value(0),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+      if (adjustment.stockDelta != 0) {
+        await _applyStockAdjustment(
+          medicine: medicine,
+          dose: dose,
+          newStockCount: adjustment.newStockCount,
+          stockDelta: adjustment.stockDelta,
+          writesEvent: true,
+          reason: MedicineStockEventReason.doseUndone,
+          occurredAt: now,
+        );
+      }
+    },
+  );
+
+  /// Shared "look up medicine+dose, run [resolve], wrap in `Result`"
+  /// skeleton for the three dose-action methods above.
+  Future<Result<void>> _resolveDose(
+    String doseId, {
+    required Future<void> Function(Medicine medicine, MedicineDose dose)
+    resolve,
+  }) async {
+    try {
+      final doseRow =
+          await (_db.select(_db.medicineDosesTable)..where(
+                (t) => t.id.equals(doseId) & t.deletedAt.isNull(),
+              ))
+              .getSingleOrNull();
+      if (doseRow == null) {
+        return Result.failure(AppException.notFound('MedicineDose', doseId));
+      }
+      final dose = _doseFromRow(doseRow);
+      final medicine = await medicineById(dose.medicineId);
+      if (medicine == null) {
+        return Result.failure(
+          AppException.notFound('Medicine', dose.medicineId),
+        );
+      }
+      await resolve(medicine, dose);
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('resolve_dose_action', e));
+    }
   }
 
-  @override
-  Future<Result<void>> refillStock(String medicineId, int amount) {
-    throw UnimplementedError('refillStock: implemented in Task 11');
-  }
+  /// Persists a stock count change onto `medicines` (with low-stock
+  /// crossing detection, FR-M-04's "notify once per crossing") and,
+  /// when [writesEvent], appends the matching ledger row.
+  Future<void> _applyStockAdjustment({
+    required Medicine medicine,
+    required MedicineDose dose,
+    required int newStockCount,
+    required int stockDelta,
+    required bool writesEvent,
+    required MedicineStockEventReason reason,
+    required DateTime occurredAt,
+  }) async {
+    final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+    final isNowAtOrBelow =
+        medicine.stockThreshold != null &&
+        newStockCount <= medicine.stockThreshold!;
+    // `lowStockNotifiedAt == null` alone gives "once per crossing": it's
+    // cleared only by `refillStock` bringing stock back above threshold,
+    // so this also correctly flags a medicine that started at/below
+    // threshold at creation (no prior "was above" transition to detect).
+    final justCrossed = isNowAtOrBelow && medicine.lowStockNotifiedAt == null;
 
-  @override
-  Future<List<Medicine>> medicinesNeedingLowStockAlert() {
-    throw UnimplementedError(
-      'medicinesNeedingLowStockAlert: implemented in Task 11',
+    await (_db.update(
+      _db.medicinesTable,
+    )..where((t) => t.id.equals(medicine.id))).write(
+      MedicinesTableCompanion(
+        stockCount: Value(newStockCount),
+        lowStockNotifiedAt: justCrossed
+            ? Value(nowMillis)
+            : const Value.absent(),
+        updatedAt: Value(nowMillis),
+      ),
     );
+
+    if (writesEvent) {
+      await _db
+          .into(_db.medicineStockEventsTable)
+          .insert(
+            MedicineStockEventsTableCompanion.insert(
+              id: generateId(),
+              medicineId: medicine.id,
+              doseId: Value(dose.id),
+              delta: stockDelta,
+              reason: reason.toDb(),
+              occurredAt: occurredAt.toUtc().millisecondsSinceEpoch,
+              createdAt: nowMillis,
+              updatedAt: nowMillis,
+            ),
+          );
+    }
+  }
+
+  @override
+  Future<Result<void>> refillStock(String medicineId, int amount) async {
+    try {
+      final medicine = await medicineById(medicineId);
+      if (medicine == null) {
+        return Result.failure(AppException.notFound('Medicine', medicineId));
+      }
+      final now = clock.now();
+      final nowMillis = now.toUtc().millisecondsSinceEpoch;
+      final newCount = (medicine.stockCount ?? 0) + amount;
+      final clearsLowStock =
+          medicine.stockThreshold == null ||
+          newCount > medicine.stockThreshold!;
+
+      await (_db.update(
+        _db.medicinesTable,
+      )..where((t) => t.id.equals(medicineId))).write(
+        MedicinesTableCompanion(
+          stockCount: Value(newCount),
+          lowStockNotifiedAt: clearsLowStock
+              ? const Value(null)
+              : const Value.absent(),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+      await _db
+          .into(_db.medicineStockEventsTable)
+          .insert(
+            MedicineStockEventsTableCompanion.insert(
+              id: generateId(),
+              medicineId: medicineId,
+              delta: amount,
+              reason: MedicineStockEventReason.manualRefill.toDb(),
+              occurredAt: now.toUtc().millisecondsSinceEpoch,
+              createdAt: nowMillis,
+              updatedAt: nowMillis,
+            ),
+          );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('refill_stock', e));
+    }
+  }
+
+  @override
+  Future<List<Medicine>> medicinesNeedingLowStockAlert() async {
+    final rows =
+        await (_db.select(_db.medicinesTable)..where(
+              (t) => t.deletedAt.isNull() & t.lowStockNotifiedAt.isNotNull(),
+            ))
+            .get();
+    return rows.map(_medicineFromRow).toList(growable: false);
   }
 
   @override
@@ -540,4 +737,15 @@ extension RepeatRuleDb on RepeatRule {
       _ => RepeatRule.fixedDaily(timesOfDay: times),
     };
   }
+}
+
+/// `MedicineStockEventReason` <-> DB string mapping.
+extension MedicineStockEventReasonDb on MedicineStockEventReason {
+  /// The stored DB string for this value.
+  String toDb() => switch (this) {
+    MedicineStockEventReason.doseTaken => 'dose_taken',
+    MedicineStockEventReason.manualRefill => 'manual_refill',
+    MedicineStockEventReason.manualAdjustment => 'manual_adjustment',
+    MedicineStockEventReason.doseUndone => 'dose_undone',
+  };
 }
