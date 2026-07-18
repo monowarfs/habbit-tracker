@@ -46,6 +46,24 @@ Stream<List<MedicineDose>> todaysDoses(Ref ref) {
   return ref.watch(medicineRepositoryProvider).watchDosesForDay(_today());
 }
 
+/// An inclusive local-day range, used as a family provider parameter
+/// (mirrors `water_providers.dart`'s `WaterDateRange`).
+typedef MedicineDateRange = ({LocalDate start, LocalDate end});
+
+/// Every dose in [range], across every medicine — cached per unique range
+/// by Riverpod so screens that `ref.watch` this (e.g. the stats screen's
+/// 7-day chart, the detail screen's 30-day adherence lookback) don't
+/// re-query on every rebuild the way an inline `FutureBuilder` would.
+@riverpod
+Future<List<MedicineDose>> medicineDosesInRange(
+  Ref ref,
+  MedicineDateRange range,
+) {
+  return ref
+      .watch(medicineRepositoryProvider)
+      .dosesInRange(range.start, range.end);
+}
+
 /// A dose paired with its medicine and live-derived status — what the
 /// dose timeline (Task 14) actually renders.
 typedef MedicineDoseView = ({

@@ -17,16 +17,16 @@ class MedicineStatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(medicineRepositoryProvider);
     final today = LocalDate.fromDateTime(clock.now());
     final start = today.addDays(-6);
+    final doses = ref
+        .watch(medicineDosesInRangeProvider((start: start, end: today)))
+        .value;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Medicine stats')),
-      body: FutureBuilder<List<MedicineDose>>(
-        future: repository.dosesInRange(start, today),
-        builder: (context, snapshot) {
-          final doses = snapshot.data;
+      body: Builder(
+        builder: (context) {
           if (doses == null) {
             return const Center(child: CircularProgressIndicator());
           }
