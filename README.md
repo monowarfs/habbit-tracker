@@ -1,17 +1,27 @@
 # habit_tracker
 
-A new Flutter project.
+An offline, multi-module habit tracker (Water/Medicine/Prayer). See
+`CLAUDE.md` and `docs/` for the full product/technical/engineering docs.
 
-## Getting Started
+## Running
 
-This project is a starting point for a Flutter application.
+```
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs   # generates *.g.dart (Riverpod)
+flutter gen-l10n                                            # generates AppLocalizations (also runs automatically on `flutter run`/`build`)
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+During active development, regenerate Riverpod providers on file save with:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+dart run build_runner watch --delete-conflicting-outputs
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Commands
+
+```
+flutter test        # run all tests
+flutter analyze     # static analysis (very_good_analysis, see analysis_options.yaml)
+dart format .        # format
+```

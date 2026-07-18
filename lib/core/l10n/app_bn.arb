@@ -1,0 +1,15 @@
+{
+  "@@locale": "bn",
+  "appTitle": "অভ্যাস ট্র্যাকার",
+  "navDashboard": "ড্যাশবোর্ড",
+  "navWater": "পানি",
+  "navMedicine": "ওষুধ",
+  "navPrayer": "নামাজ",
+  "navSettings": "সেটিংস",
+  "settingsTheme": "থিম",
+  "settingsLanguage": "ভাষা",
+  "themeModeSystem": "সিস্টেম",
+  "themeModeLight": "লাইট",
+  "themeModeDark": "ডার্ক",
+  "emptyDashboardMessage": "শুরু করতে সেটিংসে একটি মডিউল চালু করুন"
+}

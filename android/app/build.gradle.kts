@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.habit_tracker"
+    namespace = "dev.shurjomoy.habit_tracker"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,11 +15,11 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.habit_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        applicationId = "dev.shurjomoy.habit_tracker"
+        // Android 26 (Oreo) floor: flutter_local_notifications needs notification
+        // channels, introduced in API 26 — no lower floor makes sense once
+        // notifications land (Run 08).
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

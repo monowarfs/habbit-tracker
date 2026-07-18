@@ -1,0 +1,51 @@
+{
+  "@@locale": "en",
+  "appTitle": "Habit Tracker",
+  "@appTitle": {
+    "description": "The application's display name."
+  },
+  "navDashboard": "Dashboard",
+  "@navDashboard": {
+    "description": "Bottom navigation label for the dashboard tab."
+  },
+  "navWater": "Water",
+  "@navWater": {
+    "description": "Bottom navigation label for the water module tab."
+  },
+  "navMedicine": "Medicine",
+  "@navMedicine": {
+    "description": "Bottom navigation label for the medicine module tab."
+  },
+  "navPrayer": "Prayer",
+  "@navPrayer": {
+    "description": "Bottom navigation label for the prayer module tab."
+  },
+  "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Bottom navigation label for the settings tab."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Label for the theme-mode setting row."
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Label for the language setting row."
+  },
+  "themeModeSystem": "System",
+  "@themeModeSystem": {
+    "description": "Option label: follow the device's theme setting."
+  },
+  "themeModeLight": "Light",
+  "@themeModeLight": {
+    "description": "Option label: always use the light theme."
+  },
+  "themeModeDark": "Dark",
+  "@themeModeDark": {
+    "description": "Option label: always use the dark theme."
+  },
+  "emptyDashboardMessage": "Enable a module in Settings to get started",
+  "@emptyDashboardMessage": {
+    "description": "Shown on the dashboard when no module is enabled yet."
+  }
+}

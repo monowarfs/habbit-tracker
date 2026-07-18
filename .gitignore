@@ -34,6 +34,12 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Generated code (build_runner: Riverpod/Drift/Freezed/gen_l10n) — never
+# committed, regenerated deterministically from source (coding-standards.md)
+*.g.dart
+*.freezed.dart
+lib/core/l10n/app_localizations*.dart
+
 # Symbolication related
 app.*.symbols
 
