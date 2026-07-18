@@ -13,11 +13,11 @@ sealed class MedicineSchedule with _$MedicineSchedule {
     required String medicineId,
     required RepeatRule rule,
     required LocalDate startDate,
-    required DateTime createdAt,
-    LocalDate? endDate,
-    @Default(30) int graceWindowMinutes,
 
     /// Breaks same-slot collisions between two schedules of the same
     /// medicine (D-02: most-recently-created wins).
+    required DateTime createdAt,
+    LocalDate? endDate,
+    @Default(30) int graceWindowMinutes,
   }) = _MedicineSchedule;
 }

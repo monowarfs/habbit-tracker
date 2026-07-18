@@ -33,12 +33,12 @@ sealed class MedicineDose with _$MedicineDose {
     required String scheduleId,
     required DateTime scheduledFor,
     required MedicineDoseStatus storedStatus,
-    required int graceWindowMinutes,
-    DateTime? statusChangedAt,
-    @Default(0) int stockDeltaApplied,
 
     /// Denormalized from the generating schedule at materialization time
     /// (implementation refinement over the design spec — avoids a join
     /// on the hottest read path).
+    required int graceWindowMinutes,
+    DateTime? statusChangedAt,
+    @Default(0) int stockDeltaApplied,
   }) = _MedicineDose;
 }
