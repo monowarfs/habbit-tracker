@@ -5,6 +5,10 @@ import 'package:drift/native.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
+import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
+import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
+import 'package:habit_tracker/features/medicine/data/tables/medicine_stock_events_table.dart';
+import 'package:habit_tracker/features/medicine/data/tables/medicines_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_goals_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_logs_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_settings_table.dart';
@@ -29,6 +33,10 @@ part 'app_database.g.dart';
     WaterGoalsTable,
     WaterLogsTable,
     WaterSettingsTable,
+    MedicinesTable,
+    MedicineSchedulesTable,
+    MedicineDosesTable,
+    MedicineStockEventsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
