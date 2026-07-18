@@ -23,17 +23,26 @@ complexity lives in `MedicineSchedule`'s repeat-rule modeling.
 | Domain field | Type | Null? | DB column | JSON key |
 |---|---|---|---|---|
 | locale | `AppLocale` (enum: en, bn) | no | `locale` | `locale` |
-| themeMode | `ThemeMode` (Flutter enum, mapped at the repository boundary) | no | `theme_mode` | `themeMode` |
+| themeMode | `AppThemeMode` (domain enum: system, light, dark) | no | `theme_mode` | `themeMode` |
 | waterUnit | `WaterUnit` (enum: ml, flOz) | no | `water_unit` | `waterUnit` |
 | pinEnabled | `bool` | no | `pin_enabled` | `pinEnabled` |
-| pinHash | `String` | yes | `pin_hash` | *(excluded from export — never leaves the device, even in a backup file)* |
 | pinLockTimeoutSeconds | `int` | no | `pin_lock_timeout_seconds` | `pinLockTimeoutSeconds` |
 | onboardingCompletedAt | `DateTime` (UTC) | yes | `onboarding_completed_at` | `onboardingCompletedAt` (ISO-8601) |
 
-**Divergence:** `pinHash` is deliberately dropped from the JSON export
-shape — a backup file is not a secrets store, and re-entering a PIN on
-restore is a smaller cost than the risk of a hash leaking through an
-exported file shared to cloud storage.
+**Correction (Run 06 implementation):** this table previously listed a
+`pinHash`/`pin_hash` field. `database-design.md`'s actual `app_settings`
+schema has no such column — per D-15/`security.md`, the PIN's salted hash
+lives only in `flutter_secure_storage`, deliberately kept out of this
+plaintext SQLite table. Removed here to match the real schema.
+
+**Correction (Run 06 implementation):** `themeMode` was previously typed
+as Flutter's own `ThemeMode` enum "mapped at the repository boundary" —
+that still puts a Flutter type on the domain model's field, contradicting
+`architecture.md`'s "domain has zero Flutter imports" rule literally (not
+just widgets — any `package:flutter`/`dart:ui` import). The domain owns a
+plain `AppThemeMode` enum instead; the presentation layer (which already
+imports Flutter) maps it to/from `ThemeMode` at its own boundary, the same
+pattern already used for `AppLocale`↔`Locale`.
 
 ### `ModuleState`
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
+
+import '../../support/test_database.dart';
 
 void main() {
   testWidgets('bottom nav switches between the 5 tab branches', (
@@ -11,6 +14,7 @@ void main() {
     final router = buildAppRouter();
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(testDatabase())],
         child: MaterialApp.router(
           routerConfig: router,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -35,5 +39,11 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
+
+    // Dispose the tree now (inside the test body) and pump once more so
+    // Drift's stream-close Timer fires before the test framework's
+    // pending-timer check runs.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 1));
   });
 }

@@ -5,6 +5,18 @@ for schema design purposes — actual table classes are generated from Drift's
 Dart-SQL DSL in the implementation run, not written here (this is a
 documentation-only run).
 
+**Note added during Run 06 implementation — the one central, unavoidable
+touchpoint:** unlike `architecture.md`'s `HabitModule` registry (a plain
+Dart list any module can append to with zero coordination), Drift itself
+requires every table class, from every module, to appear in one
+`@DriftDatabase(tables: [...])` annotation on the single `AppDatabase`
+class (`core/database/app_database.dart`) — this is a Drift code-generation
+constraint, not a design choice this project made. Each module run adds
+exactly one line to that list (its own table classes) and nothing else in
+`core/database/` — the closest Drift gets to the module-registry pattern,
+documented here since it's the one place a future module's own run must
+remember to touch outside its own `features/<name>/` folder.
+
 ## Global rules (apply to every table below)
 
 - **Primary key:** every table has `id TEXT PRIMARY KEY` — a UUID v7 string

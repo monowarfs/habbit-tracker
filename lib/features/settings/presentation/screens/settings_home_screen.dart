@@ -36,9 +36,9 @@ class SettingsHomeScreen extends ConsumerWidget {
               ),
             ],
             selected: {themeMode},
-            onSelectionChanged: (selection) =>
-                ref.read(themeControllerProvider.notifier).themeMode =
-                    selection.first,
+            onSelectionChanged: (selection) => ref
+                .read(themeControllerProvider.notifier)
+                .updateThemeMode(selection.first),
           ),
           const Divider(),
           ListTile(title: Text(l10n.settingsLanguage)),
@@ -48,9 +48,9 @@ class SettingsHomeScreen extends ConsumerWidget {
               ButtonSegment(value: Locale('bn'), label: Text('বাংলা')),
             ],
             selected: {locale},
-            onSelectionChanged: (selection) =>
-                ref.read(localeControllerProvider.notifier).locale =
-                    selection.first,
+            onSelectionChanged: (selection) => ref
+                .read(localeControllerProvider.notifier)
+                .updateLocale(selection.first),
           ),
         ],
       ),

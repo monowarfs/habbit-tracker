@@ -1,14 +1,33 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/app_error_widget.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
 
 void main() {
-  runApp(const ProviderScope(child: HabitTrackerApp()));
+  ensureTimeZonesInitialized();
+  FlutterError.onError = (details) {
+    logger.e(
+      'uncaught Flutter error',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+    FlutterError.presentError(details);
+  };
+  ErrorWidget.builder = (details) => const AppErrorWidget();
+  runZonedGuarded(
+    () => runApp(const ProviderScope(child: HabitTrackerApp())),
+    (error, stack) =>
+        logger.e('uncaught zone error', error: error, stackTrace: stack),
+  );
 }
 
 final GoRouter _router = buildAppRouter();
