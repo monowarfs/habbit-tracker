@@ -136,6 +136,10 @@ class MedicineModule implements HabitModule {
       if (!dose.scheduledFor.isAfter(now)) continue;
       final medicine = await _repository.medicineById(dose.medicineId);
       if (medicine == null) continue;
+      // Defensive re-check (FR-M-10): archiving cascade-deletes future
+      // upcoming doses at archive time, but this guards the same
+      // invariant directly at the notification-emission boundary too.
+      if (medicine.archivedAt != null) continue;
       notifications.add(
         PendingNotification(
           // Bare dose id, not module/type-prefixed. `notification_ledger.id`

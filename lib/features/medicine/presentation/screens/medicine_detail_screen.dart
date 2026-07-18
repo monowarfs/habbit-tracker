@@ -50,9 +50,11 @@ class MedicineDetailScreen extends ConsumerWidget {
         ),
     ]..sort();
 
-    final dosesAsync = ref.watch(
-      medicineRepositoryProvider,
-    ); // repository read for adherence below
+    final adherenceDoses = ref
+        .watch(
+          medicineDosesInRangeProvider((start: today.addDays(-30), end: today)),
+        )
+        .value;
 
     return Scaffold(
       appBar: AppBar(
@@ -87,33 +89,33 @@ class MedicineDetailScreen extends ConsumerWidget {
               ),
             ),
           const SizedBox(height: 16),
-          FutureBuilder<AdherenceStats>(
-            future: dosesAsync
-                .dosesInRange(today.addDays(-30), today)
-                .then(
-                  (doses) => calculateAdherence(doses: doses, now: clock.now()),
-                ),
-            builder: (context, snapshot) {
-              final stats = snapshot.data;
-              if (stats == null) return const SizedBox.shrink();
-              final takenPct = stats.total == 0
-                  ? 0
-                  : ((stats.takenOnTime + stats.takenLate) / stats.total * 100)
-                        .round();
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    stats.total == 0
-                        ? 'No dose history yet'
-                        : 'Last 30 days: $takenPct% taken '
-                              '(${stats.missed} missed, '
-                              '${stats.skipped} skipped)',
+          if (adherenceDoses != null)
+            Builder(
+              builder: (context) {
+                final stats = calculateAdherence(
+                  doses: adherenceDoses,
+                  now: clock.now(),
+                );
+                final takenPct = stats.total == 0
+                    ? 0
+                    : ((stats.takenOnTime + stats.takenLate) /
+                              stats.total *
+                              100)
+                          .round();
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      stats.total == 0
+                          ? 'No dose history yet'
+                          : 'Last 30 days: $takenPct% taken '
+                                '(${stats.missed} missed, '
+                                '${stats.skipped} skipped)',
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
     );

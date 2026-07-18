@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 
@@ -282,5 +283,35 @@ void main() {
 
     alerts = await repo.medicinesNeedingLowStockAlert();
     expect(alerts.map((m) => m.id), isNot(contains(medicineId)));
+  });
+
+  test('archiveMedicine deletes future upcoming doses (FR-M-10), leaving '
+      'past/done doses in history', () async {
+    final created = await repo.createMedicine(name: 'X', stockEnabled: false);
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final todaysDoseId = await doseIdFor(repo, medicineId);
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 8, 5)), () async {
+      await repo.markDoseDone(todaysDoseId, fromOtherSource: false);
+    });
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 9)), () async {
+      await repo.archiveMedicine(medicineId);
+    });
+
+    final remaining = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 7, 1),
+    );
+    expect(remaining, hasLength(1));
+    expect(remaining.single.id, todaysDoseId);
+    expect(remaining.single.storedStatus, MedicineDoseStatus.done);
   });
 }

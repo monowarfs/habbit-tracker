@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -75,7 +76,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               ? int.tryParse(_stockThresholdController.text)
               : null,
           rule: _rule,
-          startDate: LocalDate.fromDateTime(DateTime.now()),
+          startDate: LocalDate.fromDateTime(clock.now()),
         );
     if (mounted) context.pop();
   }

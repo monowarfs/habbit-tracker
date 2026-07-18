@@ -164,6 +164,20 @@ class MedicineRepositoryImpl implements MedicineRepository {
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('Medicine', id));
       }
+      if (archived) {
+        // FR-M-10: archiving stops generating doses/notifications. Mirrors
+        // updateSchedule's FR-M-09 cascade — delete this medicine's still-
+        // upcoming doses at/after now (across every schedule) so no
+        // pre-materialized future dose keeps notifying; done/skipped/past
+        // rows are untouched and remain in history/adherence stats.
+        await (_db.update(_db.medicineDosesTable)..where(
+              (t) =>
+                  t.medicineId.equals(id) &
+                  t.status.equals('upcoming') &
+                  t.scheduledFor.isBiggerOrEqualValue(now),
+            ))
+            .write(MedicineDosesTableCompanion(deletedAt: Value(now)));
+      }
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('archive_medicine', e));

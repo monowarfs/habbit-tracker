@@ -56,6 +56,41 @@ void main() {
     });
   });
 
+  test('pendingNotifications excludes doses whose medicine is archived '
+      '(FR-M-10 defensive re-check)', () async {
+    final now = DateTime.utc(2026, 6, 1, 7);
+    final dose = MedicineDose(
+      id: 'd1',
+      medicineId: 'm1',
+      scheduleId: 's1',
+      scheduledFor: DateTime.utc(2026, 6, 1, 8),
+      storedStatus: MedicineDoseStatus.upcoming,
+      graceWindowMinutes: 30,
+    );
+    final archivedMedicine = Medicine(
+      id: 'm1',
+      name: 'X',
+      stockEnabled: false,
+      archivedAt: DateTime.utc(2026, 5),
+    );
+
+    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(any(), any()),
+    ).thenAnswer((_) async => [dose]);
+    when(
+      () => repo.medicineById('m1'),
+    ).thenAnswer((_) async => archivedMedicine);
+    when(
+      () => repo.medicinesNeedingLowStockAlert(),
+    ).thenAnswer((_) async => []);
+
+    await withClock(Clock.fixed(now), () async {
+      final notifications = await module.pendingNotifications();
+      expect(notifications, isEmpty);
+    });
+  });
+
   test('pendingNotifications includes a low_stock notification for '
       'medicines returned by medicinesNeedingLowStockAlert', () async {
     final now = DateTime.utc(2026, 6, 1, 7);
