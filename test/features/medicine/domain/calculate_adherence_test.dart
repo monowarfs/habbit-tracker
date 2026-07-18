@@ -10,19 +10,18 @@ void main() {
     required MedicineDoseStatus storedStatus,
     DateTime? statusChangedAt,
     int graceWindowMinutes = 30,
-  }) =>
-      MedicineDose(
-        id: 'd',
-        medicineId: 'm1',
-        scheduleId: 's1',
-        scheduledFor: scheduledFor,
-        storedStatus: storedStatus,
-        statusChangedAt: statusChangedAt,
-        graceWindowMinutes: graceWindowMinutes,
-      );
+  }) => MedicineDose(
+    id: 'd',
+    medicineId: 'm1',
+    scheduleId: 's1',
+    scheduledFor: scheduledFor,
+    storedStatus: storedStatus,
+    statusChangedAt: statusChangedAt,
+    graceWindowMinutes: graceWindowMinutes,
+  );
 
   test('classifies on-time, late, missed, and skipped doses', () {
-    final scheduled = DateTime.utc(2026, 6, 1, 8, 0);
+    final scheduled = DateTime.utc(2026, 6, 1, 8);
     final stats = calculateAdherence(
       doses: [
         dose(
@@ -35,7 +34,10 @@ void main() {
           storedStatus: MedicineDoseStatus.done,
           statusChangedAt: scheduled.add(const Duration(minutes: 45)),
         ), // late
-        dose(scheduledFor: scheduled, storedStatus: MedicineDoseStatus.upcoming), // -> missed (now is far past)
+        dose(
+          scheduledFor: scheduled,
+          storedStatus: MedicineDoseStatus.upcoming,
+        ), // -> missed (now is far past)
         dose(scheduledFor: scheduled, storedStatus: MedicineDoseStatus.skipped),
       ],
       now: now,
@@ -50,7 +52,10 @@ void main() {
   test('upcoming/due doses are excluded from the total (not yet resolved)', () {
     final stats = calculateAdherence(
       doses: [
-        dose(scheduledFor: now.add(const Duration(hours: 1)), storedStatus: MedicineDoseStatus.upcoming),
+        dose(
+          scheduledFor: now.add(const Duration(hours: 1)),
+          storedStatus: MedicineDoseStatus.upcoming,
+        ),
       ],
       now: now,
     );

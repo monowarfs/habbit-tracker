@@ -7,7 +7,7 @@ import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart
 import 'package:habit_tracker/features/medicine/domain/usecases/plan_dose_materialization.dart';
 
 void main() {
-  final medicine = Medicine(id: 'm1', name: 'Amoxicillin', stockEnabled: false);
+  const medicine = Medicine(id: 'm1', name: 'Amoxicillin', stockEnabled: false);
 
   test('generates a PlannedDose per schedule instant within the window', () {
     final schedule = MedicineSchedule(
@@ -25,7 +25,10 @@ void main() {
       windowEnd: const LocalDate(2026, 6, 2),
     );
     expect(planned, hasLength(2));
-    expect(planned.every((p) => p.medicineId == 'm1' && p.scheduleId == 's1'), isTrue);
+    expect(
+      planned.every((p) => p.medicineId == 'm1' && p.scheduleId == 's1'),
+      isTrue,
+    );
     expect(planned.every((p) => p.graceWindowMinutes == 30), isTrue);
   });
 
@@ -41,7 +44,7 @@ void main() {
       id: 'd1',
       medicineId: 'm1',
       scheduleId: 's1',
-      scheduledFor: DateTime(2026, 6, 1, 8, 0).toUtc(),
+      scheduledFor: DateTime(2026, 6, 1, 8).toUtc(),
       storedStatus: MedicineDoseStatus.done,
       graceWindowMinutes: 30,
     );
@@ -64,7 +67,7 @@ void main() {
         medicineId: 'm1',
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 6, 1),
-        createdAt: DateTime.utc(2026, 1),
+        createdAt: DateTime.utc(2026),
       );
       final newer = MedicineSchedule(
         id: 'new',

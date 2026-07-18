@@ -2,7 +2,7 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 
 /// Result of marking a dose done: the medicine's new stock count, the
 /// delta actually applied (0 if no event should be written), and whether
-/// a [MedicineStockEvent] should be persisted (FR-M-04/05).
+/// a `MedicineStockEvent` should be persisted (FR-M-04/05).
 typedef StockAdjustment = ({
   int newStockCount,
   int stockDelta,
@@ -10,10 +10,10 @@ typedef StockAdjustment = ({
 });
 
 /// Computes the stock effect of marking a dose done. Pure — the caller
-/// (the repository) persists [StockAdjustment.stockDelta] as a
+/// (the repository) persists `StockAdjustment.stockDelta` as a
 /// `MedicineStockEvent(reason: doseTaken)` only when
-/// [StockAdjustment.writesEvent] is true, and always writes
-/// [StockAdjustment.stockDelta] onto the dose row's `stockDeltaApplied`
+/// `StockAdjustment.writesEvent` is true, and always writes
+/// `StockAdjustment.stockDelta` onto the dose row's `stockDeltaApplied`
 /// so [calculateDoseUndoneAdjustment] can reverse it exactly later.
 ///
 /// [fromOtherSource] is FR-M-05's escape hatch for marking a dose done

@@ -79,7 +79,7 @@ void main() {
     },
   );
 
-  test('materializeDoses fills a fixed-daily schedule\'s window and is '
+  test("materializeDoses fills a fixed-daily schedule's window and is "
       'idempotent on a second call', () async {
     final created = await repo.createMedicine(name: 'X', stockEnabled: false);
     final medicineId = (created as Success<Medicine>).value.id;
@@ -109,7 +109,7 @@ void main() {
     expect(secondPass, hasLength(31)); // unchanged, not duplicated
   });
 
-  test('watchDosesForDay reflects a single day\'s flattened cross-medicine '
+  test("watchDosesForDay reflects a single day's flattened cross-medicine "
       'timeline', () async {
     final medA = await repo.createMedicine(name: 'A', stockEnabled: false);
     final medB = await repo.createMedicine(name: 'B', stockEnabled: false);
@@ -134,7 +134,7 @@ void main() {
     expect(doses, hasLength(2));
   });
 
-  Future<String> _doseIdFor(
+  Future<String> doseIdFor(
     MedicineRepositoryImpl repo,
     String medicineId,
   ) async {
@@ -161,7 +161,7 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
       await repo.materializeDoses(clock.now());
     });
-    final doseId = await _doseIdFor(repo, medicineId);
+    final doseId = await doseIdFor(repo, medicineId);
 
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 8, 5)), () async {
       final result = await repo.markDoseDone(doseId, fromOtherSource: false);
@@ -187,7 +187,7 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
       await repo.materializeDoses(clock.now());
     });
-    final doseId = await _doseIdFor(repo, medicineId);
+    final doseId = await doseIdFor(repo, medicineId);
     await repo.markDoseDone(doseId, fromOtherSource: false);
 
     await repo.undoDose(doseId);
@@ -213,7 +213,7 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
       await repo.materializeDoses(clock.now());
     });
-    final doseId = await _doseIdFor(repo, medicineId);
+    final doseId = await doseIdFor(repo, medicineId);
 
     await repo.markDoseDone(
       doseId,
@@ -246,7 +246,7 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
       await repo.materializeDoses(clock.now());
     });
-    final doseId = await _doseIdFor(repo, medicineId);
+    final doseId = await doseIdFor(repo, medicineId);
 
     await repo.markDoseDone(doseId, fromOtherSource: false);
 
@@ -271,7 +271,7 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
       await repo.materializeDoses(clock.now());
     });
-    final doseId = await _doseIdFor(repo, medicineId);
+    final doseId = await doseIdFor(repo, medicineId);
 
     await repo.markDoseDone(doseId, fromOtherSource: false); // 6 -> 5, crosses
 

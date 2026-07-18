@@ -9,7 +9,7 @@ import 'package:habit_tracker/features/medicine/domain/usecases/schedule_activit
 
 void main() {
   group('effectiveDoseStatus (D-05 grace-window state machine)', () {
-    final scheduledFor = DateTime.utc(2026, 6, 1, 8, 0);
+    final scheduledFor = DateTime.utc(2026, 6, 1, 8);
 
     test('before scheduled time: upcoming', () {
       expect(
@@ -85,7 +85,7 @@ void main() {
   });
 
   group('isScheduleActive (D-04 stock-exhaustion behavior)', () {
-    final medicine = Medicine(
+    const medicine = Medicine(
       id: 'm1',
       name: 'Amoxicillin',
       stockEnabled: true,

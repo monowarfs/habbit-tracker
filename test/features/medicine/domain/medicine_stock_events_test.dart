@@ -5,7 +5,7 @@ import 'package:habit_tracker/features/medicine/domain/usecases/stock_adjustment
 void main() {
   group('calculateDoseTakenAdjustment', () {
     test('normal path: decrements by consumptionPerDose, writes an event', () {
-      final medicine = Medicine(
+      const medicine = Medicine(
         id: 'm1',
         name: 'Ibuprofen',
         stockEnabled: true,
@@ -22,7 +22,7 @@ void main() {
     });
 
     test('never goes below zero', () {
-      final medicine = Medicine(
+      const medicine = Medicine(
         id: 'm1',
         name: 'Ibuprofen',
         stockEnabled: true,
@@ -40,7 +40,7 @@ void main() {
       'clamped stockDelta reflects the actual change applied, not the '
       'raw consumptionPerDose, and undo round-trips exactly',
       () {
-        final medicine = Medicine(
+        const medicine = Medicine(
           id: 'm1',
           name: 'Ibuprofen',
           stockEnabled: true,
@@ -63,7 +63,7 @@ void main() {
     );
 
     test('"taken from other source": no decrement, no event (FR-M-05)', () {
-      final medicine = Medicine(
+      const medicine = Medicine(
         id: 'm1',
         name: 'Ibuprofen',
         stockEnabled: true,
@@ -79,7 +79,11 @@ void main() {
     });
 
     test('stock tracking disabled: no decrement, no event', () {
-      final medicine = Medicine(id: 'm1', name: 'Ibuprofen', stockEnabled: false);
+      const medicine = Medicine(
+        id: 'm1',
+        name: 'Ibuprofen',
+        stockEnabled: false,
+      );
       final result = calculateDoseTakenAdjustment(
         medicine: medicine,
         fromOtherSource: false,
@@ -91,7 +95,7 @@ void main() {
 
   group('calculateDoseUndoneAdjustment', () {
     test('reverses a prior decrement exactly', () {
-      final medicine = Medicine(
+      const medicine = Medicine(
         id: 'm1',
         name: 'Ibuprofen',
         stockEnabled: true,
@@ -106,7 +110,7 @@ void main() {
     });
 
     test('undoing a "taken from other source" dose (delta 0) is a no-op', () {
-      final medicine = Medicine(
+      const medicine = Medicine(
         id: 'm1',
         name: 'Ibuprofen',
         stockEnabled: true,

@@ -42,7 +42,11 @@ List<PlannedDose> planDoseMaterialization({
   for (final schedule in schedules) {
     final medicine = medicinesById[schedule.medicineId];
     if (medicine == null) continue;
-    if (!isScheduleActive(medicine: medicine, schedule: schedule, asOf: windowStart)) {
+    if (!isScheduleActive(
+      medicine: medicine,
+      schedule: schedule,
+      asOf: windowStart,
+    )) {
       continue;
     }
     final rangeStart = schedule.startDate.compareTo(windowStart) > 0

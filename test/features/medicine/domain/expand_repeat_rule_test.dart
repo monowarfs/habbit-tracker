@@ -17,11 +17,11 @@ void main() {
       expect(result, hasLength(6)); // 3 days x 2 times
       expect(
         result.first,
-        DateTime(2026, 6, 1, 8, 0).toUtc(),
+        DateTime(2026, 6, 1, 8).toUtc(),
       );
       expect(
         result.last,
-        DateTime(2026, 6, 3, 20, 0).toUtc(),
+        DateTime(2026, 6, 3, 20).toUtc(),
       );
     });
 
@@ -33,7 +33,7 @@ void main() {
         rangeEnd: const LocalDate(2026, 6, 5),
       );
       expect(result, hasLength(1));
-      expect(result.single, DateTime(2026, 6, 5, 8, 0).toUtc());
+      expect(result.single, DateTime(2026, 6, 5, 8).toUtc());
     });
   });
 
@@ -51,8 +51,8 @@ void main() {
       );
       // Mon 6/1 and Wed 6/3 only.
       expect(result, hasLength(2));
-      expect(result[0], DateTime(2026, 6, 1, 9, 0).toUtc());
-      expect(result[1], DateTime(2026, 6, 3, 9, 0).toUtc());
+      expect(result[0], DateTime(2026, 6, 1, 9).toUtc());
+      expect(result[1], DateTime(2026, 6, 3, 9).toUtc());
     });
   });
 
