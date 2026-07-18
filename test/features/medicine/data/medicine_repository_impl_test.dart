@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
@@ -77,4 +78,59 @@ void main() {
       expect(result, isA<Failure<void>>());
     },
   );
+
+  test('materializeDoses fills a fixed-daily schedule\'s window and is '
+      'idempotent on a second call', () async {
+    final created = await repo.createMedicine(name: 'X', stockEnabled: false);
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+
+    final firstPass = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 7, 1),
+    );
+    expect(firstPass, hasLength(31)); // 6/1 through 7/1 inclusive
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final secondPass = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 7, 1),
+    );
+    expect(secondPass, hasLength(31)); // unchanged, not duplicated
+  });
+
+  test('watchDosesForDay reflects a single day\'s flattened cross-medicine '
+      'timeline', () async {
+    final medA = await repo.createMedicine(name: 'A', stockEnabled: false);
+    final medB = await repo.createMedicine(name: 'B', stockEnabled: false);
+    await repo.createSchedule(
+      medicineId: (medA as Success<Medicine>).value.id,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await repo.createSchedule(
+      medicineId: (medB as Success<Medicine>).value.id,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(9, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+
+    final doses = await repo
+        .watchDosesForDay(const LocalDate(2026, 6, 1))
+        .first;
+    expect(doses, hasLength(2));
+  });
 }

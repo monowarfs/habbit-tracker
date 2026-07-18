@@ -6,12 +6,17 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/utils/uuid.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/plan_dose_materialization.dart';
+
+/// How far ahead `materializeDoses` tops up the dose window (D-13).
+const _materializationWindowDays = 30;
 
 /// Drift-backed [MedicineRepository]. No DAO — same precedent as Water's
 /// `WaterRepositoryImpl`, one caller.
@@ -289,17 +294,90 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
   @override
   Future<void> materializeDoses(DateTime now) async {
-    throw UnimplementedError('materializeDoses: implemented in Task 10');
+    final windowStart = localDayKey(now);
+    final windowEnd = windowStart.addDays(_materializationWindowDays);
+
+    final medicines = await (_db.select(
+      _db.medicinesTable,
+    )..where((t) => t.deletedAt.isNull())).get().then(
+      (rows) => rows.map(_medicineFromRow).toList(),
+    );
+    final schedules = await (_db.select(
+      _db.medicineSchedulesTable,
+    )..where((t) => t.deletedAt.isNull())).get().then(
+      (rows) => rows.map(_scheduleFromRow).toList(),
+    );
+    final existingDoses = await dosesInRange(windowStart, windowEnd);
+
+    final planned = planDoseMaterialization(
+      medicines: medicines,
+      schedules: schedules,
+      existingDoses: existingDoses,
+      windowStart: windowStart,
+      windowEnd: windowEnd,
+    );
+    if (planned.isEmpty) return;
+
+    final nowMillis = now.toUtc().millisecondsSinceEpoch;
+    await _db.batch((batch) {
+      for (final dose in planned) {
+        batch.insert(
+          _db.medicineDosesTable,
+          MedicineDosesTableCompanion.insert(
+            id: generateId(),
+            medicineId: dose.medicineId,
+            scheduleId: dose.scheduleId,
+            scheduledFor: dose.scheduledFor.toUtc().millisecondsSinceEpoch,
+            status: 'upcoming',
+            graceWindowMinutes: dose.graceWindowMinutes,
+            createdAt: nowMillis,
+            updatedAt: nowMillis,
+          ),
+        );
+      }
+    });
   }
 
   @override
   Stream<List<MedicineDose>> watchDosesForDay(LocalDate day) {
-    throw UnimplementedError('watchDosesForDay: implemented in Task 10');
+    final range = localDayRangeUtc(day);
+    final query = _db.select(_db.medicineDosesTable)
+      ..where(
+        (t) =>
+            t.deletedAt.isNull() &
+            t.scheduledFor.isBiggerOrEqualValue(
+              range.startUtc.millisecondsSinceEpoch,
+            ) &
+            t.scheduledFor.isSmallerThanValue(
+              range.endUtc.millisecondsSinceEpoch,
+            ),
+      )
+      ..orderBy([(t) => OrderingTerm.asc(t.scheduledFor)]);
+    return query.watch().map(
+      (rows) => rows.map(_doseFromRow).toList(growable: false),
+    );
   }
 
   @override
-  Future<List<MedicineDose>> dosesInRange(LocalDate start, LocalDate end) {
-    throw UnimplementedError('dosesInRange: implemented in Task 10');
+  Future<List<MedicineDose>> dosesInRange(
+    LocalDate start,
+    LocalDate end,
+  ) async {
+    final startUtc = localDayRangeUtc(start).startUtc;
+    final endUtc = localDayRangeUtc(end).endUtc;
+    final rows =
+        await (_db.select(_db.medicineDosesTable)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.scheduledFor.isBiggerOrEqualValue(
+                    startUtc.millisecondsSinceEpoch,
+                  ) &
+                  t.scheduledFor.isSmallerThanValue(
+                    endUtc.millisecondsSinceEpoch,
+                  ),
+            ))
+            .get();
+    return rows.map(_doseFromRow).toList(growable: false);
   }
 
   @override
@@ -386,6 +464,25 @@ class MedicineRepositoryImpl implements MedicineRepository {
           isUtc: true,
         ),
       );
+
+  MedicineDose _doseFromRow(MedicineDoseRow row) => MedicineDose(
+    id: row.id,
+    medicineId: row.medicineId,
+    scheduleId: row.scheduleId,
+    scheduledFor: DateTime.fromMillisecondsSinceEpoch(
+      row.scheduledFor,
+      isUtc: true,
+    ),
+    storedStatus: MedicineDoseStatus.values.byName(row.status),
+    statusChangedAt: row.statusChangedAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.statusChangedAt!,
+            isUtc: true,
+          ),
+    stockDeltaApplied: row.stockDeltaApplied,
+    graceWindowMinutes: row.graceWindowMinutes,
+  );
 }
 
 /// `RepeatRule` <-> DB column mapping, by explicit literal (same
