@@ -101,6 +101,8 @@ it — the audit trail behind FR-C-07/08/09 and the snooze-limit rule
 | module_id | TEXT | `'water'` \| `'medicine'` \| `'prayer'` |
 | source_type | TEXT | `'medicine_dose'` \| `'prayer_record'` \| `'water_reminder'` \| `'low_stock'` |
 | source_id | TEXT | id of the row in the relevant module table (application-level reference only — see note below) |
+| title | TEXT | notification display title |
+| body | TEXT | notification display body |
 | scheduled_for | INTEGER | UTC instant the OS was asked to fire at |
 | fired_at | INTEGER NULL | UTC, set by the notification-received handler |
 | action | TEXT NULL | `'done'` \| `'snooze'` \| `'skip'` \| null (not yet actioned) |
@@ -108,6 +110,15 @@ it — the audit trail behind FR-C-07/08/09 and the snooze-limit rule
 | snooze_count | INTEGER | default 0, enforces the max-3 rule |
 | deep_link_route | TEXT | e.g. `/medicine/dose/:id` — precomputed at scheduling time so the notification tap handler doesn't need a DB read to navigate |
 | created_at, updated_at, deleted_at | INTEGER | |
+
+**Added (Run 08 implementation):** `title`/`body` columns. A Snooze
+reschedules the *same* notification at `now + 10min` (`strategies/
+notifications.md`); without persisting the original content here, the
+handler would have to ask the owning module to regenerate it, which isn't
+reliable days later (settings may have changed, or — for a future
+Medicine/Prayer module — the source row's data may have moved on). The
+ledger already exists as this notification's durable record, so it's the
+right place for its content, not just its audit trail.
 
 **Why `source_id` isn't a SQL foreign key:** `notification_ledger` is
 intentionally polymorphic (one ledger for three+ future source types,

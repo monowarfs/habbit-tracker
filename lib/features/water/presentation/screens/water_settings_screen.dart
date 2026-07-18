@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/notifications/notification_permission_explainer_screen.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
@@ -70,12 +71,25 @@ class WaterSettingsScreen extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             title: Text(l10n.waterSettingsReminderEnableToggle),
             value: settings.reminderEnabled,
-            onChanged: (enabled) => controller.updateReminderSettings(
-              enabled: enabled,
-              intervalMinutes: settings.reminderIntervalMinutes,
-              windowStart: settings.reminderWindowStart,
-              windowEnd: settings.reminderWindowEnd,
-            ),
+            onChanged: (enabled) async {
+              // FR-C-02/`strategies/notifications.md`: ask for the OS
+              // notification permission (with a friendly explainer first)
+              // the moment the user opts into reminders, not before.
+              if (enabled) {
+                final granted = await showNotificationPermissionExplainer(
+                  context,
+                );
+                if (!granted) return;
+              }
+              unawaited(
+                controller.updateReminderSettings(
+                  enabled: enabled,
+                  intervalMinutes: settings.reminderIntervalMinutes,
+                  windowStart: settings.reminderWindowStart,
+                  windowEnd: settings.reminderWindowEnd,
+                ),
+              );
+            },
           ),
           if (settings.reminderEnabled) ...[
             _GoalField(

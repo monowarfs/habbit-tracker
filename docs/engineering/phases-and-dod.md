@@ -19,6 +19,32 @@ shifted down by one (old 06→07, 07→08, 08→09, 09→10, 10→11, 11→12, 1
 in other docs (`roadmap.md`, `feature-breakdown.md`, `user-stories.md`)
 have been updated to match.
 
+**Diverged during Run 08 implementation:** this section originally
+planned Run 08 as "Medicine module: domain & data," with
+`flutter_local_notifications` not entering the picture until Run 09
+(Medicine's own presentation run), and the shared cross-module engine only
+hardened later in Run 12. In practice, Run 08 was executed as the
+**Notification & Reminder Engine** instead — `core/notifications/`
+(planner, ledger repository, `NotificationService`, background-isolate
+action handler, Android WorkManager top-up), validated end-to-end against
+Water's already-stored-but-unscheduled reminder prefs (FR-W-10), extending
+the `HabitModule` contract with `onNotificationAction` in the process
+(`../technical/architecture.md`). Rationale: building the highest-risk
+subsystem against the one module that already existed, rather than
+bundling it with Medicine's first real module work, de-risks Medicine's
+own Run 09+ (it now just plugs into a proven engine instead of building
+it and a whole module simultaneously). The Medicine/Prayer runs described
+below (still labelled 08/09/10/11/12) have **not** been renumbered or
+re-scoped to reflect this — that's a real re-planning decision (how much
+of the old "Run 09 notifications integration" and "Run 12 hardening" scope
+is now redundant vs. still needed) that hasn't been made yet. Read
+"Run 09 — Medicine module: presentation & notifications" as needing its
+own reconciliation pass before that run starts: it should reuse
+`core/notifications` rather than re-integrate `flutter_local_notifications`
+from scratch, and "Run 12 — Notification system hardening" should be
+re-scoped to whatever the engine still needs once Medicine/Prayer are real
+consumers, not a from-scratch hardening pass.
+
 ## Universal Definition of Done (every run, no exceptions)
 
 1. `flutter analyze` — zero issues.

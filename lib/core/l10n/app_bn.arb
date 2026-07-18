@@ -43,5 +43,14 @@
   "waterSettingsReminderSectionLabel": "রিমাইন্ডার",
   "waterSettingsReminderEnableToggle": "পানি পানের কথা মনে করিয়ে দিন",
   "waterSettingsReminderIntervalLabel": "প্রতি (মিনিট)",
-  "waterSettingsReminderWindowLabel": "মধ্যে"
+  "waterSettingsReminderWindowLabel": "মধ্যে",
+  "notificationPermissionExplainerTitle": "নিয়মিত থাকুন",
+  "notificationPermissionExplainerBody": "হ্যাবিট ট্র্যাকার আপনাকে মনে করিয়ে দিতে পারে কখন কিছু লগ করার সময় হয়েছে। এটি আপনি যেকোনো সময় সেটিংসে পরিবর্তন করতে পারেন।",
+  "notificationPermissionAllowButton": "নোটিফিকেশন চালু করুন",
+  "notificationPermissionNotNowButton": "এখন নয়",
+  "settingsNotificationReliability": "নোটিফিকেশন নির্ভরযোগ্যতা",
+  "notificationReliabilityTitle": "নোটিফিকেশন নির্ভরযোগ্যতা",
+  "notificationReliabilityIntro": "কিছু ফোন ব্র্যান্ড (যেমন Xiaomi, Realme, Vivo) স্ট্যান্ডার্ড অ্যান্ড্রয়েডের চেয়ে বেশি ব্যাকগ্রাউন্ড অ্যাপ সীমাবদ্ধ করে, যা সব ঠিকভাবে সেট করা থাকলেও রিমাইন্ডার দেরি বা বন্ধ করে দিতে পারে।",
+  "notificationReliabilityBatteryButton": "ব্যাটারি অপটিমাইজেশন থেকে অব্যাহতি দিন",
+  "notificationReliabilityExactAlarmBanner": "সঠিক সময়ের রিমাইন্ডার বন্ধ আছে — চালু করতে ট্যাপ করুন"
 }

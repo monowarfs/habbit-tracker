@@ -175,5 +175,41 @@
   "waterSettingsReminderWindowLabel": "Between",
   "@waterSettingsReminderWindowLabel": {
     "description": "Label for the reminder time-of-day window row."
+  },
+  "notificationPermissionExplainerTitle": "Stay on track",
+  "@notificationPermissionExplainerTitle": {
+    "description": "Title of the pre-permission explainer shown before requesting the OS notification permission."
+  },
+  "notificationPermissionExplainerBody": "Habit Tracker can remind you when it's time to log something, so you don't have to remember on your own. You can change this anytime in Settings.",
+  "@notificationPermissionExplainerBody": {
+    "description": "Body copy of the pre-permission notification explainer."
+  },
+  "notificationPermissionAllowButton": "Allow notifications",
+  "@notificationPermissionAllowButton": {
+    "description": "Button that proceeds to request the OS notification permission."
+  },
+  "notificationPermissionNotNowButton": "Not now",
+  "@notificationPermissionNotNowButton": {
+    "description": "Button that dismisses the explainer without requesting permission."
+  },
+  "settingsNotificationReliability": "Notification reliability",
+  "@settingsNotificationReliability": {
+    "description": "Settings entry linking to the notification troubleshooting screen."
+  },
+  "notificationReliabilityTitle": "Notification reliability",
+  "@notificationReliabilityTitle": {
+    "description": "AppBar title for the notification troubleshooting screen."
+  },
+  "notificationReliabilityIntro": "Some phone brands (like Xiaomi, Realme, or Vivo) restrict background apps more than standard Android, which can delay or block reminders even when everything here is set up correctly.",
+  "@notificationReliabilityIntro": {
+    "description": "Explains OEM battery-killer behavior on the reliability screen."
+  },
+  "notificationReliabilityBatteryButton": "Exempt from battery optimization",
+  "@notificationReliabilityBatteryButton": {
+    "description": "Button requesting the battery-optimization exemption."
+  },
+  "notificationReliabilityExactAlarmBanner": "Exact reminders are off — tap to enable",
+  "@notificationReliabilityExactAlarmBanner": {
+    "description": "Banner shown when exact-alarm permission isn't granted."
   }
 }

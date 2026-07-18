@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/notifications/notification_reliability_screen.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
@@ -85,6 +86,13 @@ GoRouter buildAppRouter(List<HabitModule> modules) {
               GoRoute(
                 path: AppRoutes.settings,
                 builder: (context, state) => const SettingsHomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'notifications',
+                    builder: (context, state) =>
+                        const NotificationReliabilityScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -16,6 +16,7 @@ dependencies:
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^22.0.1
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.3.2
@@ -30,6 +31,10 @@ dependencies:
   sqlite3: ^3.4.0
   timezone: ^0.11.1
   uuid: ^4.6.0
+  # Android-only periodic top-up of the notification scheduling window
+  # (`strategies/notifications.md`) — not used on iOS, see
+  # core/notifications/notification_workmanager.dart.
+  workmanager: ^0.9.0+3
 
 dev_dependencies:
   build_runner: ^2.15.1

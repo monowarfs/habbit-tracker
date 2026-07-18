@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
 
@@ -51,6 +53,28 @@ class SettingsHomeScreen extends ConsumerWidget {
             onSelectionChanged: (selection) => ref
                 .read(localeControllerProvider.notifier)
                 .updateLocale(selection.first),
+          ),
+          const Divider(),
+          FutureBuilder<bool>(
+            future: NotificationService.instance.exactAlarmsAllowed(),
+            builder: (context, snapshot) {
+              if (snapshot.data == false) {
+                return ListTile(
+                  tileColor: Theme.of(context).colorScheme.errorContainer,
+                  leading: const Icon(Icons.alarm_off),
+                  title: Text(l10n.notificationReliabilityExactAlarmBanner),
+                  onTap:
+                      NotificationService.instance.requestExactAlarmsPermission,
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: Text(l10n.settingsNotificationReliability),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/notifications'),
           ),
         ],
       ),

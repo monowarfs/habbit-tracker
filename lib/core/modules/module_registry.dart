@@ -1,27 +1,33 @@
+import 'package:habit_tracker/core/database/app_database.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
-import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
+import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/water_module.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'module_registry.g.dart';
 
-/// The single shared list of registered modules
-/// (`../../technical/architecture.md`).
-///
-/// A Riverpod provider, not a bare list — `HabitModule.pendingNotifications`/
-/// `exportData`/`importData` don't take a `Ref` (they run from non-widget
-/// code like the future boot receiver), so each module's repository is
-/// injected once, here, at construction time. `dashboardSummary`/
-/// `settingsEntry` still take their own `WidgetRef` and can watch whatever
-/// providers they need independently.
+/// Builds the module list directly from a database instance
+/// (`../../technical/architecture.md`) — used by code that can't obtain a
+/// `Ref` (the notification background isolate
+/// (`../notifications/notification_action_handler.dart`), the Android
+/// WorkManager callback). [habitModulesProvider] wraps this so both paths
+/// construct modules identically.
 ///
 /// Adding a future module (e.g. Sleep) means writing `lib/features/sleep/`
 /// and adding one line below — no other file in this list or in `core/` is
 /// touched.
-@Riverpod(keepAlive: true)
-List<HabitModule> habitModules(Ref ref) {
+List<HabitModule> buildHabitModules(AppDatabase db) {
   return [
     // NEW MODULE GOES HERE
-    WaterModule(ref.watch(waterRepositoryProvider)),
+    WaterModule(WaterRepositoryImpl(db)),
   ];
+}
+
+/// The single shared list of registered modules, for widget code that has a
+/// `Ref` (`Widget dashboardSummary(WidgetRef ref)`/`settingsEntry` still
+/// take their own `WidgetRef` independently of this list).
+@Riverpod(keepAlive: true)
+List<HabitModule> habitModules(Ref ref) {
+  return buildHabitModules(ref.watch(databaseProvider));
 }

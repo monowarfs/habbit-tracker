@@ -4,8 +4,8 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 part 'water_settings.freezed.dart';
 
 /// The Water module's own singleton settings row: quick-add presets
-/// (FR-W-03) and reminder preferences (FR-W-10, data only this run — the
-/// actual OS scheduling lands in a later run).
+/// (FR-W-03) and reminder preferences (FR-W-10) — scheduled as real OS
+/// notifications by `core/notifications` (Run 08).
 @freezed
 sealed class WaterSettings with _$WaterSettings {
   /// Creates water module settings.

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -101,40 +102,73 @@ class WaterModule implements HabitModule {
     );
   }
 
+  /// How many days ahead to compute reminder slots — matches
+  /// `core/notifications`'s own materialization window
+  /// (`strategies/notifications.md`'s "Window 2"), so nothing here needs to
+  /// track that constant separately; it just needs to cover it.
+  static const _lookaheadDays = 3;
+
   @override
   Future<List<PendingNotification>> pendingNotifications() async {
     final settings = await _repository.watchSettings().first;
     if (!settings.reminderEnabled) return [];
 
-    final now = DateTime.now();
-    final today = localDayKey(now);
+    final now = clock.now();
     final notifications = <PendingNotification>[];
-    var slot = today.toDateTimeUtc().toLocal().add(
-      Duration(
-        hours: settings.reminderWindowStart.hour,
-        minutes: settings.reminderWindowStart.minute,
-      ),
-    );
-    final windowEnd = today.toDateTimeUtc().toLocal().add(
-      Duration(
-        hours: settings.reminderWindowEnd.hour,
-        minutes: settings.reminderWindowEnd.minute,
-      ),
-    );
-    while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
-      if (slot.isAfter(now)) {
-        notifications.add(
-          PendingNotification(
-            id: 'water_reminder_${slot.hour}_${slot.minute}',
-            scheduledAt: slot,
-            title: 'Time to drink water',
-            body: 'Keep your water goal on track.',
-          ),
-        );
+    for (var dayOffset = 0; dayOffset <= _lookaheadDays; dayOffset++) {
+      final day = localDayKey(now).addDays(dayOffset);
+      var slot = day.toDateTimeUtc().toLocal().add(
+        Duration(
+          hours: settings.reminderWindowStart.hour,
+          minutes: settings.reminderWindowStart.minute,
+        ),
+      );
+      final windowEnd = day.toDateTimeUtc().toLocal().add(
+        Duration(
+          hours: settings.reminderWindowEnd.hour,
+          minutes: settings.reminderWindowEnd.minute,
+        ),
+      );
+      while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
+        if (slot.isAfter(now)) {
+          notifications.add(
+            PendingNotification(
+              id:
+                  'water_reminder_'
+                  '${day.year}${day.month.toString().padLeft(2, '0')}'
+                  '${day.day.toString().padLeft(2, '0')}_'
+                  '${slot.hour}_${slot.minute}',
+              scheduledAt: slot,
+              title: 'Time to drink water',
+              body: 'Keep your water goal on track.',
+              sourceType: 'water_reminder',
+              deepLinkRoute: '/water',
+            ),
+          );
+        }
+        slot = slot.add(Duration(minutes: settings.reminderIntervalMinutes));
       }
-      slot = slot.add(Duration(minutes: settings.reminderIntervalMinutes));
     }
     return notifications;
+  }
+
+  @override
+  Future<void> onNotificationAction(
+    String sourceId,
+    NotificationActionType action,
+  ) async {
+    // Snooze/Skip never mutate Water data (`strategies/notifications.md`'s
+    // "streak effect: none" note) — only Done logs an entry.
+    if (action != NotificationActionType.done) return;
+    final settings = await _repository.watchSettings().first;
+    final amountMl = settings.quickAddAmountsMl.isEmpty
+        ? 250
+        : settings.quickAddAmountsMl.first;
+    await _repository.addEntry(
+      amountMl: amountMl,
+      loggedAt: clock.now(),
+      source: WaterEntrySource.quick,
+    );
   }
 
   @override

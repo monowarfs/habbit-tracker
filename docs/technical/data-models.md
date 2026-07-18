@@ -61,6 +61,8 @@ pattern already used for `AppLocale`↔`Locale`.
 | moduleId | `ModuleId` | no | `module_id` | `moduleId` |
 | sourceType | `NotificationSourceType` (enum) | no | `source_type` | `sourceType` |
 | sourceId | `String` | no | `source_id` | `sourceId` |
+| title | `String` | no | `title` | `title` |
+| body | `String` | no | `body` | `body` |
 | scheduledFor | `DateTime` (UTC) | no | `scheduled_for` | `scheduledFor` |
 | firedAt | `DateTime` (UTC) | yes | `fired_at` | `firedAt` |
 | action | `NotificationAction?` (enum: done, snooze, skip) | yes | `action` | `action` |
@@ -71,6 +73,10 @@ pattern already used for `AppLocale`↔`Locale`.
 **Divergence:** none structural — this table's domain model is a near-direct
 mirror of its row, since it's an audit ledger, not something the UI shapes
 differently from storage.
+
+**Added (Run 08 implementation):** `title`/`body` — see
+`database-design.md`'s correction note on the same columns (needed so a
+Snooze reschedule can re-show the original notification content).
 
 ### `Achievement`
 

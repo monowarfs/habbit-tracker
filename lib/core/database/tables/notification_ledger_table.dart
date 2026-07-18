@@ -34,6 +34,17 @@ class NotificationLedgerTable extends Table {
   /// Id of the row in the relevant module table (app-level reference only).
   TextColumn get sourceId => text()();
 
+  /// **Added (Run 08 implementation):** the notification's display title —
+  /// needed so a Snooze reschedule can re-show the exact original
+  /// notification without asking the module to regenerate content it may
+  /// no longer have (e.g. after settings changed) — `strategies/
+  /// notifications.md`'s snooze flow.
+  TextColumn get title => text()();
+
+  /// **Added (Run 08 implementation):** the notification's display body,
+  /// same reasoning as [title].
+  TextColumn get body => text()();
+
   /// UTC epoch millis the OS was asked to fire at.
   IntColumn get scheduledFor => integer()();
 
