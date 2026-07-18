@@ -30,11 +30,12 @@ StockAdjustment calculateDoseTakenAdjustment({
       writesEvent: false,
     );
   }
-  final delta = -medicine.consumptionPerDose;
-  final newCount = (medicine.stockCount ?? 0) + delta;
+  final startCount = medicine.stockCount ?? 0;
+  final rawNewCount = startCount - medicine.consumptionPerDose;
+  final newCount = rawNewCount < 0 ? 0 : rawNewCount;
   return (
-    newStockCount: newCount < 0 ? 0 : newCount,
-    stockDelta: delta,
+    newStockCount: newCount,
+    stockDelta: newCount - startCount,
     writesEvent: true,
   );
 }

@@ -36,6 +36,32 @@ void main() {
       expect(result.newStockCount, 0);
     });
 
+    test(
+      'clamped stockDelta reflects the actual change applied, not the '
+      'raw consumptionPerDose, and undo round-trips exactly',
+      () {
+        final medicine = Medicine(
+          id: 'm1',
+          name: 'Ibuprofen',
+          stockEnabled: true,
+          stockCount: 1,
+          consumptionPerDose: 5,
+        );
+        final taken = calculateDoseTakenAdjustment(
+          medicine: medicine,
+          fromOtherSource: false,
+        );
+        expect(taken.newStockCount, 0);
+        expect(taken.stockDelta, -1);
+
+        final undone = calculateDoseUndoneAdjustment(
+          medicine: medicine.copyWith(stockCount: taken.newStockCount),
+          stockDeltaApplied: taken.stockDelta,
+        );
+        expect(undone.newStockCount, 1);
+      },
+    );
+
     test('"taken from other source": no decrement, no event (FR-M-05)', () {
       final medicine = Medicine(
         id: 'm1',
