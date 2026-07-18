@@ -17,6 +17,7 @@ import 'package:habit_tracker/features/medicine/presentation/providers/medicine_
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_detail_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_form_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
+import 'package:habit_tracker/features/medicine/presentation/screens/medicine_list_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_stats_screen.dart';
 
 /// The Medicine module's [HabitModule] registration
@@ -70,6 +71,10 @@ class MedicineModule implements HabitModule {
         GoRoute(
           path: 'stats',
           builder: (context, state) => const MedicineStatsScreen(),
+        ),
+        GoRoute(
+          path: 'list',
+          builder: (context, state) => const MedicineListScreen(),
         ),
       ],
     ),
