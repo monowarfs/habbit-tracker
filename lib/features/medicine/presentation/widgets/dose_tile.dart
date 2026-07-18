@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
@@ -30,17 +31,33 @@ class DoseTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     // ponytail: nullable, not `!` — a raw `MaterialApp` (as in tests) has
     // no `AppSemanticColors` extension registered; other Water widgets
     // (`water_progress_ring.dart`, `streak_card.dart`) use the same
     // `?? fallback` pattern for this reason.
     final semantic = theme.extension<AppSemanticColors>();
     final (label, color) = switch (view.effectiveStatus) {
-      MedicineDoseStatus.upcoming => ('Upcoming', theme.colorScheme.outline),
-      MedicineDoseStatus.due => ('Due', theme.colorScheme.primary),
-      MedicineDoseStatus.done => ('Done', semantic?.success ?? Colors.green),
-      MedicineDoseStatus.missed => ('Missed', theme.colorScheme.error),
-      MedicineDoseStatus.skipped => ('Skipped', theme.colorScheme.outline),
+      MedicineDoseStatus.upcoming => (
+        l10n.medicineDoseStatusUpcoming,
+        theme.colorScheme.outline,
+      ),
+      MedicineDoseStatus.due => (
+        l10n.medicineDoseStatusDue,
+        theme.colorScheme.primary,
+      ),
+      MedicineDoseStatus.done => (
+        l10n.medicineDoseStatusDone,
+        semantic?.success ?? Colors.green,
+      ),
+      MedicineDoseStatus.missed => (
+        l10n.medicineDoseStatusMissed,
+        theme.colorScheme.error,
+      ),
+      MedicineDoseStatus.skipped => (
+        l10n.medicineDoseStatusSkipped,
+        theme.colorScheme.outline,
+      ),
     };
     final resolved =
         view.effectiveStatus == MedicineDoseStatus.done ||

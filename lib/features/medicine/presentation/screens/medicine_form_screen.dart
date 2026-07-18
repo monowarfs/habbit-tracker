@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
@@ -81,9 +82,10 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add medicine'),
+        title: Text(l10n.medicineFormTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(value: (_step + 1) / 3),
@@ -114,7 +116,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           padding: const EdgeInsets.all(16),
           child: FilledButton(
             onPressed: _step < 2 ? _nextStep : _save,
-            child: Text(_step < 2 ? 'Next' : 'Save'),
+            child: Text(
+              _step < 2
+                  ? l10n.medicineFormNextButton
+                  : l10n.medicineFormSaveButton,
+            ),
           ),
         ),
       ),
@@ -132,24 +138,27 @@ class _DetailsStep extends StatelessWidget {
   final TextEditingController dosageController;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      children: [
-        TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: 'Name'),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: dosageController,
-          decoration: const InputDecoration(
-            labelText: 'Dosage note (optional)',
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          TextField(
+            controller: nameController,
+            decoration: InputDecoration(labelText: l10n.medicineFormNameLabel),
           ),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 16),
+          TextField(
+            controller: dosageController,
+            decoration: InputDecoration(
+              labelText: l10n.medicineFormDosageLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StockStep extends StatelessWidget {
@@ -166,31 +175,38 @@ class _StockStep extends StatelessWidget {
   final TextEditingController stockThresholdController;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      children: [
-        SwitchListTile(
-          title: const Text('Track stock'),
-          value: stockEnabled,
-          onChanged: onStockEnabledChanged,
-        ),
-        if (stockEnabled) ...[
-          TextField(
-            controller: stockCountController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Current stock count'),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          SwitchListTile(
+            title: Text(l10n.medicineFormTrackStockLabel),
+            value: stockEnabled,
+            onChanged: onStockEnabledChanged,
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: stockThresholdController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Low-stock threshold'),
-          ),
+          if (stockEnabled) ...[
+            TextField(
+              controller: stockCountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l10n.medicineFormStockCountLabel,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: stockThresholdController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l10n.medicineFormStockThresholdLabel,
+              ),
+            ),
+          ],
         ],
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class _ScheduleStep extends StatelessWidget {
@@ -201,6 +217,7 @@ class _ScheduleStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selected = switch (rule) {
       FixedDailyRule() => 0,
       EveryNDaysRule() => 1,
@@ -230,14 +247,26 @@ class _ScheduleStep extends StatelessWidget {
           3 => onRuleChanged(const RepeatRule.prn()),
           _ => null,
         },
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('How often?'),
-            RadioListTile<int>(title: Text('Fixed times daily'), value: 0),
-            RadioListTile<int>(title: Text('Every other day'), value: 1),
-            RadioListTile<int>(title: Text('Specific weekdays'), value: 2),
-            RadioListTile<int>(title: Text('As needed (PRN)'), value: 3),
+            Text(l10n.medicineFormFrequencyLabel),
+            RadioListTile<int>(
+              title: Text(l10n.medicineFormFrequencyFixedDaily),
+              value: 0,
+            ),
+            RadioListTile<int>(
+              title: Text(l10n.medicineFormFrequencyEveryOtherDay),
+              value: 1,
+            ),
+            RadioListTile<int>(
+              title: Text(l10n.medicineFormFrequencyWeekdays),
+              value: 2,
+            ),
+            RadioListTile<int>(
+              title: Text(l10n.medicineFormFrequencyPrn),
+              value: 3,
+            ),
           ],
         ),
       ),

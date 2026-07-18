@@ -28,17 +28,17 @@ class MedicineHomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.list_alt),
-            tooltip: 'All medicines',
+            tooltip: l10n.medicineHomeAllMedicinesButton,
             onPressed: () => context.push('/medicine/list'),
           ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
-            tooltip: 'Stats',
+            tooltip: l10n.medicineHomeStatsButton,
             onPressed: () => context.push('/medicine/stats'),
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'Add medicine',
+            tooltip: l10n.medicineHomeAddButton,
             onPressed: () => context.push('/medicine/new'),
           ),
         ],
@@ -46,7 +46,7 @@ class MedicineHomeScreen extends ConsumerWidget {
       body: views == null
           ? const Center(child: CircularProgressIndicator())
           : views.isEmpty
-          ? const Center(child: Text('No doses scheduled for today'))
+          ? Center(child: Text(l10n.medicineHomeEmpty))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [

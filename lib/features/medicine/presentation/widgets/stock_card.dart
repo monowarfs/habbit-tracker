@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 
 /// Stock level + refill action (FR-M-04).
@@ -15,6 +16,7 @@ class StockCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!medicine.stockEnabled) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
     final low =
         medicine.stockThreshold != null &&
         (medicine.stockCount ?? 0) <= medicine.stockThreshold!;
@@ -22,11 +24,13 @@ class StockCard extends StatelessWidget {
       color: low ? Theme.of(context).colorScheme.errorContainer : null,
       child: ListTile(
         leading: const Icon(Icons.inventory_2_outlined),
-        title: Text('${medicine.stockCount ?? 0} remaining'),
-        subtitle: low ? const Text('Low stock — refill soon') : null,
+        title: Text(
+          l10n.medicineDetailStockRemaining(medicine.stockCount ?? 0),
+        ),
+        subtitle: low ? Text(l10n.medicineDetailLowStockWarning) : null,
         trailing: TextButton(
           onPressed: () => _showRefillDialog(context),
-          child: const Text('Refill'),
+          child: Text(l10n.medicineDetailRefillButton),
         ),
       ),
     );

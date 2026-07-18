@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/calculate_adherence.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/expand_repeat_rule.dart';
@@ -22,6 +23,7 @@ class MedicineDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final medicine = ref.watch(medicineByIdProvider(medicineId)).value;
     final schedules = ref.watch(medicineSchedulesProvider(medicineId)).value;
     final controller = ref.read(medicineControllerProvider.notifier);
@@ -72,7 +74,10 @@ class MedicineDetailScreen extends ConsumerWidget {
             onRefill: (amount) => controller.refillStock(medicineId, amount),
           ),
           const SizedBox(height: 16),
-          Text('Next 7 days', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.medicineDetailNext7DaysLabel,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           for (final instant in previewInstants)
             ListTile(
               dense: true,

@@ -176,6 +176,149 @@
   "@waterSettingsReminderWindowLabel": {
     "description": "Label for the reminder time-of-day window row."
   },
+  "medicineHomeEmpty": "No doses scheduled for today",
+  "@medicineHomeEmpty": {
+    "description": "Shown on the medicine home screen when there are no doses today."
+  },
+  "medicineHomeAllMedicinesButton": "All medicines",
+  "@medicineHomeAllMedicinesButton": {
+    "description": "Button/icon that navigates to the medicine list screen."
+  },
+  "medicineHomeStatsButton": "Stats",
+  "@medicineHomeStatsButton": {
+    "description": "Button/icon that navigates to the medicine stats screen."
+  },
+  "medicineHomeAddButton": "Add medicine",
+  "@medicineHomeAddButton": {
+    "description": "Button/icon that navigates to the add-medicine form."
+  },
+  "medicineDoseStatusUpcoming": "Upcoming",
+  "@medicineDoseStatusUpcoming": {
+    "description": "Label for a dose not yet due."
+  },
+  "medicineDoseStatusDue": "Due",
+  "@medicineDoseStatusDue": {
+    "description": "Label for a dose within its grace window."
+  },
+  "medicineDoseStatusDone": "Done",
+  "@medicineDoseStatusDone": {
+    "description": "Label for a dose marked taken."
+  },
+  "medicineDoseStatusMissed": "Missed",
+  "@medicineDoseStatusMissed": {
+    "description": "Label for a dose past its grace window, unactioned."
+  },
+  "medicineDoseStatusSkipped": "Skipped",
+  "@medicineDoseStatusSkipped": {
+    "description": "Label for a dose explicitly skipped."
+  },
+  "medicineListTitle": "Medicines",
+  "@medicineListTitle": {
+    "description": "Title of the medicine list screen."
+  },
+  "medicineListActiveTab": "Active",
+  "@medicineListActiveTab": {
+    "description": "Tab label for active medicines."
+  },
+  "medicineListArchivedTab": "Archived",
+  "@medicineListArchivedTab": {
+    "description": "Tab label for archived medicines."
+  },
+  "medicineListEmpty": "No medicines yet",
+  "@medicineListEmpty": {
+    "description": "Shown when the active medicines list is empty."
+  },
+  "medicineListArchivedEmpty": "No archived medicines",
+  "@medicineListArchivedEmpty": {
+    "description": "Shown when the archived medicines list is empty."
+  },
+  "medicineFormTitle": "Add medicine",
+  "@medicineFormTitle": {
+    "description": "Title of the add-medicine form."
+  },
+  "medicineFormNameLabel": "Name",
+  "@medicineFormNameLabel": {
+    "description": "Label for the medicine name field."
+  },
+  "medicineFormDosageLabel": "Dosage note (optional)",
+  "@medicineFormDosageLabel": {
+    "description": "Label for the free-text dosage note field."
+  },
+  "medicineFormTrackStockLabel": "Track stock",
+  "@medicineFormTrackStockLabel": {
+    "description": "Switch label enabling stock tracking."
+  },
+  "medicineFormStockCountLabel": "Current stock count",
+  "@medicineFormStockCountLabel": {
+    "description": "Label for the current stock count field."
+  },
+  "medicineFormStockThresholdLabel": "Low-stock threshold",
+  "@medicineFormStockThresholdLabel": {
+    "description": "Label for the low-stock threshold field."
+  },
+  "medicineFormFrequencyLabel": "How often?",
+  "@medicineFormFrequencyLabel": {
+    "description": "Section label for the repeat-rule picker."
+  },
+  "medicineFormFrequencyFixedDaily": "Fixed times daily",
+  "@medicineFormFrequencyFixedDaily": {
+    "description": "Repeat-rule option: fixed times every day."
+  },
+  "medicineFormFrequencyEveryOtherDay": "Every other day",
+  "@medicineFormFrequencyEveryOtherDay": {
+    "description": "Repeat-rule option: every 2 days."
+  },
+  "medicineFormFrequencyWeekdays": "Specific weekdays",
+  "@medicineFormFrequencyWeekdays": {
+    "description": "Repeat-rule option: a set of weekdays."
+  },
+  "medicineFormFrequencyPrn": "As needed (PRN)",
+  "@medicineFormFrequencyPrn": {
+    "description": "Repeat-rule option: no fixed schedule."
+  },
+  "medicineFormNextButton": "Next",
+  "@medicineFormNextButton": {
+    "description": "Advances to the next form step."
+  },
+  "medicineFormSaveButton": "Save",
+  "@medicineFormSaveButton": {
+    "description": "Saves the new medicine."
+  },
+  "medicineDetailNext7DaysLabel": "Next 7 days",
+  "@medicineDetailNext7DaysLabel": {
+    "description": "Section header for the schedule preview."
+  },
+  "medicineDetailStockRemaining": "{count} remaining",
+  "@medicineDetailStockRemaining": {
+    "description": "Current stock count display.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "medicineDetailLowStockWarning": "Low stock — refill soon",
+  "@medicineDetailLowStockWarning": {
+    "description": "Shown when stock is at or below the low-stock threshold."
+  },
+  "medicineDetailRefillButton": "Refill",
+  "@medicineDetailRefillButton": {
+    "description": "Opens the add-stock dialog."
+  },
+  "medicineStatsTitle": "Medicine stats",
+  "@medicineStatsTitle": {
+    "description": "Title of the medicine stats screen."
+  },
+  "medicineStatsDosesTakenLabel": "Doses taken, last 7 days",
+  "@medicineStatsDosesTakenLabel": {
+    "description": "Section header for the adherence chart."
+  },
+  "medicineStatsMissedDosesLabel": "Missed doses",
+  "@medicineStatsMissedDosesLabel": {
+    "description": "Section header for the missed-doses list."
+  },
+  "medicineStatsNoMissedDoses": "None — great adherence!",
+  "@medicineStatsNoMissedDoses": {
+    "description": "Shown when there are no missed doses in range."
+  },
   "notificationPermissionExplainerTitle": "Stay on track",
   "@notificationPermissionExplainerTitle": {
     "description": "Title of the pre-permission explainer shown before requesting the OS notification permission."

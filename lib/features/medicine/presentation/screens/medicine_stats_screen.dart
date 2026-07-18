@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
@@ -17,6 +18,7 @@ class MedicineStatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final today = LocalDate.fromDateTime(clock.now());
     final start = today.addDays(-6);
     final doses = ref
@@ -24,7 +26,7 @@ class MedicineStatsScreen extends ConsumerWidget {
         .value;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Medicine stats')),
+      appBar: AppBar(title: Text(l10n.medicineStatsTitle)),
       body: Builder(
         builder: (context) {
           if (doses == null) {
@@ -58,20 +60,20 @@ class MedicineStatsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               Text(
-                'Doses taken, last 7 days',
+                l10n.medicineStatsDosesTakenLabel,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               PeriodBarChart(points: points, color: ModuleAccents.medicine),
               const SizedBox(height: 24),
               Text(
-                'Missed doses',
+                l10n.medicineStatsMissedDosesLabel,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               if (missed.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('None — great adherence!'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(l10n.medicineStatsNoMissedDoses),
                 )
               else
                 for (final dose in missed)

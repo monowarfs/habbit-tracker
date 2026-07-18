@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 
 /// Lists every medicine, active and archived, in two tabs (FR-M-10).
@@ -30,14 +31,15 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Medicines'),
+        title: Text(l10n.medicineListTitle),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Archived'),
+          tabs: [
+            Tab(text: l10n.medicineListActiveTab),
+            Tab(text: l10n.medicineListArchivedTab),
           ],
         ),
       ),
@@ -77,9 +79,12 @@ class _MedicineListView extends ConsumerWidget {
         ? medicines.where((m) => m.archivedAt != null).toList()
         : medicines;
     if (filtered.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Text(
-          archivedOnly ? 'No archived medicines' : 'No medicines yet',
+          archivedOnly
+              ? l10n.medicineListArchivedEmpty
+              : l10n.medicineListEmpty,
         ),
       );
     }
