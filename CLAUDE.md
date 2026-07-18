@@ -28,9 +28,22 @@ WorkManager periodic top-up, permission-explainer + reliability-stub
 screens. `HabitModule` gained `onNotificationAction` this run (see
 `docs/engineering/phases-and-dod.md`'s Run 08 divergence note — the
 original plan bundled notifications into Medicine's own run instead).
-No Medicine/Prayer, no PIN lock yet — those are Runs 09+ per
-`docs/engineering/phases-and-dod.md` (numbering there needs a
-reconciliation pass, per that same note).
+Medicine is now a complete module (domain/data/presentation/
+notifications in one run, per `docs/superpowers/specs/2026-07-18-
+medicine-module-design.md`): repeat-rule engine (`fixed_daily`/
+`every_n_days`/`weekday_set`/`prn`, D-03 every-other-day anchoring,
+DST-safe), lazily-derived dose status (`upcoming`/`due`/`missed` are
+never persisted, only `upcoming`/`done`/`skipped` are — FR-M-06), a pure
+dose-materialization planner reused by both the 30-day rolling
+`medicine_doses` window (D-13) and the notification engine (no new
+call sites — `MedicineModule.pendingNotifications()` itself triggers
+materialization on the app-resume/WorkManager triggers Run 08 already
+wired), stock ledger + one-shot low-stock crossing detection (FR-M-04),
+dose timeline/list/add-form/detail/stats screens, full en/bn
+localization. Registered in `module_registry.dart` and wired into the
+router the same way Water is. No Prayer, no PIN lock yet — those are
+Runs 09+ per `docs/engineering/phases-and-dod.md` (numbering there
+needs a reconciliation pass, per that same note).
 
 Org id: `dev.shurjomoy.habittracker` (Android `applicationId`
 `dev.shurjomoy.habit_tracker`, iOS bundle id `dev.shurjomoy.habitTracker`).
@@ -72,8 +85,9 @@ Feature-first, Clean Architecture (`domain`/`data`/`presentation`) per
   so it can rebuild from `habitModulesProvider`), `StatefulShellRoute`
   with one branch per bottom-nav tab, typed `AppRoutes` path constants, a
   `/lock` redirect stub (always allows — real PIN check lands in a later run).
-  Water's branch uses `WaterModule().routes`; Medicine/Prayer still use
-  placeholder single routes until their own runs do the same swap.
+  Water's and Medicine's branches use `WaterModule().routes`/
+  `MedicineModule(...).routes`; Prayer still uses a placeholder single
+  route until its own run does the same swap.
 - `lib/core/theme/app_theme.dart` — `ColorScheme.fromSeed` light/dark
   themes, per-module `ModuleAccents`, the `AppSemanticColors` theme
   extension (the "success" green), the bn line-height `TextTheme` adjustment.
@@ -107,7 +121,8 @@ Feature-first, Clean Architecture (`domain`/`data`/`presentation`) per
   explainer + reliability-stub screens.
 - `lib/core/widgets/charts/period_bar_chart.dart` — reusable `fl_chart`
   bar chart (bars + optional goal target line), built for Water's stats
-  screen, meant for Medicine/Prayer's own stats screens too.
+  screen, now also used by Medicine's; meant for Prayer's own stats
+  screen too.
 - `lib/core/database/app_database.dart` — the single Drift `@DriftDatabase`
   class; every table (from every module) must be listed here — the one
   Drift-forced central touchpoint, documented on the class itself and in
@@ -140,12 +155,36 @@ Feature-first, Clean Architecture (`domain`/`data`/`presentation`) per
   amount on Done, no-ops on Snooze/Skip). `uuid` (`core/utils/uuid.dart`)
   and `mocktail` (dev) were added in Run 07 — first module that needs
   generated row ids / usecase-level fakes.
-- `lib/features/{dashboard,medicine,prayer}/` — still placeholder screens;
-  Medicine/Prayer get their real `domain/data` slices in upcoming runs
-  (exact numbering pending the reconciliation noted in
-  `docs/engineering/phases-and-dod.md`) — they'll plug into the existing
-  `core/notifications` engine rather than integrating
-  `flutter_local_notifications` from scratch.
+- `lib/features/medicine/` — full slice: `domain/entities`
+  (`Medicine`/`MedicineSchedule`/`RepeatRule` sealed union/`MedicineDose`/
+  `MedicineStockEvent`), `domain/usecases` (`expandRepeatRule` — pure,
+  DST-immune-by-construction repeat-rule expansion, the module's most
+  heavily tested unit; `effectiveDoseStatus`/`isScheduleActive` — the
+  D-05/D-04 state machines; `calculateDoseTakenAdjustment`/
+  `calculateDoseUndoneAdjustment` — pure stock-delta calculators, always
+  clamp-consistent so undo reverses exactly what was applied;
+  `planDoseMaterialization` — pure gap-filler planner, D-02 collision
+  resolution; `calculateAdherence`), `data/repositories/
+  medicine_repository_impl.dart` (no DAO, 4 Drift tables, `RepeatRule`
+  <-> DB string/JSON mapping, one denormalization beyond `database-
+  design.md`'s original column list — `medicine_doses.grace_window_
+  minutes` — to avoid a join back to the schedule on the dose-timeline
+  hot path), `presentation/` (providers, controller, 5 screens, 3
+  widgets), `medicine_module.dart` (`pendingNotifications()` runs
+  `materializeDoses` itself, first thing, before querying — this is the
+  D-13 30-day-window top-up, reusing Run 08's existing app-resume/
+  WorkManager triggers with no new call site anywhere else in the app;
+  low-stock alerts get a synthetic near-future `scheduledAt` since the
+  engine only schedules future-dated notifications). Dose notification
+  ids are bare dose UUIDs (not a `medicine_dose_`-prefixed string like
+  Water's reminder ids) — safe today since `notification_ledger.id` is a
+  single cross-module namespace and dose ids are random UUIDs, but a
+  convention Prayer's own run should weigh before following.
+- `lib/features/{dashboard,prayer}/` — still placeholder screens; Prayer
+  gets its real `domain/data` slice in an upcoming run (exact numbering
+  pending the reconciliation noted in `docs/engineering/phases-and-dod
+  .md`) — it'll plug into the existing `core/notifications` engine
+  rather than integrating `flutter_local_notifications` from scratch.
 - Lint rules come from `package:very_good_analysis/analysis_options.yaml`
   (`public_member_api_docs` enforced; generated code and `lib/core/l10n/**`
   excluded from analysis) — see `docs/engineering/coding-standards.md`.
