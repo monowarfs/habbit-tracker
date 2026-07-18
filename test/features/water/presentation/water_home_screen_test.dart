@@ -1,0 +1,99 @@
+import 'package:clock/clock.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/database/app_database.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
+import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
+import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
+
+Future<void> _pumpWaterHome(
+  WidgetTester tester,
+  AppDatabase db, {
+  required DateTime now,
+}) async {
+  await withClock(Clock.fixed(now), () async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(db)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: WaterHomeScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  });
+}
+
+double _ringValue(WidgetTester tester) => tester
+    .widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator))
+    .value!;
+
+void main() {
+  late AppDatabase db;
+
+  setUp(() {
+    db = AppDatabase(NativeDatabase.memory());
+  });
+
+  tearDown(() => db.close());
+
+  Future<void> disposeTree(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 1));
+  }
+
+  testWidgets('empty state: no entries yet today', (tester) async {
+    final now = DateTime.utc(2026, 6, 1, 8);
+    await _pumpWaterHome(tester, db, now: now);
+
+    expect(find.text('No entries yet today'), findsOneWidget);
+    expect(_ringValue(tester), 0.0);
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('partial state: some progress logged, goal not yet met', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 6, 1, 8);
+    final repo = WaterRepositoryImpl(db);
+    await repo.addEntry(
+      amountMl: 500,
+      loggedAt: now,
+      source: WaterEntrySource.quick,
+    );
+
+    await _pumpWaterHome(tester, db, now: now);
+
+    expect(find.text('No entries yet today'), findsNothing);
+    expect(_ringValue(tester), closeTo(500 / 2000, 0.001));
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('goal-met state: ring fills, entry still recorded above the '
+      'goal amount', (tester) async {
+    final now = DateTime.utc(2026, 6, 1, 8);
+    final repo = WaterRepositoryImpl(db);
+    await repo.addEntry(
+      amountMl: 2200,
+      loggedAt: now,
+      source: WaterEntrySource.custom,
+    );
+
+    await _pumpWaterHome(tester, db, now: now);
+
+    expect(_ringValue(tester), 1.0); // clamped, even though 2200 > 2000
+    // NumberFormat.decimalPattern('en') groups thousands with a comma —
+    // appears in both the ring's big total and the log tile.
+    expect(find.textContaining('2,200'), findsNWidgets(2));
+
+    await disposeTree(tester);
+  });
+}

@@ -29,3 +29,18 @@ LocalDate localDayKey(DateTime utcInstant, {tz.Location? location}) {
       : utcInstant.toLocal();
   return LocalDate.fromDateTime(resolved);
 }
+
+/// The `[start, end)` UTC instant range covering [day] in the device's
+/// current ambient timezone — the cheap bucketing `database-design.md`
+/// specifies for querying "which rows fall on local day X" (used by Water
+/// module range queries).
+({DateTime startUtc, DateTime endUtc}) localDayRangeUtc(LocalDate day) {
+  final startLocal = DateTime(day.year, day.month, day.day);
+  final startUtc = startLocal.toUtc();
+  final endUtc = DateTime(
+    day.year,
+    day.month,
+    day.day + 1,
+  ).toUtc();
+  return (startUtc: startUtc, endUtc: endUtc);
+}

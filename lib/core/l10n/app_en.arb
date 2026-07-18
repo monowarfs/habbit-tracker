@@ -47,5 +47,133 @@
   "emptyDashboardMessage": "Enable a module in Settings to get started",
   "@emptyDashboardMessage": {
     "description": "Shown on the dashboard when no module is enabled yet."
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Generic save button label, reused across modules."
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic cancel button label, reused across modules."
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Generic delete button/action label, reused across modules."
+  },
+  "waterHomeEmptyLogs": "No entries yet today",
+  "@waterHomeEmptyLogs": {
+    "description": "Shown under the progress ring when no water has been logged today."
+  },
+  "waterHomeQuickAddLabel": "Quick add",
+  "@waterHomeQuickAddLabel": {
+    "description": "Section label above the quick-add preset buttons."
+  },
+  "waterHomeCustomAddButton": "Custom amount",
+  "@waterHomeCustomAddButton": {
+    "description": "Button that opens the custom-amount entry screen."
+  },
+  "waterHomeTodaysLogLabel": "Today's log",
+  "@waterHomeTodaysLogLabel": {
+    "description": "Section label above today's list of logged entries."
+  },
+  "waterHomeStatsButton": "Stats",
+  "@waterHomeStatsButton": {
+    "description": "Button/icon that navigates to the water stats screen."
+  },
+  "waterHomeSettingsButton": "Settings",
+  "@waterHomeSettingsButton": {
+    "description": "Button/icon that navigates to the water settings screen."
+  },
+  "waterAddEntryTitleNew": "Add water",
+  "@waterAddEntryTitleNew": {
+    "description": "Title of the add-entry screen when creating a new entry."
+  },
+  "waterAddEntryTitleEdit": "Edit entry",
+  "@waterAddEntryTitleEdit": {
+    "description": "Title of the add-entry screen when editing an existing entry."
+  },
+  "waterAddEntryAmountLabel": "Amount (ml)",
+  "@waterAddEntryAmountLabel": {
+    "description": "Label for the custom amount text field."
+  },
+  "waterAddEntryDateTimeLabel": "Date & time",
+  "@waterAddEntryDateTimeLabel": {
+    "description": "Label for the backdating date/time picker row."
+  },
+  "waterAddEntryInvalidAmount": "Amount must be greater than 0",
+  "@waterAddEntryInvalidAmount": {
+    "description": "Validation error when the entered amount is zero or negative."
+  },
+  "waterAddEntryFutureError": "Cannot select a future date or time",
+  "@waterAddEntryFutureError": {
+    "description": "Validation error when a backdated entry's date/time is in the future (FR-W-05)."
+  },
+  "waterStatsTabStats": "Stats",
+  "@waterStatsTabStats": {
+    "description": "Tab label for the charts/streak view on the water stats screen."
+  },
+  "waterStatsTabHistory": "History",
+  "@waterStatsTabHistory": {
+    "description": "Tab label for the calendar/list history view on the water stats screen."
+  },
+  "waterStatsPeriodWeek": "Week",
+  "@waterStatsPeriodWeek": {
+    "description": "Chart range selector: weekly view."
+  },
+  "waterStatsPeriodMonth": "Month",
+  "@waterStatsPeriodMonth": {
+    "description": "Chart range selector: monthly view."
+  },
+  "waterStatsPeriodYear": "Year",
+  "@waterStatsPeriodYear": {
+    "description": "Chart range selector: yearly view."
+  },
+  "waterStatsAverage7d": "7-day average",
+  "@waterStatsAverage7d": {
+    "description": "Label for the 7-day average daily intake stat (FR-W-08)."
+  },
+  "waterStatsAverage30d": "30-day average",
+  "@waterStatsAverage30d": {
+    "description": "Label for the 30-day average daily intake stat (FR-W-08)."
+  },
+  "waterStatsStreakCurrent": "Current streak",
+  "@waterStatsStreakCurrent": {
+    "description": "Label for the current streak count on the streak card."
+  },
+  "waterStatsStreakLongest": "Longest streak",
+  "@waterStatsStreakLongest": {
+    "description": "Label for the longest streak count on the streak card."
+  },
+  "waterStatsHistoryEmpty": "No history yet",
+  "@waterStatsHistoryEmpty": {
+    "description": "Shown on the history tab when no entries exist in the selected month."
+  },
+  "waterSettingsTitle": "Water settings",
+  "@waterSettingsTitle": {
+    "description": "AppBar title for the water module's own settings screen."
+  },
+  "waterSettingsGoalLabel": "Daily goal (ml)",
+  "@waterSettingsGoalLabel": {
+    "description": "Label for the daily goal text field (FR-W-01)."
+  },
+  "waterSettingsQuickAddLabel": "Quick-add amounts (ml)",
+  "@waterSettingsQuickAddLabel": {
+    "description": "Label for the three configurable quick-add preset fields (FR-W-03)."
+  },
+  "waterSettingsReminderSectionLabel": "Reminders",
+  "@waterSettingsReminderSectionLabel": {
+    "description": "Section header for reminder preferences (FR-W-10)."
+  },
+  "waterSettingsReminderEnableToggle": "Remind me to drink water",
+  "@waterSettingsReminderEnableToggle": {
+    "description": "Switch label enabling/disabling water reminders."
+  },
+  "waterSettingsReminderIntervalLabel": "Every (minutes)",
+  "@waterSettingsReminderIntervalLabel": {
+    "description": "Label for the reminder interval field."
+  },
+  "waterSettingsReminderWindowLabel": "Between",
+  "@waterSettingsReminderWindowLabel": {
+    "description": "Label for the reminder time-of-day window row."
   }
 }

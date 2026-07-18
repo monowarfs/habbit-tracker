@@ -110,12 +110,32 @@ date X":
 | id | `String` (UUID) | no | `id` | `id` |
 | amountMl | `int` | no | `amount_ml` | `amountMl` |
 | loggedAt | `DateTime` (UTC) | no | `logged_at` | `loggedAt` |
+| source | `WaterEntrySource` (enum: quick, custom) | no | `source` | `source` |
+
+**Correction (Run 07 implementation):** `source` was added to both this
+table and `database-design.md`'s `water_logs` schema — this run's own
+scope explicitly asked for distinguishing quick-add from custom entries,
+which the original schema pass didn't anticipate.
 
 **Divergence:** the domain model exposes `amountMl` always in ml (canonical,
 D-01); a separate presentation-layer extension/formatter converts to fl oz
 for display per the `waterUnit` setting — this conversion never touches the
 domain model or the DB, it's a pure view-layer function, so the domain
 model has exactly one unit, never two.
+
+### `WaterSettings`
+
+**Added during Run 07 implementation** — no domain model or table existed
+for FR-W-03's quick-add presets or FR-W-10's reminder preferences; see
+`database-design.md`'s new `water_settings` table.
+
+| Domain field | Type | Null? | DB column | JSON key |
+|---|---|---|---|---|
+| quickAddAmountsMl | `List<int>` | no | `quick_add_amounts_ml` (JSON string) | `quickAddAmountsMl` |
+| reminderEnabled | `bool` | no | `reminder_enabled` | `reminderEnabled` |
+| reminderIntervalMinutes | `int` | no | `reminder_interval_minutes` | `reminderIntervalMinutes` |
+| reminderWindowStart | `LocalTime` | no | `reminder_window_start` | `reminderWindowStart` |
+| reminderWindowEnd | `LocalTime` | no | `reminder_window_end` | `reminderWindowEnd` |
 
 ---
 

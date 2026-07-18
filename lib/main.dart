@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
@@ -30,8 +29,6 @@ void main() {
   );
 }
 
-final GoRouter _router = buildAppRouter();
-
 /// The app's root widget: theme, localization, and router wiring.
 class HabitTrackerApp extends ConsumerWidget {
   /// Creates the root app widget.
@@ -50,7 +47,7 @@ class HabitTrackerApp extends ConsumerWidget {
       locale: locale,
       supportedLocales: supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      routerConfig: _router,
+      routerConfig: ref.watch(appRouterProvider),
     );
   }
 }

@@ -5,6 +5,9 @@ import 'package:drift/native.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
+import 'package:habit_tracker/features/water/data/tables/water_goals_table.dart';
+import 'package:habit_tracker/features/water/data/tables/water_logs_table.dart';
+import 'package:habit_tracker/features/water/data/tables/water_settings_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -19,7 +22,14 @@ part 'app_database.g.dart';
 /// classes) and nothing else in `core/database/`
 /// (`../technical/database-design.md`).
 @DriftDatabase(
-  tables: [AppSettingsTable, NotificationLedgerTable, AchievementsTable],
+  tables: [
+    AppSettingsTable,
+    NotificationLedgerTable,
+    AchievementsTable,
+    WaterGoalsTable,
+    WaterLogsTable,
+    WaterSettingsTable,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   /// Opens the real on-disk database, or wraps [executor] (tests pass an

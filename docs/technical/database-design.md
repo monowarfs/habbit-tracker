@@ -172,10 +172,27 @@ applied" via a `WHERE effective_from <= :dayStart ORDER BY effective_from DESC L
 | id | TEXT PK | |
 | amount_ml | INTEGER | canonical ml regardless of display unit (D-01) |
 | logged_at | INTEGER | UTC instant this entry represents (may be backdated, FR-W-05, capped at "now" by app logic, not a DB constraint) |
+| source | TEXT | `'quick'` \| `'custom'` — **added during Run 07 implementation**, not in this doc's original pass; distinguishes a one-tap quick-add preset from a custom-amount entry (FR-W-03), shown as a different icon in the log list |
 | created_at, updated_at, deleted_at | INTEGER | `created_at` differs from `logged_at` exactly when an entry was backdated — this difference is what a future audit view could use to show "logged retroactively," though no such UI is required in v1.0 |
 
 **Index:** `(logged_at)` — every stats/calendar/streak query is a date-range
 scan over this column (FR-W-07/08).
+
+### `water_settings` (singleton row, same pattern as `app_settings`)
+
+**Added during Run 07 implementation** — this doc's original pass had no
+table for FR-W-03's configurable quick-add presets or FR-W-10's reminder
+preferences; this is Water's own equivalent of `prayer_settings`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | always `'singleton'` |
+| quick_add_amounts_ml | TEXT | JSON array of ml amounts, e.g. `"[250,500,750]"` (FR-W-03) |
+| reminder_enabled | INTEGER (bool) | default false (FR-W-10) |
+| reminder_interval_minutes | INTEGER | default 120 |
+| reminder_window_start | TEXT | local `"HH:mm"`, default `"08:00"` |
+| reminder_window_end | TEXT | local `"HH:mm"`, default `"22:00"` |
+| created_at, updated_at | INTEGER | |
 
 ---
 

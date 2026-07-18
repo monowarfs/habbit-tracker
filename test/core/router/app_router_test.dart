@@ -11,14 +11,15 @@ void main() {
   testWidgets('bottom nav switches between the 5 tab branches', (
     tester,
   ) async {
-    final router = buildAppRouter();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(testDatabase())],
-        child: MaterialApp.router(
-          routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
+        child: Consumer(
+          builder: (context, ref, _) => MaterialApp.router(
+            routerConfig: ref.watch(appRouterProvider),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       ),
     );

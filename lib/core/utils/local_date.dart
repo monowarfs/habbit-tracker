@@ -40,6 +40,15 @@ class LocalDate implements Comparable<LocalDate> {
       '${month.toString().padLeft(2, '0')}-'
       '${day.toString().padLeft(2, '0')}';
 
+  /// This calendar date as midnight UTC — a lossless round trip for pure
+  /// calendar-day arithmetic (e.g. stepping day by day via `add`), never
+  /// meant to represent a real instant.
+  DateTime toDateTimeUtc() => DateTime.utc(year, month, day);
+
+  /// The following calendar day.
+  LocalDate addDays(int days) =>
+      LocalDate.fromDateTime(toDateTimeUtc().add(Duration(days: days)));
+
   @override
   int compareTo(LocalDate other) {
     if (year != other.year) return year.compareTo(other.year);
