@@ -133,12 +133,13 @@ class MedicineModule implements HabitModule {
       if (medicine == null) continue;
       notifications.add(
         PendingNotification(
-          // Bare dose id, not module/type-prefixed: `notification_action_
-          // handler.dart` already resolves the owning module by `moduleId`
-          // before calling `onNotificationAction`, so this only needs to be
-          // unique among Medicine's own notifications — which it is, since
-          // low-stock ids get the `medicine_lowstock_` prefix below and dose
-          // ids are opaque uuids that never collide with that.
+          // Bare dose id, not module/type-prefixed. `notification_ledger.id`
+          // is one shared primary-key namespace across every module's
+          // notifications (`core/notifications/notification_planner.dart`'s
+          // dedup/cap logic compares `pending.id` with no module scoping),
+          // so this relies on dose ids being random UUIDs (de facto globally
+          // unique) rather than on any module-scoping guarantee — low-stock
+          // ids below keep an explicit `medicine_lowstock_` prefix instead.
           id: dose.id,
           scheduledAt: dose.scheduledFor,
           title: medicine.name,
