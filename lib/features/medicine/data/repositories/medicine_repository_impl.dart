@@ -514,14 +514,27 @@ class MedicineRepositoryImpl implements MedicineRepository {
     required DateTime occurredAt,
   }) async {
     final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
-    final isNowAtOrBelow =
+    final isAtOrBelowThreshold =
         medicine.stockThreshold != null &&
         newStockCount <= medicine.stockThreshold!;
+    final isAboveThreshold =
+        medicine.stockThreshold != null &&
+        newStockCount > medicine.stockThreshold!;
     // `lowStockNotifiedAt == null` alone gives "once per crossing": it's
-    // cleared only by `refillStock` bringing stock back above threshold,
-    // so this also correctly flags a medicine that started at/below
-    // threshold at creation (no prior "was above" transition to detect).
-    final justCrossed = isNowAtOrBelow && medicine.lowStockNotifiedAt == null;
+    // cleared below once stock rises back above threshold, so this also
+    // correctly flags a medicine that started at/below threshold at
+    // creation (no prior "was above" transition to detect). Gated on
+    // `stockEnabled` — a medicine with stock tracking off must never be
+    // flagged, even if it carries a stale threshold/count from before
+    // tracking was disabled.
+    final justCrossed =
+        medicine.stockEnabled &&
+        isAtOrBelowThreshold &&
+        medicine.lowStockNotifiedAt == null;
+    // Mirrors `refillStock`'s clear condition — stock rising back above
+    // threshold clears a stale flag regardless of which write path
+    // (refill or an undo that restores stock) caused the rise.
+    final justCleared = isAboveThreshold && medicine.lowStockNotifiedAt != null;
 
     await (_db.update(
       _db.medicinesTable,
@@ -530,6 +543,8 @@ class MedicineRepositoryImpl implements MedicineRepository {
         stockCount: Value(newStockCount),
         lowStockNotifiedAt: justCrossed
             ? Value(nowMillis)
+            : justCleared
+            ? const Value(null)
             : const Value.absent(),
         updatedAt: Value(nowMillis),
       ),

@@ -228,4 +228,59 @@ void main() {
     alerts = await repo.medicinesNeedingLowStockAlert();
     expect(alerts.map((m) => m.id), isNot(contains(medicineId)));
   });
+
+  test('a medicine with stock tracking disabled is never surfaced as '
+      'low-stock, even with a stale threshold/count', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: false,
+      stockCount: 1,
+      stockThreshold: 5,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await _doseIdFor(repo, medicineId);
+
+    await repo.markDoseDone(doseId, fromOtherSource: false);
+
+    final alerts = await repo.medicinesNeedingLowStockAlert();
+    expect(alerts.map((m) => m.id), isNot(contains(medicineId)));
+  });
+
+  test('undoing a dose that restores stock back above threshold clears '
+      'the stale low-stock flag', () async {
+    final created = await repo.createMedicine(
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 6,
+      stockThreshold: 5,
+    );
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await _doseIdFor(repo, medicineId);
+
+    await repo.markDoseDone(doseId, fromOtherSource: false); // 6 -> 5, crosses
+
+    var alerts = await repo.medicinesNeedingLowStockAlert();
+    expect(alerts.map((m) => m.id), contains(medicineId));
+
+    await repo.undoDose(doseId); // 5 -> 6, back above threshold
+
+    alerts = await repo.medicinesNeedingLowStockAlert();
+    expect(alerts.map((m) => m.id), isNot(contains(medicineId)));
+  });
 }
