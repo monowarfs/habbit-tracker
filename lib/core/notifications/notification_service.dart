@@ -26,6 +26,11 @@ const Map<String, AndroidNotificationChannel> notificationChannels = {
     'Water reminders',
     description: 'Reminders to log your water intake',
   ),
+  'medicine': AndroidNotificationChannel(
+    'medicine_reminders',
+    'Medicine reminders',
+    description: 'Reminders to take your medicine and low-stock alerts',
+  ),
 };
 
 /// FNV-1a 32-bit hash: `flutter_local_notifications` notification ids are

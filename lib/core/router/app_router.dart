@@ -4,7 +4,6 @@ import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/notifications/notification_reliability_screen.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -40,11 +39,11 @@ GoRouter appRouter(Ref ref) {
 /// Builds the app's root [GoRouter]: a [StatefulShellRoute] with one branch
 /// per bottom-nav tab (`technical/folder-structure.md`). Each module's own
 /// branch uses that module's `routes` once its own run wires it up here
-/// (the module contract's routes contribution point) — Medicine/Prayer
-/// still use placeholder single routes until their own runs do the same
-/// swap.
+/// (the module contract's routes contribution point) — Prayer still uses a
+/// placeholder single route until its own run does the same swap.
 GoRouter buildAppRouter(List<HabitModule> modules) {
   final waterRoutes = modules.firstWhere((m) => m.id == 'water').routes;
+  final medicineRoutes = modules.firstWhere((m) => m.id == 'medicine').routes;
   return GoRouter(
     initialLocation: AppRoutes.dashboard,
     // ponytail: no PIN lock exists yet (Run 12) — this always allows
@@ -65,14 +64,7 @@ GoRouter buildAppRouter(List<HabitModule> modules) {
             ],
           ),
           StatefulShellBranch(routes: waterRoutes),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.medicine,
-                builder: (context, state) => const MedicineHomeScreen(),
-              ),
-            ],
-          ),
+          StatefulShellBranch(routes: medicineRoutes),
           StatefulShellBranch(
             routes: [
               GoRoute(

@@ -1,6 +1,8 @@
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
+import 'package:habit_tracker/features/medicine/medicine_module.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/water_module.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -19,7 +21,7 @@ part 'module_registry.g.dart';
 /// touched.
 List<HabitModule> buildHabitModules(AppDatabase db) {
   return [
-    // NEW MODULE GOES HERE
+    MedicineModule(MedicineRepositoryImpl(db)),
     WaterModule(WaterRepositoryImpl(db)),
   ];
 }

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/core/l10n/app_localizations.dart';
 
-/// Placeholder for the Medicine module's home screen — the real domain/
-/// data slice ships in Run 07, presentation in Run 08.
+/// Stub — replaced by Task 14.
 class MedicineHomeScreen extends StatelessWidget {
-  /// Creates the medicine module placeholder screen.
-  const MedicineHomeScreen({super.key});
+  /// Creates the stub.
+  const MedicineHomeScreen({super.key, this.highlightDoseId});
+
+  /// Dose id to highlight when opened via a notification deep link.
+  final String? highlightDoseId;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Scaffold(appBar: AppBar(title: Text(l10n.navMedicine)));
-  }
+  Widget build(BuildContext context) => const Placeholder();
 }
