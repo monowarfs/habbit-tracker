@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- OEM battery-killer mitigation (`strategies/notifications.md`). -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- One-shot GPS fix for prayer-time calculation location (FR-P-06,
+         D-09) — `features/prayer/data/location_resolver.dart`. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:label="habit_tracker"
         android:name="${applicationName}"
