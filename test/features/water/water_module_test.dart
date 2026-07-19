@@ -2,22 +2,48 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
+import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
 import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
 import 'package:habit_tracker/features/water/water_module.dart';
 
 class _FakeWaterRepository extends Fake implements WaterRepository {
-  _FakeWaterRepository(this._settings);
+  _FakeWaterRepository(
+    this._settings, {
+    List<WaterEntry>? entries,
+    List<WaterGoal>? goals,
+  }) : _entries = entries ?? const [],
+       _goals = goals ?? const [];
 
   final WaterSettings _settings;
+  final List<WaterEntry> _entries;
+  final List<WaterGoal> _goals;
   int? capturedAmountMl;
   WaterEntrySource? capturedSource;
 
   @override
   Stream<WaterSettings> watchSettings() => Stream.value(_settings);
+
+  @override
+  Stream<List<WaterEntry>> watchEntriesInRange(
+    LocalDate start,
+    LocalDate end,
+  ) => Stream.value(
+    _entries.where((e) {
+      final day = localDayKey(e.loggedAt);
+      return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
+    }).toList(),
+  );
+
+  @override
+  Future<List<WaterGoal>> allGoals() async => _goals;
+
+  @override
+  Future<List<WaterEntry>> allEntries() async => _entries;
 
   @override
   Future<Result<WaterEntry>> addEntry({
@@ -106,4 +132,76 @@ void main() {
 
     expect(repo.capturedAmountMl, isNull);
   });
+
+  test('dayStatus classifies days as complete/partial/none against the goal', () async {
+    final goal = WaterGoal(
+      id: 'g1',
+      goalMl: 2000,
+      effectiveFrom: DateTime.utc(2026, 6, 1),
+    );
+    final module = WaterModule(
+      _FakeWaterRepository(
+        _settings(reminderEnabled: false),
+        goals: [goal],
+        entries: [
+          WaterEntry(
+            id: 'e1',
+            amountMl: 2000,
+            loggedAt: DateTime.utc(2026, 6, 1, 9),
+            source: WaterEntrySource.quick,
+          ),
+          WaterEntry(
+            id: 'e2',
+            amountMl: 500,
+            loggedAt: DateTime.utc(2026, 6, 2, 9),
+            source: WaterEntrySource.quick,
+          ),
+        ],
+      ),
+    );
+    final status = await module.dayStatus(
+      DateRange(
+        start: const LocalDate(2026, 6, 1),
+        end: const LocalDate(2026, 6, 3),
+      ),
+    );
+    expect(status[const LocalDate(2026, 6, 1)]!.kind, ModuleDayStatusKind.complete);
+    expect(status[const LocalDate(2026, 6, 2)]!.kind, ModuleDayStatusKind.partial);
+    expect(status[const LocalDate(2026, 6, 3)]!.kind, ModuleDayStatusKind.none);
+    expect(status[const LocalDate(2026, 6, 1)]!.value, 2000);
+  });
+
+  test('search always returns empty (Water has no named entities)', () async {
+    final module = WaterModule(_FakeWaterRepository(_settings(reminderEnabled: false)));
+    expect(await module.search('anything'), isEmpty);
+  });
+
+  test(
+    'achievementDefinitions: water_first_log progress is 0 with no entries, 1 with one',
+    () async {
+      final empty = WaterModule(_FakeWaterRepository(_settings(reminderEnabled: false)));
+      final firstLogEmpty = empty.achievementDefinitions.firstWhere(
+        (d) => d.key == 'water_first_log',
+      );
+      expect(await firstLogEmpty.currentProgress(), 0);
+
+      final withEntry = WaterModule(
+        _FakeWaterRepository(
+          _settings(reminderEnabled: false),
+          entries: [
+            WaterEntry(
+              id: 'e1',
+              amountMl: 100,
+              loggedAt: DateTime.utc(2026, 6, 1),
+              source: WaterEntrySource.quick,
+            ),
+          ],
+        ),
+      );
+      final firstLog = withEntry.achievementDefinitions.firstWhere(
+        (d) => d.key == 'water_first_log',
+      );
+      expect(await firstLog.currentProgress(), 1);
+    },
+  );
 }

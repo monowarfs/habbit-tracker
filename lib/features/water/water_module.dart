@@ -12,6 +12,9 @@ import 'package:habit_tracker/features/settings/presentation/providers/app_setti
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
+import 'package:habit_tracker/features/water/domain/usecases/calculate_water_streak.dart';
+import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_date.dart';
+import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_add_entry_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
@@ -175,26 +178,152 @@ class WaterModule implements HabitModule {
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+    final entries = await _repository
+        .watchEntriesInRange(range.start, range.end)
+        .first;
+    final goals = await _repository.allGoals();
+    final totalsByDay = <LocalDate, int>{};
+    for (final entry in entries) {
+      final day = localDayKey(entry.loggedAt);
+      totalsByDay[day] = (totalsByDay[day] ?? 0) + entry.amountMl;
+    }
+    const resolveGoal = ResolveGoalForDateUseCase();
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
-      result[day] = const ModuleDayStatus(kind: ModuleDayStatusKind.none, value: 0);
+      final total = totalsByDay[day] ?? 0;
+      final goal = resolveGoal.execute(goals, day);
+      final kind = total == 0
+          ? ModuleDayStatusKind.none
+          : (goal.goalMl > 0 && total >= goal.goalMl)
+          ? ModuleDayStatusKind.complete
+          : ModuleDayStatusKind.partial;
+      result[day] = ModuleDayStatus(kind: kind, value: total);
       day = day.addDays(1);
     }
     return result;
   }
 
   @override
-  Widget? nextUpcoming(WidgetRef ref) => null;
+  Widget? nextUpcoming(WidgetRef ref) {
+    final progress = ref.watch(todaysWaterProgressProvider);
+    if (progress == null) return null;
+    final remainingMl = progress.goalMl - progress.totalMl;
+    if (remainingMl <= 0) return null;
+    final unit =
+        ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
+    return Builder(
+      builder: (context) => Chip(
+        avatar: const Icon(Icons.water_drop, size: 16),
+        label: Text(formatWaterAmount(context, remainingMl, unit)),
+      ),
+    );
+  }
 
   @override
-  List<Widget> quickActions(WidgetRef ref) => const [];
+  List<Widget> quickActions(WidgetRef ref) {
+    final settings = ref.watch(waterSettingsProvider).value;
+    if (settings == null || settings.quickAddAmountsMl.isEmpty) return const [];
+    final unit =
+        ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
+    final amountMl = settings.quickAddAmountsMl.first;
+    return [
+      Consumer(
+        builder: (context, innerRef, _) => ActionChip(
+          avatar: const Icon(Icons.add, size: 16),
+          label: Text(formatWaterAmount(context, amountMl, unit)),
+          onPressed: () => innerRef
+              .read(waterControllerProvider.notifier)
+              .logQuickAdd(amountMl),
+        ),
+      ),
+    ];
+  }
 
   @override
   Future<List<SearchResult>> search(String query) async => const [];
 
   @override
-  List<AchievementDefinition> get achievementDefinitions => const [];
+  List<AchievementDefinition> get achievementDefinitions => [
+    AchievementDefinition(
+      key: 'water_first_log',
+      moduleId: id,
+      titleKey: 'achievementWaterFirstLogTitle',
+      descriptionKey: 'achievementWaterFirstLogDescription',
+      target: 1,
+      currentProgress: () async {
+        final entries = await _repository.allEntries();
+        return entries.isEmpty ? 0 : 1;
+      },
+    ),
+    AchievementDefinition(
+      key: 'water_streak_7',
+      moduleId: id,
+      titleKey: 'achievementWaterStreak7Title',
+      descriptionKey: 'achievementWaterStreak7Description',
+      target: 7,
+      currentProgress: _currentWaterStreak,
+    ),
+    AchievementDefinition(
+      key: 'water_streak_30',
+      moduleId: id,
+      titleKey: 'achievementWaterStreak30Title',
+      descriptionKey: 'achievementWaterStreak30Description',
+      target: 30,
+      currentProgress: _currentWaterStreak,
+    ),
+    AchievementDefinition(
+      key: 'water_streak_100',
+      moduleId: id,
+      titleKey: 'achievementWaterStreak100Title',
+      descriptionKey: 'achievementWaterStreak100Description',
+      target: 100,
+      currentProgress: _currentWaterStreak,
+    ),
+    AchievementDefinition(
+      key: 'water_perfect_week',
+      moduleId: id,
+      titleKey: 'achievementWaterPerfectWeekTitle',
+      descriptionKey: 'achievementWaterPerfectWeekDescription',
+      target: 1,
+      currentProgress: _perfectWaterWeek,
+    ),
+  ];
+
+  Future<int> _currentWaterStreak() async {
+    final goals = await _repository.allGoals();
+    if (goals.isEmpty) return 0;
+    final today = localDayKey(clock.now());
+    final earliest = goals
+        .map((g) => localDayKey(g.effectiveFrom))
+        .reduce((a, b) => a.compareTo(b) <= 0 ? a : b);
+    final entries = await _repository
+        .watchEntriesInRange(earliest, today)
+        .first;
+    final totals = <LocalDate, int>{};
+    for (final entry in entries) {
+      final day = localDayKey(entry.loggedAt);
+      totals[day] = (totals[day] ?? 0) + entry.amountMl;
+    }
+    final result = const CalculateWaterStreakUseCase().execute(
+      dailyTotalsMl: totals,
+      goals: goals,
+      earliestDay: earliest,
+      today: today,
+    );
+    return result.current;
+  }
+
+  Future<int> _perfectWaterWeek() async {
+    final today = localDayKey(clock.now());
+    final status = await dayStatus(
+      DateRange(start: today.addDays(-6), end: today),
+    );
+    final allComplete = status.values.every(
+      (s) => s.kind == ModuleDayStatusKind.complete,
+    );
+    return allComplete ? 1 : 0;
+  }
 
   @override
   Future<ModuleExport> exportData() async {
