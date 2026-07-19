@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/main.dart';
 
 import 'support/test_database.dart';
@@ -15,14 +16,16 @@ void main() {
   ) async {
     final db = testDatabase();
     addTearDown(db.close);
+    final settingsRepo = SettingsRepositoryImpl(db);
     final controller = PinLockController(
       FakePinLockService(),
-      SettingsRepositoryImpl(db),
+      settingsRepo,
     );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(db),
+          settingsRepositoryProvider.overrideWithValue(settingsRepo),
           pinLockControllerProvider.overrideWithValue(controller),
         ],
         child: const HabitTrackerApp(),

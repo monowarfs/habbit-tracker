@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 import '../../support/test_database.dart';
 import '../../support/test_pin_lock.dart';
@@ -16,14 +17,16 @@ void main() {
   ) async {
     final db = testDatabase();
     addTearDown(db.close);
+    final settingsRepo = SettingsRepositoryImpl(db);
     final controller = PinLockController(
       FakePinLockService(),
-      SettingsRepositoryImpl(db),
+      settingsRepo,
     );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(db),
+          settingsRepositoryProvider.overrideWithValue(settingsRepo),
           pinLockControllerProvider.overrideWithValue(controller),
         ],
         child: Consumer(
@@ -35,6 +38,9 @@ void main() {
         ),
       ),
     );
+
+    // Pump multiple times to let async redirects and seeded DB settle.
+    await tester.pump();
     await tester.pumpAndSettle();
 
     // Starts on Dashboard. Water/Medicine/Prayer are always registered
