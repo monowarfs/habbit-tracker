@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -27,7 +28,11 @@ class PrayerController extends _$PrayerController {
     final result = currentlyPrayed
         ? await repository.unmarkPrayed(recordId)
         : await repository.markPrayed(recordId);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return;
+    }
+    await ref.read(achievementEngineProvider).evaluate('prayer');
   }
 
   /// Applies the "−1" Qadha make-up control (FR-P-05).

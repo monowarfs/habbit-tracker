@@ -1,3 +1,4 @@
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -43,7 +44,11 @@ class WaterController extends _$WaterController {
     final result = await LogWaterEntryUseCase(
       repository,
     ).execute(amountMl: amountMl, source: source, loggedAt: loggedAt);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return;
+    }
+    await ref.read(achievementEngineProvider).evaluate('water');
   }
 
   /// Updates an existing entry (FR-W-09).

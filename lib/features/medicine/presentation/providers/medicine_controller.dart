@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -85,7 +86,11 @@ class MedicineController extends _$MedicineController {
     final result = await ref
         .read(medicineRepositoryProvider)
         .markDoseDone(doseId, fromOtherSource: fromOtherSource);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return;
+    }
+    await ref.read(achievementEngineProvider).evaluate('medicine');
   }
 
   /// Marks a dose skipped (FR-M-07).
