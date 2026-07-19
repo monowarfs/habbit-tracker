@@ -6,7 +6,6 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
-import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/utils/uuid.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
@@ -171,16 +170,19 @@ class PrayerRepositoryImpl implements PrayerRepository {
           manualTimezone != null;
       if (locationOrMethodChanged) {
         await (_db.update(_db.prayerRecordsTable)..where(
-          (t) =>
-              t.status.equals('upcoming') &
-              t.scheduledFor.isBiggerThanValue(now.toUtc().millisecondsSinceEpoch) &
-              t.deletedAt.isNull(),
-        )).write(
-          PrayerRecordsTableCompanion(
-            deletedAt: Value(nowMillis),
-            updatedAt: Value(nowMillis),
-          ),
-        );
+              (t) =>
+                  t.status.equals('upcoming') &
+                  t.scheduledFor.isBiggerThanValue(
+                    now.toUtc().millisecondsSinceEpoch,
+                  ) &
+                  t.deletedAt.isNull(),
+            ))
+            .write(
+              PrayerRecordsTableCompanion(
+                deletedAt: Value(nowMillis),
+                updatedAt: Value(nowMillis),
+              ),
+            );
       }
 
       return const Result.success(null);
@@ -192,9 +194,12 @@ class PrayerRepositoryImpl implements PrayerRepository {
   @override
   Stream<List<PrayerQadhaCounter>> watchQadhaCounters() {
     return Stream.fromFuture(_ensureSeeded()).asyncExpand((_) {
-      return _db.select(_db.prayerQadhaCountersTable).watch().map(
-        (rows) => rows.map(_qadhaFromRow).toList(growable: false),
-      );
+      return _db
+          .select(_db.prayerQadhaCountersTable)
+          .watch()
+          .map(
+            (rows) => rows.map(_qadhaFromRow).toList(growable: false),
+          );
     });
   }
 
@@ -202,9 +207,11 @@ class PrayerRepositoryImpl implements PrayerRepository {
   Future<Result<void>> markQadhaMakeup(PrayerName prayerName) async {
     try {
       await _ensureSeeded();
-      final row = await (_db.select(
-        _db.prayerQadhaCountersTable,
-      )..where((t) => t.prayerName.equals(prayerName.toDb()))).getSingleOrNull();
+      final row =
+          await (_db.select(
+                _db.prayerQadhaCountersTable,
+              )..where((t) => t.prayerName.equals(prayerName.toDb())))
+              .getSingleOrNull();
       if (row == null) {
         return Result.failure(
           AppException.notFound('PrayerQadhaCounter', prayerName.toDb()),
@@ -258,7 +265,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
     ResolvedLocation location,
   ) async {
     final windowStart = LocalDate.fromDateTime(now.toUtc());
-    final windowEnd = windowStart.addDays(_materializationWindowDays);
+    final windowEnd = windowStart.addDays(_materializationWindowDays - 1);
     final settings = await watchSettings().first;
     final existing = await recordsInRange(windowStart, windowEnd);
 
@@ -366,32 +373,107 @@ class PrayerRepositoryImpl implements PrayerRepository {
     LocalDate start,
     LocalDate end,
   ) async {
-    final rows = await (_db.select(_db.prayerRecordsTable)..where(
-          (t) =>
-              t.deletedAt.isNull() &
-              t.prayerDate.isBiggerOrEqualValue(start.toIso()) &
-              t.prayerDate.isSmallerOrEqualValue(end.toIso()),
-        ))
-        .get();
+    final rows =
+        await (_db.select(_db.prayerRecordsTable)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.prayerDate.isBiggerOrEqualValue(start.toIso()) &
+                  t.prayerDate.isSmallerOrEqualValue(end.toIso()),
+            ))
+            .get();
     return rows.map(_recordFromRow).toList(growable: false);
   }
 
-  // Stubs — replaced by Task 13.
+  @override
+  Future<Result<void>> markPrayed(String recordId) => _resolveRecord(
+    recordId,
+    guard: (record) => record.storedStatus != PrayerStatus.missed,
+    apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+      status: const Value('prayed'),
+      statusChangedAt: Value(nowMillis),
+      updatedAt: Value(nowMillis),
+    ),
+  );
 
   @override
-  Future<Result<void>> markPrayed(String recordId) =>
-      throw UnimplementedError();
+  Future<Result<void>> unmarkPrayed(String recordId) => _resolveRecord(
+    recordId,
+    guard: (record) => record.storedStatus == PrayerStatus.prayed,
+    apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+      status: const Value('upcoming'),
+      statusChangedAt: const Value(null),
+      updatedAt: Value(nowMillis),
+    ),
+  );
 
   @override
-  Future<Result<void>> unmarkPrayed(String recordId) =>
-      throw UnimplementedError();
+  Future<Result<void>> markMissedBySkip(String recordId) async {
+    final result = await _resolveRecord(
+      recordId,
+      guard: (record) => record.storedStatus == PrayerStatus.upcoming,
+      apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+        status: const Value('missed'),
+        statusChangedAt: Value(nowMillis),
+        updatedAt: Value(nowMillis),
+      ),
+    );
+    if (result case Success()) {
+      final record = await _recordById(recordId);
+      if (record != null) await _bumpQadha(record.prayerName, clock.now());
+    }
+    return result;
+  }
+
+  Future<PrayerRecord?> _recordById(String id) async {
+    final row = await (_db.select(
+      _db.prayerRecordsTable,
+    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+    return row == null ? null : _recordFromRow(row);
+  }
+
+  /// Shared "look up record, check [guard], apply the write" skeleton for
+  /// the three checklist/notification mark-action methods above.
+  Future<Result<void>> _resolveRecord(
+    String recordId, {
+    required bool Function(PrayerRecord record) guard,
+    required PrayerRecordsTableCompanion Function(
+      PrayerRecord record,
+      int nowMillis,
+    )
+    apply,
+  }) async {
+    try {
+      final record = await _recordById(recordId);
+      if (record == null) {
+        return Result.failure(AppException.notFound('PrayerRecord', recordId));
+      }
+      if (!guard(record)) {
+        return const Result.failure(
+          AppException.validation(
+            'storedStatus',
+            'Record is not in a valid state for this action',
+          ),
+        );
+      }
+      final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.prayerRecordsTable,
+      )..where((t) => t.id.equals(recordId))).write(apply(record, nowMillis));
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(
+        AppException.storage('resolve_prayer_record_action', e),
+      );
+    }
+  }
 
   @override
-  Future<Result<void>> markMissedBySkip(String recordId) =>
-      throw UnimplementedError();
-
-  @override
-  Future<List<PrayerRecord>> allRecords() => throw UnimplementedError();
+  Future<List<PrayerRecord>> allRecords() async {
+    final rows = await (_db.select(
+      _db.prayerRecordsTable,
+    )..where((t) => t.deletedAt.isNull())).get();
+    return rows.map(_recordFromRow).toList(growable: false);
+  }
 
   PrayerSettings _settingsFromRow(PrayerSettingsRow row) => PrayerSettings(
     id: row.id,
@@ -485,7 +567,8 @@ extension AsrMethodDb on AsrMethod {
   };
 }
 
-/// `LocationMode` <-> DB string mapping, same convention as [CalculationMethodDb].
+/// `LocationMode` <-> DB string mapping, same convention as
+/// [CalculationMethodDb].
 extension LocationModeDb on LocationMode {
   /// The stored DB string for this value.
   String toDb() => switch (this) {
@@ -500,7 +583,8 @@ extension LocationModeDb on LocationMode {
   };
 }
 
-/// `PrayerName` <-> DB string mapping, same convention as [CalculationMethodDb].
+/// `PrayerName` <-> DB string mapping, same convention as
+/// [CalculationMethodDb].
 extension PrayerNameDb on PrayerName {
   /// The stored DB string for this value.
   String toDb() => switch (this) {
@@ -521,7 +605,8 @@ extension PrayerNameDb on PrayerName {
   };
 }
 
-/// `PrayerStatus` <-> DB string mapping, same convention as [CalculationMethodDb].
+/// `PrayerStatus` <-> DB string mapping, same convention as
+/// [CalculationMethodDb].
 extension PrayerStatusDb on PrayerStatus {
   /// The stored DB string for this value. `due` is never actually
   /// persisted (FR-P-07) — included here only so the mapping is total.
