@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
@@ -68,7 +69,8 @@ class WaterHomeScreen extends ConsumerWidget {
                       QuickAddButton(
                         amountMl: amount,
                         unit: unit,
-                        onTap: () => controller.logQuickAdd(amount),
+                        onTap: () =>
+                            _logQuickAddAndCelebrate(context, ref, amount),
                       ),
                     OutlinedButton.icon(
                       onPressed: () => context.push('/water/add'),
@@ -98,6 +100,40 @@ class WaterHomeScreen extends ConsumerWidget {
                     ),
               ],
             ),
+    );
+  }
+}
+
+/// Logs a quick-add entry, then shows a subtle (non-modal) snackbar if
+/// doing so newly unlocked an achievement (FR-C-13's "no intrusive
+/// popups" requirement).
+///
+/// ponytail: the snackbar text shows the raw achievement key for now —
+/// swapped for its localized title in a later task (`gen_l10n`
+/// additions) once achievement l10n keys exist.
+Future<void> _logQuickAddAndCelebrate(
+  BuildContext context,
+  WidgetRef ref,
+  int amountMl,
+) async {
+  final repository = ref.read(achievementRepositoryProvider);
+  final before = await repository.watchByModule('water').first;
+  final unlockedBefore = before
+      .where((r) => r.unlockedAt != null)
+      .map((r) => r.key)
+      .toSet();
+
+  await ref.read(waterControllerProvider.notifier).logQuickAdd(amountMl);
+
+  final after = await repository.watchByModule('water').first;
+  final newlyUnlocked = after.where(
+    (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
+  );
+  if (newlyUnlocked.isNotEmpty && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Achievement unlocked: ${newlyUnlocked.first.key}'),
+      ),
     );
   }
 }

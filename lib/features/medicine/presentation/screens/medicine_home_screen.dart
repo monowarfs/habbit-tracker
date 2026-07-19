@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
@@ -56,12 +57,47 @@ class MedicineHomeScreen extends ConsumerWidget {
                     child: DoseTile(
                       view: view,
                       highlighted: view.dose.id == highlightDoseId,
-                      onDone: () => controller.markDoseDone(view.dose.id),
+                      onDone: () =>
+                          _markDoneAndCelebrate(context, ref, view.dose.id),
                       onSkip: () => controller.markDoseSkipped(view.dose.id),
                     ),
                   ),
               ],
             ),
+    );
+  }
+}
+
+/// Marks a dose done, then shows a subtle (non-modal) snackbar if doing
+/// so newly unlocked an achievement (FR-C-13's "no intrusive popups"
+/// requirement).
+///
+/// ponytail: the snackbar text shows the raw achievement key for now —
+/// swapped for its localized title in a later task (`gen_l10n`
+/// additions) once achievement l10n keys exist.
+Future<void> _markDoneAndCelebrate(
+  BuildContext context,
+  WidgetRef ref,
+  String doseId,
+) async {
+  final repository = ref.read(achievementRepositoryProvider);
+  final before = await repository.watchByModule('medicine').first;
+  final unlockedBefore = before
+      .where((r) => r.unlockedAt != null)
+      .map((r) => r.key)
+      .toSet();
+
+  await ref.read(medicineControllerProvider.notifier).markDoseDone(doseId);
+
+  final after = await repository.watchByModule('medicine').first;
+  final newlyUnlocked = after.where(
+    (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
+  );
+  if (newlyUnlocked.isNotEmpty && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Achievement unlocked: ${newlyUnlocked.first.key}'),
+      ),
     );
   }
 }

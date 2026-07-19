@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
@@ -57,16 +58,54 @@ class PrayerHomeScreen extends ConsumerWidget {
                 return PrayerTile(
                   view: view,
                   highlighted: view.record.id == highlightRecordId,
-                  onToggle: () => ref
-                      .read(prayerControllerProvider.notifier)
-                      .togglePrayed(
-                        view.record.id,
-                        currentlyPrayed:
-                            view.effectiveStatus == PrayerStatus.prayed,
-                      ),
+                  onToggle: () => _togglePrayedAndCelebrate(
+                    context,
+                    ref,
+                    view.record.id,
+                    currentlyPrayed:
+                        view.effectiveStatus == PrayerStatus.prayed,
+                  ),
                 );
               },
             ),
+    );
+  }
+}
+
+/// Toggles a prayer's prayed status, then shows a subtle (non-modal)
+/// snackbar if doing so newly unlocked an achievement (FR-C-13's "no
+/// intrusive popups" requirement). Un-marking never unlocks anything, so
+/// this only ever fires on the mark-prayed direction in practice.
+///
+/// ponytail: the snackbar text shows the raw achievement key for now —
+/// swapped for its localized title in a later task (`gen_l10n`
+/// additions) once achievement l10n keys exist.
+Future<void> _togglePrayedAndCelebrate(
+  BuildContext context,
+  WidgetRef ref,
+  String recordId, {
+  required bool currentlyPrayed,
+}) async {
+  final repository = ref.read(achievementRepositoryProvider);
+  final before = await repository.watchByModule('prayer').first;
+  final unlockedBefore = before
+      .where((r) => r.unlockedAt != null)
+      .map((r) => r.key)
+      .toSet();
+
+  await ref
+      .read(prayerControllerProvider.notifier)
+      .togglePrayed(recordId, currentlyPrayed: currentlyPrayed);
+
+  final after = await repository.watchByModule('prayer').first;
+  final newlyUnlocked = after.where(
+    (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
+  );
+  if (newlyUnlocked.isNotEmpty && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Achievement unlocked: ${newlyUnlocked.first.key}'),
+      ),
     );
   }
 }
