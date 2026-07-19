@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
@@ -152,4 +153,51 @@ void main() {
     );
     verifyNever(() => repo.markDoseSkipped(any()));
   });
+
+  test(
+    'dayStatus classifies a day complete when every dose that day is done',
+    () async {
+      final dose = MedicineDose(
+        id: 'd1',
+        medicineId: 'm1',
+        scheduleId: 's1',
+        scheduledFor: DateTime.utc(2026, 6, 1, 8),
+        storedStatus: MedicineDoseStatus.done,
+        graceWindowMinutes: 30,
+      );
+      when(
+        () => repo.dosesInRange(any(), any()),
+      ).thenAnswer((_) async => [dose]);
+
+      final status = await module.dayStatus(
+        DateRange(
+          start: const LocalDate(2026, 6, 1),
+          end: const LocalDate(2026, 6, 1),
+        ),
+      );
+      expect(status[const LocalDate(2026, 6, 1)]!.kind, ModuleDayStatusKind.complete);
+      expect(status[const LocalDate(2026, 6, 1)]!.value, 1);
+    },
+  );
+
+  test(
+    'search matches medicine name and dosage note, case-insensitively',
+    () async {
+      const medicine = Medicine(
+        id: 'm1',
+        name: 'Paracetamol',
+        dosageNote: '500mg',
+        stockEnabled: false,
+      );
+      when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+
+      final results = await module.search('paracet');
+      expect(results, hasLength(1));
+      expect(results.first.title, 'Paracetamol');
+      expect(results.first.deepLinkRoute, '/medicine/m1');
+
+      final noResults = await module.search('nomatch');
+      expect(noResults, isEmpty);
+    },
+  );
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -14,6 +15,8 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.da
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
+import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_detail_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_form_screen.dart';
@@ -205,26 +208,155 @@ class MedicineModule implements HabitModule {
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+    final doses = await _repository.dosesInRange(range.start, range.end);
+    final now = clock.now();
+    final byDay = <LocalDate, List<MedicineDose>>{};
+    for (final dose in doses) {
+      final day = localDayKey(dose.scheduledFor);
+      (byDay[day] ??= []).add(dose);
+    }
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
-      result[day] = const ModuleDayStatus(kind: ModuleDayStatusKind.none, value: 0);
+      final dayDoses = byDay[day] ?? const [];
+      if (dayDoses.isEmpty) {
+        result[day] = const ModuleDayStatus(
+          kind: ModuleDayStatusKind.none,
+          value: 0,
+        );
+        day = day.addDays(1);
+        continue;
+      }
+      final statuses = dayDoses
+          .map(
+            (d) => effectiveDoseStatus(
+              storedStatus: d.storedStatus,
+              scheduledFor: d.scheduledFor,
+              now: now,
+              graceWindowMinutes: d.graceWindowMinutes,
+            ),
+          )
+          .toList();
+      final unresolved = statuses.any(
+        (s) => s == MedicineDoseStatus.upcoming || s == MedicineDoseStatus.due,
+      );
+      final doneCount = statuses
+          .where((s) => s == MedicineDoseStatus.done)
+          .length;
+      final kind = unresolved
+          ? ModuleDayStatusKind.none
+          : doneCount == statuses.length
+          ? ModuleDayStatusKind.complete
+          : doneCount == 0
+          ? ModuleDayStatusKind.missed
+          : ModuleDayStatusKind.partial;
+      result[day] = ModuleDayStatus(kind: kind, value: doneCount);
       day = day.addDays(1);
     }
     return result;
   }
 
   @override
-  Widget? nextUpcoming(WidgetRef ref) => null;
+  Widget? nextUpcoming(WidgetRef ref) {
+    final views = ref.watch(todaysDoseViewsProvider);
+    if (views == null) return null;
+    MedicineDoseView? next;
+    for (final view in views) {
+      if (view.effectiveStatus == MedicineDoseStatus.due ||
+          view.effectiveStatus == MedicineDoseStatus.upcoming) {
+        next = view;
+        break;
+      }
+    }
+    if (next == null) return null;
+    return Builder(
+      builder: (context) => Chip(
+        avatar: const Icon(Icons.medication, size: 16),
+        label: Text(next!.medicine.name),
+      ),
+    );
+  }
 
   @override
-  List<Widget> quickActions(WidgetRef ref) => const [];
+  List<Widget> quickActions(WidgetRef ref) {
+    final views = ref.watch(todaysDoseViewsProvider);
+    if (views == null) return const [];
+    final due = views.where((v) => v.effectiveStatus == MedicineDoseStatus.due);
+    if (due.isEmpty) return const [];
+    final doseId = due.first.dose.id;
+    return [
+      Consumer(
+        builder: (context, innerRef, _) => ActionChip(
+          avatar: const Icon(Icons.check, size: 16),
+          label: const Text('Mark done'),
+          onPressed: () => innerRef
+              .read(medicineControllerProvider.notifier)
+              .markDoseDone(doseId),
+        ),
+      ),
+    ];
+  }
 
   @override
-  Future<List<SearchResult>> search(String query) async => const [];
+  Future<List<SearchResult>> search(String query) async {
+    final medicines = await _repository.allMedicines();
+    final lowerQuery = query.toLowerCase();
+    return [
+      for (final medicine in medicines)
+        if (medicine.name.toLowerCase().contains(lowerQuery) ||
+            (medicine.dosageNote?.toLowerCase().contains(lowerQuery) ?? false))
+          SearchResult(
+            title: medicine.name,
+            subtitle: medicine.dosageNote ?? '',
+            deepLinkRoute: '/medicine/${medicine.id}',
+          ),
+    ];
+  }
 
   @override
-  List<AchievementDefinition> get achievementDefinitions => const [];
+  List<AchievementDefinition> get achievementDefinitions => [
+    AchievementDefinition(
+      key: 'medicine_first_dose',
+      moduleId: id,
+      titleKey: 'achievementMedicineFirstDoseTitle',
+      descriptionKey: 'achievementMedicineFirstDoseDescription',
+      target: 1,
+      currentProgress: () async {
+        final today = localDayKey(clock.now());
+        final doses = await _repository.dosesInRange(
+          const LocalDate(2000, 1, 1),
+          today,
+        );
+        return doses.any((d) => d.storedStatus == MedicineDoseStatus.done)
+            ? 1
+            : 0;
+      },
+    ),
+    AchievementDefinition(
+      key: 'medicine_adherence_streak_7',
+      moduleId: id,
+      titleKey: 'achievementMedicineAdherenceStreak7Title',
+      descriptionKey: 'achievementMedicineAdherenceStreak7Description',
+      target: 7,
+      currentProgress: _currentAdherenceStreak,
+    ),
+    AchievementDefinition(
+      key: 'medicine_adherence_streak_30',
+      moduleId: id,
+      titleKey: 'achievementMedicineAdherenceStreak30Title',
+      descriptionKey: 'achievementMedicineAdherenceStreak30Description',
+      target: 30,
+      currentProgress: _currentAdherenceStreak,
+    ),
+  ];
+
+  Future<int> _currentAdherenceStreak() async {
+    final today = localDayKey(clock.now());
+    final status = await dayStatus(
+      DateRange(start: today.addDays(-30), end: today),
+    );
+    return currentStreak(status, today);
+  }
 
   @override
   Future<ModuleExport> exportData() async {
