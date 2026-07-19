@@ -398,6 +398,9 @@ class PrayerModule implements HabitModule {
     }
   }
 
+  @override
+  Future<void> wipeData() async {}
+
   Map<String, Object?> _settingsToJson(PrayerSettings settings) => {
     'calculationMethod': settings.calculationMethod.toDb(),
     'asrMethod': settings.asrMethod.toDb(),

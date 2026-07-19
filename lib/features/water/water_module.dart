@@ -364,6 +364,9 @@ class WaterModule implements HabitModule {
     }
   }
 
+  @override
+  Future<void> wipeData() async {}
+
   Map<String, Object?> _goalToJson(WaterGoal goal) => {
     'id': goal.id,
     'goalMl': goal.goalMl,

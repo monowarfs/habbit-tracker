@@ -406,6 +406,9 @@ class MedicineModule implements HabitModule {
     await _repository.materializeDoses(clock.now());
   }
 
+  @override
+  Future<void> wipeData() async {}
+
   Map<String, Object?> _medicineToJson(Medicine medicine) => {
     'id': medicine.id,
     'name': medicine.name,

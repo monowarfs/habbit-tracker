@@ -243,4 +243,9 @@ abstract class HabitModule {
 
   /// Imports previously-exported data for this module (v1.1).
   Future<void> importData(ModuleExport data);
+
+  /// Deletes every row this module owns. The wipe half of import's
+  /// replace semantics (`core/backup/wipe_all_data.dart`) — never called
+  /// standalone outside that orchestrator.
+  Future<void> wipeData();
 }
