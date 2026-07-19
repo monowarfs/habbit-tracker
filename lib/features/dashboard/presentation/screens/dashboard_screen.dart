@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +7,9 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
 /// otherwise every enabled module's summary card, a day-completion
@@ -32,6 +36,17 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.calendar_month_outlined),
             onPressed: () => context.push('/reports'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_view_month),
+            onPressed: modules.isEmpty
+                ? null
+                : () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) =>
+                        _GlobalCalendarSheet(modules: modules),
+                  ),
           ),
         ],
       ),
@@ -120,6 +135,73 @@ class _QuickActionsRow extends StatelessWidget {
         if (actions.isEmpty) return const SizedBox.shrink();
         return Wrap(spacing: 8, runSpacing: 8, children: actions);
       },
+    );
+  }
+}
+
+class _GlobalCalendarSheet extends StatefulWidget {
+  const _GlobalCalendarSheet({required this.modules});
+  final List<HabitModule> modules;
+
+  @override
+  State<_GlobalCalendarSheet> createState() => _GlobalCalendarSheetState();
+}
+
+class _GlobalCalendarSheetState extends State<_GlobalCalendarSheet> {
+  final LocalDate _month = localDayKey(DateTime.now());
+  Map<String, Map<LocalDate, ModuleDayStatus>>? _statuses;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final start = LocalDate(_month.year, _month.month, 1);
+    final end = LocalDate(_month.year, _month.month + 1, 1).addDays(-1);
+    final entries = await Future.wait(
+      widget.modules.map(
+        (m) async => MapEntry(
+          m.id,
+          await m.dayStatus(DateRange(start: start, end: end)),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _statuses = Map.fromEntries(entries));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statuses = _statuses;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: statuses == null
+            ? const Center(child: CircularProgressIndicator())
+            : GlobalMonthCalendar(
+                month: _month,
+                statusesByModule: statuses,
+                onDayTap: (day) => showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(day.toIso()),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final module in widget.modules)
+                          Text(
+                            '${module.metadata.displayName}: '
+                            '${statuses[module.id]?[day]?.kind.name ?? 'none'}',
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+      ),
     );
   }
 }
