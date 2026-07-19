@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
@@ -22,6 +23,16 @@ void main() {
     registerFallbackValue(
       (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC'),
     );
+    registerFallbackValue(
+      PrayerRecord(
+        id: 'fallback',
+        prayerDate: const LocalDate(2026, 1, 1),
+        prayerName: PrayerName.fajr,
+        scheduledFor: DateTime.utc(2026),
+        storedStatus: PrayerStatus.upcoming,
+      ),
+    );
+    registerFallbackValue(PrayerName.fajr);
   });
 
   setUp(() {
@@ -191,5 +202,79 @@ void main() {
 
   test('search always returns empty (Prayer has no named user data)', () async {
     expect(await module.search('fajr'), isEmpty);
+  });
+
+  test('exportData includes qadhaCounters', () async {
+    when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
+    when(() => repo.allRecords()).thenAnswer((_) async => const []);
+    when(() => repo.allQadhaCounters()).thenAnswer(
+      (_) async => [
+        PrayerQadhaCounter(
+          id: 'q1',
+          prayerName: PrayerName.fajr,
+          count: 3,
+          updatedAt: DateTime.utc(2026, 6),
+        ),
+      ],
+    );
+
+    final export = await module.exportData();
+    final counters = export.payload['qadhaCounters']! as List<dynamic>;
+    final fajr = counters
+        .cast<Map<String, Object?>>()
+        .firstWhere((c) => c['prayerName'] == 'fajr');
+    expect(fajr['count'], 3);
+  });
+
+  test('importData restores records and Qadha balances', () async {
+    when(
+      () => repo.updateSettings(
+        calculationMethod: any(named: 'calculationMethod'),
+        asrMethod: any(named: 'asrMethod'),
+        observesJumuah: any(named: 'observesJumuah'),
+        locationMode: any(named: 'locationMode'),
+        manualLatitude: any(named: 'manualLatitude'),
+        manualLongitude: any(named: 'manualLongitude'),
+        manualTimezone: any(named: 'manualTimezone'),
+      ),
+    ).thenAnswer((_) async => const Result.success(null));
+    when(() => repo.restoreRecord(any())).thenAnswer((_) async {});
+    when(
+      () => repo.setQadhaBalance(any(), any()),
+    ).thenAnswer((_) async => const Result.success(null));
+
+    await module.importData(
+      const ModuleExport({
+        'settings': null,
+        'records': [
+          {
+            'prayerDate': '2026-06-01',
+            'prayerName': 'fajr',
+            'scheduledFor': '2026-06-01T05:00:00.000Z',
+            'status': 'prayed',
+            'statusChangedAt': null,
+          },
+        ],
+        'qadhaCounters': [
+          {'prayerName': 'dhuhr', 'count': 2},
+        ],
+      }),
+    );
+
+    final capturedRecords = verify(
+      () => repo.restoreRecord(captureAny()),
+    ).captured;
+    expect(capturedRecords, hasLength(1));
+    expect(
+      (capturedRecords.single as PrayerRecord).storedStatus,
+      PrayerStatus.prayed,
+    );
+    verify(() => repo.setQadhaBalance(PrayerName.dhuhr, 2)).called(1);
+  });
+
+  test('wipeData delegates to the repository', () async {
+    when(() => repo.wipeAll()).thenAnswer((_) async {});
+    await module.wipeData();
+    verify(() => repo.wipeAll()).called(1);
   });
 }

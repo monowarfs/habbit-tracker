@@ -475,6 +475,40 @@ class PrayerRepositoryImpl implements PrayerRepository {
     return rows.map(_recordFromRow).toList(growable: false);
   }
 
+  @override
+  Future<List<PrayerQadhaCounter>> allQadhaCounters() async {
+    final rows = await _db.select(_db.prayerQadhaCountersTable).get();
+    return rows.map(_qadhaFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> restoreRecord(PrayerRecord record) async {
+    final now = clock.now().toUtc().millisecondsSinceEpoch;
+    await _db
+        .into(_db.prayerRecordsTable)
+        .insert(
+          PrayerRecordsTableCompanion.insert(
+            id: generateId(),
+            prayerDate: record.prayerDate.toIso(),
+            prayerName: record.prayerName.toDb(),
+            scheduledFor: record.scheduledFor.toUtc().millisecondsSinceEpoch,
+            status: record.storedStatus.toDb(),
+            statusChangedAt: Value(
+              record.statusChangedAt?.toUtc().millisecondsSinceEpoch,
+            ),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+  }
+
+  @override
+  Future<void> wipeAll() async {
+    await _db.delete(_db.prayerRecordsTable).go();
+    await _db.delete(_db.prayerQadhaCountersTable).go();
+    await _db.delete(_db.prayerSettingsTable).go();
+  }
+
   PrayerSettings _settingsFromRow(PrayerSettingsRow row) => PrayerSettings(
     id: row.id,
     calculationMethod: CalculationMethodDb.fromDb(row.calculationMethod),

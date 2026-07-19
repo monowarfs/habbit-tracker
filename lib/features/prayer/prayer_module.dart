@@ -11,6 +11,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
@@ -370,9 +371,11 @@ class PrayerModule implements HabitModule {
   Future<ModuleExport> exportData() async {
     final settings = await _repository.watchSettings().first;
     final records = await _repository.allRecords();
+    final qadhaCounters = await _repository.allQadhaCounters();
     return ModuleExport({
       'settings': _settingsToJson(settings),
       'records': records.map(_recordToJson).toList(),
+      'qadhaCounters': qadhaCounters.map(_qadhaToJson).toList(),
     });
   }
 
@@ -396,10 +399,37 @@ class PrayerModule implements HabitModule {
         manualTimezone: settingsJson['manualTimezone'] as String?,
       );
     }
+
+    final records = (data.payload['records'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+    for (final json in records) {
+      await _repository.restoreRecord(
+        PrayerRecord(
+          id: '',
+          prayerDate: LocalDate.parse(json['prayerDate'] as String),
+          prayerName: PrayerNameDb.fromDb(json['prayerName'] as String),
+          scheduledFor: DateTime.parse(json['scheduledFor'] as String),
+          storedStatus: PrayerStatusDb.fromDb(json['status'] as String),
+          statusChangedAt: json['statusChangedAt'] == null
+              ? null
+              : DateTime.parse(json['statusChangedAt'] as String),
+        ),
+      );
+    }
+
+    final qadhaCounters =
+        (data.payload['qadhaCounters'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>();
+    for (final json in qadhaCounters) {
+      await _repository.setQadhaBalance(
+        PrayerNameDb.fromDb(json['prayerName'] as String),
+        json['count'] as int,
+      );
+    }
   }
 
   @override
-  Future<void> wipeData() async {}
+  Future<void> wipeData() => _repository.wipeAll();
 
   Map<String, Object?> _settingsToJson(PrayerSettings settings) => {
     'calculationMethod': settings.calculationMethod.toDb(),
@@ -416,5 +446,11 @@ class PrayerModule implements HabitModule {
     'prayerName': record.prayerName.toDb(),
     'scheduledFor': record.scheduledFor.toIso8601String(),
     'status': record.storedStatus.toDb(),
+    'statusChangedAt': record.statusChangedAt?.toIso8601String(),
+  };
+
+  Map<String, Object?> _qadhaToJson(PrayerQadhaCounter counter) => {
+    'prayerName': counter.prayerName.toDb(),
+    'count': counter.count,
   };
 }

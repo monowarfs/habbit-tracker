@@ -70,4 +70,17 @@ abstract class PrayerRepository {
 
   /// Every (non-deleted) record, across every day — export groundwork.
   Future<List<PrayerRecord>> allRecords();
+
+  /// All five Qadha counters as a snapshot (not a stream) — export
+  /// groundwork.
+  Future<List<PrayerQadhaCounter>> allQadhaCounters();
+
+  /// Inserts [record] exactly as given, with a freshly generated id —
+  /// import's restore path, bypassing `materializeRecords`'s
+  /// upcoming-only generation.
+  Future<void> restoreRecord(PrayerRecord record);
+
+  /// Deletes every row this module owns — the wipe half of import's
+  /// replace semantics (`HabitModule.wipeData()`).
+  Future<void> wipeAll();
 }
