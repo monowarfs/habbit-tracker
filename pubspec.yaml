@@ -14,6 +14,7 @@ dependencies:
   clock: ^1.1.2
   cupertino_icons: ^1.0.8
   drift: ^2.34.2
+  file_picker: ">=12.0.0-beta.1 <13.0.0"
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter
@@ -35,6 +36,7 @@ dependencies:
   pointycastle: ^4.0.0
   riverpod_annotation: ^4.0.3
   screen_protector: ^1.4.2
+  share_plus: ^13.2.1
   sqlite3: ^3.4.0
   timezone: ^0.11.1
   uuid: ^4.6.0
