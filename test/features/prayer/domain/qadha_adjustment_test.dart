@@ -9,7 +9,7 @@ void main() {
       id: 'c1',
       prayerName: PrayerName.fajr,
       count: 5,
-      updatedAt: DateTime.utc(2026, 6, 1),
+      updatedAt: DateTime.utc(2026, 6),
     );
     expect(applyQadhaMakeup(counter), 4);
   });
@@ -19,7 +19,7 @@ void main() {
       id: 'c1',
       prayerName: PrayerName.fajr,
       count: 0,
-      updatedAt: DateTime.utc(2026, 6, 1),
+      updatedAt: DateTime.utc(2026, 6),
     );
     expect(applyQadhaMakeup(counter), 0);
   });

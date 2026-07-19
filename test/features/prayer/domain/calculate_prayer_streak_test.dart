@@ -29,9 +29,9 @@ void main() {
   ];
 
   test('3 consecutive fully-prayed days: current and longest both 3', () {
-    final day1 = const LocalDate(2026, 6, 1);
-    final day2 = const LocalDate(2026, 6, 2);
-    final day3 = const LocalDate(2026, 6, 3);
+    const day1 = LocalDate(2026, 6, 1);
+    const day2 = LocalDate(2026, 6, 2);
+    const day3 = LocalDate(2026, 6, 3);
     final result = const CalculatePrayerStreakUseCase().execute(
       recordsByDay: {
         day1: allPrayed(day1),
@@ -46,9 +46,9 @@ void main() {
   });
 
   test('a day missing one prayer breaks the running streak', () {
-    final day1 = const LocalDate(2026, 6, 1);
-    final day2 = const LocalDate(2026, 6, 2);
-    final day3 = const LocalDate(2026, 6, 3);
+    const day1 = LocalDate(2026, 6, 1);
+    const day2 = LocalDate(2026, 6, 2);
+    const day3 = LocalDate(2026, 6, 3);
     final result = const CalculatePrayerStreakUseCase().execute(
       recordsByDay: {
         day1: allPrayed(day1),
@@ -66,8 +66,8 @@ void main() {
     'today still in progress (an upcoming record) is skipped, not '
     'counted and not broken — current reflects the last fully-resolved day',
     () {
-      final day1 = const LocalDate(2026, 6, 1);
-      final today = const LocalDate(2026, 6, 2);
+      const day1 = LocalDate(2026, 6, 1);
+      const today = LocalDate(2026, 6, 2);
       final inProgress = [
         for (final name in PrayerName.values)
           PrayerRecord(

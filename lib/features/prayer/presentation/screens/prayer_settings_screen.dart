@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
@@ -49,8 +51,8 @@ class PrayerSettingsScreen extends ConsumerWidget {
               ],
               onChanged: (method) {
                 if (method != null) {
-                  controller.updateSettings(
-                    calculationMethod: method,
+                  unawaited(
+                    controller.updateSettings(calculationMethod: method),
                   );
                 }
               },
@@ -72,7 +74,7 @@ class PrayerSettingsScreen extends ConsumerWidget {
               ],
               onChanged: (method) {
                 if (method != null) {
-                  controller.updateSettings(asrMethod: method);
+                  unawaited(controller.updateSettings(asrMethod: method));
                 }
               },
             ),
@@ -99,7 +101,7 @@ class PrayerSettingsScreen extends ConsumerWidget {
               ],
               onChanged: (mode) {
                 if (mode != null) {
-                  controller.updateSettings(locationMode: mode);
+                  unawaited(controller.updateSettings(locationMode: mode));
                 }
               },
             ),
@@ -119,10 +121,12 @@ class PrayerSettingsScreen extends ConsumerWidget {
                 ],
                 onChanged: (city) {
                   if (city != null) {
-                    controller.updateSettings(
-                      manualLatitude: city.latitude,
-                      manualLongitude: city.longitude,
-                      manualTimezone: city.ianaTimezone,
+                    unawaited(
+                      controller.updateSettings(
+                        manualLatitude: city.latitude,
+                        manualLongitude: city.longitude,
+                        manualTimezone: city.ianaTimezone,
+                      ),
                     );
                   }
                 },

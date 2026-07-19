@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
@@ -126,17 +128,19 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final sorted = [...records]
       ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) => ListView(
-        shrinkWrap: true,
-        children: [
-          for (final record in sorted)
-            ListTile(
-              title: Text(_labelFor(l10n, record.prayerName)),
-              trailing: Text(_statusLabel(l10n, record.storedStatus)),
-            ),
-        ],
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (context) => ListView(
+          shrinkWrap: true,
+          children: [
+            for (final record in sorted)
+              ListTile(
+                title: Text(_labelFor(l10n, record.prayerName)),
+                trailing: Text(_statusLabel(l10n, record.storedStatus)),
+              ),
+          ],
+        ),
       ),
     );
   }

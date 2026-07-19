@@ -41,7 +41,7 @@ void main() {
     );
   });
 
-  test('a non-Dhuhr prayer on a Friday is never Jumu\'ah: false', () {
+  test("a non-Dhuhr prayer on a Friday is never Jumu'ah: false", () {
     expect(
       isJumuahDisplay(
         prayerName: PrayerName.asr,

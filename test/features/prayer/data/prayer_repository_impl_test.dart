@@ -108,7 +108,7 @@ void main() {
     },
   );
 
-  test('watchRecordsForDay reflects a single day\'s 5 records', () async {
+  test("watchRecordsForDay reflects a single day's 5 records", () async {
     const location = (
       latitude: 23.8103,
       longitude: 90.4125,
@@ -128,7 +128,7 @@ void main() {
     'bumps its Qadha counter exactly once',
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
         await repo.materializeRecords(clock.now(), location);
       });
       await repo.watchQadhaCounters().first; // ensure seeded
@@ -160,7 +160,7 @@ void main() {
 
   test('markPrayed marks a record prayed', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
       await repo.materializeRecords(clock.now(), location);
     });
     final records = await repo.recordsInRange(
@@ -185,7 +185,7 @@ void main() {
     'unmarkPrayed reverts a prayed record to upcoming (toggle off)',
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
         await repo.materializeRecords(clock.now(), location);
       });
       final records = await repo.recordsInRange(
@@ -210,7 +210,7 @@ void main() {
 
   test('markPrayed fails validation on an already-missed record', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
       await repo.materializeRecords(clock.now(), location);
     });
     await repo.watchQadhaCounters().first;
@@ -227,7 +227,7 @@ void main() {
 
   test('markMissedBySkip marks missed and bumps the Qadha counter', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
       await repo.materializeRecords(clock.now(), location);
     });
     await repo.watchQadhaCounters().first;
@@ -248,7 +248,7 @@ void main() {
 
   test('allRecords returns every non-deleted record', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
-    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 0)), () async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
       await repo.materializeRecords(clock.now(), location);
     });
     final all = await repo.allRecords();

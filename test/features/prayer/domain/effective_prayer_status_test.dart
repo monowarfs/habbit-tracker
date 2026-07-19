@@ -89,7 +89,7 @@ void main() {
       id: 'r1',
       prayerDate: const LocalDate(2026, 6, 1),
       prayerName: PrayerName.fajr,
-      scheduledFor: DateTime.utc(2026, 6, 1, 0),
+      scheduledFor: DateTime.utc(2026, 6),
       storedStatus: PrayerStatus.upcoming,
     );
     final dhuhr = PrayerRecord(
@@ -108,7 +108,7 @@ void main() {
     );
     final sameDay = [fajr, dhuhr, isha];
 
-    test('a mid-day prayer\'s cutoff is the next prayer\'s scheduledFor', () {
+    test("a mid-day prayer's cutoff is the next prayer's scheduledFor", () {
       final cutoff = cutoffForPrayer(
         record: fajr,
         sameDayRecordsSorted: sameDay,
@@ -119,7 +119,7 @@ void main() {
     });
 
     test(
-      'the day\'s last prayer\'s cutoff is the Isha rollover time on the '
+      "the day's last prayer's cutoff is the Isha rollover time on the "
       'next calendar day, resolved in the given timezone',
       () {
         final cutoff = cutoffForPrayer(

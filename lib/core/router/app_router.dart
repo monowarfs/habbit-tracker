@@ -12,8 +12,8 @@ import 'package:habit_tracker/features/reports/presentation/screens/reports_scre
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
-import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

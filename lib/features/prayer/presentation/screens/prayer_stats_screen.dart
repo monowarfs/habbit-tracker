@@ -76,7 +76,7 @@ class PrayerStatsScreen extends ConsumerWidget {
               for (final entry in adherence.entries)
                 Text(
                   '${_labelFor(l10n, entry.key)}: '
-                  '${entry.value.total == 0 ? 0 : (entry.value.prayed * 100 / entry.value.total).round()}%',
+                  '${_onTimePercent(entry.value)}%',
                 ),
             ],
           );
@@ -94,4 +94,7 @@ class PrayerStatsScreen extends ConsumerWidget {
     PrayerName.maghrib => l10n.prayerNameMaghrib,
     PrayerName.isha => l10n.prayerNameIsha,
   };
+
+  int _onTimePercent(PrayerAdherenceStats stats) =>
+      stats.total == 0 ? 0 : (stats.prayed * 100 / stats.total).round();
 }

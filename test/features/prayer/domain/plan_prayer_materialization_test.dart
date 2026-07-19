@@ -40,7 +40,7 @@ void main() {
       id: 'r1',
       prayerDate: const LocalDate(2026, 6, 1),
       prayerName: PrayerName.fajr,
-      scheduledFor: DateTime.utc(2026, 6, 1, 0),
+      scheduledFor: DateTime.utc(2026, 6),
       storedStatus: PrayerStatus.prayed,
     );
     final planned = planPrayerMaterialization(
