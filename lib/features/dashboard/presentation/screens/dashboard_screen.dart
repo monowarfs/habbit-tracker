@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
+import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
 /// otherwise every enabled module's summary card, a day-completion
@@ -26,9 +27,15 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navDashboard),
         actions: [
-          // ponytail: search wiring lands in a later task
-          // (`app_search_delegate.dart`); disabled until then.
-          const IconButton(icon: Icon(Icons.search), onPressed: null),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: modules.isEmpty
+                ? null
+                : () => showSearch(
+                    context: context,
+                    delegate: AppSearchDelegate(modules),
+                  ),
+          ),
           IconButton(
             icon: const Icon(Icons.emoji_events_outlined),
             onPressed: () => context.push('/achievements'),
