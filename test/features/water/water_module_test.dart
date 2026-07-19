@@ -133,53 +133,70 @@ void main() {
     expect(repo.capturedAmountMl, isNull);
   });
 
-  test('dayStatus classifies days as complete/partial/none against the goal', () async {
-    final goal = WaterGoal(
-      id: 'g1',
-      goalMl: 2000,
-      effectiveFrom: DateTime.utc(2026, 6, 1),
-    );
-    final module = WaterModule(
-      _FakeWaterRepository(
-        _settings(reminderEnabled: false),
-        goals: [goal],
-        entries: [
-          WaterEntry(
-            id: 'e1',
-            amountMl: 2000,
-            loggedAt: DateTime.utc(2026, 6, 1, 9),
-            source: WaterEntrySource.quick,
-          ),
-          WaterEntry(
-            id: 'e2',
-            amountMl: 500,
-            loggedAt: DateTime.utc(2026, 6, 2, 9),
-            source: WaterEntrySource.quick,
-          ),
-        ],
-      ),
-    );
-    final status = await module.dayStatus(
-      DateRange(
-        start: const LocalDate(2026, 6, 1),
-        end: const LocalDate(2026, 6, 3),
-      ),
-    );
-    expect(status[const LocalDate(2026, 6, 1)]!.kind, ModuleDayStatusKind.complete);
-    expect(status[const LocalDate(2026, 6, 2)]!.kind, ModuleDayStatusKind.partial);
-    expect(status[const LocalDate(2026, 6, 3)]!.kind, ModuleDayStatusKind.none);
-    expect(status[const LocalDate(2026, 6, 1)]!.value, 2000);
-  });
+  test(
+    'dayStatus classifies days as complete/partial/none against the goal',
+    () async {
+      final goal = WaterGoal(
+        id: 'g1',
+        goalMl: 2000,
+        effectiveFrom: DateTime.utc(2026, 6),
+      );
+      final module = WaterModule(
+        _FakeWaterRepository(
+          _settings(reminderEnabled: false),
+          goals: [goal],
+          entries: [
+            WaterEntry(
+              id: 'e1',
+              amountMl: 2000,
+              loggedAt: DateTime.utc(2026, 6, 1, 9),
+              source: WaterEntrySource.quick,
+            ),
+            WaterEntry(
+              id: 'e2',
+              amountMl: 500,
+              loggedAt: DateTime.utc(2026, 6, 2, 9),
+              source: WaterEntrySource.quick,
+            ),
+          ],
+        ),
+      );
+      final status = await module.dayStatus(
+        const DateRange(
+          start: LocalDate(2026, 6, 1),
+          end: LocalDate(2026, 6, 3),
+        ),
+      );
+      expect(
+        status[const LocalDate(2026, 6, 1)]!.kind,
+        ModuleDayStatusKind.complete,
+      );
+      expect(
+        status[const LocalDate(2026, 6, 2)]!.kind,
+        ModuleDayStatusKind.partial,
+      );
+      expect(
+        status[const LocalDate(2026, 6, 3)]!.kind,
+        ModuleDayStatusKind.none,
+      );
+      expect(status[const LocalDate(2026, 6, 1)]!.value, 2000);
+    },
+  );
 
   test('search always returns empty (Water has no named entities)', () async {
-    final module = WaterModule(_FakeWaterRepository(_settings(reminderEnabled: false)));
+    final module = WaterModule(
+      _FakeWaterRepository(_settings(reminderEnabled: false)),
+    );
     expect(await module.search('anything'), isEmpty);
   });
 
   test(
-    'achievementDefinitions: water_first_log progress is 0 with no entries, 1 with one',
+    'achievementDefinitions: water_first_log progress is 0 with no entries, '
+    '1 with one',
     () async {
-      final empty = WaterModule(_FakeWaterRepository(_settings(reminderEnabled: false)));
+      final empty = WaterModule(
+        _FakeWaterRepository(_settings(reminderEnabled: false)),
+      );
       final firstLogEmpty = empty.achievementDefinitions.firstWhere(
         (d) => d.key == 'water_first_log',
       );
@@ -192,7 +209,7 @@ void main() {
             WaterEntry(
               id: 'e1',
               amountMl: 100,
-              loggedAt: DateTime.utc(2026, 6, 1),
+              loggedAt: DateTime.utc(2026, 6),
               source: WaterEntrySource.quick,
             ),
           ],

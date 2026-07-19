@@ -65,13 +65,13 @@ class AppSearchDelegate extends SearchDelegate<void> {
     final perModule = await Future.wait(
       _modules.map((m) => m.search(rawQuery)),
     );
-    final all = perModule.expand((results) => results).toList();
-    all.sort((a, b) {
-      final aPrefix = a.title.toLowerCase().startsWith(lowerQuery);
-      final bPrefix = b.title.toLowerCase().startsWith(lowerQuery);
-      if (aPrefix != bPrefix) return aPrefix ? -1 : 1;
-      return a.title.compareTo(b.title);
-    });
+    final all = perModule.expand((results) => results).toList()
+      ..sort((a, b) {
+        final aPrefix = a.title.toLowerCase().startsWith(lowerQuery);
+        final bPrefix = b.title.toLowerCase().startsWith(lowerQuery);
+        if (aPrefix != bPrefix) return aPrefix ? -1 : 1;
+        return a.title.compareTo(b.title);
+      });
     return all;
   }
 }

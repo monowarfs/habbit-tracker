@@ -18,7 +18,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const LocalDate(2026, 1, 1));
-    registerFallbackValue(DateTime.utc(2026, 6, 1));
+    registerFallbackValue(DateTime.utc(2026, 6));
     registerFallbackValue(
       (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC'),
     );
@@ -159,24 +159,33 @@ void main() {
             storedStatus: statusFor(i),
           ),
       ];
-      final range = DateRange(start: day, end: day);
+      const range = DateRange(start: day, end: day);
 
       when(
         () => repo.recordsInRange(any(), any()),
       ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.prayed));
-      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.complete);
+      expect(
+        (await module.dayStatus(range))[day]!.kind,
+        ModuleDayStatusKind.complete,
+      );
 
       when(
         () => repo.recordsInRange(any(), any()),
       ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.missed));
-      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.missed);
+      expect(
+        (await module.dayStatus(range))[day]!.kind,
+        ModuleDayStatusKind.missed,
+      );
 
       when(() => repo.recordsInRange(any(), any())).thenAnswer(
         (_) async => recordsWith(
           (i) => i == 0 ? PrayerStatus.prayed : PrayerStatus.missed,
         ),
       );
-      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.partial);
+      expect(
+        (await module.dayStatus(range))[day]!.kind,
+        ModuleDayStatusKind.partial,
+      );
     },
   );
 

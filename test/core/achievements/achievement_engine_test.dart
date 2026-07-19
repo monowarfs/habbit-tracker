@@ -43,7 +43,7 @@ void main() {
       ]);
       final engine = AchievementEngine(repository: repo, modules: [module]);
 
-      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1)), () async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
         await engine.evaluate('fake');
       });
 
@@ -70,7 +70,7 @@ void main() {
       ]);
       final engine = AchievementEngine(repository: repo, modules: [module]);
 
-      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1)), () async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
         await engine.evaluate('fake');
       });
       final firstUnlock = (await repo.byKey('fake_two'))!.unlockedAt;

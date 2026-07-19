@@ -170,12 +170,15 @@ void main() {
       ).thenAnswer((_) async => [dose]);
 
       final status = await module.dayStatus(
-        DateRange(
-          start: const LocalDate(2026, 6, 1),
-          end: const LocalDate(2026, 6, 1),
+        const DateRange(
+          start: LocalDate(2026, 6, 1),
+          end: LocalDate(2026, 6, 1),
         ),
       );
-      expect(status[const LocalDate(2026, 6, 1)]!.kind, ModuleDayStatusKind.complete);
+      expect(
+        status[const LocalDate(2026, 6, 1)]!.kind,
+        ModuleDayStatusKind.complete,
+      );
       expect(status[const LocalDate(2026, 6, 1)]!.value, 1);
     },
   );

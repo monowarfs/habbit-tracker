@@ -7,7 +7,9 @@ import 'package:habit_tracker/main.dart';
 import 'support/test_database.dart';
 
 void main() {
-  testWidgets('app boots to the dashboard empty state', (tester) async {
+  testWidgets('app boots to the dashboard with all modules registered', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(testDatabase())],
@@ -16,10 +18,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // No module enable/disable feature exists yet (that's a future run per
+    // phases-and-dod.md), so all three modules are always registered and
+    // the dashboard's empty state never shows in the real app.
     expect(
       find.text('Enable a module in Settings to get started'),
-      findsOneWidget,
+      findsNothing,
     );
+    expect(find.byIcon(Icons.search), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
 
     // Dispose the tree now (inside the test body) and pump once more so

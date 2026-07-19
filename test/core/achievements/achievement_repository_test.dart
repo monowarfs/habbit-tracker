@@ -20,12 +20,12 @@ void main() {
       key: 'water_first_log',
       current: 1,
       target: 1,
-      now: DateTime.utc(2026, 6, 1),
+      now: DateTime.utc(2026, 6),
     );
     final row = await repo.byKey('water_first_log');
     expect(row, isNotNull);
     expect(row!.progressCurrent, 1);
-    expect(row.unlockedAt, DateTime.utc(2026, 6, 1).millisecondsSinceEpoch);
+    expect(row.unlockedAt, DateTime.utc(2026, 6).millisecondsSinceEpoch);
   });
 
   test(
@@ -36,7 +36,7 @@ void main() {
         key: 'water_streak_7',
         current: 7,
         target: 7,
-        now: DateTime.utc(2026, 6, 1),
+        now: DateTime.utc(2026, 6),
       );
       final firstUnlock = (await repo.byKey('water_streak_7'))!.unlockedAt;
 
