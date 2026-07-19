@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -76,10 +78,6 @@ class PrayerHomeScreen extends ConsumerWidget {
 /// snackbar if doing so newly unlocked an achievement (FR-C-13's "no
 /// intrusive popups" requirement). Un-marking never unlocks anything, so
 /// this only ever fires on the mark-prayed direction in practice.
-///
-/// ponytail: the snackbar text shows the raw achievement key for now —
-/// swapped for its localized title in a later task (`gen_l10n`
-/// additions) once achievement l10n keys exist.
 Future<void> _togglePrayedAndCelebrate(
   BuildContext context,
   WidgetRef ref,
@@ -101,11 +99,21 @@ Future<void> _togglePrayedAndCelebrate(
   final newlyUnlocked = after.where(
     (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
   );
-  if (newlyUnlocked.isNotEmpty && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Achievement unlocked: ${newlyUnlocked.first.key}'),
+  if (newlyUnlocked.isEmpty || !context.mounted) return;
+  final module = ref
+      .read(habitModulesProvider)
+      .firstWhere((m) => m.id == 'prayer');
+  final definition = module.achievementDefinitions.firstWhere(
+    (d) => d.key == newlyUnlocked.first.key,
+  );
+  final l10n = AppLocalizations.of(context)!;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        l10n.achievementUnlockedSnackbar(
+          localizedAchievementTitle(l10n, definition.titleKey),
+        ),
       ),
-    );
-  }
+    ),
+  );
 }

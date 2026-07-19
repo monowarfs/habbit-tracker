@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/reports/aggregate_report_usecase.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
@@ -40,15 +41,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ponytail: hardcoded English strings — l10n keys land in a later
-    // task (`gen_l10n` additions), swapped in without changing this
-    // screen's structure.
+    final l10n = AppLocalizations.of(context)!;
     final reportsAsync = ref.watch(
       moduleReportsProvider((period: _period, anchor: _anchor)),
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reports'),
+        title: Text(l10n.reportsTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
@@ -63,10 +62,19 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       body: Column(
         children: [
           SegmentedButton<ReportPeriod>(
-            segments: const [
-              ButtonSegment(value: ReportPeriod.week, label: Text('Week')),
-              ButtonSegment(value: ReportPeriod.month, label: Text('Month')),
-              ButtonSegment(value: ReportPeriod.year, label: Text('Year')),
+            segments: [
+              ButtonSegment(
+                value: ReportPeriod.week,
+                label: Text(l10n.reportsPeriodWeek),
+              ),
+              ButtonSegment(
+                value: ReportPeriod.month,
+                label: Text(l10n.reportsPeriodMonth),
+              ),
+              ButtonSegment(
+                value: ReportPeriod.year,
+                label: Text(l10n.reportsPeriodYear),
+              ),
             ],
             selected: {_period},
             onSelectionChanged: (s) => setState(() => _period = s.first),
@@ -74,7 +82,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           Expanded(
             child: reportsAsync.when(
               data: (reports) => reports.isEmpty
-                  ? const Center(child: Text('No data for this period'))
+                  ? Center(child: Text(l10n.reportsEmptyState))
                   : ListView(
                       children: [
                         for (final report in reports)
@@ -91,8 +99,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                     ).textTheme.titleMedium,
                                   ),
                                   Text(
-                                    'Longest streak: '
-                                    '${report.longestStreak} days',
+                                    l10n.reportsLongestStreak(
+                                      report.longestStreak,
+                                    ),
                                   ),
                                   PeriodBarChart(
                                     points: report.points,

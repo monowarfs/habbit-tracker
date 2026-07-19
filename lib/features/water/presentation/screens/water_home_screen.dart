@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
@@ -107,10 +109,6 @@ class WaterHomeScreen extends ConsumerWidget {
 /// Logs a quick-add entry, then shows a subtle (non-modal) snackbar if
 /// doing so newly unlocked an achievement (FR-C-13's "no intrusive
 /// popups" requirement).
-///
-/// ponytail: the snackbar text shows the raw achievement key for now —
-/// swapped for its localized title in a later task (`gen_l10n`
-/// additions) once achievement l10n keys exist.
 Future<void> _logQuickAddAndCelebrate(
   BuildContext context,
   WidgetRef ref,
@@ -129,11 +127,21 @@ Future<void> _logQuickAddAndCelebrate(
   final newlyUnlocked = after.where(
     (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
   );
-  if (newlyUnlocked.isNotEmpty && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Achievement unlocked: ${newlyUnlocked.first.key}'),
+  if (newlyUnlocked.isEmpty || !context.mounted) return;
+  final module = ref
+      .read(habitModulesProvider)
+      .firstWhere((m) => m.id == 'water');
+  final definition = module.achievementDefinitions.firstWhere(
+    (d) => d.key == newlyUnlocked.first.key,
+  );
+  final l10n = AppLocalizations.of(context)!;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        l10n.achievementUnlockedSnackbar(
+          localizedAchievementTitle(l10n, definition.titleKey),
+        ),
       ),
-    );
-  }
+    ),
+  );
 }

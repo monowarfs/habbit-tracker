@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
@@ -288,7 +289,7 @@ class MedicineModule implements HabitModule {
       Consumer(
         builder: (context, innerRef, _) => ActionChip(
           avatar: const Icon(Icons.check, size: 16),
-          label: const Text('Mark done'),
+          label: Text(AppLocalizations.of(context)!.medicineMarkDoneAction),
           onPressed: () => innerRef
               .read(medicineControllerProvider.notifier)
               .markDoseDone(doseId),

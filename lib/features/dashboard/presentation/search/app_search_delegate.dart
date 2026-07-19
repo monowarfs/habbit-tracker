@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 
 /// Cross-module search (FR-C-15) — queries every module's own
 /// [HabitModule.search] in parallel and merges the results, sorted
 /// title-prefix matches first.
-///
-/// ponytail: prompt/no-results strings are hardcoded English for now —
-/// swapped for `AppLocalizations` calls in a later task (`gen_l10n`
-/// additions) once those keys exist.
 class AppSearchDelegate extends SearchDelegate<void> {
   /// Creates a search delegate over [_modules].
   AppSearchDelegate(this._modules);
@@ -34,8 +31,9 @@ class AppSearchDelegate extends SearchDelegate<void> {
   Widget buildSuggestions(BuildContext context) => _buildList(context);
 
   Widget _buildList(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (query.trim().isEmpty) {
-      return const Center(child: Text('Search medicines and more'));
+      return Center(child: Text(l10n.searchPrompt));
     }
     return FutureBuilder<List<SearchResult>>(
       future: _search(query),
@@ -43,7 +41,7 @@ class AppSearchDelegate extends SearchDelegate<void> {
         final results = snapshot.data ?? const [];
         if (snapshot.connectionState == ConnectionState.done &&
             results.isEmpty) {
-          return const Center(child: Text('No results found'));
+          return Center(child: Text(l10n.searchNoResults));
         }
         return ListView(
           children: [
