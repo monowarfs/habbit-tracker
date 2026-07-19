@@ -41,10 +41,10 @@ PrayerTimes calculatePrayerTimes({
     12,
   );
   final coordinates = adhan.Coordinates(latitude, longitude);
-  final params = _parametersFor(method);
-  params.madhab = asrMethod == AsrMethod.hanafi
-      ? adhan.Madhab.hanafi
-      : adhan.Madhab.shafi;
+  final params = _parametersFor(method)
+    ..madhab = asrMethod == AsrMethod.hanafi
+        ? adhan.Madhab.hanafi
+        : adhan.Madhab.shafi;
 
   final times = adhan.PrayerTimes(
     coordinates: coordinates,
