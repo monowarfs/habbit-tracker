@@ -1,0 +1,250 @@
+import 'package:clock/clock.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
+import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
+import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
+import 'package:habit_tracker/features/prayer/domain/usecases/jumuah_label.dart';
+import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
+import 'package:habit_tracker/features/prayer/presentation/screens/prayer_history_screen.dart';
+import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_screen.dart';
+import 'package:habit_tracker/features/prayer/presentation/screens/prayer_qadha_screen.dart';
+import 'package:habit_tracker/features/prayer/presentation/screens/prayer_settings_screen.dart';
+import 'package:habit_tracker/features/prayer/presentation/screens/prayer_stats_screen.dart';
+
+/// The Prayer module's [HabitModule] registration
+/// (`technical/architecture.md`). Mirrors `MedicineModule`'s shape almost
+/// exactly.
+class PrayerModule implements HabitModule {
+  /// Creates the module backed by [_repository].
+  const PrayerModule(this._repository);
+
+  final PrayerRepository _repository;
+
+  @override
+  String get id => 'prayer';
+
+  @override
+  ModuleMetadata get metadata => const ModuleMetadata(
+    displayName: 'Prayer',
+    icon: Icons.mosque,
+    accentColor: ModuleAccents.prayer,
+  );
+
+  @override
+  List<RouteBase> get routes => [
+    GoRoute(
+      path: '/prayer',
+      builder: (context, state) => const PrayerHomeScreen(),
+      routes: [
+        GoRoute(
+          path: 'history',
+          builder: (context, state) => const PrayerHistoryScreen(),
+        ),
+        GoRoute(
+          path: 'qadha',
+          builder: (context, state) => const PrayerQadhaScreen(),
+        ),
+        GoRoute(
+          path: 'stats',
+          builder: (context, state) => const PrayerStatsScreen(),
+        ),
+        GoRoute(
+          path: 'settings',
+          builder: (context, state) => const PrayerSettingsScreen(),
+        ),
+        GoRoute(
+          path: 'record/:id',
+          builder: (context, state) => PrayerHomeScreen(
+            highlightRecordId: state.pathParameters['id'],
+          ),
+        ),
+      ],
+    ),
+  ];
+
+  @override
+  Widget dashboardSummary(WidgetRef ref) {
+    final views = ref.watch(todaysPrayerViewsProvider);
+    if (views == null || views.isEmpty) return const SizedBox.shrink();
+    final next = views.firstWhere(
+      (v) =>
+          v.effectiveStatus == PrayerStatus.upcoming ||
+          v.effectiveStatus == PrayerStatus.due,
+      orElse: () => views.last,
+    );
+    final allPrayed =
+        views.every((v) => v.effectiveStatus == PrayerStatus.prayed);
+    return Builder(
+      builder: (context) => Card(
+        child: ListTile(
+          leading: const Icon(Icons.mosque, color: ModuleAccents.prayer),
+          title: Text(metadata.displayName),
+          subtitle: Text(
+            allPrayed
+                ? 'All prayers done for today'
+                : '${next.record.prayerName.name} next',
+          ),
+          onTap: () => context.go('/prayer'),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget? settingsEntry(WidgetRef ref) {
+    return Builder(
+      builder: (context) => ListTile(
+        leading: const Icon(Icons.mosque, color: ModuleAccents.prayer),
+        title: Text(metadata.displayName),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push('/prayer/settings'),
+      ),
+    );
+  }
+
+  static const _lookaheadDays = 3;
+
+  @override
+  Future<List<PendingNotification>> pendingNotifications() async {
+    final now = clock.now();
+    final settings = await _repository.watchSettings().first;
+    final locationResult = await resolveLocation(settings);
+    if (locationResult case Failure()) {
+      return const [];
+    }
+    final location = (locationResult as Success<ResolvedLocation>).value;
+
+    await _repository.sweepMissedPrayers(now, location);
+    await _repository.materializeRecords(now, location);
+
+    if (!settings.notificationsEnabled) return const [];
+
+    final windowEnd = localDayKey(now).addDays(_lookaheadDays);
+    final records = await _repository.recordsInRange(
+      localDayKey(now),
+      windowEnd,
+    );
+    final notifications = <PendingNotification>[];
+    for (final record in records) {
+      if (record.storedStatus != PrayerStatus.upcoming) continue;
+      if (!record.scheduledFor.isAfter(now)) continue;
+      final label = isJumuahDisplay(
+        prayerName: record.prayerName,
+        date: record.prayerDate,
+        observesJumuah: settings.observesJumuah,
+      )
+          ? "Jumu'ah"
+          : _titleCase(record.prayerName.name);
+      notifications.add(
+        PendingNotification(
+          id: record.id,
+          scheduledAt: record.scheduledFor,
+          title: label,
+          body: "It's time for $label prayer",
+          sourceType: 'prayer_record',
+          deepLinkRoute: '/prayer/record/${record.id}',
+        ),
+      );
+      if (settings.preReminderEnabled) {
+        final reminderAt = record.scheduledFor.subtract(
+          Duration(minutes: settings.preReminderOffsetMinutes),
+        );
+        if (reminderAt.isAfter(now)) {
+          notifications.add(
+            PendingNotification(
+              id: 'prayer_prereminder_${record.id}',
+              scheduledAt: reminderAt,
+              title: label,
+              body: '$label prayer is coming up soon',
+              sourceType: 'prayer_record',
+              deepLinkRoute: '/prayer/record/${record.id}',
+            ),
+          );
+        }
+      }
+    }
+    return notifications;
+  }
+
+  String _titleCase(String value) =>
+      value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
+
+  @override
+  Future<void> onNotificationAction(
+    String sourceId,
+    NotificationActionType action,
+  ) async {
+    final recordId = sourceId.startsWith('prayer_prereminder_')
+        ? sourceId.substring('prayer_prereminder_'.length)
+        : sourceId;
+    switch (action) {
+      case NotificationActionType.done:
+        await _repository.markPrayed(recordId);
+      case NotificationActionType.skip:
+        await _repository.markMissedBySkip(recordId);
+      case NotificationActionType.snooze:
+        break;
+    }
+  }
+
+  @override
+  Future<ModuleExport> exportData() async {
+    final settings = await _repository.watchSettings().first;
+    final records = await _repository.allRecords();
+    return ModuleExport({
+      'settings': _settingsToJson(settings),
+      'records': records.map(_recordToJson).toList(),
+    });
+  }
+
+  @override
+  Future<void> importData(ModuleExport data) async {
+    final settingsJson =
+        data.payload['settings'] as Map<String, dynamic>?;
+    if (settingsJson != null) {
+      await _repository.updateSettings(
+        calculationMethod: CalculationMethodDb.fromDb(
+          settingsJson['calculationMethod'] as String,
+        ),
+        asrMethod: AsrMethodDb.fromDb(
+          settingsJson['asrMethod'] as String,
+        ),
+        observesJumuah: settingsJson['observesJumuah'] as bool,
+        locationMode: LocationModeDb.fromDb(
+          settingsJson['locationMode'] as String,
+        ),
+        manualLatitude:
+            (settingsJson['manualLatitude'] as num?)?.toDouble(),
+        manualLongitude:
+            (settingsJson['manualLongitude'] as num?)?.toDouble(),
+        manualTimezone: settingsJson['manualTimezone'] as String?,
+      );
+    }
+  }
+
+  Map<String, Object?> _settingsToJson(PrayerSettings settings) => {
+    'calculationMethod': settings.calculationMethod.toDb(),
+    'asrMethod': settings.asrMethod.toDb(),
+    'observesJumuah': settings.observesJumuah,
+    'locationMode': settings.locationMode.toDb(),
+    'manualLatitude': settings.manualLatitude,
+    'manualLongitude': settings.manualLongitude,
+    'manualTimezone': settings.manualTimezone,
+  };
+
+  Map<String, Object?> _recordToJson(PrayerRecord record) => {
+    'prayerDate': record.prayerDate.toIso(),
+    'prayerName': record.prayerName.toDb(),
+    'scheduledFor': record.scheduledFor.toIso8601String(),
+    'status': record.storedStatus.toDb(),
+  };
+}

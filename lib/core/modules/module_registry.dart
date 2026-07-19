@@ -3,6 +3,8 @@ import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
+import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
+import 'package:habit_tracker/features/prayer/prayer_module.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/water_module.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -23,6 +25,7 @@ List<HabitModule> buildHabitModules(AppDatabase db) {
   return [
     MedicineModule(MedicineRepositoryImpl(db)),
     WaterModule(WaterRepositoryImpl(db)),
+    PrayerModule(PrayerRepositoryImpl(db)),
   ];
 }
 
