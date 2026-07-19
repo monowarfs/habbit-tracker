@@ -1,6 +1,6 @@
 # Settings, PIN Lock, Export/Import (Run 12) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Ship Run 12 — app-level PIN lock (PBKDF2 hash, lockout backoff,
 optional biometric, optional screen privacy), full local JSON export/import
@@ -112,7 +112,7 @@ atomic replace), GoRouter, `pointycastle` (PBKDF2), `flutter_secure_storage`,
   bodies; this task only adds the abstract member and a stub (`async {}`)
   so the app keeps compiling.
 
-- [ ] **Step 1: Add the abstract method**
+- [x] **Step 1: Add the abstract method**
 
 In `lib/core/modules/habit_module.dart`, add inside `abstract class
 HabitModule`, directly after `importData`:
@@ -124,13 +124,13 @@ HabitModule`, directly after `importData`:
   Future<void> wipeData();
 ```
 
-- [ ] **Step 2: Run analyze to confirm the expected compile break**
+- [x] **Step 2: Run analyze to confirm the expected compile break**
 
 Run: `flutter analyze`
 Expected: "Missing concrete implementation" errors in `water_module.dart`/
 `medicine_module.dart`/`prayer_module.dart`.
 
-- [ ] **Step 3: Add stub implementations**
+- [x] **Step 3: Add stub implementations**
 
 Add to each of the three module classes, directly after `importData`:
 
@@ -139,12 +139,12 @@ Add to each of the three module classes, directly after `importData`:
   Future<void> wipeData() async {}
 ```
 
-- [ ] **Step 4: Run analyze to confirm the app compiles again**
+- [x] **Step 4: Run analyze to confirm the app compiles again**
 
 Run: `flutter analyze`
 Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/modules/habit_module.dart lib/features/water/water_module.dart \
@@ -173,7 +173,7 @@ Water's `exportData`/`importData` for goals/logs already exist and are
 correct — this task only adds the missing `WaterSettings` block and the
 wipe method.
 
-- [ ] **Step 1: Write the failing repository test**
+- [x] **Step 1: Write the failing repository test**
 
 Create `test/features/water/data/repositories/water_repository_impl_test.dart`:
 
@@ -215,12 +215,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/features/water/data/repositories/water_repository_impl_test.dart`
 Expected: FAIL — `wipeAll` doesn't exist yet.
 
-- [ ] **Step 3: Add `wipeAll()` to the repository**
+- [x] **Step 3: Add `wipeAll()` to the repository**
 
 In `lib/features/water/domain/repositories/water_repository.dart`, add
 inside `abstract class WaterRepository`, at the end:
@@ -245,12 +245,12 @@ inside `class WaterRepositoryImpl`, at the end (before the closing `}`):
   }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/features/water/data/repositories/water_repository_impl_test.dart`
 Expected: PASS.
 
-- [ ] **Step 5: Write the failing module test**
+- [x] **Step 5: Write the failing module test**
 
 Append to `test/features/water/water_module_test.dart` (the file's
 existing `_FakeWaterRepository` already implements `watchSettings`;
@@ -326,12 +326,12 @@ Check `_settings(...)`'s existing signature in that test file before
 adding the `quickAddAmountsMl` parameter above — if it doesn't already
 take one, add it there rather than duplicating a second helper.
 
-- [ ] **Step 6: Run tests to verify they fail**
+- [x] **Step 6: Run tests to verify they fail**
 
 Run: `flutter test test/features/water/water_module_test.dart`
 Expected: FAIL.
 
-- [ ] **Step 7: Implement in `water_module.dart`**
+- [x] **Step 7: Implement in `water_module.dart`**
 
 Replace the existing `exportData`/`importData`/`wipeData` stub with:
 
@@ -402,12 +402,12 @@ Replace the existing `exportData`/`importData`/`wipeData` stub with:
 Add the import `package:habit_tracker/features/water/domain/entities/water_settings.dart`
 if not already present in the file.
 
-- [ ] **Step 8: Run tests to verify they pass**
+- [x] **Step 8: Run tests to verify they pass**
 
 Run: `flutter test test/features/water/` `&&` `flutter analyze`
 Expected: PASS, clean.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add lib/features/water/ test/features/water/
@@ -439,7 +439,7 @@ This is the biggest per-module gap: `exportData`/`importData` today only
 cover `medicines`/`schedules` — doses and stock events are silently
 dropped on both export and import.
 
-- [ ] **Step 1: Write the failing repository test**
+- [x] **Step 1: Write the failing repository test**
 
 Create `test/features/medicine/data/repositories/medicine_repository_impl_test.dart`:
 
@@ -532,13 +532,13 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/features/medicine/data/repositories/medicine_repository_impl_test.dart`
 Expected: FAIL — none of `allDoses`/`allStockEvents`/`restoreDose`/
 `restoreStockEvent`/`wipeAll` exist yet.
 
-- [ ] **Step 3: Add the new methods to the repository interface**
+- [x] **Step 3: Add the new methods to the repository interface**
 
 In `lib/features/medicine/domain/repositories/medicine_repository.dart`,
 add the import
@@ -579,7 +579,7 @@ existing members with:
   Future<void> wipeAll();
 ```
 
-- [ ] **Step 4: Implement in `medicine_repository_impl.dart`**
+- [x] **Step 4: Implement in `medicine_repository_impl.dart`**
 
 Add, inside `class MedicineRepositoryImpl`, after `allSchedules`:
 
@@ -685,12 +685,12 @@ Extend the existing `MedicineStockEventReasonDb` extension (currently
   };
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/features/medicine/data/repositories/medicine_repository_impl_test.dart`
 Expected: PASS.
 
-- [ ] **Step 6: Write the failing module test**
+- [x] **Step 6: Write the failing module test**
 
 Append to `test/features/medicine/medicine_module_test.dart` (extend the
 file's existing fake repository with the new methods, following the same
@@ -793,12 +793,12 @@ Check the fake repository's constructor/`createMedicine`/`createSchedule`
 stubs already return usable ids before writing the assertions above —
 follow the file's existing fake exactly rather than guessing its shape.
 
-- [ ] **Step 7: Run tests to verify they fail**
+- [x] **Step 7: Run tests to verify they fail**
 
 Run: `flutter test test/features/medicine/medicine_module_test.dart`
 Expected: FAIL.
 
-- [ ] **Step 8: Implement in `medicine_module.dart`**
+- [x] **Step 8: Implement in `medicine_module.dart`**
 
 Replace the existing `exportData`/`importData`/`wipeData` block with:
 
@@ -931,12 +931,12 @@ Also update `_scheduleToJson` (existing method) to include the schedule's
 own id, needed above to build `scheduleIdMap` — add `'id': schedule.id,`
 as its first entry.
 
-- [ ] **Step 9: Run tests to verify they pass**
+- [x] **Step 9: Run tests to verify they pass**
 
 Run: `flutter test test/features/medicine/` `&&` `flutter analyze`
 Expected: PASS, clean.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add lib/features/medicine/ test/features/medicine/
@@ -963,7 +963,7 @@ exported (`_recordToJson` exists) but never actually re-inserted on
 import, and Qadha counters are neither exported nor restored. Both are
 real gaps this task closes.
 
-- [ ] **Step 1: Write the failing repository test**
+- [x] **Step 1: Write the failing repository test**
 
 Create `test/features/prayer/data/repositories/prayer_repository_impl_test.dart`:
 
@@ -1030,12 +1030,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/features/prayer/data/repositories/prayer_repository_impl_test.dart`
 Expected: FAIL.
 
-- [ ] **Step 3: Add the new methods to the repository interface**
+- [x] **Step 3: Add the new methods to the repository interface**
 
 In `lib/features/prayer/domain/repositories/prayer_repository.dart`, add
 at the end of `abstract class PrayerRepository`:
@@ -1056,7 +1056,7 @@ at the end of `abstract class PrayerRepository`:
   Future<void> wipeAll();
 ```
 
-- [ ] **Step 4: Implement in `prayer_repository_impl.dart`**
+- [x] **Step 4: Implement in `prayer_repository_impl.dart`**
 
 Add, inside `class PrayerRepositoryImpl`, after `allRecords`:
 
@@ -1097,12 +1097,12 @@ Add, inside `class PrayerRepositoryImpl`, after `allRecords`:
   }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/features/prayer/data/repositories/prayer_repository_impl_test.dart`
 Expected: PASS.
 
-- [ ] **Step 6: Write the failing module test**
+- [x] **Step 6: Write the failing module test**
 
 Append to `test/features/prayer/prayer_module_test.dart` (extend the
 existing fake repository, same pattern as Tasks 2-3):
@@ -1183,12 +1183,12 @@ test('wipeData delegates to the repository', () async {
 });
 ```
 
-- [ ] **Step 7: Run tests to verify they fail**
+- [x] **Step 7: Run tests to verify they fail**
 
 Run: `flutter test test/features/prayer/prayer_module_test.dart`
 Expected: FAIL.
 
-- [ ] **Step 8: Implement in `prayer_module.dart`**
+- [x] **Step 8: Implement in `prayer_module.dart`**
 
 Replace the existing `exportData`/`importData` block, add `wipeData`:
 
@@ -1266,12 +1266,12 @@ Also update `_recordToJson` (existing method) to include
 `'statusChangedAt': record.statusChangedAt?.toIso8601String(),` as an
 extra entry — needed for a faithful restore.
 
-- [ ] **Step 9: Run tests to verify they pass**
+- [x] **Step 9: Run tests to verify they pass**
 
 Run: `flutter test test/features/prayer/` `&&` `flutter analyze`
 Expected: PASS, clean.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add lib/features/prayer/ test/features/prayer/
@@ -1292,7 +1292,7 @@ git commit -m "feat(prayer): add wipeAll, restore records and Qadha counters on 
   AppDatabase db)` — used by both Task 13's import replace step and
   Task 9's PIN "forgot PIN" reset.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:drift/native.dart';
@@ -1385,12 +1385,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/core/backup/wipe_all_data_test.dart`
 Expected: FAIL — `wipe_all_data.dart` doesn't exist yet.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```dart
 import 'package:habit_tracker/core/database/app_database.dart';
@@ -1414,12 +1414,12 @@ Future<void> wipeAllAppData(List<HabitModule> modules, AppDatabase db) async {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/core/backup/wipe_all_data_test.dart`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/backup/wipe_all_data.dart test/core/backup/wipe_all_data_test.dart
@@ -1440,7 +1440,7 @@ git commit -m "feat(core): add wipeAllAppData shared wipe helper"
   `bool verifyPin(String pin, {required String salt, required String hash})`.
   Every later PIN task calls these two, never `pointycastle` directly.
 
-- [ ] **Step 1: Add the dependency**
+- [x] **Step 1: Add the dependency**
 
 In `pubspec.yaml`, under `dependencies:`, add (alphabetical, after `path_provider`):
 
@@ -1450,7 +1450,7 @@ In `pubspec.yaml`, under `dependencies:`, add (alphabetical, after `path_provide
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
@@ -1478,12 +1478,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `flutter test test/core/security/pin_hash_test.dart`
 Expected: FAIL — `pin_hash.dart` doesn't exist yet.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 ```dart
 import 'dart:convert';
@@ -1542,12 +1542,12 @@ bool _constantTimeEquals(Uint8List a, Uint8List b) {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/core/security/pin_hash_test.dart`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock lib/core/security/pin_hash.dart test/core/security/pin_hash_test.dart
@@ -1565,7 +1565,7 @@ git commit -m "feat(security): add PBKDF2 PIN hashing"
 **Interfaces:**
 - Produces: `Duration calculateBackoffDelay(int consecutiveFailedAttempts)`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
@@ -1592,12 +1592,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/core/security/backoff_test.dart`
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```dart
 import 'dart:math';
@@ -1616,12 +1616,12 @@ Duration calculateBackoffDelay(int consecutiveFailedAttempts) {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/core/security/backoff_test.dart`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/security/backoff.dart test/core/security/backoff_test.dart
@@ -1645,7 +1645,7 @@ git commit -m "feat(security): add PIN lockout backoff table"
   sole `flutter_secure_storage` importer (mirrors
   `notification_service.dart`'s "one file owns the plugin" precedent).
 
-- [ ] **Step 1: Add the dependency**
+- [x] **Step 1: Add the dependency**
 
 In `pubspec.yaml`, under `dependencies:` (alphabetical):
 
@@ -1655,7 +1655,7 @@ In `pubspec.yaml`, under `dependencies:` (alphabetical):
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -1719,12 +1719,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `flutter test test/core/security/pin_lock_service_test.dart`
 Expected: FAIL — `pin_lock_service.dart` doesn't exist yet.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 ```dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -1811,12 +1811,12 @@ class PinLockService {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/core/security/pin_lock_service_test.dart`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock lib/core/security/pin_lock_service.dart test/core/security/pin_lock_service_test.dart
@@ -1851,7 +1851,7 @@ by default when PIN is enabled — `computeIsLocked` treats
 `lastBackgroundedAt == null` as locked, the safer default and the
 conventional PIN-app behavior.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```dart
 import 'package:clock/clock.dart';
@@ -2024,13 +2024,13 @@ overrides beyond the four implemented above (its exact member set can
 shift between versions), keep the `noSuchMethod` fallback above — it
 means only the methods this file actually calls need real bodies.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `flutter test test/core/security/pin_lock_controller_test.dart`
 Expected: FAIL — `pin_lock_controller.dart` doesn't exist yet, and
 `SettingsRepository` has no PIN-mutating methods yet.
 
-- [ ] **Step 3: Add PIN methods to `SettingsRepository`**
+- [x] **Step 3: Add PIN methods to `SettingsRepository`**
 
 In `lib/features/settings/domain/repositories/settings_repository.dart`,
 add at the end of `abstract class SettingsRepository`:
@@ -2061,7 +2061,7 @@ add inside `class SettingsRepositoryImpl`, after `updateWaterUnit`:
   );
 ```
 
-- [ ] **Step 4: Write `pin_lock_controller.dart`**
+- [x] **Step 4: Write `pin_lock_controller.dart`**
 
 ```dart
 import 'package:clock/clock.dart';
@@ -2205,16 +2205,16 @@ Check `settingsRepositoryProvider`'s exact import path in
 `app_settings_providers.dart` before finalizing the import above — it's
 already used the same way by `theme_controller.dart`.
 
-- [ ] **Step 5: Run `build_runner` for the new provider**
+- [x] **Step 5: Run `build_runner` for the new provider**
 
 Run: `dart run build_runner build --delete-conflicting-outputs`
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `flutter test test/core/security/pin_lock_controller_test.dart`
 Expected: PASS. Also run `flutter analyze` — clean.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/features/settings/domain/repositories/settings_repository.dart \
@@ -2246,7 +2246,7 @@ Both wrap OS-level plugins that can't be meaningfully unit-tested beyond
 screenshot/recording behavior needs a real OS, `screen_protector`'s API
 has no fake-able surface worth a mock).
 
-- [ ] **Step 1: Add the dependencies**
+- [x] **Step 1: Add the dependencies**
 
 In `pubspec.yaml`, under `dependencies:` (alphabetical):
 
@@ -2262,7 +2262,7 @@ part of this plan (unlike `local_auth`, already checked in
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
@@ -2311,12 +2311,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `flutter test test/core/security/biometric_service_test.dart`
 Expected: FAIL — `biometric_service.dart` doesn't exist yet.
 
-- [ ] **Step 4: Write `biometric_service.dart`**
+- [x] **Step 4: Write `biometric_service.dart`**
 
 ```dart
 import 'package:local_auth/local_auth.dart';
@@ -2357,12 +2357,12 @@ class BiometricService {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/core/security/biometric_service_test.dart`
 Expected: PASS.
 
-- [ ] **Step 6: Write `screen_privacy_service.dart`** (no automated test — see note above)
+- [x] **Step 6: Write `screen_privacy_service.dart`** (no automated test — see note above)
 
 ```dart
 import 'package:screen_protector/screen_protector.dart';
@@ -2392,7 +2392,7 @@ pub.dev README before wiring this up — `preventScreenshotOn/Off` and
 methods as of this plan's writing, but confirm against the version
 actually resolved in step 1.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock lib/core/security/biometric_service.dart \
@@ -2413,7 +2413,7 @@ git commit -m "feat(security): add biometric and screen-privacy service wrappers
   `appVersion`, `modules`, `common`, `currentSchemaVersion` static const,
   `toJson()`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'dart:convert';
@@ -2449,12 +2449,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/core/backup/backup_envelope_test.dart`
 Expected: FAIL — `backup_envelope.dart` doesn't exist yet.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```dart
 import 'package:meta/meta.dart';
@@ -2504,12 +2504,12 @@ class BackupEnvelope {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/core/backup/backup_envelope_test.dart`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/backup/backup_envelope.dart test/core/backup/backup_envelope_test.dart
@@ -2532,7 +2532,7 @@ git commit -m "feat(backup): add BackupEnvelope"
   AchievementRepository achievementRepository, required String
   appVersion})`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:clock/clock.dart';
@@ -2584,12 +2584,12 @@ above before running — they're leftover scaffolding, not needed; the
 test doesn't require a fixed clock since it only asserts structure, not
 `exportedAt`'s exact value.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/core/backup/export_orchestrator_test.dart`
 Expected: FAIL — `export_orchestrator.dart` doesn't exist yet.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```dart
 import 'package:clock/clock.dart';
@@ -2651,12 +2651,12 @@ Map<String, Object?> _achievementToJson(AchievementRow row) => {
 };
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/core/backup/export_orchestrator_test.dart`
 Expected: PASS. Also run `flutter analyze` — clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/backup/export_orchestrator.dart test/core/backup/export_orchestrator_test.dart
@@ -2687,7 +2687,7 @@ git commit -m "feat(backup): add export_orchestrator"
 This is the DoD's headline test: seed all three modules → export → wipe
 → import → assert equality.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```dart
 import 'dart:convert';
@@ -2924,12 +2924,12 @@ plain positional-argument constructor,
 `ModuleExport(Map<String, Object?> payload)`) before running; add the
 import `package:habit_tracker/core/modules/habit_module.dart` for it.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `flutter test test/core/backup/import_orchestrator_test.dart`
 Expected: FAIL — `import_orchestrator.dart` doesn't exist yet.
 
-- [ ] **Step 3: Add `restoreSettings` to `SettingsRepository`**
+- [x] **Step 3: Add `restoreSettings` to `SettingsRepository`**
 
 In `lib/features/settings/domain/repositories/settings_repository.dart`,
 add at the end of `abstract class SettingsRepository`:
@@ -2972,7 +2972,7 @@ In `settings_repository_impl.dart`, add after `updatePinLockTimeoutSeconds`:
   }
 ```
 
-- [ ] **Step 4: Add `restoreRow` to `AchievementRepository`**
+- [x] **Step 4: Add `restoreRow` to `AchievementRepository`**
 
 In `lib/core/achievements/achievement_repository.dart`, add at the end of
 the class:
@@ -3011,7 +3011,7 @@ the class:
 Add `import 'package:clock/clock.dart';` to that file's imports if not
 already present.
 
-- [ ] **Step 5: Write `import_orchestrator.dart`**
+- [x] **Step 5: Write `import_orchestrator.dart`**
 
 ```dart
 import 'dart:convert';
@@ -3199,13 +3199,13 @@ Future<Result<void>> applyImport({
 }
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `flutter test test/core/backup/import_orchestrator_test.dart`
 Expected: PASS. Also run `flutter test` (full suite) and `flutter
 analyze` — both clean, confirming Tasks 1-13 haven't regressed anything.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/backup/import_orchestrator.dart \
@@ -3237,7 +3237,7 @@ separate, minimal file so a future `GoogleDriveBackupTarget` is a pure
 addition with no change here (`strategies/backup-import-export.md`'s
 seam).
 
-- [ ] **Step 1: Add the dependencies**
+- [x] **Step 1: Add the dependencies**
 
 In `pubspec.yaml`, under `dependencies:` (alphabetical):
 
@@ -3252,7 +3252,7 @@ plan — verify before running. `share_plus` was already checked in
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: Write `backup_target.dart`**
+- [x] **Step 2: Write `backup_target.dart`**
 
 ```dart
 import 'dart:io';
@@ -3275,7 +3275,7 @@ abstract class BackupTarget {
 }
 ```
 
-- [ ] **Step 3: Write `local_file_backup_target.dart`**
+- [x] **Step 3: Write `local_file_backup_target.dart`**
 
 ```dart
 import 'dart:io';
@@ -3317,12 +3317,12 @@ changed across major versions; `file_picker`'s
 `FilePicker.platform.pickFiles(...)` shape has been stable longer and is
 lower-risk.
 
-- [ ] **Step 4: Run analyze**
+- [x] **Step 4: Run analyze**
 
 Run: `flutter analyze`
 Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock lib/core/backup/backup_target.dart lib/core/backup/local_file_backup_target.dart
@@ -3357,7 +3357,7 @@ tasks because they have independent, separately reviewable deliverables
 (routing logic vs. screen UI), not because of a hard sequencing
 requirement.
 
-- [ ] **Step 1: Add new route constants**
+- [x] **Step 1: Add new route constants**
 
 In `lib/core/router/app_router.dart`, inside `class AppRoutes`, add after
 `settings`:
@@ -3389,7 +3389,7 @@ In `lib/core/router/app_router.dart`, inside `class AppRoutes`, add after
   static const String lockReset = '/lock/reset';
 ```
 
-- [ ] **Step 2: Update `appRouterProvider` and `buildAppRouter`'s signature**
+- [x] **Step 2: Update `appRouterProvider` and `buildAppRouter`'s signature**
 
 Replace:
 
@@ -3516,7 +3516,7 @@ and replace with:
               ),
 ```
 
-- [ ] **Step 3: Wire the resume-timeout hook in `main.dart`**
+- [x] **Step 3: Wire the resume-timeout hook in `main.dart`**
 
 In `lib/main.dart`, find `didChangeAppLifecycleState` and add the
 `paused` branch alongside the existing `resumed` one:
@@ -3543,7 +3543,7 @@ Add the import
 `import 'package:habit_tracker/core/security/pin_lock_controller.dart';`
 to `main.dart` if not already present via another file.
 
-- [ ] **Step 4: Write a redirect smoke test**
+- [x] **Step 4: Write a redirect smoke test**
 
 ```dart
 import 'package:drift/native.dart';
@@ -3586,14 +3586,14 @@ under a different name (`_NoopStorage`) to keep this test file
 self-contained, matching this project's existing precedent of small
 per-file fakes rather than a shared test-utils package.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `flutter test test/core/router/app_router_test.dart` `&&` `flutter
 analyze`
 Expected: PASS, clean. (Task 16's screens must exist for this to
 compile — see the note at the top of this task.)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/core/router/app_router.dart lib/main.dart test/core/router/app_router_test.dart
@@ -3616,7 +3616,7 @@ git commit -m "feat(router): wire real /lock redirect and resume-timeout hook"
   (`returnTo: String?`); `class LockResetScreen`. Task 17's
   `PinSetScreen` also consumes `PinKeypad`.
 
-- [ ] **Step 1: Add l10n keys**
+- [x] **Step 1: Add l10n keys**
 
 In `lib/core/l10n/app_en.arb`, add (anywhere among the existing
 top-level keys, alphabetical grouping not enforced by this file today):
@@ -3666,12 +3666,12 @@ match it exactly (both are plain JSON, machine-checked by `flutter
 gen-l10n`, so a stray trailing comma or mismatched brace fails the build
 loudly).
 
-- [ ] **Step 2: Run gen-l10n**
+- [x] **Step 2: Run gen-l10n**
 
 Run: `flutter gen-l10n`
 Expected: succeeds, no missing-translation warnings for the new keys.
 
-- [ ] **Step 3: Write `pin_keypad.dart`**
+- [x] **Step 3: Write `pin_keypad.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -3733,7 +3733,7 @@ class PinKeypad extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 4: Write `lock_screen.dart`**
+- [x] **Step 4: Write `lock_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -3870,7 +3870,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 }
 ```
 
-- [ ] **Step 5: Write `lock_reset_screen.dart`**
+- [x] **Step 5: Write `lock_reset_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -3928,12 +3928,12 @@ class LockResetScreen extends ConsumerWidget {
 }
 ```
 
-- [ ] **Step 6: Run analyze**
+- [x] **Step 6: Run analyze**
 
 Run: `flutter analyze`
 Expected: clean.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/widgets/pin_keypad.dart lib/core/security/lock_screen.dart \
@@ -3954,7 +3954,7 @@ git commit -m "feat(security): add PinKeypad, LockScreen, LockResetScreen"
 - Consumes: `PinLockController` (Task 9), `BiometricService`,
   `ScreenPrivacyService` (Task 10), `PinKeypad` (Task 16).
 
-- [ ] **Step 1: Add l10n keys**
+- [x] **Step 1: Add l10n keys**
 
 `app_en.arb` additions:
 
@@ -4011,12 +4011,12 @@ git commit -m "feat(security): add PinKeypad, LockScreen, LockResetScreen"
   "pinSetEnterCurrent": "বর্তমান পিন লিখুন",
 ```
 
-- [ ] **Step 2: Run gen-l10n**
+- [x] **Step 2: Run gen-l10n**
 
 Run: `flutter gen-l10n`
 Expected: succeeds.
 
-- [ ] **Step 3: Write `pin_set_screen.dart`**
+- [x] **Step 3: Write `pin_set_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -4100,7 +4100,7 @@ class _PinSetScreenState extends ConsumerState<PinSetScreen> {
 }
 ```
 
-- [ ] **Step 4: Write `pin_settings_screen.dart`**
+- [x] **Step 4: Write `pin_settings_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -4281,12 +4281,12 @@ and add `import 'package:habit_tracker/core/widgets/pin_keypad.dart';` —
 this avoids a second, worse keypad implementation living next to the
 real one.
 
-- [ ] **Step 5: Run analyze**
+- [x] **Step 5: Run analyze**
 
 Run: `flutter analyze`
 Expected: clean.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/features/settings/presentation/screens/pin_settings_screen.dart \
@@ -4311,7 +4311,7 @@ git commit -m "feat(settings): add PIN settings and PIN set/change screens"
 - Produces: sectioned `SettingsHomeScreen` (Appearance/Language/
   Notifications/Security/Data/About), each row pushing its route.
 
-- [ ] **Step 1: Add the `package_info_plus` dependency**
+- [x] **Step 1: Add the `package_info_plus` dependency**
 
 In `pubspec.yaml`, under `dependencies:` (alphabetical):
 
@@ -4324,7 +4324,7 @@ running.
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: Add l10n keys**
+- [x] **Step 2: Add l10n keys**
 
 `app_en.arb` additions:
 
@@ -4360,11 +4360,11 @@ Run: `flutter pub get`
   "aboutPrivacyPolicyBody": "হ্যাবিট ট্র্যাকার আপনার সব ডেটা শুধুমাত্র এই ডিভাইসে স্থানীয়ভাবে সংরক্ষণ করে। কোনো সার্ভারে কিছু পাঠানো হয় না — কোনো অ্যাকাউন্ট নেই, অ্যানালিটিক্স নেই, এবং কোনো মূল বৈশিষ্ট্যের জন্য নেটওয়ার্ক অ্যাক্সেসের প্রয়োজন নেই। আপনি সেটিংসে এক্সপোর্ট বা ডায়াগনস্টিক লগ শেয়ার করার ব্যবস্থা স্পষ্টভাবে ব্যবহার করলেই কেবল ডেটা ডিভাইসের বাইরে যায়।",
 ```
 
-- [ ] **Step 3: Run gen-l10n**
+- [x] **Step 3: Run gen-l10n**
 
 Run: `flutter gen-l10n`
 
-- [ ] **Step 4: Write `theme_settings_screen.dart`**
+- [x] **Step 4: Write `theme_settings_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -4411,7 +4411,7 @@ class ThemeSettingsScreen extends ConsumerWidget {
 }
 ```
 
-- [ ] **Step 5: Write `language_settings_screen.dart`**
+- [x] **Step 5: Write `language_settings_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -4448,7 +4448,7 @@ class LanguageSettingsScreen extends ConsumerWidget {
 }
 ```
 
-- [ ] **Step 6: Write `about_screen.dart`**
+- [x] **Step 6: Write `about_screen.dart`**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -4503,7 +4503,7 @@ class AboutScreen extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 7: Restructure `settings_home_screen.dart`**
+- [x] **Step 7: Restructure `settings_home_screen.dart`**
 
 Replace the entire body of `SettingsHomeScreen.build` with a sectioned
 list. Full replacement:
@@ -4617,7 +4617,7 @@ class _SectionHeader extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 8: Update the existing dashboard smoke test if it asserts on the old flat layout**
+- [x] **Step 8: Update the existing dashboard smoke test if it asserts on the old flat layout**
 
 Run: `flutter test`
 If any existing widget test locates the theme/language `SegmentedButton`
@@ -4630,12 +4630,12 @@ Run: `grep -rl "SettingsHomeScreen\|SegmentedButton" test/`
 and adjust any hit that pumps `SettingsHomeScreen` and expects the
 theme/language controls inline.
 
-- [ ] **Step 9: Run tests to verify they pass**
+- [x] **Step 9: Run tests to verify they pass**
 
 Run: `flutter test` `&&` `flutter analyze`
 Expected: PASS, clean.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock \
@@ -4660,7 +4660,7 @@ git commit -m "feat(settings): restructure Settings home into sections, add Abou
   (Task 13), `LocalFileBackupTarget` (Task 14), `logFilesForSharing()`
   (existing, `lib/core/logging/app_logger.dart`).
 
-- [ ] **Step 1: Add l10n keys**
+- [x] **Step 1: Add l10n keys**
 
 `app_en.arb` additions:
 
@@ -4705,11 +4705,11 @@ git commit -m "feat(settings): restructure Settings home into sections, add Abou
   "dataImportFailed": "ইমপোর্ট ব্যর্থ হয়েছে: {reason}",
 ```
 
-- [ ] **Step 2: Run gen-l10n**
+- [x] **Step 2: Run gen-l10n**
 
 Run: `flutter gen-l10n`
 
-- [ ] **Step 3: Write the screen**
+- [x] **Step 3: Write the screen**
 
 ```dart
 import 'dart:convert';
@@ -4883,12 +4883,12 @@ proper `AppLocalizations` key — reuse `l10n.lockResetCancel` (Task 16,
 same "Cancel" meaning) rather than adding a near-duplicate key, matching
 this project's convention of not adding redundant strings.
 
-- [ ] **Step 4: Run analyze**
+- [x] **Step 4: Run analyze**
 
 Run: `flutter analyze`
 Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/settings/presentation/screens/data_settings_screen.dart \
@@ -4907,7 +4907,7 @@ git commit -m "feat(settings): add Data settings screen (export/import/share log
 - Modify: `CLAUDE.md`
 - Modify: `docs/superpowers/specs/2026-07-19-settings-security-design.md`
 
-- [ ] **Step 1: Correct the design spec's `modules` table assumption**
+- [x] **Step 1: Correct the design spec's `modules` table assumption**
 
 The spec's Export/Import section describes `export_orchestrator.dart` as
 building `common` from "the `modules` enable/position table" — no such
@@ -4947,7 +4947,7 @@ Replace with:
   that table also adds it to `common` then, not now. Pretty-print is a
 ```
 
-- [ ] **Step 2: Update `navigation-map.md`**
+- [x] **Step 2: Update `navigation-map.md`**
 
 In `docs/product/navigation-map.md`, under the "Settings (pushed within
 `/settings` tab)" table, no change needed — every route this run adds
@@ -4961,7 +4961,7 @@ already listed there. Add the one row that table is missing:
 
 directly after the `/settings/about` row.
 
-- [ ] **Step 3: Correct `app-flow.md`'s lockout-counter line**
+- [x] **Step 3: Correct `app-flow.md`'s lockout-counter line**
 
 In `docs/product/app-flow.md`, find (PIN Unlock Flow, step 3):
 
@@ -4981,7 +4981,7 @@ Replace with:
    `docs/superpowers/specs/2026-07-19-settings-security-design.md`).
 ```
 
-- [ ] **Step 4: Update `database-design.md`'s `app_settings` note**
+- [x] **Step 4: Update `database-design.md`'s `app_settings` note**
 
 In `docs/technical/database-design.md`, the existing note under
 `app_settings` already correctly describes `pin_enabled`/
@@ -4994,7 +4994,7 @@ Run: `grep -n "PIN lock\|pin_enabled" docs/technical/database-design.md`
 
 and fix any sentence claiming PIN lock is unimplemented.
 
-- [ ] **Step 5: Update `CLAUDE.md`'s project-state paragraph**
+- [x] **Step 5: Update `CLAUDE.md`'s project-state paragraph**
 
 Add a new paragraph after the existing "Run 15 adds a v1.1-class
 cross-module layer..." paragraph:
@@ -5020,7 +5020,7 @@ restored on import). The `/lock` GoRouter redirect stub from Run 05 is
 now real.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/superpowers/specs/2026-07-19-settings-security-design.md \
