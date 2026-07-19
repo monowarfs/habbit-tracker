@@ -9,6 +9,9 @@ import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_stock_events_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicines_table.dart';
+import 'package:habit_tracker/features/prayer/data/tables/prayer_qadha_counters_table.dart';
+import 'package:habit_tracker/features/prayer/data/tables/prayer_records_table.dart';
+import 'package:habit_tracker/features/prayer/data/tables/prayer_settings_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_goals_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_logs_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_settings_table.dart';
@@ -37,6 +40,9 @@ part 'app_database.g.dart';
     MedicineSchedulesTable,
     MedicineDosesTable,
     MedicineStockEventsTable,
+    PrayerSettingsTable,
+    PrayerRecordsTable,
+    PrayerQadhaCountersTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
