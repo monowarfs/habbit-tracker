@@ -14,7 +14,9 @@ import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
+import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_streak.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/jumuah_label.dart';
+import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_history_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_screen.dart';
@@ -83,8 +85,9 @@ class PrayerModule implements HabitModule {
           v.effectiveStatus == PrayerStatus.due,
       orElse: () => views.last,
     );
-    final allPrayed =
-        views.every((v) => v.effectiveStatus == PrayerStatus.prayed);
+    final allPrayed = views.every(
+      (v) => v.effectiveStatus == PrayerStatus.prayed,
+    );
     return Builder(
       builder: (context) => Card(
         child: ListTile(
@@ -139,11 +142,12 @@ class PrayerModule implements HabitModule {
     for (final record in records) {
       if (record.storedStatus != PrayerStatus.upcoming) continue;
       if (!record.scheduledFor.isAfter(now)) continue;
-      final label = isJumuahDisplay(
-        prayerName: record.prayerName,
-        date: record.prayerDate,
-        observesJumuah: settings.observesJumuah,
-      )
+      final label =
+          isJumuahDisplay(
+            prayerName: record.prayerName,
+            date: record.prayerDate,
+            observesJumuah: settings.observesJumuah,
+          )
           ? "Jumu'ah"
           : _titleCase(record.prayerName.name);
       notifications.add(
@@ -200,26 +204,166 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+    final records = await _repository.recordsInRange(range.start, range.end);
+    final byDay = <LocalDate, List<PrayerRecord>>{};
+    for (final record in records) {
+      (byDay[record.prayerDate] ??= []).add(record);
+    }
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
-      result[day] = const ModuleDayStatus(kind: ModuleDayStatusKind.none, value: 0);
+      final dayRecords = byDay[day] ?? const [];
+      if (dayRecords.length < 5 ||
+          dayRecords.any((r) => r.storedStatus == PrayerStatus.upcoming)) {
+        result[day] = const ModuleDayStatus(
+          kind: ModuleDayStatusKind.none,
+          value: 0,
+        );
+        day = day.addDays(1);
+        continue;
+      }
+      final prayedCount = dayRecords
+          .where((r) => r.storedStatus == PrayerStatus.prayed)
+          .length;
+      final kind = prayedCount == dayRecords.length
+          ? ModuleDayStatusKind.complete
+          : prayedCount == 0
+          ? ModuleDayStatusKind.missed
+          : ModuleDayStatusKind.partial;
+      result[day] = ModuleDayStatus(kind: kind, value: prayedCount);
       day = day.addDays(1);
     }
     return result;
   }
 
   @override
-  Widget? nextUpcoming(WidgetRef ref) => null;
+  Widget? nextUpcoming(WidgetRef ref) {
+    final views = ref.watch(todaysPrayerViewsProvider);
+    if (views == null) return null;
+    PrayerRecordView? next;
+    for (final view in views) {
+      if (view.effectiveStatus == PrayerStatus.due ||
+          view.effectiveStatus == PrayerStatus.upcoming) {
+        next = view;
+        break;
+      }
+    }
+    if (next == null) return null;
+    final label = next.showAsJumuah
+        ? "Jumu'ah"
+        : _titleCase(next.record.prayerName.name);
+    return Builder(
+      builder: (context) => Chip(
+        avatar: const Icon(Icons.mosque, size: 16),
+        label: Text(label),
+      ),
+    );
+  }
 
   @override
-  List<Widget> quickActions(WidgetRef ref) => const [];
+  List<Widget> quickActions(WidgetRef ref) {
+    final views = ref.watch(todaysPrayerViewsProvider);
+    if (views == null) return const [];
+    final due = views.where((v) => v.effectiveStatus == PrayerStatus.due);
+    if (due.isEmpty) return const [];
+    final recordId = due.first.record.id;
+    return [
+      Consumer(
+        builder: (context, innerRef, _) => ActionChip(
+          avatar: const Icon(Icons.check, size: 16),
+          label: const Text('Mark prayed'),
+          onPressed: () => innerRef
+              .read(prayerControllerProvider.notifier)
+              .togglePrayed(recordId, currentlyPrayed: false),
+        ),
+      ),
+    ];
+  }
 
   @override
   Future<List<SearchResult>> search(String query) async => const [];
 
   @override
-  List<AchievementDefinition> get achievementDefinitions => const [];
+  List<AchievementDefinition> get achievementDefinitions => [
+    AchievementDefinition(
+      key: 'prayer_first_log',
+      moduleId: id,
+      titleKey: 'achievementPrayerFirstLogTitle',
+      descriptionKey: 'achievementPrayerFirstLogDescription',
+      target: 1,
+      currentProgress: () async {
+        final today = localDayKey(clock.now());
+        final records = await _repository.recordsInRange(
+          const LocalDate(2000, 1, 1),
+          today,
+        );
+        return records.any((r) => r.storedStatus == PrayerStatus.prayed)
+            ? 1
+            : 0;
+      },
+    ),
+    AchievementDefinition(
+      key: 'prayer_streak_7',
+      moduleId: id,
+      titleKey: 'achievementPrayerStreak7Title',
+      descriptionKey: 'achievementPrayerStreak7Description',
+      target: 7,
+      currentProgress: _currentPrayerStreak,
+    ),
+    AchievementDefinition(
+      key: 'prayer_streak_30',
+      moduleId: id,
+      titleKey: 'achievementPrayerStreak30Title',
+      descriptionKey: 'achievementPrayerStreak30Description',
+      target: 30,
+      currentProgress: _currentPrayerStreak,
+    ),
+    AchievementDefinition(
+      key: 'prayer_streak_100',
+      moduleId: id,
+      titleKey: 'achievementPrayerStreak100Title',
+      descriptionKey: 'achievementPrayerStreak100Description',
+      target: 100,
+      currentProgress: _currentPrayerStreak,
+    ),
+    AchievementDefinition(
+      key: 'prayer_perfect_week',
+      moduleId: id,
+      titleKey: 'achievementPrayerPerfectWeekTitle',
+      descriptionKey: 'achievementPrayerPerfectWeekDescription',
+      target: 1,
+      currentProgress: _perfectPrayerWeek,
+    ),
+  ];
+
+  Future<int> _currentPrayerStreak() async {
+    final today = localDayKey(clock.now());
+    final records = await _repository.recordsInRange(
+      today.addDays(-100),
+      today,
+    );
+    final byDay = <LocalDate, List<PrayerRecord>>{};
+    for (final record in records) {
+      (byDay[record.prayerDate] ??= []).add(record);
+    }
+    final result = const CalculatePrayerStreakUseCase().execute(
+      recordsByDay: byDay,
+      earliestDay: today.addDays(-100),
+      today: today,
+    );
+    return result.current;
+  }
+
+  Future<int> _perfectPrayerWeek() async {
+    final today = localDayKey(clock.now());
+    final status = await dayStatus(
+      DateRange(start: today.addDays(-6), end: today),
+    );
+    final allComplete = status.values.every(
+      (s) => s.kind == ModuleDayStatusKind.complete,
+    );
+    return allComplete ? 1 : 0;
+  }
 
   @override
   Future<ModuleExport> exportData() async {
@@ -233,8 +377,7 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<void> importData(ModuleExport data) async {
-    final settingsJson =
-        data.payload['settings'] as Map<String, dynamic>?;
+    final settingsJson = data.payload['settings'] as Map<String, dynamic>?;
     if (settingsJson != null) {
       await _repository.updateSettings(
         calculationMethod: CalculationMethodDb.fromDb(
@@ -247,10 +390,8 @@ class PrayerModule implements HabitModule {
         locationMode: LocationModeDb.fromDb(
           settingsJson['locationMode'] as String,
         ),
-        manualLatitude:
-            (settingsJson['manualLatitude'] as num?)?.toDouble(),
-        manualLongitude:
-            (settingsJson['manualLongitude'] as num?)?.toDouble(),
+        manualLatitude: (settingsJson['manualLatitude'] as num?)?.toDouble(),
+        manualLongitude: (settingsJson['manualLongitude'] as num?)?.toDouble(),
         manualTimezone: settingsJson['manualTimezone'] as String?,
       );
     }

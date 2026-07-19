@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
@@ -142,5 +143,44 @@ void main() {
     await module.onNotificationAction('r1', NotificationActionType.snooze);
     verifyNever(() => repo.markPrayed(any()));
     verifyNever(() => repo.markMissedBySkip(any()));
+  });
+
+  test(
+    'dayStatus: 5 prayed records is complete, mix is partial, none is missed',
+    () async {
+      const day = LocalDate(2026, 6, 1);
+      List<PrayerRecord> recordsWith(PrayerStatus Function(int) statusFor) => [
+        for (var i = 0; i < 5; i++)
+          PrayerRecord(
+            id: 'r$i',
+            prayerDate: day,
+            prayerName: PrayerName.values[i],
+            scheduledFor: DateTime.utc(2026, 6, 1, 5 + i),
+            storedStatus: statusFor(i),
+          ),
+      ];
+      final range = DateRange(start: day, end: day);
+
+      when(
+        () => repo.recordsInRange(any(), any()),
+      ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.prayed));
+      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.complete);
+
+      when(
+        () => repo.recordsInRange(any(), any()),
+      ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.missed));
+      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.missed);
+
+      when(() => repo.recordsInRange(any(), any())).thenAnswer(
+        (_) async => recordsWith(
+          (i) => i == 0 ? PrayerStatus.prayed : PrayerStatus.missed,
+        ),
+      );
+      expect((await module.dayStatus(range))[day]!.kind, ModuleDayStatusKind.partial);
+    },
+  );
+
+  test('search always returns empty (Prayer has no named user data)', () async {
+    expect(await module.search('fajr'), isEmpty);
   });
 }
