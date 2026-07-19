@@ -30,6 +30,7 @@ dependencies:
   meta: ^1.18.0
   path: ^1.9.1
   path_provider: ^2.1.6
+  pointycastle: ^4.0.0
   riverpod_annotation: ^4.0.3
   sqlite3: ^3.4.0
   timezone: ^0.11.1
