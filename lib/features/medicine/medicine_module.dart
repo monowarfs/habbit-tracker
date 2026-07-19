@@ -14,6 +14,7 @@ import 'package:habit_tracker/features/medicine/data/repositories/medicine_repos
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
@@ -363,9 +364,13 @@ class MedicineModule implements HabitModule {
   Future<ModuleExport> exportData() async {
     final medicines = await _repository.allMedicines();
     final schedules = await _repository.allSchedules();
+    final doses = await _repository.allDoses();
+    final stockEvents = await _repository.allStockEvents();
     return ModuleExport({
       'medicines': medicines.map(_medicineToJson).toList(),
       'schedules': schedules.map(_scheduleToJson).toList(),
+      'doses': doses.map(_doseToJson).toList(),
+      'stockEvents': stockEvents.map(_stockEventToJson).toList(),
     });
   }
 
@@ -388,12 +393,14 @@ class MedicineModule implements HabitModule {
         medicineIdMap[json['id'] as String] = value.id;
       }
     }
+
+    final scheduleIdMap = <String, String>{};
     final schedules = (data.payload['schedules'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
     for (final json in schedules) {
       final newMedicineId = medicineIdMap[json['medicineId'] as String];
       if (newMedicineId == null) continue;
-      await _repository.createSchedule(
+      final result = await _repository.createSchedule(
         medicineId: newMedicineId,
         rule: _ruleFromJson(json),
         startDate: LocalDate.parse(json['startDate'] as String),
@@ -402,12 +409,60 @@ class MedicineModule implements HabitModule {
             : LocalDate.parse(json['endDate'] as String),
         graceWindowMinutes: json['graceWindowMinutes'] as int,
       );
+      if (result case Success(:final value)) {
+        scheduleIdMap[json['id'] as String] = value.id;
+      }
     }
+
+    final doseIdMap = <String, String>{};
+    final doses = (data.payload['doses'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+    for (final json in doses) {
+      final newMedicineId = medicineIdMap[json['medicineId'] as String];
+      final newScheduleId = scheduleIdMap[json['scheduleId'] as String];
+      if (newMedicineId == null || newScheduleId == null) continue;
+      final newId = await _repository.restoreDose(
+        MedicineDose(
+          id: '',
+          medicineId: newMedicineId,
+          scheduleId: newScheduleId,
+          scheduledFor: DateTime.parse(json['scheduledFor'] as String),
+          storedStatus: MedicineDoseStatus.values.byName(
+            json['status'] as String,
+          ),
+          graceWindowMinutes: json['graceWindowMinutes'] as int,
+          statusChangedAt: json['statusChangedAt'] == null
+              ? null
+              : DateTime.parse(json['statusChangedAt'] as String),
+          stockDeltaApplied: json['stockDeltaApplied'] as int,
+        ),
+      );
+      doseIdMap[json['id'] as String] = newId;
+    }
+
+    final stockEvents = (data.payload['stockEvents'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+    for (final json in stockEvents) {
+      final newMedicineId = medicineIdMap[json['medicineId'] as String];
+      if (newMedicineId == null) continue;
+      final oldDoseId = json['doseId'] as String?;
+      await _repository.restoreStockEvent(
+        MedicineStockEvent(
+          id: '',
+          medicineId: newMedicineId,
+          doseId: oldDoseId == null ? null : doseIdMap[oldDoseId],
+          delta: json['delta'] as int,
+          reason: MedicineStockEventReasonDb.fromDb(json['reason'] as String),
+          occurredAt: DateTime.parse(json['occurredAt'] as String),
+        ),
+      );
+    }
+
     await _repository.materializeDoses(clock.now());
   }
 
   @override
-  Future<void> wipeData() async {}
+  Future<void> wipeData() => _repository.wipeAll();
 
   Map<String, Object?> _medicineToJson(Medicine medicine) => {
     'id': medicine.id,
@@ -421,6 +476,7 @@ class MedicineModule implements HabitModule {
   };
 
   Map<String, Object?> _scheduleToJson(MedicineSchedule schedule) => {
+    'id': schedule.id,
     'medicineId': schedule.medicineId,
     'frequencyType': schedule.rule.toDbFrequencyType(),
     'intervalDays': schedule.rule.toDbIntervalDays(),
@@ -432,6 +488,25 @@ class MedicineModule implements HabitModule {
     'startDate': schedule.startDate.toIso(),
     'endDate': schedule.endDate?.toIso(),
     'graceWindowMinutes': schedule.graceWindowMinutes,
+  };
+
+  Map<String, Object?> _doseToJson(MedicineDose dose) => {
+    'id': dose.id,
+    'medicineId': dose.medicineId,
+    'scheduleId': dose.scheduleId,
+    'scheduledFor': dose.scheduledFor.toIso8601String(),
+    'status': dose.storedStatus.name,
+    'statusChangedAt': dose.statusChangedAt?.toIso8601String(),
+    'stockDeltaApplied': dose.stockDeltaApplied,
+    'graceWindowMinutes': dose.graceWindowMinutes,
+  };
+
+  Map<String, Object?> _stockEventToJson(MedicineStockEvent event) => {
+    'medicineId': event.medicineId,
+    'doseId': event.doseId,
+    'delta': event.delta,
+    'reason': event.reason.toDb(),
+    'occurredAt': event.occurredAt.toIso8601String(),
   };
 
   RepeatRule _ruleFromJson(Map<String, dynamic> json) {

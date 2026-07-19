@@ -6,6 +6,9 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,6 +23,26 @@ void main() {
     // mocktail requires a fallback instance for any non-primitive type used
     // with `any()` (here, `dosesInRange(LocalDate, LocalDate)`).
     registerFallbackValue(const LocalDate(2026, 1, 1));
+    registerFallbackValue(const RepeatRule.prn());
+    registerFallbackValue(
+      MedicineDose(
+        id: 'fallback',
+        medicineId: 'fallback',
+        scheduleId: 'fallback',
+        scheduledFor: DateTime.utc(2026),
+        storedStatus: MedicineDoseStatus.upcoming,
+        graceWindowMinutes: 30,
+      ),
+    );
+    registerFallbackValue(
+      MedicineStockEvent(
+        id: 'fallback',
+        medicineId: 'fallback',
+        delta: 0,
+        reason: MedicineStockEventReason.doseTaken,
+        occurredAt: DateTime.utc(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -203,4 +226,116 @@ void main() {
       expect(noResults, isEmpty);
     },
   );
+
+  test(
+    'importData restores doses and stock events with remapped ids',
+    () async {
+      const medicine = Medicine(
+        id: 'new-med',
+        name: 'Vitamin D',
+        stockEnabled: false,
+      );
+      final schedule = MedicineSchedule(
+        id: 'new-sched',
+        medicineId: 'new-med',
+        rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+        startDate: const LocalDate(2026, 6, 1),
+        createdAt: DateTime.utc(2026, 6),
+      );
+      when(
+        () => repo.createMedicine(
+          name: any(named: 'name'),
+          stockEnabled: any(named: 'stockEnabled'),
+          dosageNote: any(named: 'dosageNote'),
+          stockCount: any(named: 'stockCount'),
+          stockThreshold: any(named: 'stockThreshold'),
+          stopWhenStockDepleted: any(named: 'stopWhenStockDepleted'),
+          consumptionPerDose: any(named: 'consumptionPerDose'),
+        ),
+      ).thenAnswer((_) async => const Result.success(medicine));
+      when(
+        () => repo.createSchedule(
+          medicineId: any(named: 'medicineId'),
+          rule: any(named: 'rule'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+          graceWindowMinutes: any(named: 'graceWindowMinutes'),
+        ),
+      ).thenAnswer((_) async => Result.success(schedule));
+      when(() => repo.restoreDose(any())).thenAnswer((_) async => 'new-dose');
+      when(() => repo.restoreStockEvent(any())).thenAnswer((_) async {});
+      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+
+      await module.importData(
+        const ModuleExport({
+          'medicines': [
+            {
+              'id': 'old-med',
+              'name': 'Vitamin D',
+              'dosageNote': null,
+              'stockEnabled': false,
+              'stockCount': null,
+              'stockThreshold': null,
+              'stopWhenStockDepleted': false,
+              'consumptionPerDose': 1,
+            },
+          ],
+          'schedules': [
+            {
+              'id': 'old-sched',
+              'medicineId': 'old-med',
+              'frequencyType': 'fixed_daily',
+              'intervalDays': null,
+              'weekdaysMask': null,
+              'timesOfDay': ['08:00'],
+              'startDate': '2026-06-01',
+              'endDate': null,
+              'graceWindowMinutes': 30,
+            },
+          ],
+          'doses': [
+            {
+              'id': 'old-dose',
+              'medicineId': 'old-med',
+              'scheduleId': 'old-sched',
+              'scheduledFor': '2026-06-01T08:00:00.000Z',
+              'status': 'done',
+              'statusChangedAt': null,
+              'stockDeltaApplied': -1,
+              'graceWindowMinutes': 30,
+            },
+          ],
+          'stockEvents': [
+            {
+              'medicineId': 'old-med',
+              'doseId': 'old-dose',
+              'delta': -1,
+              'reason': 'dose_taken',
+              'occurredAt': '2026-06-01T08:00:00.000Z',
+            },
+          ],
+        }),
+      );
+
+      final capturedDoses = verify(
+        () => repo.restoreDose(captureAny()),
+      ).captured;
+      expect(capturedDoses, hasLength(1));
+      expect(
+        (capturedDoses.single as MedicineDose).storedStatus,
+        MedicineDoseStatus.done,
+      );
+      final capturedEvents = verify(
+        () => repo.restoreStockEvent(captureAny()),
+      ).captured;
+      expect(capturedEvents, hasLength(1));
+      expect((capturedEvents.single as MedicineStockEvent).doseId, 'new-dose');
+    },
+  );
+
+  test('wipeData delegates to the repository', () async {
+    when(() => repo.wipeAll()).thenAnswer((_) async {});
+    await module.wipeData();
+    verify(() => repo.wipeAll()).called(1);
+  });
 }

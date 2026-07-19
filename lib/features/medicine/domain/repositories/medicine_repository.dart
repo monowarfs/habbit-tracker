@@ -3,6 +3,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 
 /// Reads and mutates the Medicine module's data.
@@ -114,4 +115,27 @@ abstract class MedicineRepository {
   /// Every (non-deleted) schedule across every medicine — export
   /// groundwork.
   Future<List<MedicineSchedule>> allSchedules();
+
+  /// Every (non-deleted) dose across every medicine, unfiltered by date —
+  /// export groundwork.
+  Future<List<MedicineDose>> allDoses();
+
+  /// Every (non-deleted) stock event across every medicine — export
+  /// groundwork.
+  Future<List<MedicineStockEvent>> allStockEvents();
+
+  /// Inserts [dose] exactly as given, with a freshly generated id — used
+  /// by import to restore historical doses without going through
+  /// `materializeDoses`'s gap-filling logic (which only ever creates
+  /// `upcoming` doses). Returns the new id, so the caller can remap
+  /// `MedicineStockEvent.doseId` references.
+  Future<String> restoreDose(MedicineDose dose);
+
+  /// Inserts [event] exactly as given, with a freshly generated id —
+  /// import's restore counterpart to [restoreDose].
+  Future<void> restoreStockEvent(MedicineStockEvent event);
+
+  /// Deletes every row this module owns — the wipe half of import's
+  /// replace semantics (`HabitModule.wipeData()`).
+  Future<void> wipeAll();
 }

@@ -655,6 +655,74 @@ class MedicineRepositoryImpl implements MedicineRepository {
     return rows.map(_scheduleFromRow).toList(growable: false);
   }
 
+  @override
+  Future<List<MedicineDose>> allDoses() async {
+    final rows = await (_db.select(
+      _db.medicineDosesTable,
+    )..where((t) => t.deletedAt.isNull())).get();
+    return rows.map(_doseFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<List<MedicineStockEvent>> allStockEvents() async {
+    final rows = await (_db.select(
+      _db.medicineStockEventsTable,
+    )..where((t) => t.deletedAt.isNull())).get();
+    return rows.map(_stockEventFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<String> restoreDose(MedicineDose dose) async {
+    final now = clock.now().toUtc().millisecondsSinceEpoch;
+    final id = generateId();
+    await _db
+        .into(_db.medicineDosesTable)
+        .insert(
+          MedicineDosesTableCompanion.insert(
+            id: id,
+            medicineId: dose.medicineId,
+            scheduleId: dose.scheduleId,
+            scheduledFor: dose.scheduledFor.toUtc().millisecondsSinceEpoch,
+            status: dose.storedStatus.name,
+            graceWindowMinutes: dose.graceWindowMinutes,
+            statusChangedAt: Value(
+              dose.statusChangedAt?.toUtc().millisecondsSinceEpoch,
+            ),
+            stockDeltaApplied: Value(dose.stockDeltaApplied),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    return id;
+  }
+
+  @override
+  Future<void> restoreStockEvent(MedicineStockEvent event) async {
+    final now = clock.now().toUtc().millisecondsSinceEpoch;
+    await _db
+        .into(_db.medicineStockEventsTable)
+        .insert(
+          MedicineStockEventsTableCompanion.insert(
+            id: generateId(),
+            medicineId: event.medicineId,
+            doseId: Value(event.doseId),
+            delta: event.delta,
+            reason: event.reason.toDb(),
+            occurredAt: event.occurredAt.toUtc().millisecondsSinceEpoch,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+  }
+
+  @override
+  Future<void> wipeAll() async {
+    await _db.delete(_db.medicineStockEventsTable).go();
+    await _db.delete(_db.medicineDosesTable).go();
+    await _db.delete(_db.medicineSchedulesTable).go();
+    await _db.delete(_db.medicinesTable).go();
+  }
+
   Medicine _medicineFromRow(MedicineRow row) => Medicine(
     id: row.id,
     name: row.name,
@@ -712,6 +780,19 @@ class MedicineRepositoryImpl implements MedicineRepository {
     stockDeltaApplied: row.stockDeltaApplied,
     graceWindowMinutes: row.graceWindowMinutes,
   );
+
+  MedicineStockEvent _stockEventFromRow(MedicineStockEventRow row) =>
+      MedicineStockEvent(
+        id: row.id,
+        medicineId: row.medicineId,
+        doseId: row.doseId,
+        delta: row.delta,
+        reason: MedicineStockEventReasonDb.fromDb(row.reason),
+        occurredAt: DateTime.fromMillisecondsSinceEpoch(
+          row.occurredAt,
+          isUtc: true,
+        ),
+      );
 }
 
 /// `RepeatRule` <-> DB column mapping, by explicit literal (same
@@ -779,5 +860,13 @@ extension MedicineStockEventReasonDb on MedicineStockEventReason {
     MedicineStockEventReason.manualRefill => 'manual_refill',
     MedicineStockEventReason.manualAdjustment => 'manual_adjustment',
     MedicineStockEventReason.doseUndone => 'dose_undone',
+  };
+
+  /// Parses a stored DB string back to [MedicineStockEventReason].
+  static MedicineStockEventReason fromDb(String value) => switch (value) {
+    'manual_refill' => MedicineStockEventReason.manualRefill,
+    'manual_adjustment' => MedicineStockEventReason.manualAdjustment,
+    'dose_undone' => MedicineStockEventReason.doseUndone,
+    _ => MedicineStockEventReason.doseTaken,
   };
 }
