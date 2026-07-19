@@ -58,6 +58,19 @@ Jumu'ah/location/reminders, en/bn localization. Registered in
 Medicine are. Notification channel registered. No PIN lock yet — that's
 a future run per `docs/engineering/phases-and-dod.md`.
 
+Run 15 adds a v1.1-class cross-module layer: `HabitModule` gained
+`dayStatus`/`nextUpcoming`/`quickActions`/`search`/`achievementDefinitions`
+(all three modules implement all five); `core/achievements/` (engine +
+repository, evaluated from each module's own write path, not a periodic
+sweep) now actually reads/writes the `achievements` table that's existed
+schema-only since Run 06; `core/reports/` (`day_status_streaks.dart`,
+`aggregate_report_usecase.dart`) backs the new Reports screen
+(week/month/year, longest-streak records) and Medicine's adherence-streak
+achievements; the dashboard gained a day-completion indicator, upcoming
+strip, quick actions, a global month calendar (bottom sheet, not a
+route), and cross-module search (`showSearch`/`SearchDelegate`, no new
+dependency).
+
 Org id: `dev.shurjomoy.habittracker` (Android `applicationId`
 `dev.shurjomoy.habit_tracker`, iOS bundle id `dev.shurjomoy.habitTracker`).
 Android minSdk 26 (Oreo — notification channels).

@@ -26,6 +26,7 @@ actual executed sequence.
 | v0.6 | 11, 12 | Prayer presentation, notification hardening | Prayer FRs (P-01 to P-10) pass manual QA; device test matrix (NFR-07/08/09) passes on all 5 environments |
 | v0.7 | 13 | Dashboard, module toggle, PIN lock | FR-C-02/03/04/10 pass manual QA; a module can be disabled/re-enabled with data intact |
 | v0.8 (RC) | 14 | Polish, a11y, localization QA, store prep | All NFRs in `non-functional-requirements.md` verified; store listing assets ready |
+| v1.1 | 15 | Dashboard day-completion/upcoming/quick-actions, cross-module reports + longest-streak records, achievement engine + badge gallery, cross-module search, global month calendar | FR-C-11..16 pass manual QA; badge unlock shows a snackbar not a modal; Bangla pass on all four new surfaces |
 
 ## v1.1+ candidates, sequenced by user value
 

@@ -317,4 +317,38 @@ nothing extra to use, is a needless downgrade. `app_settings` keeps only
 `pin_enabled` and the lock timeout; the hash, its salt, and the lockout
 failed-attempt counter live in `flutter_secure_storage` instead.
 
+---
+
+**D-16: Achievement evaluation trigger.** Decision: module-side call
+after its own write commits (not a periodic sweep). Reasoning: precise,
+zero lag on unlock, and every module already has well-defined write call
+sites (log entry, mark dose done, mark prayed) to hook — a periodic sweep
+would need every achievement definition to be re-derivable from a full
+DB scan instead of an event, for no benefit here. Affects: FR-C-13.
+
+**D-17: `dayStatus(range)` as one shared contract method** vs. separate
+calendar/report methods. Decision: one shared method,
+`Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange)`, consumed
+differently by each caller (calendar renders per-day; reports buckets by
+period; dashboard reads today's entry only). Reasoning: avoids duplicate
+per-module range-query logic for what is fundamentally the same question
+("what happened on day X") asked three ways. Affects: FR-C-11, FR-C-12,
+FR-C-16.
+
+**D-18: Search — full contract method vs. Medicine-only special case.**
+Decision: full contract method, `search(String) -> List<SearchResult>`,
+every module implements it (Water/Prayer return `[]`). Reasoning: keeps
+`core/`'s search screen free of any module-id branching, matching
+`architecture.md`'s explicit rule; the cost is a few one-line `[]`
+overrides in modules with nothing searchable, not a real burden. Affects:
+FR-C-15.
+
+**D-19: Dashboard upcoming/quick-actions — new contract methods vs.
+richer `dashboardSummary`.** Decision: two new methods,
+`Widget? nextUpcoming(WidgetRef)` and `List<Widget> quickActions(WidgetRef)`.
+Reasoning: `dashboardSummary`'s job (today's aggregate total/progress) is
+a different concern from "what's the next actionable thing" and "what can
+I do right now without navigating" — conflating them would make the
+existing tile widget do two jobs. Affects: FR-C-11.
+
 **Affects:** `database-design.md` (`app_settings` table), `security.md`.

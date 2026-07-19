@@ -223,3 +223,39 @@ detail, not just the app home) — see `navigation-map.md` for route targets.
 **FR-C-10** — A module (Water/Medicine/Prayer, and any future module) can
 be fully disabled/hidden from the dashboard and navigation without deleting
 its underlying data, and re-enabled later with data intact.
+
+**FR-C-11** — Dashboard shows, in addition to each enabled module's
+existing summary tile (FR-C-03): an overall day-completion indicator
+(complete modules / enabled modules, evaluated for today), an upcoming-
+items strip (next dose, next prayer, water pace — one entry per module
+that has something upcoming), and a quick-actions row (one-tap actions
+each enabled module chooses to expose, e.g. Water's quick-add). A module
+with nothing upcoming or no quick action contributes nothing to that
+strip/row, not an empty placeholder.
+
+**FR-C-12** — Reports screen aggregates every enabled module's daily data
+into weekly/monthly/yearly views, with period navigation (previous/next)
+and empty states for periods before a module's earliest recorded data
+(not a zero-filled chart).
+
+**FR-C-13** — An achievement engine evaluates module-contributed
+achievement definitions (first log, 7/30/100-day streaks, perfect week,
+etc.) after relevant writes; progress and unlock state persist in the
+`achievements` table (`database-design.md`). A badge gallery screen shows
+locked (progress) and unlocked (with unlock date) badges. Unlocking shows
+a subtle, non-blocking moment (e.g. a snackbar on the screen that
+triggered it) — never an intrusive modal popup.
+
+**FR-C-14** — Reports surfaces each module's longest-streak record
+alongside its current streak.
+
+**FR-C-15** — A cross-module search (accessible from the dashboard) finds
+named user-entered data across modules (e.g. medicine names/dosage notes)
+and deep-links to the matching record. A module with no free-text-
+searchable data (e.g. Water, Prayer) simply contributes no results, not
+an error or empty-but-present section.
+
+**FR-C-16** — A global calendar (month view) merges every enabled
+module's per-day status into one combined coloring per day (all modules
+complete / some incomplete / all missed / no data), with day drill-down
+to see the per-module breakdown for that day.

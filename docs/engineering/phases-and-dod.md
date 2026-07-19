@@ -271,3 +271,27 @@ a separate rollback mechanism bolted on afterward.
   means v1.0 simply isn't tagged yet — `main` stays at the last
   successfully-tagged v0.x milestone, itself shippable by the same rule
   applied one run earlier.
+
+## Run 15 — Dashboard, reports, achievements
+
+- **Entry criteria:** Run 14 merged (v1.0 shipped). This run is v1.1-class
+  scope, sequenced after v1.0, not a renumbering of Run 13 (which already
+  shipped dashboard aggregation + module enable/disable + PIN lock).
+- **Scope in:** per
+  `../superpowers/specs/2026-07-19-dashboard-reports-achievements-design.md`
+  — `HabitModule` contract extensions (`dayStatus`/`nextUpcoming`/
+  `quickActions`/`search`/`achievementDefinitions`), the achievement
+  engine + badge gallery, weekly/monthly/yearly cross-module reports +
+  longest-streak records, cross-module search, a global month calendar.
+- **Scope out:** no new module, no PIN/enable-disable changes (Run 13's
+  scope, untouched).
+- **Feature demo checklist:** seed 4+ weeks of data across Water/
+  Medicine/Prayer → dashboard shows the day-completion ring, upcoming
+  strip, and quick actions → Reports shows sane week/month/year numbers
+  and longest-streak records for each module → badge gallery shows a mix
+  of locked/unlocked badges, unlocking one shows a snackbar, not a modal
+  → global calendar's month coloring matches per-day status, day
+  drill-down shows each module's individual status → search finds a
+  seeded medicine by name → full Bangla pass.
+- **Rollback:** unmet DoD leaves `dev` at Run 14's state — v1.0 stays
+  shippable either way, since this run is additive.

@@ -137,6 +137,23 @@ reflects the actual executed sequence.
   checklist), data-safety form answers, iOS permission usage strings
   (location, notifications), app store screenshots/listing copy.
 
+## Run 15 — Dashboard, reports, achievements (v1.1)
+
+- `HabitModule` contract extensions: `dayStatus`/`nextUpcoming`/
+  `quickActions`/`search`/`achievementDefinitions`, implemented by
+  Water/Medicine/Prayer.
+- Dashboard: day-completion indicator, upcoming-items strip, quick-actions
+  row (FR-C-11).
+- Reports screen: week/month/year aggregation with period navigation and
+  longest-streak records per module (FR-C-12/FR-C-14).
+- Achievement engine + repository, evaluated from each module's own write
+  path; badge gallery screen with locked/unlocked states and a snackbar
+  (not a modal) on unlock (FR-C-13).
+- Cross-module search (`showSearch`/`SearchDelegate`) over named
+  user-entered data (FR-C-15).
+- Global month calendar merging every enabled module's per-day status
+  into one combined coloring, with day drill-down (FR-C-16).
+
 ---
 
 ## Deferred / not in v1.0 scope (tracked for roadmap, not built)
