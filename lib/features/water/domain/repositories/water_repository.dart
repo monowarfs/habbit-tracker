@@ -63,4 +63,8 @@ abstract class WaterRepository {
     required LocalTime windowStart,
     required LocalTime windowEnd,
   });
+
+  /// Deletes every row this module owns — the wipe half of import's
+  /// replace semantics (`HabitModule.wipeData()`).
+  Future<void> wipeAll();
 }

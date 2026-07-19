@@ -308,6 +308,13 @@ class WaterRepositoryImpl implements WaterRepository {
     }
   }
 
+  @override
+  Future<void> wipeAll() async {
+    await _db.delete(_db.waterLogsTable).go();
+    await _db.delete(_db.waterGoalsTable).go();
+    await _db.delete(_db.waterSettingsTable).go();
+  }
+
   WaterEntry _entryFromRow(WaterLogRow row) => WaterEntry(
     id: row.id,
     amountMl: row.amountMl,

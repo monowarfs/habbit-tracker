@@ -11,6 +11,7 @@ import 'package:habit_tracker/features/settings/domain/entities/app_settings.dar
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
+import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
 import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
 import 'package:habit_tracker/features/water/domain/usecases/calculate_water_streak.dart';
 import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_date.dart';
@@ -335,9 +336,11 @@ class WaterModule implements HabitModule {
   Future<ModuleExport> exportData() async {
     final goals = await _repository.allGoals();
     final entries = await _repository.allEntries();
+    final settings = await _repository.watchSettings().first;
     return ModuleExport({
       'goals': goals.map(_goalToJson).toList(),
       'logs': entries.map(_entryToJson).toList(),
+      'settings': _settingsToJson(settings),
     });
   }
 
@@ -362,10 +365,34 @@ class WaterModule implements HabitModule {
             : WaterEntrySource.custom,
       );
     }
+    final settingsJson = data.payload['settings'] as Map<String, dynamic>?;
+    if (settingsJson != null) {
+      await _repository.updateQuickAddAmounts(
+        (settingsJson['quickAddAmountsMl'] as List<dynamic>).cast<int>(),
+      );
+      await _repository.updateReminderSettings(
+        enabled: settingsJson['reminderEnabled'] as bool,
+        intervalMinutes: settingsJson['reminderIntervalMinutes'] as int,
+        windowStart: LocalTime.parse(
+          settingsJson['reminderWindowStart'] as String,
+        ),
+        windowEnd: LocalTime.parse(
+          settingsJson['reminderWindowEnd'] as String,
+        ),
+      );
+    }
   }
 
   @override
-  Future<void> wipeData() async {}
+  Future<void> wipeData() => _repository.wipeAll();
+
+  Map<String, Object?> _settingsToJson(WaterSettings settings) => {
+    'quickAddAmountsMl': settings.quickAddAmountsMl,
+    'reminderEnabled': settings.reminderEnabled,
+    'reminderIntervalMinutes': settings.reminderIntervalMinutes,
+    'reminderWindowStart': settings.reminderWindowStart.format(),
+    'reminderWindowEnd': settings.reminderWindowEnd.format(),
+  };
 
   Map<String, Object?> _goalToJson(WaterGoal goal) => {
     'id': goal.id,

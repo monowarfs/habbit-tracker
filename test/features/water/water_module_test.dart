@@ -24,6 +24,9 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   final List<WaterGoal> _goals;
   int? capturedAmountMl;
   WaterEntrySource? capturedSource;
+  bool wipeAllCalled = false;
+  List<int>? capturedQuickAddAmounts;
+  bool? capturedReminderEnabled;
 
   @override
   Stream<WaterSettings> watchSettings() => Stream.value(_settings);
@@ -62,10 +65,33 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
       ),
     );
   }
+
+  @override
+  Future<void> wipeAll() async => wipeAllCalled = true;
+
+  @override
+  Future<Result<void>> updateQuickAddAmounts(List<int> amountsMl) async {
+    capturedQuickAddAmounts = amountsMl;
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> updateReminderSettings({
+    required bool enabled,
+    required int intervalMinutes,
+    required LocalTime windowStart,
+    required LocalTime windowEnd,
+  }) async {
+    capturedReminderEnabled = enabled;
+    return const Result.success(null);
+  }
 }
 
-WaterSettings _settings({required bool reminderEnabled}) => WaterSettings(
-  quickAddAmountsMl: const [250, 500, 750],
+WaterSettings _settings({
+  required bool reminderEnabled,
+  List<int> quickAddAmountsMl = const [250, 500, 750],
+}) => WaterSettings(
+  quickAddAmountsMl: quickAddAmountsMl,
   reminderEnabled: reminderEnabled,
   reminderIntervalMinutes: 120,
   reminderWindowStart: const LocalTime(8, 0),
@@ -221,4 +247,41 @@ void main() {
       expect(await firstLog.currentProgress(), 1);
     },
   );
+
+  test('exportData includes the settings block', () async {
+    final repo = _FakeWaterRepository(
+      _settings(reminderEnabled: true, quickAddAmountsMl: const [111]),
+    );
+    final module = WaterModule(repo);
+    final export = await module.exportData();
+    final settings = export.payload['settings']! as Map<String, Object?>;
+    expect(settings['quickAddAmountsMl'], [111]);
+    expect(settings['reminderEnabled'], true);
+  });
+
+  test('importData restores the settings block', () async {
+    final repo = _FakeWaterRepository(_settings(reminderEnabled: false));
+    final module = WaterModule(repo);
+    await module.importData(
+      const ModuleExport({
+        'goals': <Object?>[],
+        'logs': <Object?>[],
+        'settings': {
+          'quickAddAmountsMl': [300, 600],
+          'reminderEnabled': true,
+          'reminderIntervalMinutes': 90,
+          'reminderWindowStart': '07:00',
+          'reminderWindowEnd': '21:00',
+        },
+      }),
+    );
+    expect(repo.capturedQuickAddAmounts, [300, 600]);
+    expect(repo.capturedReminderEnabled, true);
+  });
+
+  test('wipeData delegates to the repository', () async {
+    final repo = _FakeWaterRepository(_settings(reminderEnabled: false));
+    await WaterModule(repo).wipeData();
+    expect(repo.wipeAllCalled, isTrue);
+  });
 }
