@@ -3,7 +3,6 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
-import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/plan_prayer_materialization.dart';
 
 void main() {

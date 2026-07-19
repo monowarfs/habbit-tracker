@@ -41,9 +41,22 @@ materialization on the app-resume/WorkManager triggers Run 08 already
 wired), stock ledger + one-shot low-stock crossing detection (FR-M-04),
 dose timeline/list/add-form/detail/stats screens, full en/bn
 localization. Registered in `module_registry.dart` and wired into the
-router the same way Water is. No Prayer, no PIN lock yet — those are
-Runs 09+ per `docs/engineering/phases-and-dod.md` (numbering there
-needs a reconciliation pass, per that same note).
+router the same way Water is. Prayer is now a complete module
+(domain/data/presentation/notifications, per `docs/superpowers/specs/
+2026-07-19-prayer-module-design.md`): pure `calculatePrayerTimes`
+wrapper over `adhan_dart` (golden-tested against Al Adhan API
+reference), status derivation (`effectivePrayerStatus`), one-shot
+missed-prayer/Qadha crossing detector (`sweepMissedPrayers`), day-based
+`planPrayerMaterialization` (30-day rolling window), streak/adherence
+calculators, 3 Drift tables (`prayer_settings`/`prayer_records`/
+`prayer_qadha_counters`), no-DAO repository, bundled 65-city asset +
+GPS/manual location resolver, checklist toggle, history calendar with
+per-day coloring, Qadha screen with −1 make-up control, stats screen
+with streak/7-day chart/on-time %, settings screen for method/madhab/
+Jumu'ah/location/reminders, en/bn localization. Registered in
+`module_registry.dart` and wired into the router the same way Water/
+Medicine are. Notification channel registered. No PIN lock yet — that's
+a future run per `docs/engineering/phases-and-dod.md`.
 
 Org id: `dev.shurjomoy.habittracker` (Android `applicationId`
 `dev.shurjomoy.habit_tracker`, iOS bundle id `dev.shurjomoy.habitTracker`).
