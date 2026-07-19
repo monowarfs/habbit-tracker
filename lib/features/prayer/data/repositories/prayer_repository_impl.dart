@@ -252,23 +252,131 @@ class PrayerRepositoryImpl implements PrayerRepository {
     }
   }
 
-  // Stubs — replaced by Tasks 12-13.
+  @override
+  Future<void> materializeRecords(
+    DateTime now,
+    ResolvedLocation location,
+  ) async {
+    final windowStart = LocalDate.fromDateTime(now.toUtc());
+    final windowEnd = windowStart.addDays(_materializationWindowDays);
+    final settings = await watchSettings().first;
+    final existing = await recordsInRange(windowStart, windowEnd);
+
+    final planned = planPrayerMaterialization(
+      settings: settings,
+      location: location,
+      existingRecords: existing,
+      windowStart: windowStart,
+      windowEnd: windowEnd,
+    );
+    if (planned.isEmpty) return;
+
+    final nowMillis = now.toUtc().millisecondsSinceEpoch;
+    await _db.batch((batch) {
+      for (final record in planned) {
+        batch.insert(
+          _db.prayerRecordsTable,
+          PrayerRecordsTableCompanion.insert(
+            id: generateId(),
+            prayerDate: record.prayerDate.toIso(),
+            prayerName: record.prayerName.toDb(),
+            scheduledFor: record.scheduledFor.toUtc().millisecondsSinceEpoch,
+            status: 'upcoming',
+            createdAt: nowMillis,
+            updatedAt: nowMillis,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
+    });
+  }
 
   @override
-  Future<void> materializeRecords(DateTime now, ResolvedLocation location) =>
-      throw UnimplementedError();
+  Future<void> sweepMissedPrayers(
+    DateTime now,
+    ResolvedLocation location,
+  ) async {
+    final today = LocalDate.fromDateTime(
+      now.toUtc(),
+    );
+    final scanStart = today.addDays(-1);
+    final records = await recordsInRange(scanStart, today);
+    if (records.isEmpty) return;
+
+    final settings = await watchSettings().first;
+    final byDay = <LocalDate, List<PrayerRecord>>{};
+    for (final record in records) {
+      byDay.putIfAbsent(record.prayerDate, () => []).add(record);
+    }
+
+    final nowMillis = now.toUtc().millisecondsSinceEpoch;
+    for (final dayRecords in byDay.values) {
+      dayRecords.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+      for (final record in dayRecords) {
+        if (record.storedStatus != PrayerStatus.upcoming) continue;
+        final cutoff = cutoffForPrayer(
+          record: record,
+          sameDayRecordsSorted: dayRecords,
+          ishaDayRolloverTime: settings.ishaDayRolloverTime,
+          ianaTimezone: location.ianaTimezone,
+        );
+        if (!now.isAfter(cutoff)) continue;
+        await (_db.update(
+          _db.prayerRecordsTable,
+        )..where((t) => t.id.equals(record.id))).write(
+          PrayerRecordsTableCompanion(
+            status: const Value('missed'),
+            statusChangedAt: Value(nowMillis),
+            updatedAt: Value(nowMillis),
+          ),
+        );
+        await _bumpQadha(record.prayerName, now);
+      }
+    }
+  }
+
+  Future<void> _bumpQadha(PrayerName prayerName, DateTime now) async {
+    final row = await (_db.select(
+      _db.prayerQadhaCountersTable,
+    )..where((t) => t.prayerName.equals(prayerName.toDb()))).getSingleOrNull();
+    if (row == null) return;
+    final nowMillis = now.toUtc().millisecondsSinceEpoch;
+    await (_db.update(
+      _db.prayerQadhaCountersTable,
+    )..where((t) => t.id.equals(row.id))).write(
+      PrayerQadhaCountersTableCompanion(
+        count: Value(row.count + 1),
+        updatedAt: Value(nowMillis),
+      ),
+    );
+  }
 
   @override
-  Future<void> sweepMissedPrayers(DateTime now, ResolvedLocation location) =>
-      throw UnimplementedError();
+  Stream<List<PrayerRecord>> watchRecordsForDay(LocalDate day) {
+    final query = _db.select(_db.prayerRecordsTable)
+      ..where((t) => t.deletedAt.isNull() & t.prayerDate.equals(day.toIso()))
+      ..orderBy([(t) => OrderingTerm.asc(t.scheduledFor)]);
+    return query.watch().map(
+      (rows) => rows.map(_recordFromRow).toList(growable: false),
+    );
+  }
 
   @override
-  Stream<List<PrayerRecord>> watchRecordsForDay(LocalDate day) =>
-      throw UnimplementedError();
+  Future<List<PrayerRecord>> recordsInRange(
+    LocalDate start,
+    LocalDate end,
+  ) async {
+    final rows = await (_db.select(_db.prayerRecordsTable)..where(
+          (t) =>
+              t.deletedAt.isNull() &
+              t.prayerDate.isBiggerOrEqualValue(start.toIso()) &
+              t.prayerDate.isSmallerOrEqualValue(end.toIso()),
+        ))
+        .get();
+    return rows.map(_recordFromRow).toList(growable: false);
+  }
 
-  @override
-  Future<List<PrayerRecord>> recordsInRange(LocalDate start, LocalDate end) =>
-      throw UnimplementedError();
+  // Stubs — replaced by Task 13.
 
   @override
   Future<Result<void>> markPrayed(String recordId) =>
@@ -310,6 +418,23 @@ class PrayerRepositoryImpl implements PrayerRepository {
           isUtc: true,
         ),
       );
+
+  PrayerRecord _recordFromRow(PrayerRecordRow row) => PrayerRecord(
+    id: row.id,
+    prayerDate: LocalDate.parse(row.prayerDate),
+    prayerName: PrayerNameDb.fromDb(row.prayerName),
+    scheduledFor: DateTime.fromMillisecondsSinceEpoch(
+      row.scheduledFor,
+      isUtc: true,
+    ),
+    storedStatus: PrayerStatusDb.fromDb(row.status),
+    statusChangedAt: row.statusChangedAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.statusChangedAt!,
+            isUtc: true,
+          ),
+  );
 }
 
 /// `CalculationMethod` <-> DB string mapping, by explicit literal (never
