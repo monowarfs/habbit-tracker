@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
+import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
@@ -101,6 +102,13 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     // foreground resume, not just cold start.
     if (state == AppLifecycleState.resumed) {
       unawaited(planAndApplyNotifications(db: ref.read(databaseProvider)));
+    }
+    // PIN resume-timeout reference point (`strategies/security.md`) —
+    // records "now" every time the app leaves the foreground, so
+    // `PinLockController.isCurrentlyLocked` can compare against it on
+    // the next resume/navigation.
+    if (state == AppLifecycleState.paused) {
+      unawaited(ref.read(pinLockControllerProvider).recordBackgrounded());
     }
   }
 

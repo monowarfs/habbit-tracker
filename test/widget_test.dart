@@ -2,17 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/security/pin_lock_controller.dart';
+import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:habit_tracker/main.dart';
 
 import 'support/test_database.dart';
+import 'support/test_pin_lock.dart';
 
 void main() {
   testWidgets('app boots to the dashboard with all modules registered', (
     tester,
   ) async {
+    final db = testDatabase();
+    addTearDown(db.close);
+    final controller = PinLockController(
+      FakePinLockService(),
+      SettingsRepositoryImpl(db),
+    );
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(testDatabase())],
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          pinLockControllerProvider.overrideWithValue(controller),
+        ],
         child: const HabitTrackerApp(),
       ),
     );

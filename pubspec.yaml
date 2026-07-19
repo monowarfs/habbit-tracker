@@ -31,6 +31,7 @@ dependencies:
   local_auth: ^3.0.2
   logger: ^2.7.0
   meta: ^1.18.0
+  package_info_plus: ^10.2.1
   path: ^1.9.1
   path_provider: ^2.1.6
   pointycastle: ^4.0.0

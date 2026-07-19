@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
-import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
-import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
-/// The Settings tab: theme-mode and language switchers today, per-module
-/// settings entries join this list once modules ship (`architecture.md`).
+/// The Settings tab: sectioned entry points into Appearance, Language,
+/// Notifications, Security, Data, and About
+/// (`docs/superpowers/specs/2026-07-19-settings-security-design.md`).
 class SettingsHomeScreen extends ConsumerWidget {
   /// Creates the settings screen.
   const SettingsHomeScreen({super.key});
@@ -15,44 +15,26 @@ class SettingsHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final themeMode = ref.watch(themeControllerProvider);
-    final locale = ref.watch(localeControllerProvider);
+    final pinEnabled =
+        ref.watch(appSettingsProvider).value?.pinEnabled ?? false;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: ListView(
         children: [
-          ListTile(title: Text(l10n.settingsTheme)),
-          SegmentedButton<ThemeMode>(
-            segments: [
-              ButtonSegment(
-                value: ThemeMode.system,
-                label: Text(l10n.themeModeSystem),
-              ),
-              ButtonSegment(
-                value: ThemeMode.light,
-                label: Text(l10n.themeModeLight),
-              ),
-              ButtonSegment(
-                value: ThemeMode.dark,
-                label: Text(l10n.themeModeDark),
-              ),
-            ],
-            selected: {themeMode},
-            onSelectionChanged: (selection) => ref
-                .read(themeControllerProvider.notifier)
-                .updateThemeMode(selection.first),
+          _SectionHeader(l10n.settingsAppearance),
+          ListTile(
+            leading: const Icon(Icons.palette_outlined),
+            title: Text(l10n.settingsTheme),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/theme'),
           ),
           const Divider(),
-          ListTile(title: Text(l10n.settingsLanguage)),
-          SegmentedButton<Locale>(
-            segments: const [
-              ButtonSegment(value: Locale('en'), label: Text('English')),
-              ButtonSegment(value: Locale('bn'), label: Text('বাংলা')),
-            ],
-            selected: {locale},
-            onSelectionChanged: (selection) => ref
-                .read(localeControllerProvider.notifier)
-                .updateLocale(selection.first),
+          _SectionHeader(l10n.settingsLanguage),
+          ListTile(
+            leading: const Icon(Icons.language_outlined),
+            title: Text(l10n.settingsLanguage),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/language'),
           ),
           const Divider(),
           FutureBuilder<bool>(
@@ -76,8 +58,53 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/notifications'),
           ),
+          const Divider(),
+          _SectionHeader(l10n.settingsSecurity),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l10n.settingsSecurity),
+            subtitle: Text(pinEnabled ? l10n.pinSettingsEnable : ''),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/pin'),
+          ),
+          const Divider(),
+          _SectionHeader(l10n.settingsData),
+          ListTile(
+            leading: const Icon(Icons.import_export),
+            title: Text(l10n.settingsData),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/data'),
+          ),
+          const Divider(),
+          _SectionHeader(l10n.settingsAbout),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.settingsAbout),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/about'),
+          ),
         ],
       ),
     );
   }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+    child: Text(
+      title,
+      style:
+          Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+    ),
+  );
 }
