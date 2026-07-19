@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -17,29 +18,30 @@ class PrayerHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final views = ref.watch(todaysPrayerViewsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prayer'),
+        title: Text(l10n.prayerHomeTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_month),
-            tooltip: 'History',
+            tooltip: l10n.prayerHomeHistoryButton,
             onPressed: () => context.push('/prayer/history'),
           ),
           IconButton(
             icon: const Icon(Icons.pending_actions),
-            tooltip: 'Qadha',
+            tooltip: l10n.prayerHomeQadhaButton,
             onPressed: () => context.push('/prayer/qadha'),
           ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
-            tooltip: 'Stats',
+            tooltip: l10n.prayerHomeStatsButton,
             onPressed: () => context.push('/prayer/stats'),
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
+            tooltip: l10n.prayerHomeSettingsButton,
             onPressed: () => context.push('/prayer/settings'),
           ),
         ],
@@ -47,9 +49,7 @@ class PrayerHomeScreen extends ConsumerWidget {
       body: views == null
           ? const Center(child: CircularProgressIndicator())
           : views.isEmpty
-          ? const Center(
-              child: Text('No prayers scheduled for today'),
-            )
+          ? Center(child: Text(l10n.prayerHomeEmpty))
           : ListView.builder(
               itemCount: views.length,
               itemBuilder: (context, index) {

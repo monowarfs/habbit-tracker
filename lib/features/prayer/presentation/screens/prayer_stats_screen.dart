@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
@@ -18,6 +19,7 @@ class PrayerStatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final today = localDayKey(clock.now());
     final rangeStart = today.addDays(-29);
     final recordsAsync = ref.watch(
@@ -27,7 +29,7 @@ class PrayerStatsScreen extends ConsumerWidget {
         ref.watch(prayerQadhaCountersProvider).value ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Prayer stats')),
+      appBar: AppBar(title: Text(l10n.prayerStatsTitle)),
       body: recordsAsync.when(
         data: (records) {
           final byDay = <LocalDate, List<PrayerRecord>>{};
@@ -55,26 +57,26 @@ class PrayerStatsScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text('Current streak: ${streak.current} days'),
-              Text('Longest streak: ${streak.longest} days'),
+              Text(l10n.prayerStatsCurrentStreak(streak.current)),
+              Text(l10n.prayerStatsLongestStreak(streak.longest)),
               const SizedBox(height: 16),
-              const Text('Prayers completed, last 7 days'),
+              Text(l10n.prayerStatsLast7DaysLabel),
               PeriodBarChart(
                 points: points,
                 color: ModuleAccents.prayer,
                 targetLine: 5,
               ),
               const SizedBox(height: 16),
-              const Text('Qadha summary'),
+              Text(l10n.prayerStatsQadhaSummaryLabel),
               for (final counter in counters)
                 Text(
-                  '${_labelFor(counter.prayerName)}: ${counter.count}',
+                  '${_labelFor(l10n, counter.prayerName)}: ${counter.count}',
                 ),
               const SizedBox(height: 16),
-              const Text('On-time %, last 30 days'),
+              Text(l10n.prayerStatsOnTimeLabel),
               for (final entry in adherence.entries)
                 Text(
-                  '${_labelFor(entry.key)}: '
+                  '${_labelFor(l10n, entry.key)}: '
                   '${entry.value.total == 0 ? 0 : (entry.value.prayed * 100 / entry.value.total).round()}%',
                 ),
             ],
@@ -87,11 +89,11 @@ class PrayerStatsScreen extends ConsumerWidget {
     );
   }
 
-  String _labelFor(PrayerName name) => switch (name) {
-    PrayerName.fajr => 'Fajr',
-    PrayerName.dhuhr => 'Dhuhr',
-    PrayerName.asr => 'Asr',
-    PrayerName.maghrib => 'Maghrib',
-    PrayerName.isha => 'Isha',
+  String _labelFor(AppLocalizations l10n, PrayerName name) => switch (name) {
+    PrayerName.fajr => l10n.prayerNameFajr,
+    PrayerName.dhuhr => l10n.prayerNameDhuhr,
+    PrayerName.asr => l10n.prayerNameAsr,
+    PrayerName.maghrib => l10n.prayerNameMaghrib,
+    PrayerName.isha => l10n.prayerNameIsha,
   };
 }

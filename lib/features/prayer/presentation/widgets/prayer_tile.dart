@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -29,10 +30,12 @@ class PrayerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final success = theme.extension<AppSemanticColors>()!.success;
-    final label =
-        view.showAsJumuah ? "Jumu'ah" : _labelFor(view.record.prayerName);
+    final label = view.showAsJumuah
+        ? l10n.prayerNameJumuah
+        : _labelFor(l10n, view.record.prayerName);
     final canToggle = view.effectiveStatus != PrayerStatus.missed;
     return Card(
       color: highlighted ? theme.colorScheme.primaryContainer : null,
@@ -40,7 +43,7 @@ class PrayerTile extends StatelessWidget {
         title: Text(label),
         subtitle: Text(
           '${DateFormat.jm().format(view.record.scheduledFor.toLocal())} · '
-          '${_statusLabel(view.effectiveStatus)}',
+          '${_statusLabel(l10n, view.effectiveStatus)}',
         ),
         trailing: canToggle
             ? IconButton(
@@ -59,18 +62,19 @@ class PrayerTile extends StatelessWidget {
     );
   }
 
-  String _labelFor(PrayerName name) => switch (name) {
-    PrayerName.fajr => 'Fajr',
-    PrayerName.dhuhr => 'Dhuhr',
-    PrayerName.asr => 'Asr',
-    PrayerName.maghrib => 'Maghrib',
-    PrayerName.isha => 'Isha',
+  String _labelFor(AppLocalizations l10n, PrayerName name) => switch (name) {
+    PrayerName.fajr => l10n.prayerNameFajr,
+    PrayerName.dhuhr => l10n.prayerNameDhuhr,
+    PrayerName.asr => l10n.prayerNameAsr,
+    PrayerName.maghrib => l10n.prayerNameMaghrib,
+    PrayerName.isha => l10n.prayerNameIsha,
   };
 
-  String _statusLabel(PrayerStatus status) => switch (status) {
-    PrayerStatus.upcoming => 'Upcoming',
-    PrayerStatus.due => 'Due',
-    PrayerStatus.prayed => 'Prayed',
-    PrayerStatus.missed => 'Missed',
-  };
+  String _statusLabel(AppLocalizations l10n, PrayerStatus status) =>
+      switch (status) {
+        PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
+        PrayerStatus.due => l10n.prayerStatusDue,
+        PrayerStatus.prayed => l10n.prayerStatusPrayed,
+        PrayerStatus.missed => l10n.prayerStatusMissed,
+      };
 }

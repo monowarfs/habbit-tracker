@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
@@ -40,9 +41,11 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
       prayerRecordsInRangeProvider(start: monthStart, end: monthEnd),
     );
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History'),
+        title: Text(l10n.prayerHistoryTitle),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
           onPressed: () => setState(() {
@@ -125,6 +128,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
     BuildContext context,
     List<PrayerRecord> records,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final sorted = [...records]
       ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     showModalBottomSheet<void>(
@@ -134,26 +138,27 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
         children: [
           for (final record in sorted)
             ListTile(
-              title: Text(_labelFor(record.prayerName)),
-              trailing: Text(_statusLabel(record.storedStatus)),
+              title: Text(_labelFor(l10n, record.prayerName)),
+              trailing: Text(_statusLabel(l10n, record.storedStatus)),
             ),
         ],
       ),
     );
   }
 
-  String _labelFor(PrayerName name) => switch (name) {
-    PrayerName.fajr => 'Fajr',
-    PrayerName.dhuhr => 'Dhuhr',
-    PrayerName.asr => 'Asr',
-    PrayerName.maghrib => 'Maghrib',
-    PrayerName.isha => 'Isha',
+  String _labelFor(AppLocalizations l10n, PrayerName name) => switch (name) {
+    PrayerName.fajr => l10n.prayerNameFajr,
+    PrayerName.dhuhr => l10n.prayerNameDhuhr,
+    PrayerName.asr => l10n.prayerNameAsr,
+    PrayerName.maghrib => l10n.prayerNameMaghrib,
+    PrayerName.isha => l10n.prayerNameIsha,
   };
 
-  String _statusLabel(PrayerStatus status) => switch (status) {
-    PrayerStatus.upcoming => 'Upcoming',
-    PrayerStatus.due => 'Due',
-    PrayerStatus.prayed => 'Prayed',
-    PrayerStatus.missed => 'Missed',
-  };
+  String _statusLabel(AppLocalizations l10n, PrayerStatus status) =>
+      switch (status) {
+        PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
+        PrayerStatus.due => l10n.prayerStatusDue,
+        PrayerStatus.prayed => l10n.prayerStatusPrayed,
+        PrayerStatus.missed => l10n.prayerStatusMissed,
+      };
 }

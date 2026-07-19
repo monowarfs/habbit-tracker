@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
@@ -13,22 +14,23 @@ class PrayerQadhaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final counters =
         ref.watch(prayerQadhaCountersProvider).value ?? const [];
     return Scaffold(
-      appBar: AppBar(title: const Text('Qadha')),
+      appBar: AppBar(title: Text(l10n.prayerQadhaTitle)),
       body: ListView(
         children: [
           for (final counter in counters)
             ListTile(
-              title: Text(_labelFor(counter.prayerName)),
-              subtitle: Text('${counter.count} owed'),
+              title: Text(_labelFor(l10n, counter.prayerName)),
+              subtitle: Text(l10n.prayerQadhaCountLabel(counter.count)),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline),
-                    tooltip: 'Mark one made up',
+                    tooltip: l10n.prayerQadhaMakeupButton,
                     onPressed: counter.count == 0
                         ? null
                         : () => ref
@@ -37,7 +39,7 @@ class PrayerQadhaScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Set balance',
+                    tooltip: l10n.prayerQadhaEditButton,
                     onPressed: () => _showEditDialog(
                       context,
                       ref,
@@ -52,12 +54,12 @@ class PrayerQadhaScreen extends ConsumerWidget {
     );
   }
 
-  String _labelFor(PrayerName name) => switch (name) {
-    PrayerName.fajr => 'Fajr',
-    PrayerName.dhuhr => 'Dhuhr',
-    PrayerName.asr => 'Asr',
-    PrayerName.maghrib => 'Maghrib',
-    PrayerName.isha => 'Isha',
+  String _labelFor(AppLocalizations l10n, PrayerName name) => switch (name) {
+    PrayerName.fajr => l10n.prayerNameFajr,
+    PrayerName.dhuhr => l10n.prayerNameDhuhr,
+    PrayerName.asr => l10n.prayerNameAsr,
+    PrayerName.maghrib => l10n.prayerNameMaghrib,
+    PrayerName.isha => l10n.prayerNameIsha,
   };
 
   Future<void> _showEditDialog(
@@ -65,13 +67,14 @@ class PrayerQadhaScreen extends ConsumerWidget {
     WidgetRef ref,
     PrayerQadhaCounter counter,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(
       text: counter.count.toString(),
     );
     final result = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Set Qadha balance'),
+        title: Text(l10n.prayerQadhaEditButton),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
@@ -80,12 +83,12 @@ class PrayerQadhaScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () =>
                 Navigator.of(context).pop(int.tryParse(controller.text)),
-            child: const Text('Save'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
