@@ -51,14 +51,26 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
-    // Seam: when schemaVersion increments, add
-    // `onUpgrade: (m, from, to) async { if (from < 2) ... }` here — no
-    // other file needs to change for a schema migration.
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Medicine + Prayer tables added after the initial release.
+        await m.createTable(medicinesTable);
+        await m.createTable(medicineSchedulesTable);
+        await m.createTable(medicineDosesTable);
+        await m.createTable(medicineStockEventsTable);
+        await m.createTable(prayerSettingsTable);
+        await m.createTable(prayerRecordsTable);
+        await m.createTable(prayerQadhaCountersTable);
+      }
+      // Seam: when schemaVersion increments further, add
+      // `if (from < N) ...` blocks here — no other file needs to
+      // change for a schema migration.
+    },
   );
 
   static QueryExecutor _openConnection() {
