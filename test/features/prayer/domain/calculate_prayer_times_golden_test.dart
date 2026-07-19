@@ -50,11 +50,23 @@ void main() {
         method: CalculationMethod.karachi,
         asrMethod: AsrMethod.standard,
       );
-      expectWithinTolerance(result.fajr, localTime('Asia/Dhaka', date, '05:23'));
-      expectWithinTolerance(result.dhuhr, localTime('Asia/Dhaka', date, '12:08'));
+      expectWithinTolerance(
+        result.fajr,
+        localTime('Asia/Dhaka', date, '05:23'),
+      );
+      expectWithinTolerance(
+        result.dhuhr,
+        localTime('Asia/Dhaka', date, '12:08'),
+      );
       expectWithinTolerance(result.asr, localTime('Asia/Dhaka', date, '15:11'));
-      expectWithinTolerance(result.maghrib, localTime('Asia/Dhaka', date, '17:33'));
-      expectWithinTolerance(result.isha, localTime('Asia/Dhaka', date, '18:52'));
+      expectWithinTolerance(
+        result.maghrib,
+        localTime('Asia/Dhaka', date, '17:33'),
+      );
+      expectWithinTolerance(
+        result.isha,
+        localTime('Asia/Dhaka', date, '18:52'),
+      );
     },
   );
 
@@ -73,11 +85,26 @@ void main() {
         method: CalculationMethod.singapore,
         asrMethod: AsrMethod.standard,
       );
-      expectWithinTolerance(result.fajr, localTime('Asia/Singapore', date, '06:01'));
-      expectWithinTolerance(result.dhuhr, localTime('Asia/Singapore', date, '13:23'));
-      expectWithinTolerance(result.asr, localTime('Asia/Singapore', date, '16:46'));
-      expectWithinTolerance(result.maghrib, localTime('Asia/Singapore', date, '19:21'));
-      expectWithinTolerance(result.isha, localTime('Asia/Singapore', date, '20:35'));
+      expectWithinTolerance(
+        result.fajr,
+        localTime('Asia/Singapore', date, '06:01'),
+      );
+      expectWithinTolerance(
+        result.dhuhr,
+        localTime('Asia/Singapore', date, '13:23'),
+      );
+      expectWithinTolerance(
+        result.asr,
+        localTime('Asia/Singapore', date, '16:46'),
+      );
+      expectWithinTolerance(
+        result.maghrib,
+        localTime('Asia/Singapore', date, '19:21'),
+      );
+      expectWithinTolerance(
+        result.isha,
+        localTime('Asia/Singapore', date, '20:35'),
+      );
     },
   );
 
@@ -97,15 +124,27 @@ void main() {
         method: CalculationMethod.mwl,
         asrMethod: AsrMethod.standard,
       );
-      expectWithinTolerance(result.fajr, localTime('Europe/London', date, '05:59'));
-      expectWithinTolerance(result.dhuhr, localTime('Europe/London', date, '12:10'));
+      expectWithinTolerance(
+        result.fajr,
+        localTime('Europe/London', date, '05:59'),
+      );
+      expectWithinTolerance(
+        result.dhuhr,
+        localTime('Europe/London', date, '12:10'),
+      );
       expectWithinTolerance(
         result.asr,
         localTime('Europe/London', date, '14:00'),
         tolerance: const Duration(minutes: 3),
       );
-      expectWithinTolerance(result.maghrib, localTime('Europe/London', date, '16:21'));
-      expectWithinTolerance(result.isha, localTime('Europe/London', date, '18:15'));
+      expectWithinTolerance(
+        result.maghrib,
+        localTime('Europe/London', date, '16:21'),
+      );
+      expectWithinTolerance(
+        result.isha,
+        localTime('Europe/London', date, '18:15'),
+      );
     },
   );
 }

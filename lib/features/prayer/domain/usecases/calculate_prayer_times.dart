@@ -62,26 +62,18 @@ PrayerTimes calculatePrayerTimes({
   );
 }
 
-adhan.CalculationParameters _parametersFor(CalculationMethod method) =>
-    switch (method) {
-      CalculationMethod.mwl =>
-        adhan.CalculationMethodParameters.muslimWorldLeague(),
-      CalculationMethod.isna =>
-        adhan.CalculationMethodParameters.northAmerica(),
-      CalculationMethod.egyptian =>
-        adhan.CalculationMethodParameters.egyptian(),
-      CalculationMethod.ummAlQura =>
-        adhan.CalculationMethodParameters.ummAlQura(),
-      CalculationMethod.karachi =>
-        adhan.CalculationMethodParameters.karachi(),
-      CalculationMethod.tehran =>
-        adhan.CalculationMethodParameters.tehran(),
-      CalculationMethod.dubai =>
-        adhan.CalculationMethodParameters.dubai(),
-      CalculationMethod.kuwait =>
-        adhan.CalculationMethodParameters.kuwait(),
-      CalculationMethod.qatar =>
-        adhan.CalculationMethodParameters.qatar(),
-      CalculationMethod.singapore =>
-        adhan.CalculationMethodParameters.singapore(),
-    };
+adhan.CalculationParameters _parametersFor(
+  CalculationMethod method,
+) => switch (method) {
+  CalculationMethod.mwl =>
+    adhan.CalculationMethodParameters.muslimWorldLeague(),
+  CalculationMethod.isna => adhan.CalculationMethodParameters.northAmerica(),
+  CalculationMethod.egyptian => adhan.CalculationMethodParameters.egyptian(),
+  CalculationMethod.ummAlQura => adhan.CalculationMethodParameters.ummAlQura(),
+  CalculationMethod.karachi => adhan.CalculationMethodParameters.karachi(),
+  CalculationMethod.tehran => adhan.CalculationMethodParameters.tehran(),
+  CalculationMethod.dubai => adhan.CalculationMethodParameters.dubai(),
+  CalculationMethod.kuwait => adhan.CalculationMethodParameters.kuwait(),
+  CalculationMethod.qatar => adhan.CalculationMethodParameters.qatar(),
+  CalculationMethod.singapore => adhan.CalculationMethodParameters.singapore(),
+};

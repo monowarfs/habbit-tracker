@@ -95,14 +95,10 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
                 (r) => r.storedStatus == PrayerStatus.missed,
               );
               final color = allPrayed
-                  ? Theme.of(context)
-                        .extension<AppSemanticColors>()!
-                        .success
+                  ? Theme.of(context).extension<AppSemanticColors>()!.success
                   : anyMissed
                   ? Theme.of(context).colorScheme.errorContainer
-                  : Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest;
+                  : Theme.of(context).colorScheme.surfaceContainerHighest;
               return InkWell(
                 onTap: dayRecords.isEmpty
                     ? null
@@ -117,8 +113,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
             },
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('$error')),
       ),
     );

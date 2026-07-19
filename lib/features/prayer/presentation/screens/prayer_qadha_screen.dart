@@ -15,8 +15,7 @@ class PrayerQadhaScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final counters =
-        ref.watch(prayerQadhaCountersProvider).value ?? const [];
+    final counters = ref.watch(prayerQadhaCountersProvider).value ?? const [];
     return Scaffold(
       appBar: AppBar(title: Text(l10n.prayerQadhaTitle)),
       body: ListView(

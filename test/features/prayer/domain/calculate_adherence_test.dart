@@ -7,14 +7,13 @@ void main() {
   PrayerRecord record({
     required PrayerName name,
     required PrayerStatus status,
-  }) =>
-      PrayerRecord(
-        id: '${name.name}_${status.name}',
-        prayerDate: const LocalDate(2026, 6, 1),
-        prayerName: name,
-        scheduledFor: DateTime.utc(2026, 6, 1, 8),
-        storedStatus: status,
-      );
+  }) => PrayerRecord(
+    id: '${name.name}_${status.name}',
+    prayerDate: const LocalDate(2026, 6, 1),
+    prayerName: name,
+    scheduledFor: DateTime.utc(2026, 6, 1, 8),
+    storedStatus: status,
+  );
 
   test('classifies prayed/missed per prayer, excludes upcoming/due', () {
     final stats = calculateAdherence(

@@ -220,9 +220,9 @@ void main() {
 
     final export = await module.exportData();
     final counters = export.payload['qadhaCounters']! as List<dynamic>;
-    final fajr = counters
-        .cast<Map<String, Object?>>()
-        .firstWhere((c) => c['prayerName'] == 'fajr');
+    final fajr = counters.cast<Map<String, Object?>>().firstWhere(
+      (c) => c['prayerName'] == 'fajr',
+    );
     expect(fajr['count'], 3);
   });
 

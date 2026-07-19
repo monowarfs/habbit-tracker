@@ -32,9 +32,7 @@ class PrayerSettingsScreen extends ConsumerWidget {
           if (settings.locationMode == LocationMode.manual)
             Container(
               width: double.infinity,
-              color: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.all(12),
               child: Text(l10n.prayerSettingsManualLocationBanner),
             ),
@@ -152,17 +150,16 @@ class PrayerSettingsScreen extends ConsumerWidget {
   String _methodLabel(
     AppLocalizations l10n,
     CalculationMethod method,
-  ) =>
-      switch (method) {
-        CalculationMethod.mwl => l10n.calcMethodMwl,
-        CalculationMethod.isna => l10n.calcMethodIsna,
-        CalculationMethod.egyptian => l10n.calcMethodEgyptian,
-        CalculationMethod.ummAlQura => l10n.calcMethodUmmAlQura,
-        CalculationMethod.karachi => l10n.calcMethodKarachi,
-        CalculationMethod.tehran => l10n.calcMethodTehran,
-        CalculationMethod.dubai => l10n.calcMethodDubai,
-        CalculationMethod.kuwait => l10n.calcMethodKuwait,
-        CalculationMethod.qatar => l10n.calcMethodQatar,
-        CalculationMethod.singapore => l10n.calcMethodSingapore,
-      };
+  ) => switch (method) {
+    CalculationMethod.mwl => l10n.calcMethodMwl,
+    CalculationMethod.isna => l10n.calcMethodIsna,
+    CalculationMethod.egyptian => l10n.calcMethodEgyptian,
+    CalculationMethod.ummAlQura => l10n.calcMethodUmmAlQura,
+    CalculationMethod.karachi => l10n.calcMethodKarachi,
+    CalculationMethod.tehran => l10n.calcMethodTehran,
+    CalculationMethod.dubai => l10n.calcMethodDubai,
+    CalculationMethod.kuwait => l10n.calcMethodKuwait,
+    CalculationMethod.qatar => l10n.calcMethodQatar,
+    CalculationMethod.singapore => l10n.calcMethodSingapore,
+  };
 }

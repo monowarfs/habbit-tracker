@@ -25,8 +25,7 @@ class PrayerStatsScreen extends ConsumerWidget {
     final recordsAsync = ref.watch(
       prayerRecordsInRangeProvider(start: rangeStart, end: today),
     );
-    final counters =
-        ref.watch(prayerQadhaCountersProvider).value ?? const [];
+    final counters = ref.watch(prayerQadhaCountersProvider).value ?? const [];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.prayerStatsTitle)),
@@ -82,8 +81,7 @@ class PrayerStatsScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('$error')),
       ),
     );
