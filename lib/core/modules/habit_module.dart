@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 
 /// Display metadata for a module, used by the dashboard tile and nav bar.
 @immutable
@@ -88,6 +90,94 @@ class ModuleExport {
   final Map<String, Object?> payload;
 }
 
+/// How a module's day went, for the global calendar / Reports / the
+/// dashboard's day-completion indicator (D-17).
+enum ModuleDayStatusKind {
+  /// Every relevant item for the day was completed.
+  complete,
+
+  /// Some but not all relevant items were completed.
+  partial,
+
+  /// Nothing was completed and the day is fully resolved (not still in
+  /// progress).
+  missed,
+
+  /// No data for this day (before the module's first use, or a day still
+  /// in progress with nothing logged yet).
+  none,
+}
+
+/// One day's status for a module, plus its natural numeric value (ml
+/// logged, doses taken, prayers completed) for report charts.
+@immutable
+class ModuleDayStatus {
+  /// Creates a day status.
+  const ModuleDayStatus({required this.kind, required this.value});
+
+  /// This day's completion category.
+  final ModuleDayStatusKind kind;
+
+  /// This day's value in the module's own natural unit.
+  final num value;
+}
+
+/// One cross-module search hit (D-18).
+@immutable
+class SearchResult {
+  /// Creates a search result.
+  const SearchResult({
+    required this.title,
+    required this.subtitle,
+    required this.deepLinkRoute,
+  });
+
+  /// The matched record's display title (e.g. a medicine's name).
+  final String title;
+
+  /// Secondary detail shown under the title.
+  final String subtitle;
+
+  /// Route to open on tap (FR-C-09-style deep link).
+  final String deepLinkRoute;
+}
+
+/// One achievement a module contributes to the shared engine
+/// (`core/achievements/achievement_engine.dart`, D-16). [currentProgress]
+/// is a closure over the module's own repository/use cases — the engine
+/// never queries a module's data directly.
+@immutable
+class AchievementDefinition {
+  /// Creates an achievement definition.
+  const AchievementDefinition({
+    required this.key,
+    required this.moduleId,
+    required this.titleKey,
+    required this.descriptionKey,
+    required this.target,
+    required this.currentProgress,
+  });
+
+  /// Stable key (e.g. `'water_7_day_streak'`), the `achievements.key`
+  /// column and this achievement's identity across re-evaluations.
+  final String key;
+
+  /// Which module this achievement belongs to.
+  final String moduleId;
+
+  /// `AppLocalizations` key naming this achievement's title.
+  final String titleKey;
+
+  /// `AppLocalizations` key naming this achievement's description.
+  final String descriptionKey;
+
+  /// Progress needed to unlock.
+  final int target;
+
+  /// Computes current progress toward [target] from live data.
+  final Future<int> Function() currentProgress;
+}
+
 /// The plugin contract every habit module (Water, Medicine, Prayer, and any
 /// future module) implements to register itself, per
 /// `technical/architecture.md`. This is the one shared touchpoint between
@@ -125,6 +215,28 @@ abstract class HabitModule {
     String sourceId,
     NotificationActionType action,
   );
+
+  /// Per-day status for [range] — used by the global calendar (as-is),
+  /// Reports (bucketed by period), and the dashboard's day-completion
+  /// indicator (today's entry only). D-17.
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range);
+
+  /// The next actionable item this module wants surfaced on the
+  /// dashboard's upcoming strip, or `null` if there's nothing upcoming.
+  /// D-19.
+  Widget? nextUpcoming(WidgetRef ref);
+
+  /// One-tap actions this module wants exposed on the dashboard's
+  /// quick-actions row. Empty list if none. D-19.
+  List<Widget> quickActions(WidgetRef ref);
+
+  /// Free-text search over this module's own named user data. Modules
+  /// with nothing free-text-searchable return `[]`. D-18.
+  Future<List<SearchResult>> search(String query);
+
+  /// Achievement definitions this module contributes, evaluated by
+  /// `core/achievements/achievement_engine.dart`. D-16.
+  List<AchievementDefinition> get achievementDefinitions;
 
   /// Exports this module's data (backup groundwork, v1.1).
   Future<ModuleExport> exportData();

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
@@ -170,6 +172,29 @@ class WaterModule implements HabitModule {
       source: WaterEntrySource.quick,
     );
   }
+
+  @override
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+    final result = <LocalDate, ModuleDayStatus>{};
+    var day = range.start;
+    while (day.compareTo(range.end) <= 0) {
+      result[day] = const ModuleDayStatus(kind: ModuleDayStatusKind.none, value: 0);
+      day = day.addDays(1);
+    }
+    return result;
+  }
+
+  @override
+  Widget? nextUpcoming(WidgetRef ref) => null;
+
+  @override
+  List<Widget> quickActions(WidgetRef ref) => const [];
+
+  @override
+  Future<List<SearchResult>> search(String query) async => const [];
+
+  @override
+  List<AchievementDefinition> get achievementDefinitions => const [];
 
   @override
   Future<ModuleExport> exportData() async {

@@ -137,12 +137,11 @@ for a specific dose/prayer instance.
 
 ### `achievements`
 
-Schema-only groundwork per this run's explicit requirement — **no
-achievement UI/logic ships in v1.0** (not in any FR in
-`../product/functional-requirements.md`); this table exists so a future
-gamification feature has a home without a schema migration, the same
-forward-compatible spirit as the `updated_at`/`deleted_at` columns in
-`offline-strategy.md`.
+Backs the achievement/badge engine added in Run 15
+(`../superpowers/specs/2026-07-19-dashboard-reports-achievements-design.md`).
+Was schema-only groundwork through v1.0 (no achievement UI/logic shipped
+before then) — this table's shape was fixed early so that run needed no
+migration.
 
 | Column | Type | Notes |
 |---|---|---|

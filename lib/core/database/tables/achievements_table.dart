@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
 
-/// Schema-only groundwork (`database-design.md`) — no achievement UI/logic
-/// ships in v1.0; this table exists so a future gamification feature has a
-/// home without a schema migration.
+/// Backs the achievement/badge engine (`core/achievements/`, Run 15's
+/// `docs/superpowers/specs/2026-07-19-dashboard-reports-achievements-design.md`).
+/// Was schema-only groundwork through v1.0 — this is the first run to
+/// read/write it.
 @DataClassName('AchievementRow')
 class AchievementsTable extends Table {
   @override
