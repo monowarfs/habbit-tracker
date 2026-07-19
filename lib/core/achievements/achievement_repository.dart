@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/utils/uuid.dart';
@@ -70,5 +71,33 @@ class AchievementRepository {
         updatedAt: Value(nowMillis),
       ),
     );
+  }
+
+  /// Restores an achievement row exactly as given (import's replace
+  /// step) — bypasses [upsertProgress]'s unlock-timestamp-preservation
+  /// logic, since a restore should reproduce recorded history exactly,
+  /// not recompute it.
+  Future<void> restoreRow({
+    required String moduleId,
+    required String key,
+    required int progressCurrent,
+    required int progressTarget,
+    DateTime? unlockedAt,
+  }) async {
+    final now = clock.now().millisecondsSinceEpoch;
+    await _db
+        .into(_db.achievementsTable)
+        .insert(
+          AchievementsTableCompanion.insert(
+            id: generateId(),
+            moduleId: moduleId,
+            key: key,
+            progressCurrent: progressCurrent,
+            progressTarget: progressTarget,
+            unlockedAt: Value(unlockedAt?.millisecondsSinceEpoch),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
   }
 }

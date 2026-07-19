@@ -23,4 +23,11 @@ abstract class SettingsRepository {
 
   /// Updates the resume-lock timeout, in seconds (0 = immediate).
   Future<Result<void>> updatePinLockTimeoutSeconds(int seconds);
+
+  /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
+  /// — import's replace step (`core/backup/import_orchestrator.dart`).
+  /// PIN hash/salt are never part of this — those live outside the DB
+  /// entirely (D-15) and are restored, if at all, by the user re-
+  /// entering a PIN after import, same as a fresh install.
+  Future<Result<void>> restoreSettings(AppSettings settings);
 }

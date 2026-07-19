@@ -76,6 +76,29 @@ class SettingsRepositoryImpl implements SettingsRepository {
     AppSettingsTableCompanion(pinLockTimeoutSeconds: Value(seconds)),
   );
 
+  @override
+  Future<Result<void>> restoreSettings(AppSettings settings) async {
+    try {
+      await _ensureSeeded();
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.appSettingsTable,
+      )..where((t) => t.id.equals(_singletonId))).write(
+        AppSettingsTableCompanion(
+          locale: Value(settings.locale.toDb()),
+          themeMode: Value(settings.themeMode.toDb()),
+          waterUnit: Value(settings.waterUnit.toDb()),
+          pinEnabled: Value(settings.pinEnabled),
+          pinLockTimeoutSeconds: Value(settings.pinLockTimeoutSeconds),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('restore_settings', e));
+    }
+  }
+
   Future<Result<void>> _update(AppSettingsTableCompanion patch) async {
     try {
       await _ensureSeeded();
