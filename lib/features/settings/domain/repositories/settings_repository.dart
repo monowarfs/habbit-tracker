@@ -15,4 +15,12 @@ abstract class SettingsRepository {
 
   /// Updates the preferred water display unit.
   Future<Result<void>> updateWaterUnit(WaterUnit unit);
+
+  /// Enables or disables PIN lock (the PIN hash itself lives outside
+  /// this table, D-15 — this only flips the flag `app_settings.pin_
+  /// enabled` records).
+  Future<Result<void>> updatePinEnabled({required bool enabled});
+
+  /// Updates the resume-lock timeout, in seconds (0 = immediate).
+  Future<Result<void>> updatePinLockTimeoutSeconds(int seconds);
 }

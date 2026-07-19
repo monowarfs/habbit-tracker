@@ -17,6 +17,7 @@ class PinLockService {
   static const _failedCountKey = 'pin_failed_count';
   static const _lastFailedAtKey = 'pin_last_failed_at';
   static const _lastBackgroundedAtKey = 'pin_last_backgrounded_at';
+  static const _lastUnlockedAtKey = 'pin_last_unlocked_at';
 
   /// Stores a newly hashed PIN's salt and hash.
   Future<void> saveCredentials({
@@ -59,9 +60,12 @@ class PinLockService {
     value: instant.toUtc().millisecondsSinceEpoch.toString(),
   );
 
-  /// When the app was last backgrounded (or last unlocked — unlocking
-  /// resets this same reference point, `pin_lock_controller.dart`), or
-  /// `null` before the first background/unlock cycle.
+  /// When the app was last sent to the background, or `null` before the
+  /// first backgrounding this install has seen. Written only by
+  /// `main.dart`'s `AppLifecycleState.paused` hook — never by a
+  /// successful unlock, so a `0` ("immediately") timeout doesn't re-lock
+  /// on every subsequent in-app navigation (`readLastUnlockedAt` is the
+  /// separate signal that suppresses that).
   Future<DateTime?> readLastBackgroundedAt() async {
     final raw = await _storage.read(key: _lastBackgroundedAtKey);
     return raw == null
@@ -69,9 +73,26 @@ class PinLockService {
         : DateTime.fromMillisecondsSinceEpoch(int.parse(raw), isUtc: true);
   }
 
-  /// Records the backgrounded/unlocked reference point.
+  /// Records the backgrounded reference point.
   Future<void> writeLastBackgroundedAt(DateTime instant) => _storage.write(
     key: _lastBackgroundedAtKey,
+    value: instant.toUtc().millisecondsSinceEpoch.toString(),
+  );
+
+  /// When the PIN was last successfully verified (or first set). Used
+  /// alongside [readLastBackgroundedAt] to tell "backgrounded, then
+  /// already unlocked since" apart from "backgrounded and still owed an
+  /// unlock."
+  Future<DateTime?> readLastUnlockedAt() async {
+    final raw = await _storage.read(key: _lastUnlockedAtKey);
+    return raw == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(int.parse(raw), isUtc: true);
+  }
+
+  /// Records the unlock reference point.
+  Future<void> writeLastUnlockedAt(DateTime instant) => _storage.write(
+    key: _lastUnlockedAtKey,
     value: instant.toUtc().millisecondsSinceEpoch.toString(),
   );
 

@@ -67,6 +67,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<Result<void>> updateWaterUnit(WaterUnit unit) =>
       _update(AppSettingsTableCompanion(waterUnit: Value(unit.toDb())));
 
+  @override
+  Future<Result<void>> updatePinEnabled({required bool enabled}) =>
+      _update(AppSettingsTableCompanion(pinEnabled: Value(enabled)));
+
+  @override
+  Future<Result<void>> updatePinLockTimeoutSeconds(int seconds) => _update(
+    AppSettingsTableCompanion(pinLockTimeoutSeconds: Value(seconds)),
+  );
+
   Future<Result<void>> _update(AppSettingsTableCompanion patch) async {
     try {
       await _ensureSeeded();

@@ -47,6 +47,28 @@ void main() {
     expect(await service.readFailedAttemptCount(), 0);
   });
 
+  test('readLastUnlockedAt round-trips via writeLastUnlockedAt', () async {
+    final values = <String, String>{};
+    when(
+      () => storage.write(
+        key: any(named: 'key'),
+        value: any(named: 'value'),
+      ),
+    ).thenAnswer((invocation) async {
+      values[invocation.namedArguments[#key] as String] =
+          invocation.namedArguments[#value] as String;
+    });
+    when(
+      () => storage.read(key: any(named: 'key')),
+    ).thenAnswer((invocation) async {
+      return values[invocation.namedArguments[#key] as String];
+    });
+
+    final instant = DateTime.utc(2026, 6, 1, 12);
+    await service.writeLastUnlockedAt(instant);
+    expect(await service.readLastUnlockedAt(), instant);
+  });
+
   test('clearAll delegates to deleteAll', () async {
     when(() => storage.deleteAll()).thenAnswer((_) async {});
     await service.clearAll();
