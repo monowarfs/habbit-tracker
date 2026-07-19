@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/notifications/notification_reliability_screen.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -27,6 +28,12 @@ class AppRoutes {
 
   /// Settings tab path.
   static const String settings = '/settings';
+
+  /// Reports screen path (Run 15).
+  static const String reports = '/reports';
+
+  /// Achievement gallery screen path (Run 15).
+  static const String achievements = '/achievements';
 }
 
 /// The app's root [GoRouter], rebuilt whenever `habitModules` changes.
@@ -60,6 +67,12 @@ GoRouter buildAppRouter(List<HabitModule> modules) {
               GoRoute(
                 path: AppRoutes.dashboard,
                 builder: (context, state) => const DashboardScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'reports',
+                    builder: (context, state) => const ReportsScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -83,6 +83,12 @@ class WaterModule implements HabitModule {
             goalMl: progress.goalMl,
             unit: unit,
             size: 40,
+            // The subtitle below already shows totals; the ring's own
+            // center label doesn't fit at this tile scale (pre-existing
+            // overflow, only exposed once the dashboard actually
+            // rendered this tile — see `docs/superpowers/plans/
+            // 2026-07-19-dashboard-reports-achievements.md`, Task 13).
+            showLabel: false,
           ),
           title: Text(metadata.displayName),
           subtitle: Text(
