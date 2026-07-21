@@ -49,6 +49,19 @@ class LocalDate implements Comparable<LocalDate> {
   LocalDate addDays(int days) =>
       LocalDate.fromDateTime(toDateTimeUtc().add(Duration(days: days)));
 
+  /// This date shifted by [months] calendar months, day held fixed.
+  /// Round-trips through [DateTime]'s own month-overflow normalization
+  /// (`DateTime(year, 0, day)` resolves to December of the previous
+  /// year, `DateTime(year, 13, day)` to January of the next) — the
+  /// constructor's raw fields are never used directly as a comparison
+  /// or lookup key without this normalization, unlike a bare
+  /// `LocalDate(year, month - 1, 1)` at a call site, which silently
+  /// produces an invalid `month: 0` that every later `dayStatus`/`toIso`
+  /// lookup then misses against (caught in PR review — a "previous
+  /// month" chevron from January produced a dead history screen).
+  LocalDate addMonths(int months) =>
+      LocalDate.fromDateTime(DateTime.utc(year, month + months, day));
+
   @override
   int compareTo(LocalDate other) {
     if (year != other.year) return year.compareTo(other.year);

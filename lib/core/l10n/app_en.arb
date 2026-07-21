@@ -148,6 +148,37 @@
   "@waterStatsHistoryEmpty": {
     "description": "Shown on the history tab when no entries exist in the selected month."
   },
+  "heatmapCellNoDataSemantics": "{date}, no data",
+  "@heatmapCellNoDataSemantics": {
+    "description": "Screen-reader label for a per-habit heatmap calendar cell with no recorded data.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "heatmapCellCompleteSemantics": "{date}, complete, {value}",
+  "@heatmapCellCompleteSemantics": {
+    "description": "Screen-reader label for a fully-completed day in the per-habit heatmap calendar.",
+    "placeholders": {
+      "date": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "heatmapCellPartialSemantics": "{date}, partial, {value}",
+  "@heatmapCellPartialSemantics": {
+    "description": "Screen-reader label for a partially-completed day in the per-habit heatmap calendar.",
+    "placeholders": {
+      "date": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "heatmapCellMissedSemantics": "{date}, missed, {value}",
+  "@heatmapCellMissedSemantics": {
+    "description": "Screen-reader label for a missed day in the per-habit heatmap calendar.",
+    "placeholders": {
+      "date": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
   "waterSettingsTitle": "Water settings",
   "@waterSettingsTitle": {
     "description": "AppBar title for the water module's own settings screen."

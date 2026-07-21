@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
@@ -75,6 +76,8 @@ void main() {
       LocalDate? tapped;
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: HabitHeatmapCalendar(
               month: const LocalDate(2026, 6, 1),
@@ -92,6 +95,7 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('5'));
       expect(tapped, const LocalDate(2026, 6, 5));
@@ -103,6 +107,8 @@ void main() {
       LocalDate? tapped;
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: HabitHeatmapCalendar(
               month: const LocalDate(2026, 6, 1),
@@ -115,6 +121,7 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // The 20th is after `today` (the 15th) — tapping it must not fire.
       await tester.tap(find.text('20'), warnIfMissed: false);
@@ -127,6 +134,8 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(brightness: brightness),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: HabitHeatmapCalendar(
                 month: const LocalDate(2026, 6, 1),
@@ -144,6 +153,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
         final container = tester.widget<Container>(
           find
               .ancestor(
@@ -173,6 +183,8 @@ void main() {
       final semanticsHandle = tester.ensureSemantics();
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: HabitHeatmapCalendar(
               month: const LocalDate(2026, 6, 1),
@@ -190,6 +202,7 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       expect(
         find.bySemanticsLabel('2026-06-05, complete, 2200'),

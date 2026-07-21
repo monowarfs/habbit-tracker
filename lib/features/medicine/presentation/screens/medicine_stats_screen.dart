@@ -150,24 +150,14 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
-                onPressed: () => setState(() {
-                  _historyMonth = LocalDate(
-                    monthStart.year,
-                    monthStart.month - 1,
-                    1,
-                  );
-                }),
+                onPressed: () =>
+                    setState(() => _historyMonth = monthStart.addMonths(-1)),
               ),
               Text('${monthStart.year}-${monthStart.month}'),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
-                onPressed: () => setState(() {
-                  _historyMonth = LocalDate(
-                    monthStart.year,
-                    monthStart.month + 1,
-                    1,
-                  );
-                }),
+                onPressed: () =>
+                    setState(() => _historyMonth = monthStart.addMonths(1)),
               ),
             ],
           ),

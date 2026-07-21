@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
@@ -89,15 +90,36 @@ class HabitHeatmapCalendar extends StatelessWidget {
     );
   }
 
-  String _semanticsLabel(LocalDate day, ModuleDayStatus? status) {
+  String _semanticsLabel(
+    AppLocalizations l10n,
+    LocalDate day,
+    ModuleDayStatus? status,
+  ) {
+    final date = day.toIso();
     if (status == null || status.kind == ModuleDayStatusKind.none) {
-      return '${day.toIso()}, no data';
+      return l10n.heatmapCellNoDataSemantics(date);
     }
-    return '${day.toIso()}, ${status.kind.name}, ${status.value}';
+    final value = '${status.value}';
+    return switch (status.kind) {
+      ModuleDayStatusKind.complete => l10n.heatmapCellCompleteSemantics(
+        date,
+        value,
+      ),
+      ModuleDayStatusKind.partial => l10n.heatmapCellPartialSemantics(
+        date,
+        value,
+      ),
+      ModuleDayStatusKind.missed => l10n.heatmapCellMissedSemantics(
+        date,
+        value,
+      ),
+      ModuleDayStatusKind.none => l10n.heatmapCellNoDataSemantics(date),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final effectiveToday = today ?? LocalDate.fromDateTime(DateTime.now());
     final firstOfMonth = LocalDate(month.year, month.month, 1);
     final daysInMonth = LocalDate(
@@ -125,7 +147,7 @@ class HabitHeatmapCalendar extends StatelessWidget {
         final isFuture = day.compareTo(effectiveToday) > 0;
         final isToday = day.compareTo(effectiveToday) == 0;
         return Semantics(
-          label: _semanticsLabel(day, status),
+          label: _semanticsLabel(l10n, day, status),
           // The Text/Icon below are purely visual — this label already
           // fully describes the cell, so their own semantics (e.g. the
           // bare day-number "5") must not merge in and muddy it.

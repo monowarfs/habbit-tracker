@@ -166,11 +166,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             IconButton(
               icon: const Icon(Icons.chevron_left),
               onPressed: () => setState(() {
-                _historyMonth = LocalDate(
-                  monthStart.year,
-                  monthStart.month - 1,
-                  1,
-                );
+                _historyMonth = monthStart.addMonths(-1);
                 _selectedDay = null;
               }),
             ),
@@ -178,11 +174,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             IconButton(
               icon: const Icon(Icons.chevron_right),
               onPressed: () => setState(() {
-                _historyMonth = LocalDate(
-                  monthStart.year,
-                  monthStart.month + 1,
-                  1,
-                );
+                _historyMonth = monthStart.addMonths(1);
                 _selectedDay = null;
               }),
             ),
