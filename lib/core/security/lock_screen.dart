@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/biometric_service.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/pin_keypad.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// PIN entry — the router's `/lock` redirect target
 /// (`strategies/security.md`). Shows a shake + error on a wrong PIN, a
@@ -45,6 +46,14 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   Future<void> _tryBiometric() async {
+    // `ref.read(appSettingsProvider.future)` (not `.value`) — on the
+    // very first frame after redirecting to /lock, the settings stream
+    // may not have delivered its first value yet, and a `.value ?? true`
+    // snapshot would silently default to "attempt biometric" during
+    // that window regardless of the user's actual preference. Awaiting
+    // the future waits for the real, current value instead of guessing.
+    final settings = await ref.read(appSettingsProvider.future);
+    if (!mounted || !settings.biometricEnabled) return;
     final biometric = BiometricService();
     if (!await biometric.isAvailable()) return;
     if (!mounted) return;

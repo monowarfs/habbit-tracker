@@ -47,6 +47,8 @@ sealed class AppSettings with _$AppSettings {
     required WaterUnit waterUnit,
     required bool pinEnabled,
     required int pinLockTimeoutSeconds,
+    required bool biometricEnabled,
+    required bool screenPrivacyEnabled,
     DateTime? onboardingCompletedAt,
   }) = _AppSettings;
 }

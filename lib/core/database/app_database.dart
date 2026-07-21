@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -66,6 +66,17 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(prayerSettingsTable);
         await m.createTable(prayerRecordsTable);
         await m.createTable(prayerQadhaCountersTable);
+      }
+      if (from < 3) {
+        // Biometric-unlock and screen-privacy toggles.
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.biometricEnabled,
+        );
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.screenPrivacyEnabled,
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

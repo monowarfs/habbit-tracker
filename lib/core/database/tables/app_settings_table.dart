@@ -29,6 +29,18 @@ class AppSettingsTable extends Table {
   IntColumn get pinLockTimeoutSeconds =>
       integer().withDefault(const Constant(0))();
 
+  /// Whether biometric unlock is offered on `/lock`, when the device
+  /// supports it (D-15/`strategies/security.md`) — default `true`
+  /// because that's the pre-existing always-on behavior this column
+  /// makes visible and opt-out-able, not a new default.
+  BoolColumn get biometricEnabled =>
+      boolean().withDefault(const Constant(true))();
+
+  /// `FLAG_SECURE` (Android) / app-switcher blur (iOS) toggle
+  /// (`strategies/security.md`) — default `false`, opt-in.
+  BoolColumn get screenPrivacyEnabled =>
+      boolean().withDefault(const Constant(false))();
+
   /// UTC epoch millis; null = onboarding not yet completed.
   IntColumn get onboardingCompletedAt => integer().nullable()();
 

@@ -1,12 +1,13 @@
 import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/pin_lock_service.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
+
+import '../../support/test_secure_storage.dart';
 
 void main() {
   group('computeIsLocked', () {
@@ -95,7 +96,7 @@ void main() {
     setUp(() {
       db = AppDatabase(NativeDatabase.memory());
       settingsRepository = SettingsRepositoryImpl(db);
-      service = PinLockService(storage: _InMemoryStorage());
+      service = PinLockService(storage: InMemorySecureStorage());
       controller = PinLockController(service, settingsRepository);
     });
 
@@ -185,52 +186,4 @@ void main() {
       expect(creds, isNull);
     });
   });
-}
-
-/// A trivial in-memory `FlutterSecureStorage`-shaped fake, avoiding the
-/// plugin's platform channel entirely for these fast unit tests.
-class _InMemoryStorage implements FlutterSecureStorage {
-  final Map<String, String> _values = {};
-
-  @override
-  Future<void> write({
-    required String key,
-    required String? value,
-    AppleOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    AppleOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async {
-    if (value == null) {
-      _values.remove(key);
-    } else {
-      _values[key] = value;
-    }
-  }
-
-  @override
-  Future<String?> read({
-    required String key,
-    AppleOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    AppleOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async => _values[key];
-
-  @override
-  Future<void> deleteAll({
-    AppleOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    AppleOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async => _values.clear();
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

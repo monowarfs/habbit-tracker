@@ -11,9 +11,12 @@ import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
+import 'package:habit_tracker/core/security/screen_privacy_service.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
+import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
 
@@ -117,6 +120,23 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     final themeMode = ref.watch(themeControllerProvider);
     final locale = ref.watch(localeControllerProvider);
     final isBangla = locale.languageCode == 'bn';
+    // Single call site for applying screen privacy (`strategies/
+    // security.md`): fires once on cold start with whatever was
+    // persisted, and again on every Settings toggle — never called
+    // directly from `PinSettingsScreen`.
+    ref.listen<AsyncValue<AppSettings>>(appSettingsProvider, (
+      previous,
+      next,
+    ) {
+      final enabled = next.value?.screenPrivacyEnabled;
+      if (enabled == null) return;
+      if (previous?.value?.screenPrivacyEnabled == enabled) return;
+      unawaited(
+        enabled
+            ? ScreenPrivacyService().enable()
+            : ScreenPrivacyService().disable(),
+      );
+    });
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: AppTheme.light(isBangla: isBangla),

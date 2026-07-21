@@ -33,9 +33,19 @@ void main() {
     final firstRead = await repo1.watchSettings().first;
     expect(firstRead.locale, AppLocale.bn);
     expect(firstRead.themeMode, AppThemeMode.system);
+    expect(firstRead.biometricEnabled, isTrue);
+    expect(firstRead.screenPrivacyEnabled, isFalse);
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
+    final biometricResult = await repo1.updateBiometricEnabled(
+      enabled: false,
+    );
+    expect(biometricResult, isA<Success<void>>());
+    final privacyResult = await repo1.updateScreenPrivacyEnabled(
+      enabled: true,
+    );
+    expect(privacyResult, isA<Success<void>>());
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -44,6 +54,8 @@ void main() {
 
     expect(afterRestart.locale, AppLocale.bn);
     expect(afterRestart.themeMode, AppThemeMode.dark);
+    expect(afterRestart.biometricEnabled, isFalse);
+    expect(afterRestart.screenPrivacyEnabled, isTrue);
 
     await db2.close();
   });
