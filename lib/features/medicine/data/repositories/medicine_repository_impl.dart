@@ -31,7 +31,8 @@ class MedicineRepositoryImpl implements MedicineRepository {
   @override
   Stream<List<Medicine>> watchMedicines({required bool includeArchived}) {
     final query = _db.select(_db.medicinesTable)
-      ..where((t) => t.deletedAt.isNull());
+      ..where((t) => t.deletedAt.isNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]);
     if (!includeArchived) {
       query.where((t) => t.archivedAt.isNull());
     }
@@ -61,6 +62,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final id = generateId();
+      final sortOrder = await _nextSortOrder();
       await _db
           .into(_db.medicinesTable)
           .insert(
@@ -73,6 +75,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
               stockThreshold: Value(stockThreshold),
               stopWhenStockDepleted: Value(stopWhenStockDepleted),
               consumptionPerDose: Value(consumptionPerDose),
+              sortOrder: Value(sortOrder),
               createdAt: now,
               updatedAt: now,
             ),
@@ -87,11 +90,25 @@ class MedicineRepositoryImpl implements MedicineRepository {
           stockThreshold: stockThreshold,
           stopWhenStockDepleted: stopWhenStockDepleted,
           consumptionPerDose: consumptionPerDose,
+          sortOrder: sortOrder,
         ),
       );
     } on Object catch (e) {
       return Result.failure(AppException.storage('create_medicine', e));
     }
+  }
+
+  /// `max(existing sortOrder) + 1` (or `0` for the first medicine) — new
+  /// medicines append at the end instead of jumping to the top. Archived
+  /// medicines count too, since their `sortOrder` is preserved as-is.
+  Future<int> _nextSortOrder() async {
+    final maxExpr = _db.medicinesTable.sortOrder.max();
+    final query = _db.selectOnly(_db.medicinesTable)
+      ..addColumns([maxExpr])
+      ..where(_db.medicinesTable.deletedAt.isNull());
+    final row = await query.getSingleOrNull();
+    final currentMax = row?.read(maxExpr);
+    return currentMax == null ? 0 : currentMax + 1;
   }
 
   @override
@@ -181,6 +198,24 @@ class MedicineRepositoryImpl implements MedicineRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('archive_medicine', e));
+    }
+  }
+
+  @override
+  Future<Result<void>> reorderMedicines(List<String> orderedIds) async {
+    try {
+      await _db.transaction(() async {
+        for (var i = 0; i < orderedIds.length; i++) {
+          await (_db.update(
+            _db.medicinesTable,
+          )..where((t) => t.id.equals(orderedIds[i]))).write(
+            MedicinesTableCompanion(sortOrder: Value(i)),
+          );
+        }
+      });
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('reorder_medicines', e));
     }
   }
 
@@ -658,9 +693,14 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
   @override
   Future<List<Medicine>> allMedicines() async {
-    final rows = await (_db.select(
-      _db.medicinesTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+    // Ordered by sortOrder (not just an unordered export dump) so a
+    // backup round-trip reconstructs the same display order via
+    // createMedicine's append-at-end behavior during import.
+    final rows =
+        await (_db.select(_db.medicinesTable)
+              ..where((t) => t.deletedAt.isNull())
+              ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+            .get();
     return rows.map(_medicineFromRow).toList(growable: false);
   }
 
@@ -759,6 +799,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
     archivedAt: row.archivedAt == null
         ? null
         : DateTime.fromMillisecondsSinceEpoch(row.archivedAt!, isUtc: true),
+    sortOrder: row.sortOrder,
   );
 
   MedicineSchedule _scheduleFromRow(MedicineScheduleRow row) =>

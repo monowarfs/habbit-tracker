@@ -45,6 +45,11 @@ abstract class MedicineRepository {
   /// Restores a previously archived medicine.
   Future<Result<void>> restoreMedicine(String id);
 
+  /// Bulk-sets `sortOrder = orderedIds.indexOf(id)` for each id
+  /// (drag-to-reorder), transactionally. Never bumps `updatedAt` — a
+  /// display-order change, not a data edit.
+  Future<Result<void>> reorderMedicines(List<String> orderedIds);
+
   /// Streams a medicine's (non-deleted) schedules.
   Stream<List<MedicineSchedule>> watchSchedules(String medicineId);
 

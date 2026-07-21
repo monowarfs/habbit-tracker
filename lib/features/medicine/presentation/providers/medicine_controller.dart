@@ -131,6 +131,14 @@ class MedicineController extends _$MedicineController {
     if (result case Failure(:final error)) logException(error);
   }
 
+  /// Applies a drag-to-reorder result (active-list display order only).
+  Future<void> reorderMedicines(List<String> orderedIds) async {
+    final result = await ref
+        .read(medicineRepositoryProvider)
+        .reorderMedicines(orderedIds);
+    if (result case Failure(:final error)) logException(error);
+  }
+
   /// Adds stock via a manual refill.
   Future<void> refillStock(String medicineId, int amount) async {
     final result = await ref

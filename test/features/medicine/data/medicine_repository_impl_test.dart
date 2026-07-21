@@ -418,4 +418,51 @@ void main() {
     );
     expect(doses.firstWhere((d) => d.id == newId).notes, 'restored note');
   });
+
+  test('createMedicine appends new medicines at the end (sortOrder = '
+      'max(existing) + 1, never 0)', () async {
+    final a = await repo.createMedicine(name: 'A', stockEnabled: false);
+    final b = await repo.createMedicine(name: 'B', stockEnabled: false);
+    final c = await repo.createMedicine(name: 'C', stockEnabled: false);
+
+    final medicines = await repo.watchMedicines(includeArchived: false).first;
+    expect(medicines.map((m) => m.name).toList(), ['A', 'B', 'C']);
+    expect((a as Success<Medicine>).value.sortOrder, 0);
+    expect((b as Success<Medicine>).value.sortOrder, 1);
+    expect((c as Success<Medicine>).value.sortOrder, 2);
+  });
+
+  test('watchMedicines returns rows ordered by sortOrder, not insertion '
+      'order', () async {
+    final a = await repo.createMedicine(name: 'A', stockEnabled: false);
+    final b = await repo.createMedicine(name: 'B', stockEnabled: false);
+    await repo.reorderMedicines([
+      (b as Success<Medicine>).value.id,
+      (a as Success<Medicine>).value.id,
+    ]);
+
+    final medicines = await repo.watchMedicines(includeArchived: false).first;
+    expect(medicines.map((m) => m.name).toList(), ['B', 'A']);
+  });
+
+  test('reorderMedicines does not bump updatedAt (display-order change, '
+      'not a data edit)', () async {
+    late Medicine medicine;
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
+      final created = await repo.createMedicine(name: 'A', stockEnabled: false);
+      medicine = (created as Success<Medicine>).value;
+    });
+
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 2)), () async {
+      await repo.reorderMedicines([medicine.id]);
+    });
+
+    final row = await (db.select(
+      db.medicinesTable,
+    )..where((t) => t.id.equals(medicine.id))).getSingle();
+    expect(
+      DateTime.fromMillisecondsSinceEpoch(row.updatedAt, isUtc: true),
+      DateTime.utc(2026, 6),
+    );
+  });
 }

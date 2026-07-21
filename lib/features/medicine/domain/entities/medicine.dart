@@ -22,5 +22,6 @@ sealed class Medicine with _$Medicine {
     /// (FR-M-04).
     DateTime? lowStockNotifiedAt,
     DateTime? archivedAt,
+    @Default(0) int sortOrder,
   }) = _Medicine;
 }

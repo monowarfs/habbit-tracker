@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,6 +84,23 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(waterLogsTable, waterLogsTable.notes);
         await m.addColumn(medicineDosesTable, medicineDosesTable.notes);
         await m.addColumn(prayerRecordsTable, prayerRecordsTable.notes);
+      }
+      if (from < 5) {
+        // Manual drag-to-reorder display order for the medicine list.
+        await m.addColumn(medicinesTable, medicinesTable.sortOrder);
+        // Backfill: preserve today's de-facto order (createdAt ascending)
+        // instead of leaving every existing row tied at 0, which would
+        // look like a random shuffle to an upgrading user.
+        final existing = await (select(
+          medicinesTable,
+        )..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).get();
+        for (var i = 0; i < existing.length; i++) {
+          await (update(
+            medicinesTable,
+          )..where((t) => t.id.equals(existing[i].id))).write(
+            MedicinesTableCompanion(sortOrder: Value(i)),
+          );
+        }
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

@@ -45,6 +45,10 @@ class MedicinesTable extends Table {
   /// FR-M-10 soft-archive; null = active.
   IntColumn get archivedAt => integer().nullable()();
 
+  /// Manual display order (lower sorts first). Set on create to
+  /// max(existing sortOrder) + 1; updated in bulk by drag-to-reorder.
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

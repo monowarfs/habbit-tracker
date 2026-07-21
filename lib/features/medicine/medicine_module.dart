@@ -474,6 +474,7 @@ class MedicineModule implements HabitModule {
     'stockThreshold': medicine.stockThreshold,
     'stopWhenStockDepleted': medicine.stopWhenStockDepleted,
     'consumptionPerDose': medicine.consumptionPerDose,
+    'sortOrder': medicine.sortOrder,
   };
 
   Map<String, Object?> _scheduleToJson(MedicineSchedule schedule) => {
