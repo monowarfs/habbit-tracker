@@ -212,6 +212,27 @@ class MedicineRepositoryImpl implements MedicineRepository {
             MedicinesTableCompanion(sortOrder: Value(i)),
           );
         }
+        // Rows the caller didn't include (archived medicines — the
+        // active-tab UI only ever passes active ids here) would otherwise
+        // keep their old, now possibly-colliding sortOrder: e.g. an
+        // archived row frozen at 1 and a freshly reordered active row
+        // also landing on 1. Push them into a disjoint range above the
+        // reordered set instead, preserving their relative order among
+        // themselves.
+        final remaining =
+            await (_db.select(_db.medicinesTable)
+                  ..where(
+                    (t) => t.deletedAt.isNull() & t.id.isNotIn(orderedIds),
+                  )
+                  ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+                .get();
+        for (var i = 0; i < remaining.length; i++) {
+          await (_db.update(
+            _db.medicinesTable,
+          )..where((t) => t.id.equals(remaining[i].id))).write(
+            MedicinesTableCompanion(sortOrder: Value(orderedIds.length + i)),
+          );
+        }
       });
       return const Result.success(null);
     } on Object catch (e) {

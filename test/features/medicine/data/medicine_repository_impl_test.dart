@@ -465,4 +465,33 @@ void main() {
       DateTime.utc(2026, 6),
     );
   });
+
+  test("reorderMedicines never collides with an archived medicine's frozen "
+      'sortOrder (PR #5 review)', () async {
+    final a = await repo.createMedicine(name: 'A', stockEnabled: false);
+    final b = await repo.createMedicine(name: 'B', stockEnabled: false);
+    final aId = (a as Success<Medicine>).value.id;
+    final bId = (b as Success<Medicine>).value.id;
+
+    await repo.archiveMedicine(bId); // B stays frozen at sortOrder 1.
+
+    final c = await repo.createMedicine(name: 'C', stockEnabled: false);
+    final cId = (c as Success<Medicine>).value.id;
+
+    // Active-only reorder — only ids the UI's active tab ever passes.
+    await repo.reorderMedicines([cId, aId]);
+
+    final all = await (db.select(
+      db.medicinesTable,
+    )..where((t) => t.deletedAt.isNull())).get();
+    final sortOrders = all.map((r) => r.sortOrder).toList();
+    expect(
+      sortOrders.toSet().length,
+      sortOrders.length,
+      reason: 'no two non-deleted rows should share a sortOrder',
+    );
+
+    final active = await repo.watchMedicines(includeArchived: false).first;
+    expect(active.map((m) => m.name).toList(), ['C', 'A']);
+  });
 }

@@ -380,6 +380,11 @@ class MedicineModule implements HabitModule {
     final medicines = (data.payload['medicines'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
     for (final json in medicines) {
+      // `json['sortOrder']` is intentionally never read here —
+      // `createMedicine` doesn't accept a sortOrder override, so display
+      // order is instead reconstructed for free by replaying medicines
+      // in `_medicineToJson`'s already sortOrder-ascending export order
+      // (`allMedicines()`), each appending at the end.
       final result = await _repository.createMedicine(
         name: json['name'] as String,
         dosageNote: json['dosageNote'] as String?,
