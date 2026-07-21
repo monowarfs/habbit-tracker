@@ -307,6 +307,14 @@
   "@medicineStatsTitle": {
     "description": "Title of the medicine stats screen."
   },
+  "medicineStatsTabStats": "Stats",
+  "@medicineStatsTabStats": {
+    "description": "Tab label for the medicine stats screen's chart/adherence tab."
+  },
+  "medicineStatsTabHistory": "History",
+  "@medicineStatsTabHistory": {
+    "description": "Tab label for the medicine stats screen's per-day heatmap history tab."
+  },
   "medicineStatsDosesTakenLabel": "Doses taken, last 7 days",
   "@medicineStatsDosesTakenLabel": {
     "description": "Section header for the adherence chart."
