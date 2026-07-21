@@ -46,9 +46,14 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   Future<void> _tryBiometric() async {
-    final biometricEnabled =
-        ref.read(appSettingsProvider).value?.biometricEnabled ?? true;
-    if (!biometricEnabled) return;
+    // `ref.read(appSettingsProvider.future)` (not `.value`) — on the
+    // very first frame after redirecting to /lock, the settings stream
+    // may not have delivered its first value yet, and a `.value ?? true`
+    // snapshot would silently default to "attempt biometric" during
+    // that window regardless of the user's actual preference. Awaiting
+    // the future waits for the real, current value instead of guessing.
+    final settings = await ref.read(appSettingsProvider.future);
+    if (!mounted || !settings.biometricEnabled) return;
     final biometric = BiometricService();
     if (!await biometric.isAvailable()) return;
     if (!mounted) return;
