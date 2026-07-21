@@ -68,6 +68,11 @@ abstract class PrayerRepository {
   /// make, just user-triggered; bumps that prayer's Qadha counter.
   Future<Result<void>> markMissedBySkip(String recordId);
 
+  /// Annotates a record with a free-text note, legal in any status —
+  /// including `missed` ("missed — was in a meeting"), unlike
+  /// `markPrayed`/`markMissedBySkip` which guard on status.
+  Future<Result<void>> updatePrayerNotes(String recordId, String? notes);
+
   /// Every (non-deleted) record, across every day — export groundwork.
   Future<List<PrayerRecord>> allRecords();
 

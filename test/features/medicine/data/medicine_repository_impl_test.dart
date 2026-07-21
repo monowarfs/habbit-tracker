@@ -347,4 +347,75 @@ void main() {
       isNot(contains(medicineId)),
     );
   });
+
+  test('updateDoseNotes annotates a dose regardless of its status, without '
+      'bumping statusChangedAt', () async {
+    final created = await repo.createMedicine(name: 'X', stockEnabled: false);
+    final medicineId = (created as Success<Medicine>).value.id;
+    await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+      await repo.materializeDoses(clock.now());
+    });
+    final doseId = await doseIdFor(repo, medicineId);
+    final beforeDoses = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    final beforeStatusChangedAt = beforeDoses
+        .firstWhere((d) => d.id == doseId)
+        .statusChangedAt;
+
+    final result = await repo.updateDoseNotes(doseId, 'felt dizzy after this');
+    expect(result, isA<Success<void>>());
+
+    final doses = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    final dose = doses.firstWhere((d) => d.id == doseId);
+    expect(dose.notes, 'felt dizzy after this');
+    expect(dose.storedStatus, MedicineDoseStatus.upcoming); // guard-free
+    expect(dose.statusChangedAt, beforeStatusChangedAt); // not bumped
+  });
+
+  test(
+    'updateDoseNotes on an unknown id fails with NotFoundException',
+    () async {
+      final result = await repo.updateDoseNotes('missing', 'x');
+      expect(result, isA<Failure<void>>());
+    },
+  );
+
+  test('restoreDose persists notes (import round-trip)', () async {
+    final created = await repo.createMedicine(name: 'X', stockEnabled: false);
+    final medicineId = (created as Success<Medicine>).value.id;
+    final scheduleResult = await repo.createSchedule(
+      medicineId: medicineId,
+      rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      startDate: const LocalDate(2026, 6, 1),
+    );
+    final scheduleId = (scheduleResult as Success<MedicineSchedule>).value.id;
+
+    final newId = await repo.restoreDose(
+      MedicineDose(
+        id: '',
+        medicineId: medicineId,
+        scheduleId: scheduleId,
+        scheduledFor: DateTime.utc(2026, 6, 1, 8),
+        storedStatus: MedicineDoseStatus.done,
+        graceWindowMinutes: 30,
+        notes: 'restored note',
+      ),
+    );
+
+    final doses = await repo.dosesInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    expect(doses.firstWhere((d) => d.id == newId).notes, 'restored note');
+  });
 }

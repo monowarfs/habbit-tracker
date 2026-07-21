@@ -3,6 +3,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
+import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
 import 'package:habit_tracker/features/water/domain/usecases/log_water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -29,21 +30,30 @@ class WaterController extends _$WaterController {
   );
 
   /// Logs a custom amount, optionally backdated (FR-W-03/FR-W-05).
-  Future<void> logCustom({required int amountMl, DateTime? loggedAt}) => _log(
+  Future<void> logCustom({
+    required int amountMl,
+    DateTime? loggedAt,
+    String? notes,
+  }) => _log(
     amountMl: amountMl,
     source: WaterEntrySource.custom,
     loggedAt: loggedAt,
+    notes: notes,
   );
 
   Future<void> _log({
     required int amountMl,
     required WaterEntrySource source,
     DateTime? loggedAt,
+    String? notes,
   }) async {
     final repository = ref.read(waterRepositoryProvider);
-    final result = await LogWaterEntryUseCase(
-      repository,
-    ).execute(amountMl: amountMl, source: source, loggedAt: loggedAt);
+    final result = await LogWaterEntryUseCase(repository).execute(
+      amountMl: amountMl,
+      source: source,
+      loggedAt: loggedAt,
+      notes: notes,
+    );
     if (result case Failure(:final error)) {
       logException(error);
       return;
@@ -51,15 +61,17 @@ class WaterController extends _$WaterController {
     await ref.read(achievementEngineProvider).evaluate('water');
   }
 
-  /// Updates an existing entry (FR-W-09).
+  /// Updates an existing entry (FR-W-09). See [unsetWaterNotes] for
+  /// [notes]'s "omitted vs. explicitly cleared" distinction.
   Future<void> updateEntry(
     String id, {
     int? amountMl,
     DateTime? loggedAt,
+    Object? notes = unsetWaterNotes,
   }) async {
     final result = await ref
         .read(waterRepositoryProvider)
-        .updateEntry(id, amountMl: amountMl, loggedAt: loggedAt);
+        .updateEntry(id, amountMl: amountMl, loggedAt: loggedAt, notes: notes);
     if (result case Failure(:final error)) logException(error);
   }
 

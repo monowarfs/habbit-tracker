@@ -363,6 +363,7 @@ class WaterModule implements HabitModule {
         source: json['source'] == 'quick'
             ? WaterEntrySource.quick
             : WaterEntrySource.custom,
+        notes: json['notes'] as String?,
       );
     }
     final settingsJson = data.payload['settings'] as Map<String, dynamic>?;
@@ -405,5 +406,6 @@ class WaterModule implements HabitModule {
     'amountMl': entry.amountMl,
     'loggedAt': entry.loggedAt.toIso8601String(),
     'source': entry.source == WaterEntrySource.quick ? 'quick' : 'custom',
+    'notes': entry.notes,
   };
 }

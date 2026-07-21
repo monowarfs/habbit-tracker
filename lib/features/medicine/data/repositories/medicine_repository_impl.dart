@@ -485,6 +485,23 @@ class MedicineRepositoryImpl implements MedicineRepository {
     },
   );
 
+  @override
+  Future<Result<void>> updateDoseNotes(String doseId, String? notes) =>
+      _resolveDose(
+        doseId,
+        resolve: (medicine, dose) async {
+          final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+          await (_db.update(
+            _db.medicineDosesTable,
+          )..where((t) => t.id.equals(dose.id))).write(
+            MedicineDosesTableCompanion(
+              notes: Value(notes),
+              updatedAt: Value(nowMillis),
+            ),
+          );
+        },
+      );
+
   /// Shared "look up medicine+dose, run [resolve], wrap in `Result`"
   /// skeleton for the three dose-action methods above.
   Future<Result<void>> _resolveDose(
@@ -689,6 +706,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
               dose.statusChangedAt?.toUtc().millisecondsSinceEpoch,
             ),
             stockDeltaApplied: Value(dose.stockDeltaApplied),
+            notes: Value(dose.notes),
             createdAt: now,
             updatedAt: now,
           ),
@@ -779,6 +797,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
           ),
     stockDeltaApplied: row.stockDeltaApplied,
     graceWindowMinutes: row.graceWindowMinutes,
+    notes: row.notes,
   );
 
   MedicineStockEvent _stockEventFromRow(MedicineStockEventRow row) =>

@@ -54,6 +54,9 @@ class MedicineDosesTable extends Table {
   /// Soft-delete marker; null = not deleted.
   IntColumn get deletedAt => integer().nullable()();
 
+  /// Optional free-text annotation on this specific dose instance.
+  TextColumn get notes => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

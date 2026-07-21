@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
@@ -24,6 +25,7 @@ class WaterAddEntryScreen extends ConsumerStatefulWidget {
 
 class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
   final _amountController = TextEditingController();
+  final _notesController = TextEditingController();
   DateTime _loggedAt = clock.now();
   String? _error;
   bool _prefilled = false;
@@ -31,6 +33,7 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
   @override
   void dispose() {
     _amountController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -69,11 +72,21 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
       setState(() => _error = l10n.waterAddEntryFutureError);
       return;
     }
+    final notes = canonicalizeNote(_notesController.text);
     final controller = ref.read(waterControllerProvider.notifier);
     if (widget.editEntryId case final id?) {
-      await controller.updateEntry(id, amountMl: amount, loggedAt: _loggedAt);
+      await controller.updateEntry(
+        id,
+        amountMl: amount,
+        loggedAt: _loggedAt,
+        notes: notes,
+      );
     } else {
-      await controller.logCustom(amountMl: amount, loggedAt: _loggedAt);
+      await controller.logCustom(
+        amountMl: amount,
+        loggedAt: _loggedAt,
+        notes: notes,
+      );
     }
     if (mounted) Navigator.of(context).pop();
   }
@@ -82,6 +95,7 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
     if (_prefilled) return;
     _prefilled = true;
     _amountController.text = '${entry.amountMl}';
+    _notesController.text = entry.notes ?? '';
     _loggedAt = entry.loggedAt.toLocal();
   }
 
@@ -122,6 +136,14 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            TextField(
+              controller: _notesController,
+              maxLength: noteMaxLength,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: l10n.waterAddEntryNotesLabel,
+              ),
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.waterAddEntryDateTimeLabel),

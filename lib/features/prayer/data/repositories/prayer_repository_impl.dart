@@ -424,6 +424,17 @@ class PrayerRepositoryImpl implements PrayerRepository {
     return result;
   }
 
+  @override
+  Future<Result<void>> updatePrayerNotes(String recordId, String? notes) =>
+      _resolveRecord(
+        recordId,
+        guard: (_) => true,
+        apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+          notes: Value(notes),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+
   Future<PrayerRecord?> _recordById(String id) async {
     final row = await (_db.select(
       _db.prayerRecordsTable,
@@ -496,6 +507,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
             statusChangedAt: Value(
               record.statusChangedAt?.toUtc().millisecondsSinceEpoch,
             ),
+            notes: Value(record.notes),
             createdAt: now,
             updatedAt: now,
           ),
@@ -550,6 +562,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
             row.statusChangedAt!,
             isUtc: true,
           ),
+    notes: row.notes,
   );
 }
 

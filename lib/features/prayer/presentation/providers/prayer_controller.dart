@@ -51,6 +51,14 @@ class PrayerController extends _$PrayerController {
     if (result case Failure(:final error)) logException(error);
   }
 
+  /// Annotates a record with a free-text note, legal in any status.
+  Future<void> updatePrayerNotes(String recordId, String? notes) async {
+    final result = await ref
+        .read(prayerRepositoryProvider)
+        .updatePrayerNotes(recordId, notes);
+    if (result case Failure(:final error)) logException(error);
+  }
+
   /// Updates settings; only non-null arguments change. A location/method
   /// change re-materializes immediately afterward (rather than waiting
   /// for the next app-resume cycle) so the checklist reflects it right

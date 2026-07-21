@@ -20,5 +20,6 @@ sealed class WaterEntry with _$WaterEntry {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    String? notes,
   }) = _WaterEntry;
 }

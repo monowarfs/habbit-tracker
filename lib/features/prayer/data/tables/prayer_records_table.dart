@@ -39,6 +39,9 @@ class PrayerRecordsTable extends Table {
   /// Soft-delete marker; null = not deleted.
   IntColumn get deletedAt => integer().nullable()();
 
+  /// Optional free-text annotation on this specific prayer record.
+  TextColumn get notes => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

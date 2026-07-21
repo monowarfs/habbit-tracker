@@ -435,6 +435,7 @@ class MedicineModule implements HabitModule {
               ? null
               : DateTime.parse(json['statusChangedAt'] as String),
           stockDeltaApplied: json['stockDeltaApplied'] as int,
+          notes: json['notes'] as String?,
         ),
       );
       doseIdMap[json['id'] as String] = newId;
@@ -499,6 +500,7 @@ class MedicineModule implements HabitModule {
     'statusChangedAt': dose.statusChangedAt?.toIso8601String(),
     'stockDeltaApplied': dose.stockDeltaApplied,
     'graceWindowMinutes': dose.graceWindowMinutes,
+    'notes': dose.notes,
   };
 
   Map<String, Object?> _stockEventToJson(MedicineStockEvent event) => {

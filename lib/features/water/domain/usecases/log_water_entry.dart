@@ -17,6 +17,7 @@ class LogWaterEntryUseCase {
     required int amountMl,
     required WaterEntrySource source,
     DateTime? loggedAt,
+    String? notes,
   }) async {
     if (amountMl <= 0) {
       return const Result.failure(
@@ -33,6 +34,7 @@ class LogWaterEntryUseCase {
       amountMl: amountMl,
       loggedAt: at,
       source: source,
+      notes: notes,
     );
   }
 }

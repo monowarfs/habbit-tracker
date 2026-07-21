@@ -12,6 +12,7 @@ class DoseTile extends StatelessWidget {
     required this.view,
     required this.onDone,
     required this.onSkip,
+    required this.onNoteTap,
     this.highlighted = false,
     super.key,
   });
@@ -24,6 +25,9 @@ class DoseTile extends StatelessWidget {
 
   /// Called when the user marks this dose skipped.
   final VoidCallback onSkip;
+
+  /// Called when the user taps the note icon to add/edit this dose's note.
+  final VoidCallback onNoteTap;
 
   /// Whether this tile arrived from a notification deep link.
   final bool highlighted;
@@ -70,7 +74,20 @@ class DoseTile extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.15),
           child: Icon(Icons.medication, color: color),
         ),
-        title: Text(view.medicine.name),
+        title: Row(
+          children: [
+            Expanded(child: Text(view.medicine.name)),
+            IconButton(
+              icon: Icon(
+                view.dose.notes != null
+                    ? Icons.sticky_note_2
+                    : Icons.sticky_note_2_outlined,
+              ),
+              tooltip: l10n.logNotesSheetTitle,
+              onPressed: onNoteTap,
+            ),
+          ],
+        ),
         // Two `Text`s, not one interpolated string: the status half needs
         // its own color to actually read as "visually distinct" (FR-M-06)
         // — a missed dose isn't just an icon-colored variant, the label

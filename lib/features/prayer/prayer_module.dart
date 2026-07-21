@@ -413,6 +413,7 @@ class PrayerModule implements HabitModule {
           statusChangedAt: json['statusChangedAt'] == null
               ? null
               : DateTime.parse(json['statusChangedAt'] as String),
+          notes: json['notes'] as String?,
         ),
       );
     }
@@ -447,6 +448,7 @@ class PrayerModule implements HabitModule {
     'scheduledFor': record.scheduledFor.toIso8601String(),
     'status': record.storedStatus.toDb(),
     'statusChangedAt': record.statusChangedAt?.toIso8601String(),
+    'notes': record.notes,
   };
 
   Map<String, Object?> _qadhaToJson(PrayerQadhaCounter counter) => {

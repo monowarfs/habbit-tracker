@@ -54,5 +54,6 @@ sealed class PrayerRecord with _$PrayerRecord {
     required DateTime scheduledFor,
     required PrayerStatus storedStatus,
     DateTime? statusChangedAt,
+    String? notes,
   }) = _PrayerRecord;
 }
