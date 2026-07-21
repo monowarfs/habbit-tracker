@@ -124,11 +124,17 @@ class PinLockController {
     return true;
   }
 
-  /// Disables PIN lock, requiring the current PIN first.
+  /// Disables PIN lock, requiring the current PIN first. Also resets the
+  /// biometric/screen-privacy toggles to their own defaults — both are
+  /// only ever shown while PIN is enabled, so re-enabling PIN later
+  /// should start from a clean slate rather than silently re-arming a
+  /// stale preference (`strategies/security.md`).
   Future<bool> disablePin(String pin) async {
     if (!await verify(pin)) return false;
     await _service.clearAll();
     await _settingsRepository.updatePinEnabled(enabled: false);
+    await _settingsRepository.updateBiometricEnabled(enabled: true);
+    await _settingsRepository.updateScreenPrivacyEnabled(enabled: false);
     return true;
   }
 

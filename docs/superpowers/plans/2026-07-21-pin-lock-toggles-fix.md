@@ -561,7 +561,7 @@ to:
 ```dart
   Future<void> _tryBiometric() async {
     final biometricEnabled =
-        ref.read(appSettingsProvider).valueOrNull?.biometricEnabled ?? true;
+        ref.read(appSettingsProvider).value?.biometricEnabled ?? true;
     if (!biometricEnabled) return;
     final biometric = BiometricService();
     if (!await biometric.isAvailable()) return;
@@ -643,9 +643,9 @@ to:
       previous,
       next,
     ) {
-      final enabled = next.valueOrNull?.screenPrivacyEnabled;
+      final enabled = next.value?.screenPrivacyEnabled;
       if (enabled == null) return;
-      if (previous?.valueOrNull?.screenPrivacyEnabled == enabled) return;
+      if (previous?.value?.screenPrivacyEnabled == enabled) return;
       unawaited(
         enabled
             ? ScreenPrivacyService().enable()

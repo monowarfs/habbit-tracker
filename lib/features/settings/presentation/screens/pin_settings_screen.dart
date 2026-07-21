@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/security/biometric_service.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
-import 'package:habit_tracker/core/security/screen_privacy_service.dart';
 import 'package:habit_tracker/core/widgets/pin_keypad.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
@@ -12,8 +11,13 @@ import 'package:habit_tracker/features/settings/presentation/providers/app_setti
 /// biometric and screen-privacy toggles (both gated on PIN already
 /// being enabled, `strategies/security.md`).
 class PinSettingsScreen extends ConsumerWidget {
-  /// Creates the PIN settings screen.
-  const PinSettingsScreen({super.key});
+  /// Creates the PIN settings screen. [biometricAvailable] overrides the
+  /// real `BiometricService().isAvailable` check — test-only seam, since
+  /// `local_auth`'s platform channel isn't available under `flutter test`.
+  const PinSettingsScreen({super.key, this.biometricAvailable});
+
+  /// Test seam for [BiometricService.isAvailable].
+  final Future<bool> Function()? biometricAvailable;
 
   static const _timeoutOptions = [0, 60, 300, 1800];
 
@@ -76,26 +80,27 @@ class PinSettingsScreen extends ConsumerWidget {
               ),
             ),
             FutureBuilder<bool>(
-              future: BiometricService().isAvailable(),
+              future: (biometricAvailable ?? BiometricService().isAvailable)(),
               builder: (context, snapshot) {
                 if (snapshot.data != true) return const SizedBox.shrink();
                 return SwitchListTile(
                   title: Text(l10n.pinSettingsBiometric),
-                  value: false,
-                  onChanged: (_) {},
+                  value: settings?.biometricEnabled ?? true,
+                  onChanged: (enable) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .updateBiometricEnabled(enabled: enable);
+                  },
                 );
               },
             ),
             SwitchListTile(
               title: Text(l10n.pinSettingsScreenPrivacy),
-              value: false,
+              value: settings?.screenPrivacyEnabled ?? false,
               onChanged: (enable) async {
-                final service = ScreenPrivacyService();
-                if (enable) {
-                  await service.enable();
-                } else {
-                  await service.disable();
-                }
+                await ref
+                    .read(settingsRepositoryProvider)
+                    .updateScreenPrivacyEnabled(enabled: enable);
               },
             ),
           ],
