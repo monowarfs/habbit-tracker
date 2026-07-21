@@ -10,10 +10,12 @@ screen (blank/white flash on cold start).
 
 ## Design
 
-**Mark:** a single bold white rounded checkmark (`Icons.check_rounded`
-glyph, hand-rendered to PNG — no new font/asset dependency), representing
-"habit completed." Generic across all three modules (water/medicine/
-prayer), not biased toward any one.
+**Mark:** a single bold white rounded checkmark, drawn as vector strokes
+(two line segments, round caps/joins) rather than a font glyph — no new
+font/asset dependency, and avoids `flutter test`'s font-disabled
+rendering mode blanking out `Icon` glyphs. Represents "habit completed,"
+generic across all three modules (water/medicine/prayer), not biased
+toward any one.
 
 **Icon:**
 - Background: solid teal `#006874` (the app's existing Material seed
@@ -36,12 +38,23 @@ prayer), not biased toward any one.
 ## Approach
 
 Source PNGs are generated headlessly (no external image tools installed
-on this machine, no `imagemagick`/`inkscape`/`cairosvg`) via a throwaway
-`flutter test` widget-capture script: pump a `RepaintBoundary`-wrapped
-`CustomPaint`/`Icon` widget, call `toImage()`, write the PNG bytes to
-`assets/icon/` and `assets/splash/`. The script is deleted after
-generating the assets — it is not a real test and doesn't belong in the
-suite.
+on this machine, no `imagemagick`/`inkscape`/`cairosvg`). Two approaches
+were tried:
+
+1. A `flutter test` widget-capture script (`RepaintBoundary` +
+   `CustomPaint`, `toImage()`) — abandoned: `toImage()` hung
+   indefinitely (60s+ per call, no error) in this sandboxed shell,
+   most likely because the software rasterizer can't get the
+   GPU/framebuffer access it wants here.
+2. A throwaway pure-Python script (stdlib `zlib` only, no Pillow/
+   cairosvg/numpy — none installed) that hand-encodes the PNG chunks
+   (IHDR/IDAT/IEND) directly, filling a solid background and stroking
+   the checkmark by per-pixel distance-to-segment with a 1px
+   anti-aliased edge. This is what actually produced
+   `assets/icon/icon.png`, `assets/icon/icon_foreground.png`, and
+   `assets/splash/splash_logo.png`. The script lived outside the repo
+   (scratch directory) and was discarded after use — it's a one-shot
+   asset generator, not project code.
 
 Platform icon/splash files (Android mipmaps, adaptive-icon XML, iOS
 `Assets.xcassets`, `LaunchScreen.storyboard`, `launch_background.xml`)
