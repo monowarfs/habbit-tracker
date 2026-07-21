@@ -125,6 +125,7 @@ class WaterRepositoryImpl implements WaterRepository {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    String? notes,
   }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
@@ -137,6 +138,7 @@ class WaterRepositoryImpl implements WaterRepository {
               amountMl: amountMl,
               loggedAt: loggedAt.toUtc().millisecondsSinceEpoch,
               source: source.toDb(),
+              notes: Value(notes),
               createdAt: now,
               updatedAt: now,
             ),
@@ -147,6 +149,7 @@ class WaterRepositoryImpl implements WaterRepository {
           amountMl: amountMl,
           loggedAt: loggedAt,
           source: source,
+          notes: notes,
         ),
       );
     } on Object catch (e) {
@@ -159,6 +162,7 @@ class WaterRepositoryImpl implements WaterRepository {
     String id, {
     int? amountMl,
     DateTime? loggedAt,
+    Object? notes = unsetWaterNotes,
   }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
@@ -173,6 +177,9 @@ class WaterRepositoryImpl implements WaterRepository {
               loggedAt: loggedAt == null
                   ? const Value.absent()
                   : Value(loggedAt.toUtc().millisecondsSinceEpoch),
+              notes: identical(notes, unsetWaterNotes)
+                  ? const Value.absent()
+                  : Value(notes as String?),
               updatedAt: Value(now),
             ),
           );
@@ -320,6 +327,7 @@ class WaterRepositoryImpl implements WaterRepository {
     amountMl: row.amountMl,
     loggedAt: DateTime.fromMillisecondsSinceEpoch(row.loggedAt, isUtc: true),
     source: WaterEntrySourceDb.fromDb(row.source),
+    notes: row.notes,
   );
 
   WaterGoal _goalFromRow(WaterGoalRow row) => WaterGoal(

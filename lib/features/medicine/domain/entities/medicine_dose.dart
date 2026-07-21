@@ -40,5 +40,6 @@ sealed class MedicineDose with _$MedicineDose {
     required int graceWindowMinutes,
     DateTime? statusChangedAt,
     @Default(0) int stockDeltaApplied,
+    String? notes,
   }) = _MedicineDose;
 }

@@ -4,6 +4,12 @@ import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
 
+/// Default for [WaterRepository.updateEntry]'s `notes` param, distinguishing
+/// "leave untouched" (the caller omitted the argument) from "clear"
+/// (the caller explicitly passed `null`) — a plain `String?` default can't
+/// tell those two apart since both read as `null`.
+const Object unsetWaterNotes = Object();
+
 /// Reads and mutates the Water module's data.
 abstract class WaterRepository {
   /// Streams every (non-deleted) entry logged on [day].
@@ -34,13 +40,18 @@ abstract class WaterRepository {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    String? notes,
   });
 
-  /// Updates an existing entry's amount and/or timestamp (FR-W-09).
+  /// Updates an existing entry's amount, timestamp, and/or notes
+  /// (FR-W-09). Only non-null [amountMl]/[loggedAt] change; omitting
+  /// [notes] entirely never clobbers an existing one, but passing
+  /// `notes: null` explicitly clears it (see [unsetWaterNotes]).
   Future<Result<void>> updateEntry(
     String id, {
     int? amountMl,
     DateTime? loggedAt,
+    Object? notes = unsetWaterNotes,
   });
 
   /// Deletes (soft-deletes) an entry (FR-W-09).

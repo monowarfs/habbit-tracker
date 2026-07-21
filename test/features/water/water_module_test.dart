@@ -53,6 +53,7 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    String? notes,
   }) async {
     capturedAmountMl = amountMl;
     capturedSource = source;

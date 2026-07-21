@@ -99,6 +99,11 @@ abstract class MedicineRepository {
   /// Un-marks a done dose, reversing its stock effect exactly.
   Future<Result<void>> undoDose(String doseId);
 
+  /// Annotates a dose with a free-text note, independent of its status
+  /// (before, at, or after marking done/skipped) — never bumps
+  /// `statusChangedAt` since editing a note isn't a status change.
+  Future<Result<void>> updateDoseNotes(String doseId, String? notes);
+
   /// Manually adds stock (a refill), recording a `manual_refill` event.
   /// Clears `lowStockNotifiedAt` once stock rises back above threshold.
   Future<Result<void>> refillStock(String medicineId, int amount);

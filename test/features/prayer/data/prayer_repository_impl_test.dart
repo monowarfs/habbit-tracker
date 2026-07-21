@@ -254,4 +254,73 @@ void main() {
     final all = await repo.allRecords();
     expect(all, hasLength(30 * 5));
   });
+
+  test('updatePrayerNotes annotates a record even when missed (the most '
+      'useful case)', () async {
+    const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
+    await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
+      await repo.materializeRecords(clock.now(), location);
+    });
+    await repo.watchQadhaCounters().first;
+    await repo.sweepMissedPrayers(DateTime.utc(2026, 6, 2, 0, 1), location);
+    final records = await repo.recordsInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    final missed = records.firstWhere(
+      (r) => r.storedStatus == PrayerStatus.missed,
+    );
+
+    final result = await repo.updatePrayerNotes(
+      missed.id,
+      'was in a meeting',
+    );
+    expect(result, isA<Success<void>>());
+
+    final updated = await repo.recordsInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    final updatedRecord = updated.firstWhere((r) => r.id == missed.id);
+    expect(updatedRecord.notes, 'was in a meeting');
+    expect(updatedRecord.storedStatus, PrayerStatus.missed); // unchanged
+  });
+
+  test(
+    'updatePrayerNotes on an unknown id fails with NotFoundException',
+    () async {
+      final result = await repo.updatePrayerNotes('missing', 'x');
+      expect(result, isA<Failure<void>>());
+    },
+  );
+
+  test('restoreRecord persists notes (import round-trip)', () async {
+    final newId = await _insertRestoredRecord(repo, notes: 'restored note');
+    final records = await repo.recordsInRange(
+      const LocalDate(2026, 6, 1),
+      const LocalDate(2026, 6, 1),
+    );
+    expect(records.firstWhere((r) => r.id == newId).notes, 'restored note');
+  });
+}
+
+Future<String> _insertRestoredRecord(
+  PrayerRepositoryImpl repo, {
+  required String? notes,
+}) async {
+  await repo.restoreRecord(
+    PrayerRecord(
+      id: '',
+      prayerDate: const LocalDate(2026, 6, 1),
+      prayerName: PrayerName.fajr,
+      scheduledFor: DateTime.utc(2026, 6, 1, 5),
+      storedStatus: PrayerStatus.upcoming,
+      notes: notes,
+    ),
+  );
+  final records = await repo.recordsInRange(
+    const LocalDate(2026, 6, 1),
+    const LocalDate(2026, 6, 1),
+  );
+  return records.first.id;
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
@@ -62,6 +63,18 @@ class MedicineHomeScreen extends ConsumerWidget {
                       onDone: () =>
                           _markDoneAndCelebrate(context, ref, view.dose.id),
                       onSkip: () => controller.markDoseSkipped(view.dose.id),
+                      onNoteTap: () async {
+                        final result = await showNoteEditorSheet(
+                          context,
+                          initialNotes: view.dose.notes,
+                        );
+                        if (context.mounted) {
+                          await controller.updateDoseNotes(
+                            view.dose.id,
+                            result,
+                          );
+                        }
+                      },
                     ),
                   ),
               ],

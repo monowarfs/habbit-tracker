@@ -14,6 +14,7 @@ class PrayerTile extends StatelessWidget {
   const PrayerTile({
     required this.view,
     required this.onToggle,
+    required this.onNoteTap,
     this.highlighted = false,
     super.key,
   });
@@ -23,6 +24,10 @@ class PrayerTile extends StatelessWidget {
 
   /// Called when the user taps the "Prayed" toggle.
   final VoidCallback onToggle;
+
+  /// Called when the user taps the note icon to add/edit this record's
+  /// note.
+  final VoidCallback onNoteTap;
 
   /// Whether this tile should be visually highlighted (notification
   /// deep-link target).
@@ -40,7 +45,20 @@ class PrayerTile extends StatelessWidget {
     return Card(
       color: highlighted ? theme.colorScheme.primaryContainer : null,
       child: ListTile(
-        title: Text(label),
+        title: Row(
+          children: [
+            Expanded(child: Text(label)),
+            IconButton(
+              icon: Icon(
+                view.record.notes != null
+                    ? Icons.sticky_note_2
+                    : Icons.sticky_note_2_outlined,
+              ),
+              tooltip: l10n.logNotesSheetTitle,
+              onPressed: onNoteTap,
+            ),
+          ],
+        ),
         subtitle: Text(
           '${DateFormat.jm().format(view.record.scheduledFor.toLocal())} · '
           '${_statusLabel(l10n, view.effectiveStatus)}',

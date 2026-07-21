@@ -98,4 +98,44 @@ void main() {
     final settings = await repo.watchSettings().first;
     expect(settings.quickAddAmountsMl, [200, 400, 600]);
   });
+
+  test('addEntry persists notes, and updateEntry can change them without '
+      'touching amount/loggedAt', () async {
+    final added = await repo.addEntry(
+      amountMl: 250,
+      loggedAt: DateTime.utc(2026, 6, 1, 8),
+      source: WaterEntrySource.custom,
+      notes: 'felt great',
+    );
+    final entry = (added as Success<WaterEntry>).value;
+    expect(entry.notes, 'felt great');
+    expect((await repo.entryById(entry.id))!.notes, 'felt great');
+
+    await repo.updateEntry(entry.id, notes: 'updated note');
+    final updated = await repo.entryById(entry.id);
+    expect(updated!.notes, 'updated note');
+    expect(updated.amountMl, 250); // untouched
+
+    await repo.updateEntry(entry.id, amountMl: 300);
+    final afterAmountOnlyUpdate = await repo.entryById(entry.id);
+    expect(
+      afterAmountOnlyUpdate!.notes,
+      'updated note',
+    ); // not clobbered by an update that omits notes
+  });
+
+  test('updateEntry(notes: null) explicitly clears a previously-set note '
+      '(distinct from omitting the notes argument entirely)', () async {
+    final added = await repo.addEntry(
+      amountMl: 250,
+      loggedAt: DateTime.utc(2026, 6, 1, 8),
+      source: WaterEntrySource.custom,
+      notes: 'will be cleared',
+    );
+    final entry = (added as Success<WaterEntry>).value;
+
+    await repo.updateEntry(entry.id, notes: null);
+
+    expect((await repo.entryById(entry.id))!.notes, isNull);
+  });
 }

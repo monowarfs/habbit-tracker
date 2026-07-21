@@ -108,6 +108,18 @@
   "@waterAddEntryFutureError": {
     "description": "Validation error when a backdated entry's date/time is in the future (FR-W-05)."
   },
+  "waterAddEntryNotesLabel": "Notes",
+  "@waterAddEntryNotesLabel": {
+    "description": "Label for the optional free-text notes field on the add/edit water entry screen."
+  },
+  "logNotesSheetTitle": "Notes",
+  "@logNotesSheetTitle": {
+    "description": "Title of the shared bottom sheet used to add/edit a free-text note on a Medicine dose or Prayer record."
+  },
+  "logNotesSheetHint": "Add a note…",
+  "@logNotesSheetHint": {
+    "description": "Placeholder hint text for the shared note-editor bottom sheet's text field."
+  },
   "waterStatsTabStats": "Stats",
   "@waterStatsTabStats": {
     "description": "Tab label for the charts/streak view on the water stats screen."

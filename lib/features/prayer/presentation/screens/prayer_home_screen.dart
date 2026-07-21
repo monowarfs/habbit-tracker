@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
@@ -67,6 +68,17 @@ class PrayerHomeScreen extends ConsumerWidget {
                     currentlyPrayed:
                         view.effectiveStatus == PrayerStatus.prayed,
                   ),
+                  onNoteTap: () async {
+                    final result = await showNoteEditorSheet(
+                      context,
+                      initialNotes: view.record.notes,
+                    );
+                    if (context.mounted) {
+                      await ref
+                          .read(prayerControllerProvider.notifier)
+                          .updatePrayerNotes(view.record.id, result);
+                    }
+                  },
                 );
               },
             ),

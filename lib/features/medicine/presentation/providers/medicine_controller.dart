@@ -107,6 +107,14 @@ class MedicineController extends _$MedicineController {
     if (result case Failure(:final error)) logException(error);
   }
 
+  /// Annotates a dose with a free-text note, independent of its status.
+  Future<void> updateDoseNotes(String doseId, String? notes) async {
+    final result = await ref
+        .read(medicineRepositoryProvider)
+        .updateDoseNotes(doseId, notes);
+    if (result case Failure(:final error)) logException(error);
+  }
+
   /// Archives a medicine (FR-M-10).
   Future<void> archiveMedicine(String id) async {
     final result = await ref
