@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
@@ -96,4 +97,83 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  testWidgets('deleting an entry hides it immediately without writing to '
+      'the DB yet', (tester) async {
+    final now = DateTime.utc(2026, 6, 1, 8);
+    final repo = WaterRepositoryImpl(db);
+    final added = await repo.addEntry(
+      amountMl: 500,
+      loggedAt: now,
+      source: WaterEntrySource.quick,
+    );
+    final entryId = (added as Success<WaterEntry>).value.id;
+
+    await _pumpWaterHome(tester, db, now: now);
+    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.pump();
+
+    expect(find.byIcon(Icons.delete_outline), findsNothing);
+    expect(await repo.entryById(entryId), isNotNull); // not soft-deleted
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('tapping Undo restores the entry; the repository is never '
+      'touched', (tester) async {
+    final now = DateTime.utc(2026, 6, 1, 8);
+    final repo = WaterRepositoryImpl(db);
+    final added = await repo.addEntry(
+      amountMl: 500,
+      loggedAt: now,
+      source: WaterEntrySource.quick,
+    );
+    final entryId = (added as Success<WaterEntry>).value.id;
+
+    await _pumpWaterHome(tester, db, now: now);
+    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.pump();
+    expect(find.byIcon(Icons.delete_outline), findsNothing);
+    // Let the snackbar's enter animation finish before tapping its action.
+    await tester.pump(const Duration(milliseconds: 750));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    expect(await repo.entryById(entryId), isNotNull); // not soft-deleted
+
+    await disposeTree(tester);
+  });
+
+  testWidgets(
+    'letting the undo window elapse actually soft-deletes the entry',
+    (tester) async {
+      final now = DateTime.utc(2026, 6, 1, 8);
+      final repo = WaterRepositoryImpl(db);
+      final added = await repo.addEntry(
+        amountMl: 500,
+        loggedAt: now,
+        source: WaterEntrySource.quick,
+      );
+      final entryId = (added as Success<WaterEntry>).value.id;
+
+      await _pumpWaterHome(tester, db, now: now);
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pump();
+
+      // Past the 4s default undo window, plus the snackbar's own
+      // enter/exit transitions.
+      await tester.pump(const Duration(milliseconds: 1000));
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+
+      expect(await repo.entryById(entryId), isNull); // soft-deleted
+
+      await disposeTree(tester);
+    },
+  );
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
+import 'package:habit_tracker/core/widgets/undo_snackbar.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
@@ -62,7 +65,7 @@ class MedicineHomeScreen extends ConsumerWidget {
                       highlighted: view.dose.id == highlightDoseId,
                       onDone: () =>
                           _markDoneAndCelebrate(context, ref, view.dose.id),
-                      onSkip: () => controller.markDoseSkipped(view.dose.id),
+                      onSkip: () => _skipWithUndo(context, ref, view.dose.id),
                       onNoteTap: () async {
                         final result = await showNoteEditorSheet(
                           context,
@@ -83,9 +86,16 @@ class MedicineHomeScreen extends ConsumerWidget {
   }
 }
 
-/// Marks a dose done, then shows a subtle (non-modal) snackbar if doing
-/// so newly unlocked an achievement (FR-C-13's "no intrusive popups"
-/// requirement).
+/// Marks a dose done, offers an undo snackbar (the atlas's named "mark
+/// done by mistake" scenario, giving `undoDose` its first real caller),
+/// then — only if the dose wasn't undone — shows a subtle (non-modal)
+/// snackbar if doing so newly unlocked an achievement (FR-C-13's "no
+/// intrusive popups" requirement). Two snackbars can't usefully show at
+/// once on the same `ScaffoldMessenger`, so the achievement snackbar
+/// waits for the undo snackbar's own `.closed` to resolve first; if the
+/// user tapped Undo, it's skipped entirely (the achievement stays
+/// unlocked regardless — the engine has no revoke path, a known,
+/// accepted limitation for this size of change).
 Future<void> _markDoneAndCelebrate(
   BuildContext context,
   WidgetRef ref,
@@ -99,6 +109,24 @@ Future<void> _markDoneAndCelebrate(
       .toSet();
 
   await ref.read(medicineControllerProvider.notifier).markDoseDone(doseId);
+
+  var wasUndone = false;
+  if (context.mounted) {
+    final l10n = AppLocalizations.of(context)!;
+    await showUndoSnackbar(
+      context,
+      message: l10n.medicineDoseUndoSnackbar,
+      undoLabel: l10n.commonUndo,
+      onCommit: () {},
+      onUndo: () {
+        wasUndone = true;
+        unawaited(
+          ref.read(medicineControllerProvider.notifier).undoDose(doseId),
+        );
+      },
+    );
+  }
+  if (wasUndone || !context.mounted) return;
 
   final after = await repository.watchByModule('medicine').first;
   final newlyUnlocked = after.where(
@@ -120,5 +148,26 @@ Future<void> _markDoneAndCelebrate(
         ),
       ),
     ),
+  );
+}
+
+/// Marks a dose skipped, then offers the same `undoDose` reversal as
+/// [_markDoneAndCelebrate] — skip never evaluates achievements, so no
+/// sequencing with a second snackbar is needed here.
+Future<void> _skipWithUndo(
+  BuildContext context,
+  WidgetRef ref,
+  String doseId,
+) async {
+  await ref.read(medicineControllerProvider.notifier).markDoseSkipped(doseId);
+  if (!context.mounted) return;
+  final l10n = AppLocalizations.of(context)!;
+  await showUndoSnackbar(
+    context,
+    message: l10n.medicineDoseUndoSnackbar,
+    undoLabel: l10n.commonUndo,
+    onCommit: () {},
+    onUndo: () =>
+        ref.read(medicineControllerProvider.notifier).undoDose(doseId),
   );
 }

@@ -60,9 +60,17 @@
   "@commonDelete": {
     "description": "Generic delete button/action label, reused across modules."
   },
+  "commonUndo": "Undo",
+  "@commonUndo": {
+    "description": "Generic Undo action label on an undo snackbar, reused across modules."
+  },
   "waterHomeEmptyLogs": "No entries yet today",
   "@waterHomeEmptyLogs": {
     "description": "Shown under the progress ring when no water has been logged today."
+  },
+  "waterEntryDeletedSnackbar": "Entry deleted",
+  "@waterEntryDeletedSnackbar": {
+    "description": "Undo-snackbar message shown when a water log entry's delete is pending (FR-W-09)."
   },
   "waterHomeQuickAddLabel": "Quick add",
   "@waterHomeQuickAddLabel": {
@@ -222,6 +230,10 @@
   "medicineHomeEmpty": "No doses scheduled for today",
   "@medicineHomeEmpty": {
     "description": "Shown on the medicine home screen when there are no doses today."
+  },
+  "medicineDoseUndoSnackbar": "Dose updated",
+  "@medicineDoseUndoSnackbar": {
+    "description": "Undo-snackbar message shown after marking a dose done/skipped (FR-M-07), offering to undo it."
   },
   "medicineHomeAllMedicinesButton": "All medicines",
   "@medicineHomeAllMedicinesButton": {

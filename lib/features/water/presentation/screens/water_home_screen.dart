@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/widgets/undo_snackbar.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
+import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/quick_add_button.dart';
@@ -15,18 +19,48 @@ import 'package:habit_tracker/features/water/presentation/widgets/water_progress
 
 /// The Water module's home screen: today's progress, quick-add, and
 /// today's log list (FR-W-03/06/09).
-class WaterHomeScreen extends ConsumerWidget {
+class WaterHomeScreen extends ConsumerStatefulWidget {
   /// Creates the water home screen.
   const WaterHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WaterHomeScreen> createState() => _WaterHomeScreenState();
+}
+
+class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
+  /// Ids of entries the user just tapped delete on but hasn't yet been
+  /// committed (the undo snackbar is still showing) — filtered out of
+  /// the rendered list immediately (optimistic hide, zero DB write yet).
+  final Set<String> _pendingDeleteIds = {};
+
+  void _deleteWithUndo(AppLocalizations l10n, String entryId) {
+    setState(() => _pendingDeleteIds.add(entryId));
+    unawaited(
+      showUndoSnackbar(
+        context,
+        message: l10n.waterEntryDeletedSnackbar,
+        undoLabel: l10n.commonUndo,
+        onCommit: () =>
+            ref.read(waterControllerProvider.notifier).deleteEntry(entryId),
+        onUndo: () {
+          if (mounted) setState(() => _pendingDeleteIds.remove(entryId));
+        },
+      ),
+    );
+  }
+
+  List<WaterEntry> _visibleEntries(List<WaterEntry> entries) =>
+      _pendingDeleteIds.isEmpty
+      ? entries
+      : entries.where((e) => !_pendingDeleteIds.contains(e.id)).toList();
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final progress = ref.watch(todaysWaterProgressProvider);
     final settings = ref.watch(waterSettingsProvider).value;
     final unit =
         ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
-    final controller = ref.read(waterControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -86,17 +120,19 @@ class WaterHomeScreen extends ConsumerWidget {
                   l10n.waterHomeTodaysLogLabel,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                if (progress.entries.isEmpty)
+                if (_visibleEntries(progress.entries).isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Text(l10n.waterHomeEmptyLogs),
                   )
                 else
-                  for (final entry in progress.entries.reversed)
+                  for (final entry in _visibleEntries(
+                    progress.entries,
+                  ).reversed)
                     WaterLogTile(
                       entry: entry,
                       unit: unit,
-                      onDelete: () => controller.deleteEntry(entry.id),
+                      onDelete: () => _deleteWithUndo(l10n, entry.id),
                       onTap: () =>
                           context.push('/water/entry/${entry.id}/edit'),
                     ),
