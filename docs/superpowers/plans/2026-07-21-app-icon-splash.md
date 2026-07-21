@@ -209,14 +209,14 @@ git commit -m "feat(brand): add source icon and splash mark PNGs"
 - Consumes: `assets/icon/icon.png`, `assets/icon/icon_foreground.png`,
   `assets/splash/splash_logo.png` from Task 1.
 
-- [ ] **Step 1: Add the generator dev-dependencies**
+- [x] **Step 1: Add the generator dev-dependencies**
 
 Run: `flutter pub add --dev flutter_launcher_icons flutter_native_splash`
 Expected: `pubspec.yaml`'s `dev_dependencies:` block gains
 `flutter_launcher_icons: ^<resolved version>` and
 `flutter_native_splash: ^<resolved version>` entries, and command exits 0.
 
-- [ ] **Step 2: Add the icon/splash config blocks to `pubspec.yaml`**
+- [x] **Step 2: Add the icon/splash config blocks to `pubspec.yaml`**
 
 Append at the end of `pubspec.yaml` (after the existing `flutter:`
 block):
@@ -243,9 +243,14 @@ flutter_native_splash:
     icon_background_color_dark: "#00363A"
   android: true
   ios: true
+  web: false
 ```
 
-- [ ] **Step 3: Run the icon generator**
+(`web: false` is required — without it, `flutter_native_splash:create`
+also generates `web/splash/` and rewrites `web/index.html`, which is out
+of scope per this spec's Android/iOS-only design.)
+
+- [x] **Step 3: Run the icon generator**
 
 Run: `dart run flutter_launcher_icons`
 Expected: output ends with something like
@@ -254,7 +259,7 @@ Expected: output ends with something like
 `ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png`
 have changed: `git status` shows them modified.
 
-- [ ] **Step 4: Run the splash generator**
+- [x] **Step 4: Run the splash generator**
 
 Run: `dart run flutter_native_splash:create`
 Expected: output ends with something like
@@ -263,34 +268,38 @@ Expected: output ends with something like
 `ios/Runner/Base.lproj/LaunchScreen.storyboard` show as modified in
 `git status`.
 
-- [ ] **Step 5: Regenerate and analyze**
+- [x] **Step 5: Regenerate and analyze**
 
 Run: `flutter pub get && flutter analyze`
-Expected: `No issues found!` (the two new dev deps must not introduce
-lint issues; if `analysis_options.yaml` excludes generated code only,
-confirm the new generated Android/iOS files aren't Dart — they aren't,
-so this should be a no-op check that nothing else broke).
+Result: `No issues found! (ran in 2.4s)`.
 
-- [ ] **Step 6: Confirm the test suite is untouched**
+- [x] **Step 6: Confirm the test suite is untouched**
 
 Run: `flutter test`
-Expected: existing suite still passes (this task added no Dart test
-files — the source-PNG generator was a Python script run outside the
-repo, never part of `test/`).
+Result: 2 pre-existing failures (`test/widget_test.dart`'s "app boots to
+the dashboard with all modules registered", `test/core/router/
+app_router_test.dart`'s "bottom nav switches between the 5 tab
+branches") — both reproduced by stashing this task's changes and
+re-running against the prior commit, confirming they predate this work
+(root cause: `find.byIcon(Icons.search)` finds nothing, unrelated to
+icon/splash generation). Not fixed here — out of scope for this task.
 
-- [ ] **Step 7: Visually verify on a device/simulator**
+- [x] **Step 7: Visually verify on a device/simulator**
 
-Run: `flutter run`
-Expected: cold start shows the teal splash screen with the white
-checkmark before the app UI loads (both light and dark system theme, if
-you can toggle it on the test device/simulator), and the home-screen/
-app-switcher launcher icon shows the teal square with white checkmark
-(not Flutter's default logo). Report what you observed — this step
-can't be verified from output alone.
+Built the debug APK and ran it on a `Pixel_8` emulator (not the
+connected physical device — didn't want to unlock a personal phone via
+adb). Observed: cold start shows the `#006874` teal splash screen with
+the white checkmark centered, matching the design exactly. The
+app-switcher/recents task-badge icon shows the new teal-circle
+white-checkmark launcher icon (not Flutter's default). Confirmed via
+`adb screencap`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock android/ ios/
 git commit -m "feat(brand): generate app launcher icon and splash screen"
 ```
+
+(Done as two commits in practice: Task 1's source PNGs, then this
+task's generator wiring — see git log.)
