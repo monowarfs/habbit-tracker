@@ -24,6 +24,13 @@ abstract class SettingsRepository {
   /// Updates the resume-lock timeout, in seconds (0 = immediate).
   Future<Result<void>> updatePinLockTimeoutSeconds(int seconds);
 
+  /// Enables or disables offering biometric unlock on `/lock`.
+  Future<Result<void>> updateBiometricEnabled({required bool enabled});
+
+  /// Enables or disables screen-privacy protection (`FLAG_SECURE`/
+  /// app-switcher blur).
+  Future<Result<void>> updateScreenPrivacyEnabled({required bool enabled});
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

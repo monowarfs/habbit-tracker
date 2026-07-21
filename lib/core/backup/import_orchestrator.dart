@@ -171,6 +171,13 @@ Future<Result<void>> applyImport({
             pinEnabled: appSettingsJson['pinEnabled'] as bool,
             pinLockTimeoutSeconds:
                 appSettingsJson['pinLockTimeoutSeconds'] as int,
+            // `?? true`/`?? false` fallback: an older export made before
+            // these two fields existed must still import cleanly, at the
+            // same defaults a fresh install gets.
+            biometricEnabled:
+                appSettingsJson['biometricEnabled'] as bool? ?? true,
+            screenPrivacyEnabled:
+                appSettingsJson['screenPrivacyEnabled'] as bool? ?? false,
           ),
         );
       }

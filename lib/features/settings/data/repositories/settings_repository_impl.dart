@@ -77,6 +77,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateBiometricEnabled({required bool enabled}) =>
+      _update(AppSettingsTableCompanion(biometricEnabled: Value(enabled)));
+
+  @override
+  Future<Result<void>> updateScreenPrivacyEnabled({required bool enabled}) =>
+      _update(
+        AppSettingsTableCompanion(screenPrivacyEnabled: Value(enabled)),
+      );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -90,6 +100,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           waterUnit: Value(settings.waterUnit.toDb()),
           pinEnabled: Value(settings.pinEnabled),
           pinLockTimeoutSeconds: Value(settings.pinLockTimeoutSeconds),
+          biometricEnabled: Value(settings.biometricEnabled),
+          screenPrivacyEnabled: Value(settings.screenPrivacyEnabled),
           updatedAt: Value(now),
         ),
       );
@@ -120,6 +132,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     waterUnit: WaterUnitDb.fromDb(row.waterUnit),
     pinEnabled: row.pinEnabled,
     pinLockTimeoutSeconds: row.pinLockTimeoutSeconds,
+    biometricEnabled: row.biometricEnabled,
+    screenPrivacyEnabled: row.screenPrivacyEnabled,
     onboardingCompletedAt: row.onboardingCompletedAt == null
         ? null
         : DateTime.fromMillisecondsSinceEpoch(

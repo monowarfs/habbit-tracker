@@ -42,6 +42,8 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'waterUnit': settings.waterUnit.name,
   'pinEnabled': settings.pinEnabled,
   'pinLockTimeoutSeconds': settings.pinLockTimeoutSeconds,
+  'biometricEnabled': settings.biometricEnabled,
+  'screenPrivacyEnabled': settings.screenPrivacyEnabled,
 };
 
 Map<String, Object?> _achievementToJson(AchievementRow row) => {
