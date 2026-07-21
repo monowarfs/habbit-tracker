@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/providers/module_day_status_provider.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
 
@@ -75,44 +78,31 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
           for (final record in records) {
             byDay.putIfAbsent(record.prayerDate, () => []).add(record);
           }
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-            ),
-            itemCount: daysInMonth,
-            itemBuilder: (context, index) {
-              final day = LocalDate(
-                _visibleMonth.year,
-                _visibleMonth.month,
-                index + 1,
-              );
-              final dayRecords = byDay[day] ?? const [];
-              final allPrayed =
-                  dayRecords.length == 5 &&
-                  dayRecords.every(
-                    (r) => r.storedStatus == PrayerStatus.prayed,
-                  );
-              final anyMissed = dayRecords.any(
-                (r) => r.storedStatus == PrayerStatus.missed,
-              );
-              final color = allPrayed
-                  ? Theme.of(context).extension<AppSemanticColors>()!.success
-                  : anyMissed
-                  ? Theme.of(context).colorScheme.errorContainer
-                  : Theme.of(context).colorScheme.surfaceContainerHighest;
-              return InkWell(
-                onTap: dayRecords.isEmpty
-                    ? null
-                    : () => _showDayDetail(context, dayRecords),
-                child: Container(
-                  margin: const EdgeInsets.all(2),
-                  color: color,
-                  alignment: Alignment.center,
-                  child: Text('${index + 1}'),
+          final dayStatus = ref
+              .watch(
+                moduleDayStatusProvider(
+                  'prayer',
+                  DateRange(start: monthStart, end: monthEnd),
                 ),
-              );
-            },
+              )
+              .value;
+          if (dayStatus == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: HabitHeatmapCalendar(
+              month: monthStart,
+              dayStatus: dayStatus,
+              accentColor: ModuleAccents.prayer,
+              // Five daily prayers is a fixed, known ceiling — no
+              // per-instance computation needed.
+              maxValue: 5,
+              onDayTap: (day) {
+                final dayRecords = byDay[day] ?? const [];
+                if (dayRecords.isNotEmpty) _showDayDetail(context, dayRecords);
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

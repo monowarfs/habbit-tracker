@@ -2,10 +2,13 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/providers/module_day_status_provider.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
+import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/usecases/aggregate_water_series.dart';
@@ -13,7 +16,6 @@ import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_da
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/streak_card.dart';
-import 'package:habit_tracker/features/water/presentation/widgets/water_history_calendar.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_log_tile.dart';
 
 enum _ChartRange { week, month, year }
@@ -138,21 +140,22 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
     final goals = ref.watch(allWaterGoalsProvider).value;
     final unit =
         ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
-
-    Map<LocalDate, bool>? goalMetByDay;
-    if (entries != null && goals != null && goals.isNotEmpty) {
-      final dailyTotals = <LocalDate, int>{};
-      for (final entry in entries) {
-        final day = localDayKey(entry.loggedAt);
-        dailyTotals[day] = (dailyTotals[day] ?? 0) + entry.amountMl;
-      }
-      const resolveGoal = ResolveGoalForDateUseCase();
-      goalMetByDay = {
-        for (final entry in dailyTotals.entries)
-          entry.key:
-              entry.value >= resolveGoal.execute(goals, entry.key).goalMl,
-      };
-    }
+    final dayStatus = ref
+        .watch(
+          moduleDayStatusProvider(
+            'water',
+            DateRange(start: monthStart, end: monthEnd),
+          ),
+        )
+        .value;
+    // Goal-relative color scale — stable across months, unlike scaling to
+    // whatever the visible month's own busiest day happened to be. Uses
+    // the goal in effect on the last day of the range so a mid-month
+    // change still resolves to one stable number for the whole grid.
+    const resolveGoal = ResolveGoalForDateUseCase();
+    final maxValue = goals == null || goals.isEmpty
+        ? 2000
+        : resolveGoal.execute(goals, monthEnd).goalMl;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -163,11 +166,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             IconButton(
               icon: const Icon(Icons.chevron_left),
               onPressed: () => setState(() {
-                _historyMonth = LocalDate(
-                  monthStart.year,
-                  monthStart.month - 1,
-                  1,
-                );
+                _historyMonth = monthStart.addMonths(-1);
                 _selectedDay = null;
               }),
             ),
@@ -175,27 +174,25 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             IconButton(
               icon: const Icon(Icons.chevron_right),
               onPressed: () => setState(() {
-                _historyMonth = LocalDate(
-                  monthStart.year,
-                  monthStart.month + 1,
-                  1,
-                );
+                _historyMonth = monthStart.addMonths(1);
                 _selectedDay = null;
               }),
             ),
           ],
         ),
-        if (goalMetByDay == null)
+        if (dayStatus == null || entries == null)
           const Center(child: CircularProgressIndicator())
-        else if (goalMetByDay.isEmpty)
+        else if (entries.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(l10n.waterStatsHistoryEmpty),
           )
         else
-          WaterHistoryCalendar(
+          HabitHeatmapCalendar(
             month: monthStart,
-            goalMetByDay: goalMetByDay,
+            dayStatus: dayStatus,
+            accentColor: ModuleAccents.water,
+            maxValue: maxValue,
             onDayTap: (day) => setState(() => _selectedDay = day),
           ),
         if (_selectedDay case final day?)
