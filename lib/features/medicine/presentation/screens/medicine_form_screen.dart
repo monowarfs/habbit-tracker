@@ -12,8 +12,8 @@ import 'package:habit_tracker/features/medicine/presentation/providers/medicine_
 
 /// Adds (or, once `editMedicineId` is set, will edit — full edit support
 /// beyond the initial schedule is Task 17's detail-screen "add schedule"
-/// action) a medicine, in three simple steps: details, dosage/stock,
-/// schedule. FR-M-01.
+/// action) a medicine, in four steps: schedule preset, details,
+/// dosage/stock, schedule. FR-M-01.
 class MedicineFormScreen extends ConsumerStatefulWidget {
   /// Creates the medicine form screen. [editMedicineId] is reserved for
   /// future in-place editing of a medicine's own fields; this run's form

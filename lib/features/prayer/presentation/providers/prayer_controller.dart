@@ -95,16 +95,16 @@ class PrayerController extends _$PrayerController {
     );
     if (result case Failure(:final error)) logException(error);
     // Re-resolve directly from the repository/domain layer rather than
-    // through `resolvedPrayerLocationProvider` — that provider has no
-    // other watchers, and invalidating it then immediately awaiting its
-    // `.future` from here raced its dependency chain's own auto-dispose
-    // scheduling (Riverpod would occasionally dispose `prayerSettings
-    // Provider` mid-flight before it could emit). Still invalidate it so
-    // any future watcher gets fresh data. `getSettings()` (a plain
-    // one-shot read), not `watchSettings().first` — the latter opens a
-    // second live query against the same watched row a screen may
-    // already be subscribed to, which deadlocked against that
-    // subscription's own concurrent re-query after this same write.
+    // through `resolvedPrayerLocationProvider` — invalidating it then
+    // immediately awaiting its own `.future` from here (a transient
+    // `ref.read`, not a durable watch) raced its dependency chain's own
+    // auto-dispose scheduling (Riverpod would occasionally dispose
+    // `prayerSettingsProvider` mid-flight before it could emit). Still
+    // invalidate it below so `todaysPrayerViewsProvider` (which does
+    // hold a durable watch on it) recomputes with fresh data — this
+    // duplicates one `resolveLocation()` call between that recompute and
+    // this method's own, which is accepted as the cost of avoiding the
+    // dispose race above.
     ref.invalidate(resolvedPrayerLocationProvider);
     final settings = await repository.getSettings();
     final locationResult = await resolveLocation(settings);

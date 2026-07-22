@@ -41,7 +41,11 @@ class WaterSettingsScreen extends ConsumerWidget {
                 ChoiceChip(
                   label: Text(_presetLabel(l10n, preset)),
                   selected: goal.goalMl == preset.goalMl,
-                  onSelected: (_) => controller.updateGoal(preset.goalMl),
+                  onSelected: (selected) {
+                    if (selected) {
+                      unawaited(controller.updateGoal(preset.goalMl));
+                    }
+                  },
                 ),
             ],
           ),

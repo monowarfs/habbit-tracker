@@ -10,12 +10,10 @@ abstract class PrayerRepository {
   /// Streams the (auto-seeded) singleton settings row.
   Stream<PrayerSettings> watchSettings();
 
-  /// A one-shot read of the current settings row, assuming it's already
-  /// seeded (callers that already went through [updateSettings] or
-  /// [watchSettings] satisfy this) — unlike [watchSettings], this does
-  /// not open a second live query against the same watched row, so it's
-  /// safe to call while a [watchSettings] stream is already subscribed
-  /// elsewhere (e.g. from a screen).
+  /// A one-shot (auto-seeded) read of the current settings row — unlike
+  /// [watchSettings], this does not open a second live query against the
+  /// same watched row, so it's safe to call while a [watchSettings]
+  /// stream is already subscribed elsewhere (e.g. from a screen).
   Future<PrayerSettings> getSettings();
 
   /// Updates settings fields; only non-null arguments change. Soft-
