@@ -44,11 +44,18 @@ Future<Result<ResolvedLocation>> resolveLocation(
         permission == LocationPermission.deniedForever) {
       return const Result.failure(AppException.permission('location'));
     }
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.medium,
-      ),
-    );
+    // Prayer times only need city-level accuracy, so try the cheap cached
+    // fix first — `getCurrentPosition` with no `timeLimit` can hang
+    // indefinitely waiting for a fresh GPS/network fix (e.g. indoors),
+    // which was silently blocking every day's prayer-time materialization.
+    final position =
+        await Geolocator.getLastKnownPosition() ??
+        await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
     final timezone = await FlutterTimezone.getLocalTimezone();
     return Result.success((
       latitude: position.latitude,

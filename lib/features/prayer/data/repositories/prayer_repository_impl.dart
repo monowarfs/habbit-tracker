@@ -292,7 +292,13 @@ class PrayerRepositoryImpl implements PrayerRepository {
             createdAt: nowMillis,
             updatedAt: nowMillis,
           ),
-          mode: InsertMode.insertOrIgnore,
+          // `(prayerDate, prayerName)` is a unique key, and a settings
+          // change (see `updateSettings`) soft-deletes future `upcoming`
+          // rows without removing them — so a plain `insertOrIgnore`
+          // silently no-ops against that still-occupied, soft-deleted
+          // slot and the day never regenerates. `insertOrReplace` revives
+          // it with the freshly computed row (undeleted, new id).
+          mode: InsertMode.insertOrReplace,
         );
       }
     });
