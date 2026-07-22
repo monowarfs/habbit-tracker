@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,6 +84,12 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(waterLogsTable, waterLogsTable.notes);
         await m.addColumn(medicineDosesTable, medicineDosesTable.notes);
         await m.addColumn(prayerRecordsTable, prayerRecordsTable.notes);
+      }
+      if (from < 5) {
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.lastSeenAppVersion,
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

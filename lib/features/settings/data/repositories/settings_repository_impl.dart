@@ -87,6 +87,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
       );
 
   @override
+  Future<Result<void>> updateLastSeenAppVersion(String version) => _update(
+    AppSettingsTableCompanion(lastSeenAppVersion: Value(version)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -140,6 +145,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
             row.onboardingCompletedAt!,
             isUtc: true,
           ),
+    lastSeenAppVersion: row.lastSeenAppVersion,
   );
 }
 

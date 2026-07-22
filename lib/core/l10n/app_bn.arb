@@ -308,5 +308,9 @@
   "dataImportPreviewCount": "{module}-এ {count, plural, =1{১টি আইটেম} other{{count}টি আইটেম}}",
   "dataImportConfirm": "পুনরুদ্ধার করুন",
   "dataImportSuccess": "ইমপোর্ট সম্পন্ন হয়েছে",
-  "dataImportFailed": "ইমপোর্ট ব্যর্থ হয়েছে: {reason}"
+  "dataImportFailed": "ইমপোর্ট ব্যর্থ হয়েছে: {reason}",
+  "whatsNewTitle": "নতুন কী আছে",
+  "aboutWhatsNew": "নতুন কী আছে দেখুন",
+  "changelog1_1_0_bullet1": "অ্যাপ আপডেটে নতুন কী আছে চেঞ্জলগ",
+  "changelog1_1_0_bullet2": "সম্পর্কে স্ক্রিন থেকে সম্পূর্ণ চেঞ্জলগ দেখুন"
 }
