@@ -3,6 +3,7 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -93,10 +94,22 @@ class PrayerController extends _$PrayerController {
       preReminderOffsetMinutes: preReminderOffsetMinutes,
     );
     if (result case Failure(:final error)) logException(error);
+    // Re-resolve directly from the repository/domain layer rather than
+    // through `resolvedPrayerLocationProvider` — that provider has no
+    // other watchers, and invalidating it then immediately awaiting its
+    // `.future` from here raced its dependency chain's own auto-dispose
+    // scheduling (Riverpod would occasionally dispose `prayerSettings
+    // Provider` mid-flight before it could emit). Still invalidate it so
+    // any future watcher gets fresh data. `getSettings()` (a plain
+    // one-shot read), not `watchSettings().first` — the latter opens a
+    // second live query against the same watched row a screen may
+    // already be subscribed to, which deadlocked against that
+    // subscription's own concurrent re-query after this same write.
     ref.invalidate(resolvedPrayerLocationProvider);
-    final location = await ref.read(resolvedPrayerLocationProvider.future);
-    if (location != null) {
-      await repository.materializeRecords(clock.now(), location);
+    final settings = await repository.getSettings();
+    final locationResult = await resolveLocation(settings);
+    if (locationResult case Success(:final value)) {
+      await repository.materializeRecords(clock.now(), value);
     }
   }
 }
