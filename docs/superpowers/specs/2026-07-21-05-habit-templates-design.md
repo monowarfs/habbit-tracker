@@ -149,28 +149,54 @@ class PrayerMethodPreset {
     required this.labelKey,
     required this.calculationMethod,
     required this.asrMethod,
-    required this.city, // nullable -> "use GPS" preset
+    required this.cityNameKey, // nullable -> "use GPS"/method-only preset
   });
   final String labelKey;
   final CalculationMethod calculationMethod;
   final AsrMethod asrMethod;
-  final PrayerCity? city;
+  final String? cityNameKey;
 }
 
-// Bundled cities already exist (65-city asset per CLAUDE.md); this list
-// just names a handful of common region+madhab pairings over the same
-// asset, resolved by nameKey lookup at picker-build time — no new city
-// data.
+// Bundled cities already exist (65-city asset per CLAUDE.md, loaded async
+// via `prayerCitiesProvider`/`loadPrayerCities()`), so a preset can't embed
+// a `PrayerCity` object directly inside a compile-time `const` list — it
+// stores the bundled asset's `nameKey` string instead (`assets/data/
+// prayer_cities.json` already has `{"nameKey": "cityDhaka", ...}`), and the
+// picker widget resolves the actual `PrayerCity` by matching that key
+// against `prayerCitiesProvider`'s loaded list at build time. No new city
+// data, no new asset.
 const prayerMethodPresets = [
-  PrayerMethodPreset(labelKey: 'prayerPresetUseGps', calculationMethod: ..., asrMethod: ..., city: null),
-  PrayerMethodPreset(labelKey: 'prayerPresetHanafiDhaka', calculationMethod: CalculationMethod.karachi, asrMethod: AsrMethod.hanafi, city: <Dhaka from bundled asset>),
-  PrayerMethodPreset(labelKey: 'prayerPresetStandardMwl', calculationMethod: CalculationMethod.mwl, asrMethod: AsrMethod.standard, city: null),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetUseGps',
+    calculationMethod: CalculationMethod.mwl,
+    asrMethod: AsrMethod.standard,
+    cityNameKey: null,
+  ),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetHanafiDhaka',
+    calculationMethod: CalculationMethod.karachi,
+    asrMethod: AsrMethod.hanafi,
+    cityNameKey: 'cityDhaka',
+  ),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetStandardMwl',
+    calculationMethod: CalculationMethod.mwl,
+    asrMethod: AsrMethod.standard,
+    cityNameKey: null,
+  ),
   // A short, deliberately small list (3-5 entries) — not a second copy
   // of the 65-city dropdown. "Other" falls through to the existing
   // full Settings screen (method dropdown + Manual location + city
   // picker), unchanged.
 ];
 ```
+
+The "Use GPS" preset's own `calculationMethod`/`asrMethod` values are
+never read (its `onTap` only dismisses the banner, per the locationMode
+section below) — set to `mwl`/`standard` here only so the field stays
+non-nullable like the other two entries; `cityNameKey == null` combined
+with `labelKey == 'prayerPresetUseGps'` is what the picker widget
+actually branches on.
 
 ### Where each picker slots in
 
@@ -227,22 +253,31 @@ ever been set (i.e. `manualLatitude == null` — today's fresh-seed
 state) — a horizontal row of `ActionChip`s built from
 `prayerMethodPresets`.
 
-Tapping a city-bearing preset (e.g. "Hanafi, Dhaka") calls
-`controller.updateSettings(calculationMethod: ..., asrMethod: ...,
-manualLatitude: city.latitude, manualLongitude: city.longitude,
-manualTimezone: city.ianaTimezone, locationMode: LocationMode.manual)`
-— `locationMode` **must** flip to `manual` in the same call, not just
-method/madhab/coordinates: leaving it `auto` would mean the picked
-Dhaka coordinates are written but never read (prayer times stay
-GPS-driven) and the banner's own dismiss condition
-(`locationMode == auto`) would never clear. Tapping "Use GPS" writes
-nothing (GPS/auto is already the default) and only needs to dismiss the
-banner locally. "Standard (MWL)" is `city: null` like "Use GPS" but is
-*not* the GPS chip — it only calls `updateSettings(calculationMethod:
-mwl, asrMethod: standard)`, touching neither `locationMode` nor the
-local acknowledged flag, so the banner correctly stays visible
-afterward (still `locationMode == auto`) until the user picks a
-city-bearing preset, edits location manually, or taps "Use GPS".
+Each chip's `onTap` switches on the preset itself (identity/index, not
+just `cityNameKey`, since "Use GPS" and "Standard (MWL)" are both
+`cityNameKey: null` but behave differently):
+
+- **`labelKey == 'prayerPresetUseGps'`**: no repository write — only
+  `setState(() => _gpsPresetAcknowledged = true)` (see below). GPS/auto
+  is already the default.
+- **`cityNameKey != null`** (e.g. "Hanafi, Dhaka"): look up
+  `final city = cities.firstWhere((c) => c.nameKey == preset.cityNameKey)`
+  against the list from `prayerCitiesProvider`, then call
+  `controller.updateSettings(calculationMethod: preset.calculationMethod,
+  asrMethod: preset.asrMethod, manualLatitude: city.latitude,
+  manualLongitude: city.longitude, manualTimezone: city.ianaTimezone,
+  locationMode: LocationMode.manual)`. `locationMode` **must** flip to
+  `manual` in the same call, not just method/madhab/coordinates: leaving
+  it `auto` would mean the picked Dhaka coordinates are written but
+  never read (prayer times stay GPS-driven) and the banner's own dismiss
+  condition (`locationMode == auto`) would never clear.
+- **`cityNameKey == null && labelKey != 'prayerPresetUseGps'`** (i.e.
+  "Standard (MWL)"): calls `controller.updateSettings(calculationMethod:
+  preset.calculationMethod, asrMethod: preset.asrMethod)` only —
+  touches neither `locationMode` nor the local acknowledged flag, so the
+  banner correctly stays visible afterward (still `locationMode ==
+  auto`) until the user picks a city-bearing preset, edits location
+  manually, or taps "Use GPS".
 
 That local-only dismiss is the one case with no DB signal to key off:
 `manualLatitude` staying null and `locationMode` staying `auto` are
