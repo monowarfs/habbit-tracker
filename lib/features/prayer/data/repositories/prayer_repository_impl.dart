@@ -57,6 +57,15 @@ class PrayerRepositoryImpl implements PrayerRepository {
     });
   }
 
+  @override
+  Future<PrayerSettings> getSettings() async {
+    await _ensureSeeded();
+    final row = await (_db.select(
+      _db.prayerSettingsTable,
+    )..where((t) => t.id.equals(_singletonId))).getSingle();
+    return _settingsFromRow(row);
+  }
+
   Future<void> _ensureSeeded() async {
     final existing = await (_db.select(
       _db.prayerSettingsTable,

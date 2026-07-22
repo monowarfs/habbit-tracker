@@ -3,6 +3,7 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -93,10 +94,22 @@ class PrayerController extends _$PrayerController {
       preReminderOffsetMinutes: preReminderOffsetMinutes,
     );
     if (result case Failure(:final error)) logException(error);
+    // Re-resolve directly from the repository/domain layer rather than
+    // through `resolvedPrayerLocationProvider` — invalidating it then
+    // immediately awaiting its own `.future` from here (a transient
+    // `ref.read`, not a durable watch) raced its dependency chain's own
+    // auto-dispose scheduling (Riverpod would occasionally dispose
+    // `prayerSettingsProvider` mid-flight before it could emit). Still
+    // invalidate it below so `todaysPrayerViewsProvider` (which does
+    // hold a durable watch on it) recomputes with fresh data — this
+    // duplicates one `resolveLocation()` call between that recompute and
+    // this method's own, which is accepted as the cost of avoiding the
+    // dispose race above.
     ref.invalidate(resolvedPrayerLocationProvider);
-    final location = await ref.read(resolvedPrayerLocationProvider.future);
-    if (location != null) {
-      await repository.materializeRecords(clock.now(), location);
+    final settings = await repository.getSettings();
+    final locationResult = await resolveLocation(settings);
+    if (locationResult case Success(:final value)) {
+      await repository.materializeRecords(clock.now(), value);
     }
   }
 }

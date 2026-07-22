@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_permission_explainer_screen.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/water/domain/water_goal_presets.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 
@@ -33,7 +34,24 @@ class WaterSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final preset in waterGoalPresets)
+                ChoiceChip(
+                  label: Text(_presetLabel(l10n, preset)),
+                  selected: goal.goalMl == preset.goalMl,
+                  onSelected: (selected) {
+                    if (selected) {
+                      unawaited(controller.updateGoal(preset.goalMl));
+                    }
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
           _GoalField(
+            key: ValueKey(goal.goalMl),
             label: l10n.waterSettingsGoalLabel,
             initialValue: goal.goalMl,
             onChanged: controller.updateGoal,
@@ -138,11 +156,20 @@ class WaterSettingsScreen extends ConsumerWidget {
   }
 }
 
+String _presetLabel(AppLocalizations l10n, WaterGoalPreset preset) =>
+    switch (preset.labelKey) {
+      'waterPresetLight' => l10n.waterPresetLight,
+      'waterPresetStandard' => l10n.waterPresetStandard,
+      'waterPresetActive' => l10n.waterPresetActive,
+      _ => preset.labelKey,
+    };
+
 class _GoalField extends StatefulWidget {
   const _GoalField({
     required this.label,
     required this.initialValue,
     required this.onChanged,
+    super.key,
   });
 
   final String label;

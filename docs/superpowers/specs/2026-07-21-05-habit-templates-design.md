@@ -149,22 +149,41 @@ class PrayerMethodPreset {
     required this.labelKey,
     required this.calculationMethod,
     required this.asrMethod,
-    required this.city, // nullable -> "use GPS" preset
+    required this.cityNameKey, // nullable -> "use GPS"/method-only preset
   });
   final String labelKey;
   final CalculationMethod calculationMethod;
   final AsrMethod asrMethod;
-  final PrayerCity? city;
+  final String? cityNameKey;
 }
 
-// Bundled cities already exist (65-city asset per CLAUDE.md); this list
-// just names a handful of common region+madhab pairings over the same
-// asset, resolved by nameKey lookup at picker-build time — no new city
-// data.
+// Bundled cities already exist (65-city asset per CLAUDE.md, loaded async
+// via `prayerCitiesProvider`/`loadPrayerCities()`), so a preset can't embed
+// a `PrayerCity` object directly inside a compile-time `const` list — it
+// stores the bundled asset's `nameKey` string instead (`assets/data/
+// prayer_cities.json` already has `{"nameKey": "cityDhaka", ...}`), and the
+// picker widget resolves the actual `PrayerCity` by matching that key
+// against `prayerCitiesProvider`'s loaded list at build time. No new city
+// data, no new asset.
 const prayerMethodPresets = [
-  PrayerMethodPreset(labelKey: 'prayerPresetUseGps', calculationMethod: ..., asrMethod: ..., city: null),
-  PrayerMethodPreset(labelKey: 'prayerPresetHanafiDhaka', calculationMethod: CalculationMethod.karachi, asrMethod: AsrMethod.hanafi, city: <Dhaka from bundled asset>),
-  PrayerMethodPreset(labelKey: 'prayerPresetStandardMwl', calculationMethod: CalculationMethod.mwl, asrMethod: AsrMethod.standard, city: null),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetUseGps',
+    calculationMethod: CalculationMethod.mwl,
+    asrMethod: AsrMethod.standard,
+    cityNameKey: null,
+  ),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetHanafiDhaka',
+    calculationMethod: CalculationMethod.karachi,
+    asrMethod: AsrMethod.hanafi,
+    cityNameKey: 'cityDhaka',
+  ),
+  PrayerMethodPreset(
+    labelKey: 'prayerPresetStandardMwl',
+    calculationMethod: CalculationMethod.mwl,
+    asrMethod: AsrMethod.standard,
+    cityNameKey: null,
+  ),
   // A short, deliberately small list (3-5 entries) — not a second copy
   // of the 65-city dropdown. "Other" falls through to the existing
   // full Settings screen (method dropdown + Manual location + city
@@ -172,32 +191,55 @@ const prayerMethodPresets = [
 ];
 ```
 
+The "Use GPS" preset's own `calculationMethod`/`asrMethod` values are
+never read (its `onTap` only dismisses the banner, per the locationMode
+section below) — set to `mwl`/`standard` here only so the field stays
+non-nullable like the other two entries; `cityNameKey == null` combined
+with `labelKey == 'prayerPresetUseGps'` is what the picker widget
+actually branches on.
+
 ### Where each picker slots in
 
 **Water** — `WaterSettingsScreen`'s goal field gains three preset chips
 above the existing `_GoalField` (`ChoiceChip` per `waterGoalPresets`
-entry, showing e.g. "Light · 1.5L", plus the field stays editable for
-a custom number — tapping a chip just fills the field via
-`controller.updateGoal`). Because `_ensureGoalSeeded()` already wrote
-`2000`ml by the time the user opens this screen, tapping "Standard"
-is a normal `setGoal()` call, not a special first-run path — no
-change to `_ensureGoalSeeded()` or the repository at all. This also
-means Water's "first configuration" moment is soft: a user who never
-opens Settings simply keeps the seeded 2L default, preset or not,
-which matches the "Must Have" complexity budget (S) better than
-forcing a modal on first launch.
+entry, showing e.g. "Light · 1.5L", `selected: goal.goalMl == preset.
+goalMl`, plus the field stays editable for a custom number — tapping a
+chip just calls `controller.updateGoal(preset.goalMl)`). Because
+`_ensureGoalSeeded()` already wrote `2000`ml by the time the user opens
+this screen, tapping "Standard" is a normal `setGoal()` call, not a
+special first-run path — no change to `_ensureGoalSeeded()` or the
+repository at all. This also means Water's "first configuration" moment
+is soft: a user who never opens Settings simply keeps the seeded 2L
+default, preset or not, which matches the "Must Have" complexity budget
+(S) better than forcing a modal on first launch.
+
+**Pre-existing bug this design surfaces:** `_GoalField`'s
+`TextEditingController` is `late final`, seeded once from
+`widget.initialValue` at first build. A preset chip tap updates the
+provider (and thus `widget.initialValue` on rebuild) but the on-screen
+text wouldn't follow, since `late final` never re-initializes. Fix:
+give the goal `_GoalField` instance a `ValueKey(goal.goalMl)` at its
+call site in `WaterSettingsScreen`, forcing Flutter to tear down and
+recreate the State (and its controller) whenever the goal value changes
+externally — a one-line change, no new lifecycle method. Scoped to the
+goal field only; the quick-add `_GoalField`s are untouched (no preset
+writes to those).
 
 **Medicine** — `MedicineFormScreen` gains a **new step 0** (schedule
 picker), pushing the existing three steps to 1-3, but only in the
 `editMedicineId == null` (create) path — editing an existing medicine
 skips straight to step 1 as today. The new step shows
-`medicineSchedulePresets` as a vertical list of `RadioListTile`-style
-cards (label + description); selecting one sets `_rule` and
-auto-advances to step 1 (details), pre-filling nothing else. Selecting
-the trailing "Custom" tile advances to the existing `_ScheduleStep`
-(now step 3) with today's `fixedDaily` default, i.e. exactly today's
-behavior — the preset step is purely additive, no existing step's
-logic changes. The progress indicator becomes `(_step + 1) / 4`.
+`medicineSchedulePresets` as a vertical list of plain `Card`/`ListTile`
+rows (label + description), each with a single `onTap` — not a
+`RadioListTile`/`RadioGroup`: the tap is a one-shot action (set `_rule`,
+call `_nextStep()`) that immediately leaves step 0, so there's no
+in-step selection state worth modeling, unlike step 3's `_ScheduleStep`
+where the radio group's value persists while the user stays on that
+page. Selecting the trailing "Custom" tile advances to the existing
+`_ScheduleStep` (now step 3) with today's `fixedDaily` default, i.e.
+exactly today's behavior — the preset step is purely additive, no
+existing step's logic changes. The progress indicator becomes
+`(_step + 1) / 4`.
 
 **Prayer** — `PrayerSettingsScreen` is reached from Settings, not from
 a "first run" gate, since there's no onboarding flow to hook. The
@@ -209,19 +251,52 @@ at the top of `PrayerSettingsScreen`, shown only while
 `locationMode == LocationMode.auto` AND no manual coordinates have
 ever been set (i.e. `manualLatitude == null` — today's fresh-seed
 state) — a horizontal row of `ActionChip`s built from
-`prayerMethodPresets`, each calling `controller.updateSettings(...)`
-with that preset's method/madhab/city (or, for "Use GPS", doing
-nothing beyond dismissing the banner — it's already the default).
-Once any preset is picked or the user manually edits any of
-method/asr/location via the existing dropdowns below, the banner's
-condition (`manualLatitude == null && locationMode == auto` no longer
-holds after a manual pick, or a simple dismissed-flag if they choose
-GPS) stops showing it — no new DB column: reuse `manualLatitude`'s
-existing null-ness as the "has the user made an explicit choice yet"
-signal for the location half, and simply always show the banner while
-`locationMode == auto` for the method/madhab half (harmless to reshow
-until a manual mode is picked, since re-tapping a preset is a no-op
-past the first time).
+`prayerMethodPresets`.
+
+Each chip's `onTap` switches on the preset itself (identity/index, not
+just `cityNameKey`, since "Use GPS" and "Standard (MWL)" are both
+`cityNameKey: null` but behave differently):
+
+- **`labelKey == 'prayerPresetUseGps'`**: no repository write — only
+  `setState(() => _gpsPresetAcknowledged = true)` (see below). GPS/auto
+  is already the default.
+- **`cityNameKey != null`** (e.g. "Hanafi, Dhaka"): look up
+  `final city = cities.firstWhere((c) => c.nameKey == preset.cityNameKey)`
+  against the list from `prayerCitiesProvider`, then call
+  `controller.updateSettings(calculationMethod: preset.calculationMethod,
+  asrMethod: preset.asrMethod, manualLatitude: city.latitude,
+  manualLongitude: city.longitude, manualTimezone: city.ianaTimezone,
+  locationMode: LocationMode.manual)`. `locationMode` **must** flip to
+  `manual` in the same call, not just method/madhab/coordinates: leaving
+  it `auto` would mean the picked Dhaka coordinates are written but
+  never read (prayer times stay GPS-driven) and the banner's own dismiss
+  condition (`locationMode == auto`) would never clear.
+- **`cityNameKey == null && labelKey != 'prayerPresetUseGps'`** (i.e.
+  "Standard (MWL)"): calls `controller.updateSettings(calculationMethod:
+  preset.calculationMethod, asrMethod: preset.asrMethod)` only —
+  touches neither `locationMode` nor the local acknowledged flag, so the
+  banner correctly stays visible afterward (still `locationMode ==
+  auto`) until the user picks a city-bearing preset, edits location
+  manually, or taps "Use GPS".
+
+That local-only dismiss is the one case with no DB signal to key off:
+`manualLatitude` staying null and `locationMode` staying `auto` are
+both correct, expected state after choosing GPS, so they can't double
+as a "user already saw and accepted the banner" flag without a new
+persisted column, which is out of scope. Instead, `PrayerSettingsScreen`
+becomes a `ConsumerStatefulWidget` holding a local
+`bool _gpsPresetAcknowledged = false`; the banner's visibility
+condition becomes `locationMode == auto && !_gpsPresetAcknowledged`,
+and the "Use GPS" chip's `onPressed` just does
+`setState(() => _gpsPresetAcknowledged = true)`. This is intentionally
+session-local: leaving and reopening Settings without ever picking a
+manual/city preset shows the banner again. Accepted trade-off — no
+schema change, and re-tapping "Use GPS" a second time is a harmless
+no-op. Once any city-bearing preset is picked, or the user manually
+edits location via the existing dropdowns below, `locationMode`
+becomes (or already is) `manual`, so the banner's primary condition
+(`locationMode == auto`) stops holding on its own — the acknowledged
+flag only matters for the GPS branch.
 
 ### What stays out of scope
 
@@ -256,8 +331,18 @@ past the first time).
 - `MedicineFormScreen`'s new step 0 only appears in the create
   (`editMedicineId == null`) path; step numbering/progress bar shifts
   from `/3` to `/4` accordingly.
-- `PrayerSettingsScreen`'s preset banner is derived state (`locationMode
-  == auto`), not a new persisted flag.
+- `PrayerSettingsScreen`'s preset banner visibility is
+  `locationMode == auto && !_gpsPresetAcknowledged`, where the latter is
+  a new local `bool` on a `ConsumerStatefulWidget` (converted from
+  today's `ConsumerWidget`) — not a persisted flag, resets each time the
+  screen is reopened.
+- `WaterSettingsScreen`'s goal `_GoalField` call site gains
+  `key: ValueKey(goal.goalMl)` so preset taps (which change
+  `initialValue` externally) force the field's `late final`
+  `TextEditingController` to re-seed instead of going stale.
+- Medicine's new step-0 preset tiles are plain `Card`/`ListTile` +
+  `onTap` (not `RadioListTile`/`RadioGroup`) since a tap is a one-shot
+  action that leaves step 0 immediately.
 - New l10n keys go in both `app_en.arb` and `app_bn.arb`
   (`waterPresetLight/Standard/Active`, `medPreset*`/`medPreset*Desc`,
   `prayerPresetUseGps/HanafiDhaka/StandardMwl`).

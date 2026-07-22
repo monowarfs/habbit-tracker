@@ -53,3 +53,6 @@ app.*.map.json
 
 # Claude Code local (personal) settings override
 .claude/settings.local.json
+
+# Git worktrees for isolated feature work
+/.worktrees/
