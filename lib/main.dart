@@ -12,6 +12,8 @@ import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/screen_privacy_service.dart';
+import 'package:habit_tracker/core/shortcuts/quick_action_handler.dart';
+import 'package:habit_tracker/core/shortcuts/shortcut_items.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
@@ -19,6 +21,7 @@ import 'package:habit_tracker/features/settings/domain/entities/app_settings.dar
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
+import 'package:quick_actions/quick_actions.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +50,11 @@ Future<void> main() async {
   final coldStartDeepLink = await NotificationService.instance
       .checkLaunchDeepLink();
   await registerNotificationWorkmanager();
+
+  await const QuickActions().initialize((type) async {
+    await handleQuickAction(type: type, db: db);
+    container.read(appRouterProvider).go('/$type');
+  });
 
   runZonedGuarded(
     () {
@@ -91,6 +99,17 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
         (_) => ref.read(appRouterProvider).go(route),
       );
     }
+    // Registers the 3 static home-screen/app-shortcut items
+    // (`core/shortcuts/`) once now and again on every locale change, so
+    // labels stay in the user's chosen language. `listenManual` (not the
+    // build()-safe `listen`) because this needs `fireImmediately`, which
+    // `listen` doesn't support.
+    ref.listenManual<Locale>(localeControllerProvider, (previous, next) {
+      final l10n = lookupAppLocalizations(next);
+      unawaited(
+        const QuickActions().setShortcutItems(buildShortcutItems(l10n)),
+      );
+    }, fireImmediately: true);
   }
 
   @override

@@ -644,7 +644,7 @@ In `lib/main.dart`, directly after the existing
 `await registerNotificationWorkmanager();` line (around line 49), add:
 
 ```dart
-  const QuickActions().initialize((type) async {
+  await const QuickActions().initialize((type) async {
     await handleQuickAction(type: type, db: db);
     container.read(appRouterProvider).go('/$type');
   });
@@ -652,17 +652,21 @@ In `lib/main.dart`, directly after the existing
 
 - [ ] **Step 3: Register/re-register shortcuts on locale change**
 
-In `lib/main.dart`, inside `_HabitTrackerAppState.build()`, directly after
-the existing `ref.listen<AsyncValue<AppSettings>>(appSettingsProvider,
-...)` block (after its closing `});` around line 139), add:
+Correction from the original design sketch: `WidgetRef.listen` (the
+variant safe to call inside `build()`) does **not** support
+`fireImmediately` in this Riverpod version — only `listenManual` does, and
+`listenManual` is documented as designed for `State` lifecycle methods
+(`initState`), not `build()`. So this goes in `_HabitTrackerAppState
+.initState()` instead, directly after the existing `initialDeepLink`
+post-frame-callback block:
 
 ```dart
     // Registers the 3 static home-screen/app-shortcut items
-    // (`core/shortcuts/`) once on first build (`fireImmediately: true`)
-    // and again on every locale change, so labels stay in the user's
-    // chosen language — same `ref.listen`-in-`build()` pattern as the
-    // screenPrivacyEnabled listener above.
-    ref.listen<Locale>(localeControllerProvider, (previous, next) {
+    // (`core/shortcuts/`) once now and again on every locale change, so
+    // labels stay in the user's chosen language. `listenManual` (not the
+    // build()-safe `listen`) because this needs `fireImmediately`, which
+    // `listen` doesn't support.
+    ref.listenManual<Locale>(localeControllerProvider, (previous, next) {
       final l10n = lookupAppLocalizations(next);
       unawaited(
         const QuickActions().setShortcutItems(buildShortcutItems(l10n)),
