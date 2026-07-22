@@ -7,6 +7,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/security/lock_screen.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/pin_lock_service.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
@@ -21,6 +22,9 @@ const _testSettings = AppSettings(
   pinLockTimeoutSeconds: 0,
   biometricEnabled: false,
   screenPrivacyEnabled: false,
+  quietHoursEnabled: false,
+  quietHoursStart: LocalTime(22, 0),
+  quietHoursEnd: LocalTime(7, 0),
 );
 
 void main() {
@@ -155,6 +159,13 @@ class _StubSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateLastSeenAppVersion(String version) =>
       Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateQuietHours({
+    required bool enabled,
+    required LocalTime start,
+    required LocalTime end,
+  }) => Future.value(const Result.success(null));
 
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>

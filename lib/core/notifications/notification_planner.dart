@@ -4,6 +4,8 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 
 /// One module's pending notification, paired with its owning module id.
 typedef ModulePendingNotification = ({
@@ -26,6 +28,28 @@ class NotificationPlan {
   final List<String> toCancel;
 }
 
+/// A local wall-clock suppression window (`AppSettings.quietHours*`).
+/// [start]/[end] may wrap past midnight (`start > end`).
+class QuietHours {
+  /// Creates a quiet-hours window.
+  const QuietHours({required this.start, required this.end});
+
+  /// Window start (wall-clock time).
+  final LocalTime start;
+
+  /// Window end (wall-clock time).
+  final LocalTime end;
+
+  /// Whether local wall-clock time [instant] falls inside this window.
+  bool contains(DateTime instant) {
+    final t = LocalTime(instant.hour, instant.minute);
+    if (start.compareTo(end) <= 0) {
+      return t.compareTo(start) >= 0 && t.compareTo(end) < 0;
+    }
+    return t.compareTo(start) >= 0 || t.compareTo(end) < 0;
+  }
+}
+
 /// Materializes "Window 2" (`../../strategies/notifications.md`): every
 /// module's pending notifications, clipped to [windowDays] ahead of [now]
 /// and capped at [iosPendingCap] total across every module combined (the
@@ -38,15 +62,19 @@ NotificationPlan planNotifications({
   required DateTime now,
   int windowDays = 3,
   int iosPendingCap = 64,
+  QuietHours? quietHours,
 }) {
   final windowEnd = now.add(Duration(days: windowDays));
   final flattened = <ModulePendingNotification>[];
   pendingByModule.forEach((moduleId, list) {
     for (final pending in list) {
-      if (pending.scheduledAt.isAfter(now) &&
-          pending.scheduledAt.isBefore(windowEnd)) {
-        flattened.add((moduleId: moduleId, pending: pending));
-      }
+      final inWindow = pending.scheduledAt.isAfter(now) &&
+          pending.scheduledAt.isBefore(windowEnd);
+      if (!inWindow) continue;
+      final suppressed = pending.quietHoursSuppressible &&
+          (quietHours?.contains(pending.scheduledAt) ?? false);
+      if (suppressed) continue;
+      flattened.add((moduleId: moduleId, pending: pending));
     }
   });
   flattened.sort(
@@ -84,10 +112,17 @@ Future<void> planAndApplyNotifications({
   for (final module in modules) {
     pendingByModule[module.id] = await module.pendingNotifications();
   }
+  final settings = await SettingsRepositoryImpl(db).watchSettings().first;
   final plan = planNotifications(
     pendingByModule: pendingByModule,
     existingPending: existingPending,
     now: now ?? clock.now(),
+    quietHours: settings.quietHoursEnabled
+        ? QuietHours(
+            start: settings.quietHoursStart,
+            end: settings.quietHoursEnd,
+          )
+        : null,
   );
   for (final id in plan.toCancel) {
     await NotificationService.instance.cancel(id);

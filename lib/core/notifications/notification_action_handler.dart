@@ -61,6 +61,7 @@ Future<void> handleNotificationAction({
               body: row.body,
               sourceType: row.sourceType,
               deepLinkRoute: row.deepLinkRoute,
+              quietHoursSuppressible: true,
             ),
             moduleId: moduleId,
             snoozeCount: row.snoozeCount + 1,

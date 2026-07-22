@@ -44,6 +44,9 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'pinLockTimeoutSeconds': settings.pinLockTimeoutSeconds,
   'biometricEnabled': settings.biometricEnabled,
   'screenPrivacyEnabled': settings.screenPrivacyEnabled,
+  'quietHoursEnabled': settings.quietHoursEnabled,
+  'quietHoursStart': settings.quietHoursStart.format(),
+  'quietHoursEnd': settings.quietHoursEnd.format(),
 };
 
 Map<String, Object?> _achievementToJson(AchievementRow row) => {

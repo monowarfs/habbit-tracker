@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -90,6 +90,12 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable,
           appSettingsTable.lastSeenAppVersion,
         );
+      }
+      if (from < 6) {
+        // Quiet-hours-aware notification scheduling.
+        await m.addColumn(appSettingsTable, appSettingsTable.quietHoursEnabled);
+        await m.addColumn(appSettingsTable, appSettingsTable.quietHoursStart);
+        await m.addColumn(appSettingsTable, appSettingsTable.quietHoursEnd);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

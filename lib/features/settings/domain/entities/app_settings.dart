@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 
 part 'app_settings.freezed.dart';
 
@@ -51,5 +52,8 @@ sealed class AppSettings with _$AppSettings {
     required bool screenPrivacyEnabled,
     DateTime? onboardingCompletedAt,
     String? lastSeenAppVersion,
+    required bool quietHoursEnabled,
+    required LocalTime quietHoursStart,
+    required LocalTime quietHoursEnd,
   }) = _AppSettings;
 }

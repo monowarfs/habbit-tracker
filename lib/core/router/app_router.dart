@@ -14,6 +14,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/data_settin
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/quiet_hours_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -62,6 +63,9 @@ class AppRoutes {
 
   /// About/version/licenses screen.
   static const String settingsAbout = '/settings/about';
+
+  /// Quiet hours settings screen.
+  static const String settingsQuietHours = '/settings/quiet-hours';
 
   /// PIN entry (top-level redirect target, not a normal pushed route).
   static const String lock = '/lock';
@@ -148,6 +152,10 @@ GoRouter buildAppRouter(
                     path: 'notifications',
                     builder: (context, state) =>
                         const NotificationReliabilityScreen(),
+                  ),
+                  GoRoute(
+                    path: 'quiet-hours',
+                    builder: (context, state) => const QuietHoursScreen(),
                   ),
                   GoRoute(
                     path: 'pin',

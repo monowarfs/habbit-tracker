@@ -161,6 +161,7 @@ class PrayerModule implements HabitModule {
           body: "It's time for $label prayer",
           sourceType: 'prayer_record',
           deepLinkRoute: '/prayer/record/${record.id}',
+          quietHoursSuppressible: false,
         ),
       );
       if (settings.preReminderEnabled) {
@@ -176,6 +177,7 @@ class PrayerModule implements HabitModule {
               body: '$label prayer is coming up soon',
               sourceType: 'prayer_record',
               deepLinkRoute: '/prayer/record/${record.id}',
+              quietHoursSuppressible: false,
             ),
           );
         }

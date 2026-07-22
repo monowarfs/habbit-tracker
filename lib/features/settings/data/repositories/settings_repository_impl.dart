@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 
@@ -92,6 +93,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateQuietHours({
+    required bool enabled,
+    required LocalTime start,
+    required LocalTime end,
+  }) => _update(
+    AppSettingsTableCompanion(
+      quietHoursEnabled: Value(enabled),
+      quietHoursStart: Value(start.format()),
+      quietHoursEnd: Value(end.format()),
+    ),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -107,6 +121,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           pinLockTimeoutSeconds: Value(settings.pinLockTimeoutSeconds),
           biometricEnabled: Value(settings.biometricEnabled),
           screenPrivacyEnabled: Value(settings.screenPrivacyEnabled),
+          quietHoursEnabled: Value(settings.quietHoursEnabled),
+          quietHoursStart: Value(settings.quietHoursStart.format()),
+          quietHoursEnd: Value(settings.quietHoursEnd.format()),
           updatedAt: Value(now),
         ),
       );
@@ -146,6 +163,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
             isUtc: true,
           ),
     lastSeenAppVersion: row.lastSeenAppVersion,
+    quietHoursEnabled: row.quietHoursEnabled,
+    quietHoursStart: LocalTime.parse(row.quietHoursStart),
+    quietHoursEnd: LocalTime.parse(row.quietHoursEnd),
   );
 }
 

@@ -41,6 +41,18 @@ class AppSettingsTable extends Table {
   BoolColumn get screenPrivacyEnabled =>
       boolean().withDefault(const Constant(false))();
 
+  /// Whether quiet-hours notification suppression is active.
+  BoolColumn get quietHoursEnabled =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Quiet-hours window start, `"HH:mm"` wall-clock format.
+  TextColumn get quietHoursStart =>
+      text().withDefault(const Constant('22:00'))();
+
+  /// Quiet-hours window end, `"HH:mm"` wall-clock format.
+  TextColumn get quietHoursEnd =>
+      text().withDefault(const Constant('07:00'))();
+
   /// UTC epoch millis; null = onboarding not yet completed.
   IntColumn get onboardingCompletedAt => integer().nullable()();
 

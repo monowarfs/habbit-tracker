@@ -155,6 +155,7 @@ class WaterModule implements HabitModule {
               body: 'Keep your water goal on track.',
               sourceType: 'water_reminder',
               deepLinkRoute: '/water',
+              quietHoursSuppressible: true,
             ),
           );
         }
