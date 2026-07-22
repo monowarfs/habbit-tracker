@@ -343,6 +343,42 @@
   "@medicineFormFrequencyPrn": {
     "description": "Repeat-rule option: no fixed schedule."
   },
+  "medPresetOnceDaily": "Once daily",
+  "@medPresetOnceDaily": {
+    "description": "Medicine schedule preset title: one dose a day at 8am."
+  },
+  "medPresetOnceDailyDesc": "One dose every day at 8:00 AM",
+  "@medPresetOnceDailyDesc": {
+    "description": "Medicine schedule preset subtitle for medPresetOnceDaily."
+  },
+  "medPresetTwiceDaily": "Twice daily",
+  "@medPresetTwiceDaily": {
+    "description": "Medicine schedule preset title: two doses a day."
+  },
+  "medPresetTwiceDailyDesc": "Two doses every day, 8:00 AM and 8:00 PM",
+  "@medPresetTwiceDailyDesc": {
+    "description": "Medicine schedule preset subtitle for medPresetTwiceDaily."
+  },
+  "medPresetEveryOtherDay": "Every other day",
+  "@medPresetEveryOtherDay": {
+    "description": "Medicine schedule preset title: one dose every 2 days."
+  },
+  "medPresetEveryOtherDayDesc": "One dose every 2 days at 8:00 AM",
+  "@medPresetEveryOtherDayDesc": {
+    "description": "Medicine schedule preset subtitle for medPresetEveryOtherDay."
+  },
+  "medPresetAsNeeded": "As needed",
+  "@medPresetAsNeeded": {
+    "description": "Medicine schedule preset title: PRN, no fixed schedule."
+  },
+  "medPresetAsNeededDesc": "No fixed schedule — log doses when taken",
+  "@medPresetAsNeededDesc": {
+    "description": "Medicine schedule preset subtitle for medPresetAsNeeded."
+  },
+  "medPresetCustom": "Custom schedule",
+  "@medPresetCustom": {
+    "description": "Trailing step-0 tile that skips presets and goes to the manual schedule step."
+  },
   "medicineFormNextButton": "Next",
   "@medicineFormNextButton": {
     "description": "Advances to the next form step."

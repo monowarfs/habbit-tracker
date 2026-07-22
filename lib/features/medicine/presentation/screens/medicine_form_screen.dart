@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
+import 'package:habit_tracker/features/medicine/domain/medicine_schedule_presets.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 
 /// Adds (or, once `editMedicineId` is set, will edit — full edit support
@@ -50,7 +51,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 
   void _nextStep() {
-    if (_step == 0 && _nameController.text.trim().isEmpty) return;
+    if (_step == 1 && _nameController.text.trim().isEmpty) return;
     setState(() => _step += 1);
     unawaited(
       _pageController.nextPage(
@@ -89,13 +90,20 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
         title: Text(l10n.medicineFormTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(value: (_step + 1) / 3),
+          child: LinearProgressIndicator(value: (_step + 1) / 4),
         ),
       ),
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: [
+          _PresetStep(
+            onPresetSelected: (rule) {
+              setState(() => _rule = rule);
+              _nextStep();
+            },
+            onCustomSelected: _nextStep,
+          ),
           _DetailsStep(
             nameController: _nameController,
             dosageController: _dosageController,
@@ -116,9 +124,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: FilledButton(
-            onPressed: _step < 2 ? _nextStep : _save,
+            onPressed: _step < 3 ? _nextStep : _save,
             child: Text(
-              _step < 2
+              _step < 3
                   ? l10n.medicineFormNextButton
                   : l10n.medicineFormSaveButton,
             ),
@@ -128,6 +136,60 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     );
   }
 }
+
+class _PresetStep extends StatelessWidget {
+  const _PresetStep({
+    required this.onPresetSelected,
+    required this.onCustomSelected,
+  });
+
+  final ValueChanged<RepeatRule> onPresetSelected;
+  final VoidCallback onCustomSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        for (final preset in medicineSchedulePresets)
+          Card(
+            child: ListTile(
+              title: Text(_presetLabel(l10n, preset)),
+              subtitle: Text(_presetDescription(l10n, preset)),
+              onTap: () => onPresetSelected(preset.rule),
+            ),
+          ),
+        Card(
+          child: ListTile(
+            title: Text(l10n.medPresetCustom),
+            onTap: onCustomSelected,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _presetLabel(AppLocalizations l10n, MedicineSchedulePreset preset) =>
+    switch (preset.labelKey) {
+      'medPresetOnceDaily' => l10n.medPresetOnceDaily,
+      'medPresetTwiceDaily' => l10n.medPresetTwiceDaily,
+      'medPresetEveryOtherDay' => l10n.medPresetEveryOtherDay,
+      'medPresetAsNeeded' => l10n.medPresetAsNeeded,
+      _ => preset.labelKey,
+    };
+
+String _presetDescription(
+  AppLocalizations l10n,
+  MedicineSchedulePreset preset,
+) => switch (preset.descriptionKey) {
+  'medPresetOnceDailyDesc' => l10n.medPresetOnceDailyDesc,
+  'medPresetTwiceDailyDesc' => l10n.medPresetTwiceDailyDesc,
+  'medPresetEveryOtherDayDesc' => l10n.medPresetEveryOtherDayDesc,
+  'medPresetAsNeededDesc' => l10n.medPresetAsNeededDesc,
+  _ => preset.descriptionKey,
+};
 
 class _DetailsStep extends StatelessWidget {
   const _DetailsStep({
