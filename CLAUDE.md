@@ -75,6 +75,29 @@ Org id: `dev.shurjomoy.habittracker` (Android `applicationId`
 `dev.shurjomoy.habit_tracker`, iOS bundle id `dev.shurjomoy.habitTracker`).
 Android minSdk 26 (Oreo — notification channels).
 
+## Spec implementation workflow
+
+When given a spec file to implement (e.g. `docs/superpowers/specs/*.md`),
+follow this workflow exactly:
+
+1. Use skill `superpowers:executing-plans` to drive implementation.
+2. Create a new git branch for the spec/feature before starting.
+3. Follow the plan verbatim — the code is already written in it; do not
+   redesign it.
+4. Per task, run only that task's own targeted test file — never the full
+   `flutter test` suite.
+5. Pipe `build_runner` and `test` output through `| tail -10`.
+6. Commit per task, exactly as the plan specifies (one commit per task,
+   not one commit for the whole spec).
+7. Once every task is implemented, open a PR for the spec with the details
+   in the description.
+8. Run a code review against the finished PR. If the reviewer finds an
+   issue/missing part/gap: add it as a PR comment, fix it, commit the fix,
+   then re-review. Repeat this comment → fix → commit cycle at most 5
+   times to drive out gaps.
+9. Stop there — wait for the user's own review and merge before starting
+   the next spec/feature.
+
 ## Commands
 
 ```
