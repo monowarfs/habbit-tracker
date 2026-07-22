@@ -108,6 +108,35 @@ void main() {
     },
   );
 
+  test(
+    'materializeRecords regenerates a day whose upcoming records were '
+    'soft-deleted by a settings change (regression: insertOrIgnore silently '
+    'no-ops against the still-occupied (prayerDate, prayerName) unique '
+    'slot, permanently leaving the day empty)',
+    () async {
+      const location = (
+        latitude: 23.8103,
+        longitude: 90.4125,
+        ianaTimezone: 'Asia/Dhaka',
+      );
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
+        await repo.materializeRecords(clock.now(), location);
+        // Any calculation-method change soft-deletes every future
+        // `upcoming` record so the next pass recalculates them.
+        await repo.updateSettings(calculationMethod: CalculationMethod.mwl);
+        await repo.materializeRecords(clock.now(), location);
+      });
+
+      final day = await repo
+          .watchRecordsForDay(
+            const LocalDate(2026, 6, 15),
+          )
+          .first;
+      expect(day, hasLength(5));
+      expect(day.every((r) => r.storedStatus == PrayerStatus.upcoming), isTrue);
+    },
+  );
+
   test("watchRecordsForDay reflects a single day's 5 records", () async {
     const location = (
       latitude: 23.8103,

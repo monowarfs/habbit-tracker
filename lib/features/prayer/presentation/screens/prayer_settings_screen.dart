@@ -40,22 +40,39 @@ class PrayerSettingsScreen extends ConsumerWidget {
             ),
           ListTile(
             title: Text(l10n.prayerSettingsMethodLabel),
-            trailing: DropdownButton<CalculationMethod>(
-              value: settings.calculationMethod,
-              items: [
-                for (final method in CalculationMethod.values)
-                  DropdownMenuItem(
-                    value: method,
-                    child: Text(_methodLabel(l10n, method)),
-                  ),
-              ],
-              onChanged: (method) {
-                if (method != null) {
-                  unawaited(
-                    controller.updateSettings(calculationMethod: method),
-                  );
-                }
-              },
+            trailing: ConstrainedBox(
+              // Some method names (e.g. "University of Islamic Sciences,
+              // Karachi") are long enough to wrap across several lines
+              // and blow up the row's height when shown unconstrained —
+              // cap the trailing width and ellipsize the *selected*
+              // value only; the open dropdown menu still shows full names.
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: DropdownButton<CalculationMethod>(
+                value: settings.calculationMethod,
+                isExpanded: true,
+                items: [
+                  for (final method in CalculationMethod.values)
+                    DropdownMenuItem(
+                      value: method,
+                      child: Text(_methodLabel(l10n, method)),
+                    ),
+                ],
+                selectedItemBuilder: (context) => [
+                  for (final method in CalculationMethod.values)
+                    Text(
+                      _methodLabel(l10n, method),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+                onChanged: (method) {
+                  if (method != null) {
+                    unawaited(
+                      controller.updateSettings(calculationMethod: method),
+                    );
+                  }
+                },
+              ),
             ),
           ),
           ListTile(
