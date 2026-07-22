@@ -227,6 +227,18 @@
   "@waterSettingsReminderWindowLabel": {
     "description": "Label for the reminder time-of-day window row."
   },
+  "waterPresetLight": "Light · 1.5L",
+  "@waterPresetLight": {
+    "description": "Water goal preset chip: 1500ml/day."
+  },
+  "waterPresetStandard": "Standard · 2L",
+  "@waterPresetStandard": {
+    "description": "Water goal preset chip: 2000ml/day (matches the seeded default)."
+  },
+  "waterPresetActive": "Active · 3L",
+  "@waterPresetActive": {
+    "description": "Water goal preset chip: 3000ml/day."
+  },
   "medicineHomeEmpty": "No doses scheduled for today",
   "@medicineHomeEmpty": {
     "description": "Shown on the medicine home screen when there are no doses today."
