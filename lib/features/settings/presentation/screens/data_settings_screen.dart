@@ -49,6 +49,12 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
         const JsonEncoder.withIndent('  ').convert(envelope.toJson()),
       );
       await LocalFileBackupTarget().upload(file);
+    } on Object catch (e, st) {
+      logger.e('export failed', error: e, stackTrace: st);
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        _showFailure(l10n.dataExportFailed(e.toString()));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -57,11 +63,19 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
   Future<void> _import() async {
     final file = await LocalFileBackupTarget().download();
     if (file == null) return;
-    final rawJson = await file.readAsString();
+    final l10n = AppLocalizations.of(context)!;
+    final String rawJson;
+    try {
+      rawJson = await file.readAsString();
+    } on Object catch (e, st) {
+      logger.e('import file read failed', error: e, stackTrace: st);
+      if (mounted) _showFailure(l10n.dataImportFailed(e.toString()));
+      return;
+    }
     final validation = await validateImport(rawJson);
     if (!mounted) return;
     if (validation case Failure(:final error)) {
-      _showFailure(error.toString());
+      _showFailure(l10n.dataImportFailed(error.toString()));
       return;
     }
     final preview = (validation as Success<ImportPreview>).value;
@@ -78,7 +92,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       );
       if (!mounted) return;
       if (applied case Failure(:final error)) {
-        _showFailure(error.toString());
+        _showFailure(l10n.dataImportFailed(error.toString()));
         return;
       }
       if (mounted) {
@@ -93,10 +107,9 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
     }
   }
 
-  void _showFailure(String reason) {
-    final l10n = AppLocalizations.of(context)!;
+  void _showFailure(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.dataImportFailed(reason))),
+      SnackBar(content: Text(message)),
     );
   }
 

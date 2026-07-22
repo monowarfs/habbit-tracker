@@ -886,5 +886,26 @@
   "@dataImportFailed": {
     "description": "Error message shown when import validation or apply fails.",
     "placeholders": {"reason": {"type": "String"}}
+  },
+  "dataExportFailed": "Export failed: {reason}",
+  "@dataExportFailed": {
+    "description": "Error message shown when export fails.",
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "whatsNewTitle": "What's New",
+  "@whatsNewTitle": {
+    "description": "Title of the changelog bottom sheet."
+  },
+  "aboutWhatsNew": "View what's new",
+  "@aboutWhatsNew": {
+    "description": "ListTile label on the About screen that opens the full changelog."
+  },
+  "changelog1_1_0_bullet1": "What's New changelog on app update",
+  "@changelog1_1_0_bullet1": {
+    "description": "Changelog bullet for v1.1.0."
+  },
+  "changelog1_1_0_bullet2": "View full changelog from About screen",
+  "@changelog1_1_0_bullet2": {
+    "description": "Changelog bullet for v1.1.0."
   }
 }
