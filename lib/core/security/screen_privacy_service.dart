@@ -5,15 +5,36 @@ import 'package:screen_protector/screen_protector.dart';
 /// an app-switcher blur overlay on iOS (`strategies/security.md`).
 /// Offered from Settings only once PIN lock is enabled.
 class ScreenPrivacyService {
+  /// Creates a service with injectable platform calls for testing.
+  /// Defaults to the real `ScreenProtector` static methods.
+  ScreenPrivacyService({
+    Future<void> Function()? preventScreenshotOn,
+    Future<void> Function()? protectDataLeakageOn,
+    Future<void> Function()? preventScreenshotOff,
+    Future<void> Function()? protectDataLeakageOff,
+  })  : _preventScreenshotOn =
+            preventScreenshotOn ?? ScreenProtector.preventScreenshotOn,
+        _protectDataLeakageOn =
+            protectDataLeakageOn ?? ScreenProtector.protectDataLeakageOn,
+        _preventScreenshotOff =
+            preventScreenshotOff ?? ScreenProtector.preventScreenshotOff,
+        _protectDataLeakageOff =
+            protectDataLeakageOff ?? ScreenProtector.protectDataLeakageOff;
+
+  final Future<void> Function() _preventScreenshotOn;
+  final Future<void> Function() _protectDataLeakageOn;
+  final Future<void> Function() _preventScreenshotOff;
+  final Future<void> Function() _protectDataLeakageOff;
+
   /// Enables screen privacy protection.
   Future<void> enable() async {
-    await ScreenProtector.preventScreenshotOn();
-    await ScreenProtector.protectDataLeakageOn();
+    await _preventScreenshotOn();
+    await _protectDataLeakageOn();
   }
 
   /// Disables screen privacy protection.
   Future<void> disable() async {
-    await ScreenProtector.preventScreenshotOff();
-    await ScreenProtector.protectDataLeakageOff();
+    await _preventScreenshotOff();
+    await _protectDataLeakageOff();
   }
 }

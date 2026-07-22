@@ -155,7 +155,9 @@ GoRouter buildAppRouter(
                     routes: [
                       GoRoute(
                         path: 'set',
-                        builder: (context, state) => const PinSetScreen(),
+                        builder: (context, state) => PinSetScreen(
+                          oldPin: state.extra as String?,
+                        ),
                       ),
                     ],
                   ),
