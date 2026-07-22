@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
+import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
@@ -59,17 +60,19 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: modules.isEmpty
           ? Center(child: Text(l10n.emptyDashboardMessage))
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _DayCompletionIndicator(modules: modules),
-                const SizedBox(height: 16),
-                _UpcomingStrip(modules: modules),
-                const SizedBox(height: 16),
-                _QuickActionsRow(modules: modules),
-                const SizedBox(height: 16),
-                for (final module in modules) module.dashboardSummary(ref),
-              ],
+          : MaxContentWidth(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _DayCompletionIndicator(modules: modules),
+                  const SizedBox(height: 16),
+                  _UpcomingStrip(modules: modules),
+                  const SizedBox(height: 16),
+                  _QuickActionsRow(modules: modules),
+                  const SizedBox(height: 16),
+                  for (final module in modules) module.dashboardSummary(ref),
+                ],
+              ),
             ),
     );
   }

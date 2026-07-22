@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 
-/// The bottom-nav shell wrapping every top-level tab
+/// The nav shell wrapping every top-level tab
 /// (`technical/folder-structure.md`'s `StatefulShellRoute`).
+///
+/// Renders a bottom [NavigationBar] on phone widths and a
+/// [NavigationRail] side rail on tablet/landscape widths.
 class AppScaffold extends StatelessWidget {
-  /// Creates the bottom-nav shell for [navigationShell].
+  /// Creates the nav shell for [navigationShell].
   const AppScaffold({required this.navigationShell, super.key});
 
   /// The shell route's navigation state, tracking each branch's own stack.
@@ -15,47 +19,79 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final destinations = [
-      NavigationDestination(
-        icon: const Icon(Icons.dashboard_outlined),
-        selectedIcon: const Icon(Icons.dashboard),
-        label: l10n.navDashboard,
+
+    final navIcons = [
+      (icon: Icons.dashboard_outlined, selected: Icons.dashboard, accent: null),
+      (
+        icon: Icons.water_drop_outlined,
+        selected: Icons.water_drop,
+        accent: ModuleAccents.water,
       ),
-      NavigationDestination(
-        icon: const Icon(Icons.water_drop_outlined),
-        selectedIcon: const Icon(
-          Icons.water_drop,
-          color: ModuleAccents.water,
-        ),
-        label: l10n.navWater,
+      (
+        icon: Icons.medication_outlined,
+        selected: Icons.medication,
+        accent: ModuleAccents.medicine,
       ),
-      NavigationDestination(
-        icon: const Icon(Icons.medication_outlined),
-        selectedIcon: const Icon(
-          Icons.medication,
-          color: ModuleAccents.medicine,
-        ),
-        label: l10n.navMedicine,
+      (
+        icon: Icons.mosque_outlined,
+        selected: Icons.mosque,
+        accent: ModuleAccents.prayer,
       ),
-      NavigationDestination(
-        icon: const Icon(Icons.mosque_outlined),
-        selectedIcon: const Icon(Icons.mosque, color: ModuleAccents.prayer),
-        label: l10n.navPrayer,
-      ),
-      NavigationDestination(
-        icon: const Icon(Icons.settings_outlined),
-        selectedIcon: const Icon(Icons.settings),
-        label: l10n.navSettings,
+      (
+        icon: Icons.settings_outlined,
+        selected: Icons.settings,
+        accent: null,
       ),
     ];
-    // ponytail: tabs hard-coded to the 3 known modules; switch to iterating
-    // habitModules once module_registry.dart actually has entries (Run 06+).
+
+    final labels = [
+      l10n.navDashboard,
+      l10n.navWater,
+      l10n.navMedicine,
+      l10n.navPrayer,
+      l10n.navSettings,
+    ];
+
+    if (isWideLayout(context)) {
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: navigationShell.goBranch,
+              labelType: NavigationRailLabelType.all,
+              destinations: [
+                for (final (i, icon) in navIcons.indexed)
+                  NavigationRailDestination(
+                    icon: Icon(icon.icon),
+                    selectedIcon: Icon(
+                      icon.selected,
+                      color: icon.accent,
+                    ),
+                    label: Text(labels[i]),
+                  ),
+              ],
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: navigationShell.goBranch,
-        destinations: destinations,
+        destinations: [
+          for (final (i, icon) in navIcons.indexed)
+            NavigationDestination(
+              icon: Icon(icon.icon),
+              selectedIcon: Icon(icon.selected, color: icon.accent),
+              label: labels[i],
+            ),
+        ],
       ),
     );
   }
