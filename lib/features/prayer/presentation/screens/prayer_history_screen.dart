@@ -49,29 +49,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.prayerHistoryTitle),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: () => setState(() {
-            _visibleMonth = DateTime(
-              _visibleMonth.year,
-              _visibleMonth.month - 1,
-            );
-          }),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: () => setState(() {
-              _visibleMonth = DateTime(
-                _visibleMonth.year,
-                _visibleMonth.month + 1,
-              );
-            }),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(l10n.prayerHistoryTitle)),
       body: recordsAsync.when(
         data: (records) {
           final byDay = <LocalDate, List<PrayerRecord>>{};
@@ -89,20 +67,48 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
           if (dayStatus == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return Padding(
+          return ListView(
             padding: const EdgeInsets.all(16),
-            child: HabitHeatmapCalendar(
-              month: monthStart,
-              dayStatus: dayStatus,
-              accentColor: ModuleAccents.prayer,
-              // Five daily prayers is a fixed, known ceiling — no
-              // per-instance computation needed.
-              maxValue: 5,
-              onDayTap: (day) {
-                final dayRecords = byDay[day] ?? const [];
-                if (dayRecords.isNotEmpty) _showDayDetail(context, dayRecords);
-              },
-            ),
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => setState(() {
+                      _visibleMonth = DateTime(
+                        _visibleMonth.year,
+                        _visibleMonth.month - 1,
+                      );
+                    }),
+                  ),
+                  Text('${monthStart.year}-${monthStart.month}'),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: () => setState(() {
+                      _visibleMonth = DateTime(
+                        _visibleMonth.year,
+                        _visibleMonth.month + 1,
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              HabitHeatmapCalendar(
+                month: monthStart,
+                dayStatus: dayStatus,
+                accentColor: ModuleAccents.prayer,
+                // Five daily prayers is a fixed, known ceiling — no
+                // per-instance computation needed.
+                maxValue: 5,
+                onDayTap: (day) {
+                  final dayRecords = byDay[day] ?? const [];
+                  if (dayRecords.isNotEmpty) {
+                    _showDayDetail(context, dayRecords);
+                  }
+                },
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

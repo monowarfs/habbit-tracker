@@ -179,9 +179,15 @@ class HabitHeatmapCalendar extends StatelessWidget {
                     // sitting in the actual corner of the cell.
                     fit: StackFit.expand,
                     children: [
-                      Text(
-                        '${day.day}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      // `StackFit.expand` above forces this non-positioned
+                      // child to fill the whole cell, so without an
+                      // explicit `Center` the text paints from its own
+                      // top-left origin instead of the cell's middle.
+                      Center(
+                        child: Text(
+                          '${day.day}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
                       // A non-color cue for `complete` — never rely on
                       // hue/alpha alone (colorblind users, low-contrast

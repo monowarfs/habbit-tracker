@@ -177,6 +177,40 @@ void main() {
       expect(darkColor, isNot(equals(darkSurface)));
     });
 
+    testWidgets('the day number is centered within its cell, not pinned '
+        'to the top-left corner', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: HabitHeatmapCalendar(
+              month: const LocalDate(2026, 6, 1),
+              today: const LocalDate(2026, 6, 15),
+              dayStatus: const {},
+              accentColor: Colors.blue,
+              maxValue: 1,
+              onDayTap: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // `Stack(fit: StackFit.expand)` in the cell forces the day-number
+      // Text to fill the whole cell regardless of Stack's own alignment,
+      // so `tester.getCenter` on the Text box is always the cell center
+      // even when the glyph itself paints top-left. Assert the actual
+      // fix instead: the Text must be wrapped in its own `Center`.
+      final cell = find
+          .ancestor(of: find.text('5'), matching: find.byType(Container))
+          .first;
+      expect(
+        find.descendant(of: cell, matching: find.byType(Center)),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('a complete-cell has a Semantics label describing its status', (
       tester,
     ) async {
