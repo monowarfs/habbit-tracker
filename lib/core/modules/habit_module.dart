@@ -216,6 +216,14 @@ abstract class HabitModule {
     NotificationActionType action,
   );
 
+  /// Performs this module's one fixed, unconditional quick action — the
+  /// headless equivalent of what [quickActions]'s single chip does when
+  /// visible, triggered by an OS home-screen/app shortcut tap
+  /// (`core/shortcuts/quick_action_handler.dart`). Runs with no `Ref` and no
+  /// `BuildContext`, same constraint as [onNotificationAction]. Modules with
+  /// nothing due no-op rather than throwing.
+  Future<void> onQuickAction();
+
   /// Per-day status for [range] — used by the global calendar (as-is),
   /// Reports (bucketed by period), and the dashboard's day-completion
   /// indicator (today's entry only). D-17.

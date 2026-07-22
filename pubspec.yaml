@@ -35,6 +35,7 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.6
   pointycastle: ^4.0.0
+  quick_actions: ^1.1.0
   riverpod_annotation: ^4.0.3
   screen_protector: ^1.4.2
   share_plus: ^13.2.1

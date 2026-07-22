@@ -741,6 +741,8 @@
   "@medicineMarkDoneAction": {"description": "Dashboard quick-action label: mark the next due dose done."},
   "prayerMarkPrayedAction": "Mark prayed",
   "@prayerMarkPrayedAction": {"description": "Dashboard quick-action label: mark the next due prayer prayed."},
+  "waterQuickAddAction": "Log water",
+  "@waterQuickAddAction": {"description": "Home-screen/app-shortcut label for Water's one-tap quick-add action (fixed, not amount-specific — unlike the in-app dashboard chip)."},
   "achievementWaterFirstLogTitle": "First Sip",
   "@achievementWaterFirstLogTitle": {"description": "Achievement title: first water entry ever logged."},
   "achievementWaterFirstLogDescription": "Log your first water entry",

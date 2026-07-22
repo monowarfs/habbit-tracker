@@ -156,6 +156,73 @@ void main() {
     verifyNever(() => repo.markMissedBySkip(any()));
   });
 
+  test('onQuickAction marks the earliest due prayer prayed', () async {
+    final now = DateTime.utc(2026, 6, 1, 9);
+    final fajr = PrayerRecord(
+      id: 'r-fajr',
+      prayerDate: const LocalDate(2026, 6, 1),
+      prayerName: PrayerName.fajr,
+      scheduledFor: DateTime.utc(2026, 6, 1, 5),
+      storedStatus: PrayerStatus.upcoming,
+    );
+    final dhuhr = PrayerRecord(
+      id: 'r-dhuhr',
+      prayerDate: const LocalDate(2026, 6, 1),
+      prayerName: PrayerName.dhuhr,
+      scheduledFor: DateTime.utc(2026, 6, 1, 8),
+      storedStatus: PrayerStatus.upcoming,
+    );
+    final asr = PrayerRecord(
+      id: 'r-asr',
+      prayerDate: const LocalDate(2026, 6, 1),
+      prayerName: PrayerName.asr,
+      scheduledFor: DateTime.utc(2026, 6, 1, 12),
+      storedStatus: PrayerStatus.upcoming,
+    );
+
+    when(() => repo.watchSettings()).thenAnswer(
+      (_) => Stream.value(settings),
+    );
+    when(
+      () => repo.sweepMissedPrayers(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.materializeRecords(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.recordsInRange(any(), any()),
+    ).thenAnswer((_) async => [asr, dhuhr, fajr]);
+    when(
+      () => repo.markPrayed(any()),
+    ).thenAnswer((_) async => const Result.success(null));
+
+    await withClock(Clock.fixed(now), () async {
+      await module.onQuickAction();
+    });
+
+    // fajr (5am) is past its cutoff (dhuhr's 8am start) -> missed, not due.
+    // dhuhr (8am) is past its own start but before asr's 12pm cutoff -> due.
+    // asr (12pm) hasn't started yet -> upcoming.
+    verify(() => repo.markPrayed('r-dhuhr')).called(1);
+  });
+
+  test('onQuickAction no-ops when nothing is due', () async {
+    when(() => repo.watchSettings()).thenAnswer(
+      (_) => Stream.value(settings),
+    );
+    when(
+      () => repo.sweepMissedPrayers(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.materializeRecords(any(), any()),
+    ).thenAnswer((_) async {});
+    when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async => []);
+
+    await module.onQuickAction();
+
+    verifyNever(() => repo.markPrayed(any()));
+  });
+
   test(
     'dayStatus: 5 prayed records is complete, mix is partial, none is missed',
     () async {

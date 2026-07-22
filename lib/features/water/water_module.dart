@@ -184,6 +184,19 @@ class WaterModule implements HabitModule {
   }
 
   @override
+  Future<void> onQuickAction() async {
+    final settings = await _repository.watchSettings().first;
+    final amountMl = settings.quickAddAmountsMl.isEmpty
+        ? 250
+        : settings.quickAddAmountsMl.first;
+    await _repository.addEntry(
+      amountMl: amountMl,
+      loggedAt: clock.now(),
+      source: WaterEntrySource.quick,
+    );
+  }
+
+  @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
     final entries = await _repository
         .watchEntriesInRange(range.start, range.end)

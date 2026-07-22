@@ -17,6 +17,7 @@ import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.da
 import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_streak.dart';
+import 'package:habit_tracker/features/prayer/domain/usecases/effective_prayer_status.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/jumuah_label.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
@@ -201,6 +202,39 @@ class PrayerModule implements HabitModule {
         await _repository.markMissedBySkip(recordId);
       case NotificationActionType.snooze:
         break;
+    }
+  }
+
+  @override
+  Future<void> onQuickAction() async {
+    final settings = await _repository.watchSettings().first;
+    final locationResult = await resolveLocation(settings);
+    if (locationResult case Failure()) return;
+    final location = (locationResult as Success<ResolvedLocation>).value;
+
+    final now = clock.now();
+    await _repository.sweepMissedPrayers(now, location);
+    await _repository.materializeRecords(now, location);
+    final today = localDayKey(now);
+    final records = await _repository.recordsInRange(today, today);
+    records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    for (final record in records) {
+      final cutoff = cutoffForPrayer(
+        record: record,
+        sameDayRecordsSorted: records,
+        ishaDayRolloverTime: settings.ishaDayRolloverTime,
+        ianaTimezone: location.ianaTimezone,
+      );
+      final status = effectivePrayerStatus(
+        storedStatus: record.storedStatus,
+        scheduledFor: record.scheduledFor,
+        cutoff: cutoff,
+        now: now,
+      );
+      if (status == PrayerStatus.due) {
+        await _repository.markPrayed(record.id);
+        return;
+      }
     }
   }
 
