@@ -101,6 +101,9 @@ Future<void> _markDoneAndCelebrate(
   WidgetRef ref,
   String doseId,
 ) async {
+  // Captured synchronously (not re-read inside the deferred `onUndo`
+  // below, which can fire after this widget's element is disposed).
+  final controller = ref.read(medicineControllerProvider.notifier);
   final repository = ref.read(achievementRepositoryProvider);
   final before = await repository.watchByModule('medicine').first;
   final unlockedBefore = before
@@ -108,7 +111,7 @@ Future<void> _markDoneAndCelebrate(
       .map((r) => r.key)
       .toSet();
 
-  await ref.read(medicineControllerProvider.notifier).markDoseDone(doseId);
+  await controller.markDoseDone(doseId);
 
   var wasUndone = false;
   if (context.mounted) {
@@ -120,9 +123,7 @@ Future<void> _markDoneAndCelebrate(
       onCommit: () {},
       onUndo: () {
         wasUndone = true;
-        unawaited(
-          ref.read(medicineControllerProvider.notifier).undoDose(doseId),
-        );
+        unawaited(controller.undoDose(doseId));
       },
     );
   }
@@ -159,7 +160,10 @@ Future<void> _skipWithUndo(
   WidgetRef ref,
   String doseId,
 ) async {
-  await ref.read(medicineControllerProvider.notifier).markDoseSkipped(doseId);
+  // Captured synchronously (not re-read inside the deferred `onUndo`
+  // below, which can fire after this widget's element is disposed).
+  final controller = ref.read(medicineControllerProvider.notifier);
+  await controller.markDoseSkipped(doseId);
   if (!context.mounted) return;
   final l10n = AppLocalizations.of(context)!;
   await showUndoSnackbar(
@@ -167,7 +171,6 @@ Future<void> _skipWithUndo(
     message: l10n.medicineDoseUndoSnackbar,
     undoLabel: l10n.commonUndo,
     onCommit: () {},
-    onUndo: () =>
-        ref.read(medicineControllerProvider.notifier).undoDose(doseId),
+    onUndo: () => controller.undoDose(doseId),
   );
 }

@@ -75,10 +75,16 @@ class WaterController extends _$WaterController {
     if (result case Failure(:final error)) logException(error);
   }
 
-  /// Deletes an entry (FR-W-09).
-  Future<void> deleteEntry(String id) async {
+  /// Deletes an entry (FR-W-09). Returns whether it succeeded so callers
+  /// that deferred the write behind an undo window (see `WaterHomeScreen`)
+  /// can restore the optimistically-hidden entry if the write failed.
+  Future<bool> deleteEntry(String id) async {
     final result = await ref.read(waterRepositoryProvider).deleteEntry(id);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return false;
+    }
+    return true;
   }
 
   /// Records a new goal effective now (FR-W-01/FR-W-04).

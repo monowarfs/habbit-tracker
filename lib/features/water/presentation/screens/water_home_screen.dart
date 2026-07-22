@@ -35,13 +35,22 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
 
   void _deleteWithUndo(AppLocalizations l10n, String entryId) {
     setState(() => _pendingDeleteIds.add(entryId));
+    // Captured synchronously (not re-read inside the deferred callbacks
+    // below, which can fire after this State is disposed).
+    final notifier = ref.read(waterControllerProvider.notifier);
     unawaited(
       showUndoSnackbar(
         context,
         message: l10n.waterEntryDeletedSnackbar,
         undoLabel: l10n.commonUndo,
-        onCommit: () =>
-            ref.read(waterControllerProvider.notifier).deleteEntry(entryId),
+        onCommit: () async {
+          final succeeded = await notifier.deleteEntry(entryId);
+          // Write failed: unhide the entry rather than leaving it looking
+          // deleted when it's still in the DB.
+          if (!succeeded && mounted) {
+            setState(() => _pendingDeleteIds.remove(entryId));
+          }
+        },
         onUndo: () {
           if (mounted) setState(() => _pendingDeleteIds.remove(entryId));
         },
