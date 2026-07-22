@@ -47,7 +47,7 @@ class PinSettingsScreen extends ConsumerWidget {
             ListTile(
               title: Text(l10n.pinSettingsChange),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/settings/pin/set'),
+              onTap: () => _changePin(context, ref),
             ),
             ListTile(
               title: Text(l10n.pinSettingsTimeout),
@@ -116,6 +116,17 @@ class PinSettingsScreen extends ConsumerWidget {
     );
     if (pin == null) return;
     await ref.read(pinLockControllerProvider).disablePin(pin);
+  }
+
+  Future<void> _changePin(BuildContext context, WidgetRef ref) async {
+    final oldPin = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => const _CurrentPinPrompt(),
+    );
+    if (oldPin == null) return;
+    final ok = await ref.read(pinLockControllerProvider).verify(oldPin);
+    if (!ok || !context.mounted) return;
+    await context.push('/settings/pin/set', extra: oldPin);
   }
 }
 

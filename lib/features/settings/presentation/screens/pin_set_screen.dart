@@ -8,8 +8,13 @@ import 'package:habit_tracker/core/widgets/pin_keypad.dart';
 /// Set/change PIN — enter, then confirm (must match). Reachable from
 /// `/settings/pin` when enabling for the first time or tapping "change".
 class PinSetScreen extends ConsumerStatefulWidget {
-  /// Creates the PIN set/change screen.
-  const PinSetScreen({super.key});
+  /// Creates the PIN set/change screen. When [oldPin] is provided the
+  /// final step calls [PinLockController.changePin] instead of `setPin`.
+  const PinSetScreen({this.oldPin, super.key});
+
+  /// The verified old PIN, passed from the Change-PIN flow. `null` when
+  /// enabling PIN for the first time.
+  final String? oldPin;
 
   @override
   ConsumerState<PinSetScreen> createState() => _PinSetScreenState();
@@ -48,7 +53,12 @@ class _PinSetScreenState extends ConsumerState<PinSetScreen> {
       return;
     }
 
-    await ref.read(pinLockControllerProvider).setPin(_entered);
+    final controller = ref.read(pinLockControllerProvider);
+    if (widget.oldPin != null) {
+      await controller.changePin(widget.oldPin!, _entered);
+    } else {
+      await controller.setPin(_entered);
+    }
     if (mounted) context.pop();
   }
 
