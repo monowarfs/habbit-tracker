@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,10 +52,15 @@ Future<void> main() async {
       .checkLaunchDeepLink();
   await registerNotificationWorkmanager();
 
-  await const QuickActions().initialize((type) async {
-    await handleQuickAction(type: type, db: db);
-    container.read(appRouterProvider).go('/$type');
-  });
+  // `quick_actions` only ships Android/iOS platform implementations
+  // (no linux/macos/windows/web endpoint) — an unguarded call throws
+  // `MissingPluginException` on every other target this project builds for.
+  if (Platform.isAndroid || Platform.isIOS) {
+    await const QuickActions().initialize((type) async {
+      await handleQuickAction(type: type, db: db);
+      container.read(appRouterProvider).go('/$type');
+    });
+  }
 
   runZonedGuarded(
     () {
@@ -103,13 +109,17 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     // (`core/shortcuts/`) once now and again on every locale change, so
     // labels stay in the user's chosen language. `listenManual` (not the
     // build()-safe `listen`) because this needs `fireImmediately`, which
-    // `listen` doesn't support.
-    ref.listenManual<Locale>(localeControllerProvider, (previous, next) {
-      final l10n = lookupAppLocalizations(next);
-      unawaited(
-        const QuickActions().setShortcutItems(buildShortcutItems(l10n)),
-      );
-    }, fireImmediately: true);
+    // `listen` doesn't support. Guarded the same way as `main()`'s
+    // `QuickActions().initialize` call — no non-mobile platform
+    // implementation exists.
+    if (Platform.isAndroid || Platform.isIOS) {
+      ref.listenManual<Locale>(localeControllerProvider, (previous, next) {
+        final l10n = lookupAppLocalizations(next);
+        unawaited(
+          const QuickActions().setShortcutItems(buildShortcutItems(l10n)),
+        );
+      }, fireImmediately: true);
+    }
   }
 
   @override

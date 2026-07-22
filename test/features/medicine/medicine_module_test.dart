@@ -197,6 +197,7 @@ void main() {
         storedStatus: MedicineDoseStatus.upcoming,
         graceWindowMinutes: 30,
       );
+      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
       when(
         () => repo.dosesInRange(any(), any()),
       ).thenAnswer((_) async => [upcomingDose, dueDose]);
@@ -224,6 +225,7 @@ void main() {
   );
 
   test('onQuickAction no-ops when nothing is due', () async {
+    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
     when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
 
     await module.onQuickAction();

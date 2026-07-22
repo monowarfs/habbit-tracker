@@ -213,14 +213,15 @@ class PrayerModule implements HabitModule {
     final location = (locationResult as Success<ResolvedLocation>).value;
 
     final now = clock.now();
+    await _repository.sweepMissedPrayers(now, location);
+    await _repository.materializeRecords(now, location);
     final today = localDayKey(now);
     final records = await _repository.recordsInRange(today, today);
-    final sorted = [...records]
-      ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
-    for (final record in sorted) {
+    records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    for (final record in records) {
       final cutoff = cutoffForPrayer(
         record: record,
-        sameDayRecordsSorted: sorted,
+        sameDayRecordsSorted: records,
         ishaDayRolloverTime: settings.ishaDayRolloverTime,
         ianaTimezone: location.ianaTimezone,
       );

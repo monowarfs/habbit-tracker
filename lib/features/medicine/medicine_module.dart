@@ -211,11 +211,11 @@ class MedicineModule implements HabitModule {
   @override
   Future<void> onQuickAction() async {
     final now = clock.now();
+    await _repository.materializeDoses(now);
     final today = localDayKey(now);
     final doses = await _repository.dosesInRange(today, today);
-    final sorted = [...doses]
-      ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
-    for (final dose in sorted) {
+    doses.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    for (final dose in doses) {
       final status = effectiveDoseStatus(
         storedStatus: dose.storedStatus,
         scheduledFor: dose.scheduledFor,

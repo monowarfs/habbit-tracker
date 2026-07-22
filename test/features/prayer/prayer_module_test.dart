@@ -184,6 +184,12 @@ void main() {
       (_) => Stream.value(settings),
     );
     when(
+      () => repo.sweepMissedPrayers(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.materializeRecords(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
       () => repo.recordsInRange(any(), any()),
     ).thenAnswer((_) async => [asr, dhuhr, fajr]);
     when(
@@ -204,6 +210,12 @@ void main() {
     when(() => repo.watchSettings()).thenAnswer(
       (_) => Stream.value(settings),
     );
+    when(
+      () => repo.sweepMissedPrayers(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.materializeRecords(any(), any()),
+    ).thenAnswer((_) async {});
     when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async => []);
 
     await module.onQuickAction();
