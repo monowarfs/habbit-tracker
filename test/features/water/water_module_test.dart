@@ -161,6 +161,19 @@ void main() {
   });
 
   test(
+    'onQuickAction logs a quick entry of the first quick-add amount',
+    () async {
+      final repo = _FakeWaterRepository(_settings(reminderEnabled: true));
+      final module = WaterModule(repo);
+
+      await module.onQuickAction();
+
+      expect(repo.capturedAmountMl, 250);
+      expect(repo.capturedSource, WaterEntrySource.quick);
+    },
+  );
+
+  test(
     'dayStatus classifies days as complete/partial/none against the goal',
     () async {
       final goal = WaterGoal(

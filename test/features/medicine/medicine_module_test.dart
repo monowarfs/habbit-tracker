@@ -178,6 +178,65 @@ void main() {
   });
 
   test(
+    'onQuickAction marks the earliest due dose done and ignores others',
+    () async {
+      final now = DateTime.utc(2026, 6, 1, 9);
+      final dueDose = MedicineDose(
+        id: 'd-due',
+        medicineId: 'm1',
+        scheduleId: 's1',
+        scheduledFor: DateTime.utc(2026, 6, 1, 8, 45),
+        storedStatus: MedicineDoseStatus.upcoming,
+        graceWindowMinutes: 30,
+      );
+      final upcomingDose = MedicineDose(
+        id: 'd-upcoming',
+        medicineId: 'm1',
+        scheduleId: 's1',
+        scheduledFor: DateTime.utc(2026, 6, 1, 20),
+        storedStatus: MedicineDoseStatus.upcoming,
+        graceWindowMinutes: 30,
+      );
+      when(
+        () => repo.dosesInRange(any(), any()),
+      ).thenAnswer((_) async => [upcomingDose, dueDose]);
+      when(
+        () => repo.markDoseDone(
+          any(),
+          fromOtherSource: any(named: 'fromOtherSource'),
+        ),
+      ).thenAnswer((_) async => const Result.success(null));
+
+      await withClock(Clock.fixed(now), () async {
+        await module.onQuickAction();
+      });
+
+      verify(
+        () => repo.markDoseDone('d-due', fromOtherSource: false),
+      ).called(1);
+      verifyNever(
+        () => repo.markDoseDone(
+          'd-upcoming',
+          fromOtherSource: any(named: 'fromOtherSource'),
+        ),
+      );
+    },
+  );
+
+  test('onQuickAction no-ops when nothing is due', () async {
+    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
+
+    await module.onQuickAction();
+
+    verifyNever(
+      () => repo.markDoseDone(
+        any(),
+        fromOtherSource: any(named: 'fromOtherSource'),
+      ),
+    );
+  });
+
+  test(
     'dayStatus classifies a day complete when every dose that day is done',
     () async {
       final dose = MedicineDose(

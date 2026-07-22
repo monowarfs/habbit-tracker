@@ -209,6 +209,27 @@ class MedicineModule implements HabitModule {
   }
 
   @override
+  Future<void> onQuickAction() async {
+    final now = clock.now();
+    final today = localDayKey(now);
+    final doses = await _repository.dosesInRange(today, today);
+    final sorted = [...doses]
+      ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    for (final dose in sorted) {
+      final status = effectiveDoseStatus(
+        storedStatus: dose.storedStatus,
+        scheduledFor: dose.scheduledFor,
+        now: now,
+        graceWindowMinutes: dose.graceWindowMinutes,
+      );
+      if (status == MedicineDoseStatus.due) {
+        await _repository.markDoseDone(dose.id, fromOtherSource: false);
+        return;
+      }
+    }
+  }
+
+  @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
     final doses = await _repository.dosesInRange(range.start, range.end);
     final now = clock.now();
