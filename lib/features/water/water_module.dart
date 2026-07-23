@@ -23,6 +23,7 @@ import 'package:habit_tracker/features/water/presentation/screens/water_settings
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Water module's [HabitModule] registration
 /// (`technical/architecture.md`).
@@ -418,6 +419,35 @@ class WaterModule implements HabitModule {
 
   @override
   Future<void> wipeData() => _repository.wipeAll();
+
+  @override
+  Future<WidgetSummaryData?> widgetSummary() async {
+    final settings = await _repository.watchSettings().first;
+    final goals = await _repository.allGoals();
+    if (goals.isEmpty) return null;
+    final today = localDayKey(clock.now());
+    final goal = ResolveGoalForDateUseCase().execute(goals, today);
+    final entries = await _repository
+        .watchEntriesInRange(today, today)
+        .first;
+    final totalMl = entries.fold(0, (sum, e) => sum + e.amountMl);
+    final amountMl =
+        settings.quickAddAmountsMl.isEmpty
+            ? 250
+            : settings.quickAddAmountsMl.first;
+    final remaining = goal.goalMl - totalMl;
+    return WidgetSummaryData(
+      moduleId: id,
+      headline: '$totalMl / ${goal.goalMl} ml',
+      progressFraction: goal.goalMl > 0
+          ? (totalMl / goal.goalMl).clamp(0.0, 1.0)
+          : null,
+      primaryActionLabel: remaining > 0 ? '+$amountMl ml' : null,
+      primaryActionSourceId: remaining > 0 ? 'water_quick_add' : null,
+      deepLinkRoute: '/water',
+      pendingCount: remaining > 0 ? 1 : 0,
+    );
+  }
 
   Map<String, Object?> _settingsToJson(WaterSettings settings) => {
     'quickAddAmountsMl': settings.quickAddAmountsMl,

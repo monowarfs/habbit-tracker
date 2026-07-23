@@ -25,6 +25,7 @@ import 'package:habit_tracker/features/medicine/presentation/screens/medicine_fo
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_list_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_stats_screen.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Medicine module's [HabitModule] registration
 /// (`technical/architecture.md`). Mirrors `WaterModule`'s shape exactly.
@@ -487,6 +488,53 @@ class MedicineModule implements HabitModule {
 
   @override
   Future<void> wipeData() => _repository.wipeAll();
+
+  @override
+  Future<WidgetSummaryData?> widgetSummary() async {
+    final now = clock.now();
+    await _repository.materializeDoses(now);
+    final today = localDayKey(now);
+    final doses = await _repository.dosesInRange(today, today);
+    doses.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    var pendingCount = 0;
+    MedicineDose? firstDue;
+    for (final dose in doses) {
+      final status = effectiveDoseStatus(
+        storedStatus: dose.storedStatus,
+        scheduledFor: dose.scheduledFor,
+        now: now,
+        graceWindowMinutes: dose.graceWindowMinutes,
+      );
+      if (status == MedicineDoseStatus.due ||
+          status == MedicineDoseStatus.upcoming) {
+        pendingCount++;
+        firstDue ??= dose;
+      }
+    }
+    if (firstDue == null) return null;
+    final medicine = await _repository.medicineById(firstDue.medicineId);
+    final timeStr =
+        '${firstDue.scheduledFor.hour.toString().padLeft(2, '0')}:'
+        '${firstDue.scheduledFor.minute.toString().padLeft(2, '0')}';
+    final status = effectiveDoseStatus(
+      storedStatus: firstDue.storedStatus,
+      scheduledFor: firstDue.scheduledFor,
+      now: now,
+      graceWindowMinutes: firstDue.graceWindowMinutes,
+    );
+    return WidgetSummaryData(
+      moduleId: id,
+      headline: '${medicine?.name ?? "Medicine"} · $timeStr',
+      deepLinkRoute: '/medicine',
+      primaryActionLabel: status == MedicineDoseStatus.due
+          ? 'Mark done'
+          : null,
+      primaryActionSourceId: status == MedicineDoseStatus.due
+          ? firstDue.id
+          : null,
+      pendingCount: pendingCount,
+    );
+  }
 
   Map<String, Object?> _medicineToJson(Medicine medicine) => {
     'id': medicine.id,

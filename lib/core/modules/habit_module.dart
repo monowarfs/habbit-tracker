@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// Display metadata for a module, used by the dashboard tile and nav bar.
 @immutable
@@ -257,6 +258,12 @@ abstract class HabitModule {
 
   /// Imports previously-exported data for this module (v1.1).
   Future<void> importData(ModuleExport data);
+
+  /// This module's home-screen-widget summary, or `null` if it has
+  /// nothing worth surfacing (e.g. Water before any goal is set, or all
+  /// Medicine doses already done). Ref-free — called from the same
+  /// background isolate as [onNotificationAction].
+  Future<WidgetSummaryData?> widgetSummary();
 
   /// Deletes every row this module owns. The wipe half of import's
   /// replace semantics (`core/backup/wipe_all_data.dart`) — never called

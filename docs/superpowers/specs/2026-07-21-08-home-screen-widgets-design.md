@@ -223,28 +223,64 @@ an OS-level constraint, not something this design controls.
 - Wear OS complications / Apple Watch — home-screen phone widgets only.
 - Per-medicine widget instances (one combined "next dose" summary only).
 
-## Open Questions
+## Open Questions — Resolved
 
-1. **Which modules ship a widget in v1** — all three (Water, Medicine,
-   Prayer display-only) or just Water, given Water's action semantics are
-   the simplest (single stable quick-add amount, no per-instance id)?
-2. **`home_widget` version** — does the currently-latest release actually
-   support Android background interactivity callbacks the way this spec
-   assumes? Needs a version-pin spike before implementation starts, not
-   assumed from the package's README alone.
-3. **iOS v1 scope** — ship the display-only/deep-link widget at all in
-   this run, or defer all of iOS until App Intents headless support is
-   in scope, given the separate-target/App-Group/Swift work is
-   substantial on its own?
-4. **App Group identifier** — needs to be decided and reserved in the
-   Apple Developer portal ahead of implementation (e.g.
-   `group.dev.shurjomoy.habitTracker`), separate from the app's own bundle
-   id `dev.shurjomoy.habitTracker`.
-5. **Multiple widget sizes** — small-only, or also a medium size showing
-   more than one module's summary in one tile?
-6. **Medicine's `primaryActionSourceId` staleness** — a widget's cached
-   data can be minutes old; if the due dose it names gets marked done
-   from inside the app before the widget refreshes, what should the stale
-   tap do (no-op via existing dose-status guards, or a "already handled"
-   toast)? Worth confirming `markDoseDone`'s existing idempotency covers
-   this before assuming it's free.
+1. **Which modules ship a widget in v1** — **All three.** Water gets an
+   interactive widget (quick-add button, single stable
+   `quickAddAmountsMl.first` amount). Medicine gets an interactive widget
+   (mark-done button for the next due dose, using `dose.id` as the action
+   source). Prayer gets a display-only widget (next prayer name + time, no
+   action button) — Prayer's checklist-toggle semantics don't map onto a
+   single stable action id. Rationale: the background handler pattern
+   (`buildHabitModules(db)` + `onNotificationAction`) is identical for all
+   three modules; deferring Medicine/Prayer to a follow-up run adds no
+   complexity savings, only delays value. Each module ships one small
+   widget.
+
+2. **`home_widget` version** — **`home_widget: ^0.9.3`** (latest stable
+   as of 2026-07-21). Confirmed via pub.dev: `registerInteractivityCallback`
+   exists, takes a `FutureOr<void> Function(Uri?)` callback, uses
+   `PluginUtilities.getCallbackHandle` to serialize the callback to a raw
+   handle for background invocation — the same pattern
+   `flutter_local_notifications` uses for its background handler. Android
+   background interactivity is confirmed supported. No version-pin spike
+   needed beyond the standard `flutter pub get` resolution.
+
+3. **iOS v1 scope** — **Defer iOS entirely.** An iOS WidgetKit widget
+   requires: a separate Xcode extension target with its own
+   `Info.plist`/provisioning profile, an App Group entitlement shared
+   with Runner, hand-written Swift/SwiftUI `TimelineProvider` + `View`
+   (no Flutter engine inside the extension), and `HomeWidget.setAppGroupId()`
+   on the Dart side. This is a substantial, self-contained native
+   engineering project on its own — comparable in size to the entire
+   Android widget work. Shipping Android-only in this run keeps scope
+   manageable; iOS ships as a separate follow-up spec (see #14 Wearable
+   Complications for precedent of staged platform delivery).
+
+4. **App Group identifier** — **N/A for this run** (iOS deferred). When
+   iOS ships: `group.dev.shurjomoy.habitTracker`, matching the existing
+   bundle id `dev.shurjomoy.habitTracker` with a `group.` prefix per
+   Apple's convention. Must be reserved in the Apple Developer portal
+   before iOS implementation starts.
+
+5. **Multiple widget sizes** — **Small-only for v1.** One small
+   (2×2 or 1×1 depending on platform) widget per module. Medium size
+   would require a combined multi-module layout inside a single
+   `RemoteViews`/SwiftUI `View`, adding design and implementation
+   complexity with no clear user need identified. Revisit if user
+   feedback requests it.
+
+6. **Medicine's `primaryActionSourceId` staleness** — **Guard in the
+   widget tap handler.** `markDoseDone` is NOT fully idempotent: it
+   unconditionally sets `status: 'done'` (idempotent) but also computes
+   and applies a stock adjustment via `calculateDoseTakenAdjustment`
+   based on current `medicine.stockCount` — calling it twice would
+   double-count the stock reduction. The fix is straightforward: the
+   widget's background tap handler should check the dose's
+   `effectiveDoseStatus` before calling `markDoseDone`; if the dose is
+   already `done` or `skipped`, the handler silently no-ops and
+   refreshes the widget data to reflect the current state. This is a
+   3-line guard in the widget callback, not a repository-level change —
+   `onQuickAction` (line 220-231 of `medicine_module.dart`) already
+   applies the same pattern (checks `status == MedicineDoseStatus.due`
+   before acting).
