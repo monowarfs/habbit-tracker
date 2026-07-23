@@ -496,6 +496,8 @@ class MedicineModule implements HabitModule {
     final today = localDayKey(now);
     final doses = await _repository.dosesInRange(today, today);
     doses.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    var pendingCount = 0;
+    MedicineDose? firstDue;
     for (final dose in doses) {
       final status = effectiveDoseStatus(
         storedStatus: dose.storedStatus,
@@ -505,25 +507,33 @@ class MedicineModule implements HabitModule {
       );
       if (status == MedicineDoseStatus.due ||
           status == MedicineDoseStatus.upcoming) {
-        final medicine = await _repository.medicineById(dose.medicineId);
-        final timeStr =
-            '${dose.scheduledFor.hour.toString().padLeft(2, '0')}:'
-            '${dose.scheduledFor.minute.toString().padLeft(2, '0')}';
-        return WidgetSummaryData(
-          moduleId: id,
-          headline:
-              '${medicine?.name ?? "Medicine"} · $timeStr',
-          deepLinkRoute: '/medicine',
-          primaryActionLabel: status == MedicineDoseStatus.due
-              ? 'Mark done'
-              : null,
-          primaryActionSourceId: status == MedicineDoseStatus.due
-              ? dose.id
-              : null,
-        );
+        pendingCount++;
+        firstDue ??= dose;
       }
     }
-    return null;
+    if (firstDue == null) return null;
+    final medicine = await _repository.medicineById(firstDue.medicineId);
+    final timeStr =
+        '${firstDue.scheduledFor.hour.toString().padLeft(2, '0')}:'
+        '${firstDue.scheduledFor.minute.toString().padLeft(2, '0')}';
+    final status = effectiveDoseStatus(
+      storedStatus: firstDue.storedStatus,
+      scheduledFor: firstDue.scheduledFor,
+      now: now,
+      graceWindowMinutes: firstDue.graceWindowMinutes,
+    );
+    return WidgetSummaryData(
+      moduleId: id,
+      headline: '${medicine?.name ?? "Medicine"} · $timeStr',
+      deepLinkRoute: '/medicine',
+      primaryActionLabel: status == MedicineDoseStatus.due
+          ? 'Mark done'
+          : null,
+      primaryActionSourceId: status == MedicineDoseStatus.due
+          ? firstDue.id
+          : null,
+      pendingCount: pendingCount,
+    );
   }
 
   Map<String, Object?> _medicineToJson(Medicine medicine) => {

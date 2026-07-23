@@ -23,6 +23,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
 import 'package:habit_tracker/core/widgets/widget_background_handler.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
+import 'package:habit_tracker/core/wearable/wearable_sync_helper.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
@@ -181,6 +182,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     if (state == AppLifecycleState.resumed) {
       unawaited(planAndApplyNotifications(db: ref.read(databaseProvider)));
       unawaited(refreshAllWidgets(ref.read(databaseProvider)));
+      unawaited(syncWearableData(ref.read(databaseProvider)));
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so

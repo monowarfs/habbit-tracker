@@ -481,6 +481,8 @@ class PrayerModule implements HabitModule {
     final today = localDayKey(now);
     final records = await _repository.recordsInRange(today, today);
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    var pendingCount = 0;
+    PrayerRecord? firstPending;
     for (final record in records) {
       final cutoff = cutoffForPrayer(
         record: record,
@@ -495,18 +497,21 @@ class PrayerModule implements HabitModule {
         now: now,
       );
       if (status == PrayerStatus.due || status == PrayerStatus.upcoming) {
-        final label = _titleCase(record.prayerName.name);
-        final timeStr =
-            '${record.scheduledFor.hour.toString().padLeft(2, '0')}:'
-            '${record.scheduledFor.minute.toString().padLeft(2, '0')}';
-        return WidgetSummaryData(
-          moduleId: id,
-          headline: '$label · $timeStr',
-          deepLinkRoute: '/prayer',
-        );
+        pendingCount++;
+        firstPending ??= record;
       }
     }
-    return null;
+    if (firstPending == null) return null;
+    final label = _titleCase(firstPending.prayerName.name);
+    final timeStr =
+        '${firstPending.scheduledFor.hour.toString().padLeft(2, '0')}:'
+        '${firstPending.scheduledFor.minute.toString().padLeft(2, '0')}';
+    return WidgetSummaryData(
+      moduleId: id,
+      headline: '$label · $timeStr',
+      deepLinkRoute: '/prayer',
+      pendingCount: pendingCount,
+    );
   }
 
   Map<String, Object?> _settingsToJson(PrayerSettings settings) => {

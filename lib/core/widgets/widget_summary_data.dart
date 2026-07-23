@@ -15,6 +15,7 @@ class WidgetSummaryData {
     this.primaryActionLabel,
     this.primaryActionSourceId,
     required this.deepLinkRoute,
+    this.pendingCount,
   });
 
   /// Stable module id (e.g. `'water'`, `'medicine'`, `'prayer'`).
@@ -40,6 +41,12 @@ class WidgetSummaryData {
   /// opposed to the action button). Always present.
   final String deepLinkRoute;
 
+  /// Number of pending/actionable items for this module (e.g. 3 doses
+  /// due, 2 remaining prayers). Used by the Wear OS complication to
+  /// show a cross-module total on the wrist. `null` when count isn't
+  /// meaningful (e.g. Water before any goal is set).
+  final int? pendingCount;
+
   /// Serializes to a JSON map suitable for `HomeWidget.saveWidgetData`.
   Map<String, Object?> toJson() => {
     'moduleId': moduleId,
@@ -48,6 +55,7 @@ class WidgetSummaryData {
     'primaryActionLabel': primaryActionLabel,
     'primaryActionSourceId': primaryActionSourceId,
     'deepLinkRoute': deepLinkRoute,
+    'pendingCount': pendingCount,
   };
 
   /// Deserializes from a JSON map produced by [toJson].
@@ -59,6 +67,7 @@ class WidgetSummaryData {
         primaryActionLabel: json['primaryActionLabel'] as String?,
         primaryActionSourceId: json['primaryActionSourceId'] as String?,
         deepLinkRoute: json['deepLinkRoute'] as String,
+        pendingCount: (json['pendingCount'] as num?)?.toInt(),
       );
 
   /// JSON string for passing through `HomeWidget.saveWidgetData` which

@@ -445,6 +445,7 @@ class WaterModule implements HabitModule {
       primaryActionLabel: remaining > 0 ? '+$amountMl ml' : null,
       primaryActionSourceId: remaining > 0 ? 'water_quick_add' : null,
       deepLinkRoute: '/water',
+      pendingCount: remaining > 0 ? 1 : 0,
     );
   }
 

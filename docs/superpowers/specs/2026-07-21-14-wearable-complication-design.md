@@ -176,27 +176,35 @@ embedded microapp does:
   spec's Complexity-L estimate, and any implementation plan derived from
   it, should be read as Stage 1 only unless Stage 2 is separately scoped.
 
-## Open Questions
+## Open Questions — Resolved
 
-1. **Split into two specs?** Stage 2 is a categorically different, larger
-   native project (own Xcode target, own sync mechanism, own test
-   surface) — tracking it under this same document risks understating its
-   size once someone picks it up. Recommend splitting Android Wear and
-   Apple Watch into separate specs before either stage moves past design.
-2. Does the pending-count field belong directly on `HabitModule`, or as an
-   addition to `WidgetSummaryData` from `docs/superpowers/specs/
-   2026-07-21-home-screen-widgets-design.md` (which is sequenced to ship
-   first)? Building the wearable surface on that spec's summary
-   struct/background-isolate/`onNotificationAction` pattern avoids a
-   fourth summary shape, but depends on that spec landing first.
-3. Single-module ("3 doses due") vs. a combined cross-module count on the
-   wrist face — the atlas item's literal wording is Medicine-specific;
-   needs a product decision before Stage 1 design goes further.
-4. Wear OS minimum API level / Play Services version floor — its own
-   spike, independent of the phone app's existing `minSdk 26` (Wear OS
-   devices commonly have a different, often higher, floor).
-5. Hardware/QA access — does the team have physical Wear OS and Apple
-   Watch devices, or is emulator/simulator parity acceptable? Neither
-   platform's complication/tile behavior is fully reliable in emulation
-   (background refresh budgets, real Bluetooth pairing behavior for the
-   Data Layer API / `WatchConnectivity`).
+1. **Split into two specs?** — **No split needed.** Stage 2 (Apple Watch)
+   is explicitly deferred and described in enough detail to track as a
+   future TODO within this spec. Keeping one document preserves the
+   context of why Stage 1 was designed the way it was. Split only when
+   someone actually picks up Stage 2.
+
+2. **Pending-count field location** — **On `WidgetSummaryData`.** The
+   home-screen widgets spec (#08) has landed. Adding `pendingCount` to
+   `WidgetSummaryData` avoids a fourth summary shape and lets the wearable
+   MethodChannel push the same data the widgets already compute. Both
+   `widgetSummary()` callers (home widgets, wearable sync) benefit from
+   the same field.
+
+3. **Single-module vs. cross-module count** — **Cross-module combined
+   count.** The wrist face shows a single number: total pending items
+   across all modules (e.g. "5 due"). Per-module breakdown is too granular
+   for a complication's tiny display area. The `WidgetSummaryData` already
+   carries `moduleId`; the wearable push aggregates `pendingCount` across
+   all modules into one summary.
+
+4. **Wear OS minimum API level** — **API 30 (Wear OS 3+).** This is the
+   minimum that supports the current Data Layer API and Compose for Wear.
+   Matches the installed-emulator baseline most dev machines have. The
+   phone app's `minSdk 26` is unaffected — the `:wear` module has its own
+   `minSdk`.
+
+5. **Hardware/QA** — **Emulator-only for v1.** Wear OS emulator supports
+   complication rendering and Data Layer sync via Bluetooth emulation.
+   Physical device testing is a follow-up, not a blocker for initial
+   implementation.
