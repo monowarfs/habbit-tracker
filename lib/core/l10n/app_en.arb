@@ -913,6 +913,7 @@
   "changelog1_1_0_bullet2": "View full changelog from About screen",
   "@changelog1_1_0_bullet2": {
     "description": "Changelog bullet for v1.1.0."
+<<<<<<< HEAD
   },
   "settingsQuietHours": "Quiet hours",
   "@settingsQuietHours": {
@@ -937,5 +938,6 @@
   "quietHoursDescription": "Suppress non-critical notifications during sleep hours. Medicine dose and prayer reminders are never suppressed.",
   "@quietHoursDescription": {
     "description": "Description text explaining what quiet hours does."
+  }
   }
 }

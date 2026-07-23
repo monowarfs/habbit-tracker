@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
+import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/usecases/aggregate_water_series.dart';
@@ -52,8 +53,8 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
         ),
         body: TabBarView(
           children: [
-            _buildStatsTab(context, l10n),
-            _buildHistoryTab(context, l10n),
+            MaxContentWidth(child: _buildStatsTab(context, l10n)),
+            MaxContentWidth(child: _buildHistoryTab(context, l10n)),
           ],
         ),
       ),
