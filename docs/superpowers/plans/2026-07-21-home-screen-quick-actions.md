@@ -5,7 +5,7 @@
 **Goal:** Ship Android app shortcuts / iOS Home Screen Quick Actions — a
 fixed, static set of 3 (Water/Medicine/Prayer), each performing one headless
 action and then opening that module, per
-`docs/superpowers/specs/2026-07-21-06-home-screen-quick-actions-design.md`.
+`docs/superpowers/specs/01-must-have/2026-07-21-06-home-screen-quick-actions-design.md`.
 
 **Architecture:** New `HabitModule.onQuickAction()` method (sibling to the
 existing `onNotificationAction`), implemented headlessly by all three

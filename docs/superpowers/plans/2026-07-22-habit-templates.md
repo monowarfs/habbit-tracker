@@ -584,7 +584,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 
 /// A named schedule preset offered on `MedicineFormScreen`'s step 0
-/// (`docs/superpowers/specs/2026-07-21-05-habit-templates-design.md`).
+/// (`docs/superpowers/specs/01-must-have/2026-07-21-05-habit-templates-design.md`).
 class MedicineSchedulePreset {
   /// Creates a medicine schedule preset.
   const MedicineSchedulePreset({
