@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/changelog/changelog_data.dart';
+import 'package:habit_tracker/core/changelog/presentation/whats_new_sheet.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -27,6 +29,11 @@ class AboutScreen extends StatelessWidget {
             title: Text(l10n.aboutLicenses),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => showLicensePage(context: context),
+          ),
+          ListTile(
+            title: Text(l10n.aboutWhatsNew),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => showWhatsNewSheet(context, kChangelogEntries),
           ),
           const Divider(),
           Padding(

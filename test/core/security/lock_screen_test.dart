@@ -153,6 +153,10 @@ class _StubSettingsRepo implements SettingsRepository {
       Future.value(const Result.success(null));
 
   @override
+  Future<Result<void>> updateLastSeenAppVersion(String version) =>
+      Future.value(const Result.success(null));
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
       Future.value(const Result.success(null));
 }

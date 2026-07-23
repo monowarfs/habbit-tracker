@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/changelog/changelog_data.dart';
+import 'package:habit_tracker/core/changelog/presentation/whats_new_sheet.dart';
+import 'package:habit_tracker/core/changelog/version_compare.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
@@ -22,6 +25,7 @@ import 'package:habit_tracker/features/settings/domain/entities/app_settings.dar
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quick_actions/quick_actions.dart';
 
 Future<void> main() async {
@@ -104,6 +108,8 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => ref.read(appRouterProvider).go(route),
       );
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWhatsNew());
     }
     // Registers the 3 static home-screen/app-shortcut items
     // (`core/shortcuts/`) once now and again on every locale change, so
@@ -119,6 +125,36 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
           const QuickActions().setShortcutItems(buildShortcutItems(l10n)),
         );
       }, fireImmediately: true);
+    }
+  }
+
+  Future<void> _maybeShowWhatsNew() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version.split('+').first;
+      final settings = await ref.read(appSettingsProvider.future);
+      final lastSeen = settings.lastSeenAppVersion;
+
+      if (lastSeen == null) {
+        await ref
+            .read(settingsRepositoryProvider)
+            .updateLastSeenAppVersion(currentVersion);
+        return;
+      }
+
+      if (compareVersions(currentVersion, lastSeen) > 0) {
+        final newEntries = kChangelogEntries
+            .where((e) => compareVersions(e.version, lastSeen) > 0)
+            .toList();
+        if (newEntries.isNotEmpty && mounted) {
+          await showWhatsNewSheet(context, newEntries);
+        }
+        await ref
+            .read(settingsRepositoryProvider)
+            .updateLastSeenAppVersion(currentVersion);
+      }
+    } on Object catch (e) {
+      logger.e('whats_new_check_failed', error: e);
     }
   }
 

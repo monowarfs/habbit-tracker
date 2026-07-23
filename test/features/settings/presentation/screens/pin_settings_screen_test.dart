@@ -192,6 +192,12 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   }
 
   @override
+  Future<Result<void>> updateLastSeenAppVersion(String version) async {
+    await _update((s) => s.copyWith(lastSeenAppVersion: version));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     await _update((_) => settings);
     return const Result.success(null);

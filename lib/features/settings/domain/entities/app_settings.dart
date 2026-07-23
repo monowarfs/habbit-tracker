@@ -50,5 +50,6 @@ sealed class AppSettings with _$AppSettings {
     required bool biometricEnabled,
     required bool screenPrivacyEnabled,
     DateTime? onboardingCompletedAt,
+    String? lastSeenAppVersion,
   }) = _AppSettings;
 }

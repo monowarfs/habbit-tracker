@@ -44,6 +44,11 @@ class AppSettingsTable extends Table {
   /// UTC epoch millis; null = onboarding not yet completed.
   IntColumn get onboardingCompletedAt => integer().nullable()();
 
+  /// The app version the user last saw the changelog for; null means
+  /// the feature hasn't recorded a version yet (fresh install or
+  /// upgrade from a pre-changelog build).
+  TextColumn get lastSeenAppVersion => text().nullable()();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 
