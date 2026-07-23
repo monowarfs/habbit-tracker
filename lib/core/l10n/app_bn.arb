@@ -135,7 +135,7 @@
   "prayerStatusUpcoming": "আসন্ন",
   "prayerStatusDue": "চলমান",
   "prayerStatusPrayed": "আদায় হয়েছে",
-  "prayerStatusMissed": "কাজা হয়েছে",
+  "prayerStatusMissedDue": "কাজা হয়েছে",
   "prayerHistoryTitle": "ইতিহাস",
   "prayerQadhaTitle": "কাজা",
   "prayerQadhaCountLabel": "{count}টি বাকি",
