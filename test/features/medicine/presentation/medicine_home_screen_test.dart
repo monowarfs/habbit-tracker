@@ -96,4 +96,35 @@ void main() {
     expect(find.text('Missed'), findsOneWidget);
     await disposeTree(tester);
   });
+
+  testWidgets(
+    'missed dose uses the neutral outline color, not the error/red role '
+    '(no guilt-tripping color signal)',
+    (tester) async {
+      final repo = MedicineRepositoryImpl(db);
+      final medicine = await repo.createMedicine(
+        name: 'Ibuprofen',
+        stockEnabled: false,
+      );
+      await repo.createSchedule(
+        medicineId: (medicine as Success<Medicine>).value.id,
+        rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+        startDate: const LocalDate(2026, 6, 1),
+      );
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
+        await repo.materializeDoses(clock.now());
+      });
+
+      // Now well past the grace window -> missed.
+      final now = DateTime.utc(2026, 6, 1, 10);
+      await _pumpMedicineHome(tester, db, now: now);
+
+      final missedLabel = tester.widget<Text>(find.text('Missed'));
+      final theme = Theme.of(tester.element(find.text('Missed')));
+      expect(missedLabel.style?.color, theme.colorScheme.outline);
+      expect(missedLabel.style?.color, isNot(theme.colorScheme.error));
+
+      await disposeTree(tester);
+    },
+  );
 }

@@ -56,7 +56,13 @@ class DoseTile extends StatelessWidget {
       ),
       MedicineDoseStatus.missed => (
         l10n.medicineDoseStatusMissed,
-        theme.colorScheme.error,
+        // ponytail: `missed` gets the same neutral treatment as
+        // `skipped` two lines below — the guilt signal this app's copy
+        // pass found was carried by color (error/red = "you did
+        // something wrong"), not by the word "Missed" itself
+        // (docs/superpowers/specs/02-delightful/
+        // 03-gentle-no-guilt-missed-dose-copy-pass-design.md).
+        theme.colorScheme.outline,
       ),
       MedicineDoseStatus.skipped => (
         l10n.medicineDoseStatusSkipped,
