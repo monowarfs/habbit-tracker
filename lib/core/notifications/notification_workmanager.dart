@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/notifications/notification_planner.dart';
+import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
 import 'package:workmanager/workmanager.dart';
 
 /// Unique WorkManager task name for the periodic notification top-up.
@@ -18,6 +19,7 @@ void notificationWorkmanagerCallbackDispatcher() {
     final db = AppDatabase();
     try {
       await planAndApplyNotifications(db: db);
+      await refreshAllWidgets(db);
     } finally {
       await db.close();
     }

@@ -26,6 +26,7 @@ import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_s
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_qadha_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_settings_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_stats_screen.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Prayer module's [HabitModule] registration
 /// (`technical/architecture.md`). Mirrors `MedicineModule`'s shape almost
@@ -467,6 +468,46 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<void> wipeData() => _repository.wipeAll();
+
+  @override
+  Future<WidgetSummaryData?> widgetSummary() async {
+    final settings = await _repository.watchSettings().first;
+    final locationResult = await resolveLocation(settings);
+    if (locationResult case Failure()) return null;
+    final location = (locationResult as Success<ResolvedLocation>).value;
+    final now = clock.now();
+    await _repository.sweepMissedPrayers(now, location);
+    await _repository.materializeRecords(now, location);
+    final today = localDayKey(now);
+    final records = await _repository.recordsInRange(today, today);
+    records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    for (final record in records) {
+      final cutoff = cutoffForPrayer(
+        record: record,
+        sameDayRecordsSorted: records,
+        ishaDayRolloverTime: settings.ishaDayRolloverTime,
+        ianaTimezone: location.ianaTimezone,
+      );
+      final status = effectivePrayerStatus(
+        storedStatus: record.storedStatus,
+        scheduledFor: record.scheduledFor,
+        cutoff: cutoff,
+        now: now,
+      );
+      if (status == PrayerStatus.due || status == PrayerStatus.upcoming) {
+        final label = _titleCase(record.prayerName.name);
+        final timeStr =
+            '${record.scheduledFor.hour.toString().padLeft(2, '0')}:'
+            '${record.scheduledFor.minute.toString().padLeft(2, '0')}';
+        return WidgetSummaryData(
+          moduleId: id,
+          headline: '$label · $timeStr',
+          deepLinkRoute: '/prayer',
+        );
+      }
+    }
+    return null;
+  }
 
   Map<String, Object?> _settingsToJson(PrayerSettings settings) => {
     'calculationMethod': settings.calculationMethod.toDb(),

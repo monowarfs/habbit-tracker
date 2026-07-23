@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_water_description">View your water intake and quick-add from the home screen.</string>
+    <string name="widget_medicine_description">View your next dose and mark it done from the home screen.</string>
+    <string name="widget_prayer_description">View the next prayer time on your home screen.</string>
+</resources>

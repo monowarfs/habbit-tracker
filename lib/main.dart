@@ -21,10 +21,13 @@ import 'package:habit_tracker/core/shortcuts/shortcut_items.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
+import 'package:habit_tracker/core/widgets/widget_background_handler.dart';
+import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quick_actions/quick_actions.dart';
 
@@ -64,6 +67,13 @@ Future<void> main() async {
       await handleQuickAction(type: type, db: db);
       container.read(appRouterProvider).go('/$type');
     });
+    // Register the home-screen widget tap callback — runs in a
+    // background isolate when the user taps an interactive widget view.
+    await HomeWidget.registerInteractivityCallback(
+      widgetTapBackgroundHandler,
+    );
+    // Seed initial widget data so the tiles aren't empty on first add.
+    await refreshAllWidgets(db);
   }
 
   runZonedGuarded(
@@ -170,6 +180,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     // foreground resume, not just cold start.
     if (state == AppLifecycleState.resumed) {
       unawaited(planAndApplyNotifications(db: ref.read(databaseProvider)));
+      unawaited(refreshAllWidgets(ref.read(databaseProvider)));
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
