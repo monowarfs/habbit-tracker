@@ -913,5 +913,29 @@
   "changelog1_1_0_bullet2": "View full changelog from About screen",
   "@changelog1_1_0_bullet2": {
     "description": "Changelog bullet for v1.1.0."
+  },
+  "settingsQuietHours": "Quiet hours",
+  "@settingsQuietHours": {
+    "description": "Settings entry linking to the quiet hours configuration."
+  },
+  "quietHoursTitle": "Quiet hours",
+  "@quietHoursTitle": {
+    "description": "AppBar title for the quiet hours settings screen."
+  },
+  "quietHoursEnableToggle": "Enable quiet hours",
+  "@quietHoursEnableToggle": {
+    "description": "Switch label enabling/disabling quiet hours notification suppression."
+  },
+  "quietHoursStartLabel": "Start time",
+  "@quietHoursStartLabel": {
+    "description": "Label for the quiet hours start time picker."
+  },
+  "quietHoursEndLabel": "End time",
+  "@quietHoursEndLabel": {
+    "description": "Label for the quiet hours end time picker."
+  },
+  "quietHoursDescription": "Suppress non-critical notifications during sleep hours. Medicine dose and prayer reminders are never suppressed.",
+  "@quietHoursDescription": {
+    "description": "Description text explaining what quiet hours does."
   }
 }

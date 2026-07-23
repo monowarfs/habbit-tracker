@@ -43,6 +43,7 @@ class PendingNotification {
     required this.body,
     required this.sourceType,
     required this.deepLinkRoute,
+    required this.quietHoursSuppressible,
   });
 
   /// Stable id for this notification instance — doubles as the
@@ -63,6 +64,11 @@ class PendingNotification {
 
   /// Route to open when this notification is tapped (FR-C-09).
   final String deepLinkRoute;
+
+  /// Whether this notification may be suppressed during quiet hours.
+  /// `false` for anything time-sensitive enough that suppressing it
+  /// would defeat its purpose.
+  final bool quietHoursSuppressible;
 }
 
 /// Done/Snooze/Skip, as reported to the owning module via

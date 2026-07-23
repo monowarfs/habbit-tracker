@@ -58,6 +58,12 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/notifications'),
           ),
+          ListTile(
+            leading: const Icon(Icons.nightlight_outlined),
+            title: Text(l10n.settingsQuietHours),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/quiet-hours'),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsSecurity),
           ListTile(

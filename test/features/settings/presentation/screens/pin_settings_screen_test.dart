@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
@@ -24,6 +25,9 @@ void main() {
           pinLockTimeoutSeconds: 0,
           biometricEnabled: true,
           screenPrivacyEnabled: false,
+          quietHoursEnabled: false,
+          quietHoursStart: LocalTime(22, 0),
+          quietHoursEnd: LocalTime(7, 0),
         ),
       );
 
@@ -81,6 +85,9 @@ void main() {
           pinLockTimeoutSeconds: 0,
           biometricEnabled: false,
           screenPrivacyEnabled: false,
+          quietHoursEnabled: false,
+          quietHoursStart: LocalTime(22, 0),
+          quietHoursEnd: LocalTime(7, 0),
         ),
       );
 
@@ -194,6 +201,22 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateLastSeenAppVersion(String version) async {
     await _update((s) => s.copyWith(lastSeenAppVersion: version));
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> updateQuietHours({
+    required bool enabled,
+    required LocalTime start,
+    required LocalTime end,
+  }) async {
+    await _update(
+      (s) => s.copyWith(
+        quietHoursEnabled: enabled,
+        quietHoursStart: start,
+        quietHoursEnd: end,
+      ),
+    );
     return const Result.success(null);
   }
 

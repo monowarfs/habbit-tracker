@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:meta/meta.dart';
@@ -178,6 +179,14 @@ Future<Result<void>> applyImport({
                 appSettingsJson['biometricEnabled'] as bool? ?? true,
             screenPrivacyEnabled:
                 appSettingsJson['screenPrivacyEnabled'] as bool? ?? false,
+            quietHoursEnabled:
+                appSettingsJson['quietHoursEnabled'] as bool? ?? false,
+            quietHoursStart: LocalTime.parse(
+              appSettingsJson['quietHoursStart'] as String? ?? '22:00',
+            ),
+            quietHoursEnd: LocalTime.parse(
+              appSettingsJson['quietHoursEnd'] as String? ?? '07:00',
+            ),
           ),
         );
       }

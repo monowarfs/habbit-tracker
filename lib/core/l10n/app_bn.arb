@@ -316,5 +316,11 @@
   "whatsNewTitle": "নতুন কী আছে",
   "aboutWhatsNew": "নতুন কী আছে দেখুন",
   "changelog1_1_0_bullet1": "অ্যাপ আপডেটে নতুন কী আছে চেঞ্জলগ",
-  "changelog1_1_0_bullet2": "সম্পর্কে স্ক্রিন থেকে সম্পূর্ণ চেঞ্জলগ দেখুন"
+  "changelog1_1_0_bullet2": "সম্পর্কে স্ক্রিন থেকে সম্পূর্ণ চেঞ্জলগ দেখুন",
+  "settingsQuietHours": "নীরব সময়",
+  "quietHoursTitle": "নীরব সময়",
+  "quietHoursEnableToggle": "নীরব সময় চালু করুন",
+  "quietHoursStartLabel": "শুরুর সময়",
+  "quietHoursEndLabel": "শেষের সময়",
+  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।"
 }

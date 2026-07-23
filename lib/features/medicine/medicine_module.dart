@@ -161,6 +161,7 @@ class MedicineModule implements HabitModule {
           body: medicine.dosageNote ?? 'Time for your dose',
           sourceType: 'medicine_dose',
           deepLinkRoute: '/medicine/dose/${dose.id}',
+          quietHoursSuppressible: false,
         ),
       );
     }
@@ -183,6 +184,7 @@ class MedicineModule implements HabitModule {
           body: 'Refill soon to keep your schedule on track.',
           sourceType: 'low_stock',
           deepLinkRoute: '/medicine/${medicine.id}',
+          quietHoursSuppressible: true,
         ),
       );
     }

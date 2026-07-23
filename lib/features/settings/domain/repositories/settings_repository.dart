@@ -1,4 +1,5 @@
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 
 /// Reads and mutates the app's singleton settings row.
@@ -33,6 +34,13 @@ abstract class SettingsRepository {
 
   /// Records the app version the user last saw the changelog for.
   Future<Result<void>> updateLastSeenAppVersion(String version);
+
+  /// Updates the quiet-hours window and enabled state atomically.
+  Future<Result<void>> updateQuietHours({
+    required bool enabled,
+    required LocalTime start,
+    required LocalTime end,
+  });
 
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).

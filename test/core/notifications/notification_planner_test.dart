@@ -11,6 +11,7 @@ PendingNotification _pending(String id, DateTime scheduledAt) =>
       body: 'body',
       sourceType: 'water_reminder',
       deepLinkRoute: '/water',
+      quietHoursSuppressible: true,
     );
 
 NotificationLedgerRow _ledgerRow(String id, DateTime scheduledFor) =>
