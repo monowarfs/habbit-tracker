@@ -129,16 +129,20 @@ class WaterModule implements HabitModule {
     final notifications = <PendingNotification>[];
     for (var dayOffset = 0; dayOffset <= _lookaheadDays; dayOffset++) {
       final day = localDayKey(now).addDays(dayOffset);
+      final weekday = day.toDateTimeUtc().weekday;
+      final override = settings.reminderWindowOverrides[weekday];
+      final windowStartTime = override?.start ?? settings.reminderWindowStart;
+      final windowEndTime = override?.end ?? settings.reminderWindowEnd;
       var slot = day.toDateTimeUtc().toLocal().add(
         Duration(
-          hours: settings.reminderWindowStart.hour,
-          minutes: settings.reminderWindowStart.minute,
+          hours: windowStartTime.hour,
+          minutes: windowStartTime.minute,
         ),
       );
       final windowEnd = day.toDateTimeUtc().toLocal().add(
         Duration(
-          hours: settings.reminderWindowEnd.hour,
-          minutes: settings.reminderWindowEnd.minute,
+          hours: windowEndTime.hour,
+          minutes: windowEndTime.minute,
         ),
       );
       while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
@@ -384,6 +388,9 @@ class WaterModule implements HabitModule {
       await _repository.updateQuickAddAmounts(
         (settingsJson['quickAddAmountsMl'] as List<dynamic>).cast<int>(),
       );
+      final overridesJson = settingsJson['reminderWindowOverrides']
+              as Map<String, dynamic>? ??
+          const {};
       await _repository.updateReminderSettings(
         enabled: settingsJson['reminderEnabled'] as bool,
         intervalMinutes: settingsJson['reminderIntervalMinutes'] as int,
@@ -393,6 +400,17 @@ class WaterModule implements HabitModule {
         windowEnd: LocalTime.parse(
           settingsJson['reminderWindowEnd'] as String,
         ),
+        windowOverrides: {
+          for (final entry in overridesJson.entries)
+            int.parse(entry.key): (
+              start: LocalTime.parse(
+                (entry.value as Map)['start'] as String,
+              ),
+              end: LocalTime.parse(
+                (entry.value as Map)['end'] as String,
+              ),
+            ),
+        },
       );
     }
   }
@@ -406,6 +424,13 @@ class WaterModule implements HabitModule {
     'reminderIntervalMinutes': settings.reminderIntervalMinutes,
     'reminderWindowStart': settings.reminderWindowStart.format(),
     'reminderWindowEnd': settings.reminderWindowEnd.format(),
+    'reminderWindowOverrides': {
+      for (final entry in settings.reminderWindowOverrides.entries)
+        '${entry.key}': {
+          'start': entry.value.start.format(),
+          'end': entry.value.end.format(),
+        },
+    },
   };
 
   Map<String, Object?> _goalToJson(WaterGoal goal) => {

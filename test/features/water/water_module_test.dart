@@ -82,6 +82,7 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
     required int intervalMinutes,
     required LocalTime windowStart,
     required LocalTime windowEnd,
+    required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
   }) async {
     capturedReminderEnabled = enabled;
     return const Result.success(null);

@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +89,13 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           appSettingsTable,
           appSettingsTable.lastSeenAppVersion,
+        );
+      }
+      if (from < 7) {
+        // Per-weekday water reminder window overrides.
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.reminderWindowOverrides,
         );
       }
       // Seam: when schemaVersion increments further, add

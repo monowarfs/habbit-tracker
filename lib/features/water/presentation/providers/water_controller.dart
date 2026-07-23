@@ -109,6 +109,7 @@ class WaterController extends _$WaterController {
     required int intervalMinutes,
     required LocalTime windowStart,
     required LocalTime windowEnd,
+    required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
   }) async {
     final result = await ref
         .read(waterRepositoryProvider)
@@ -117,6 +118,7 @@ class WaterController extends _$WaterController {
           intervalMinutes: intervalMinutes,
           windowStart: windowStart,
           windowEnd: windowEnd,
+          windowOverrides: windowOverrides,
         );
     if (result case Failure(:final error)) logException(error);
   }
