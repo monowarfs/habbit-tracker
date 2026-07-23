@@ -35,6 +35,12 @@ class WaterSettingsTable extends Table {
   TextColumn get reminderWindowEnd =>
       text().withDefault(const Constant('22:00'))();
 
+  /// JSON object mapping weekday (1=Mon..7=Sun, string keys) to
+  /// `{"start": "HH:mm", "end": "HH:mm"}`. Absent days fall back to
+  /// [reminderWindowStart]/[reminderWindowEnd].
+  TextColumn get reminderWindowOverrides =>
+      text().withDefault(const Constant('{}'))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

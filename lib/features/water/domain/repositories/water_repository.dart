@@ -73,6 +73,7 @@ abstract class WaterRepository {
     required int intervalMinutes,
     required LocalTime windowStart,
     required LocalTime windowEnd,
+    required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
   });
 
   /// Deletes every row this module owns — the wipe half of import's

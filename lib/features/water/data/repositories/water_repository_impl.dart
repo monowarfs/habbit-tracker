@@ -292,6 +292,7 @@ class WaterRepositoryImpl implements WaterRepository {
     required int intervalMinutes,
     required LocalTime windowStart,
     required LocalTime windowEnd,
+    required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
   }) async {
     try {
       await _ensureSettingsSeeded();
@@ -304,6 +305,13 @@ class WaterRepositoryImpl implements WaterRepository {
           reminderIntervalMinutes: Value(intervalMinutes),
           reminderWindowStart: Value(windowStart.format()),
           reminderWindowEnd: Value(windowEnd.format()),
+          reminderWindowOverrides: Value(jsonEncode({
+            for (final entry in windowOverrides.entries)
+              '${entry.key}': {
+                'start': entry.value.start.format(),
+                'end': entry.value.end.format(),
+              },
+          })),
           updatedAt: Value(now),
         ),
       );
@@ -346,6 +354,15 @@ class WaterRepositoryImpl implements WaterRepository {
     reminderIntervalMinutes: row.reminderIntervalMinutes,
     reminderWindowStart: LocalTime.parse(row.reminderWindowStart),
     reminderWindowEnd: LocalTime.parse(row.reminderWindowEnd),
+    reminderWindowOverrides: {
+      for (final entry
+          in (jsonDecode(row.reminderWindowOverrides) as Map<String, dynamic>)
+              .entries)
+        int.parse(entry.key): (
+          start: LocalTime.parse((entry.value as Map)['start'] as String),
+          end: LocalTime.parse((entry.value as Map)['end'] as String),
+        ),
+    },
   );
 }
 

@@ -105,6 +105,7 @@ class WaterSettingsScreen extends ConsumerWidget {
                   intervalMinutes: settings.reminderIntervalMinutes,
                   windowStart: settings.reminderWindowStart,
                   windowEnd: settings.reminderWindowEnd,
+                  windowOverrides: settings.reminderWindowOverrides,
                 ),
               );
             },
@@ -118,6 +119,7 @@ class WaterSettingsScreen extends ConsumerWidget {
                 intervalMinutes: value,
                 windowStart: settings.reminderWindowStart,
                 windowEnd: settings.reminderWindowEnd,
+                windowOverrides: settings.reminderWindowOverrides,
               ),
             ),
             const SizedBox(height: 8),
@@ -132,6 +134,7 @@ class WaterSettingsScreen extends ConsumerWidget {
                       intervalMinutes: settings.reminderIntervalMinutes,
                       windowStart: value,
                       windowEnd: settings.reminderWindowEnd,
+                      windowOverrides: settings.reminderWindowOverrides,
                     ),
                   ),
                 ),
@@ -144,10 +147,24 @@ class WaterSettingsScreen extends ConsumerWidget {
                       intervalMinutes: settings.reminderIntervalMinutes,
                       windowStart: settings.reminderWindowStart,
                       windowEnd: value,
+                      windowOverrides: settings.reminderWindowOverrides,
                     ),
                   ),
                 ),
               ],
+            ),
+            _WeekdayOverridesSection(
+              overrides: settings.reminderWindowOverrides,
+              defaultStart: settings.reminderWindowStart,
+              defaultEnd: settings.reminderWindowEnd,
+              intervalMinutes: settings.reminderIntervalMinutes,
+              onChanged: (overrides) => controller.updateReminderSettings(
+                enabled: settings.reminderEnabled,
+                intervalMinutes: settings.reminderIntervalMinutes,
+                windowStart: settings.reminderWindowStart,
+                windowEnd: settings.reminderWindowEnd,
+                windowOverrides: overrides,
+              ),
             ),
           ],
         ],
@@ -222,6 +239,118 @@ class _TimeField extends StatelessWidget {
         if (picked != null) onChanged(LocalTime(picked.hour, picked.minute));
       },
       child: Text(time.format()),
+    );
+  }
+}
+
+class _WeekdayOverridesSection extends StatelessWidget {
+  const _WeekdayOverridesSection({
+    required this.overrides,
+    required this.defaultStart,
+    required this.defaultEnd,
+    required this.intervalMinutes,
+    required this.onChanged,
+  });
+
+  final Map<int, ({LocalTime start, LocalTime end})> overrides;
+  final LocalTime defaultStart;
+  final LocalTime defaultEnd;
+  final int intervalMinutes;
+  final ValueChanged<Map<int, ({LocalTime start, LocalTime end})>> onChanged;
+
+  static const _weekdayKeys = [1, 2, 3, 4, 5, 6, 7];
+
+  String _weekdayLabel(AppLocalizations l10n, int weekday) => switch (weekday) {
+    1 => l10n.weekdayMonday,
+    2 => l10n.weekdayTuesday,
+    3 => l10n.weekdayWednesday,
+    4 => l10n.weekdayThursday,
+    5 => l10n.weekdayFriday,
+    6 => l10n.weekdaySaturday,
+    7 => l10n.weekdaySunday,
+    _ => '',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      title: Text(l10n.waterSettingsReminderOverridesTitle),
+      children: [
+        for (final weekday in _weekdayKeys) ...[
+          _WeekdayOverrideRow(
+            label: _weekdayLabel(l10n, weekday),
+            override_: overrides[weekday],
+            defaultStart: defaultStart,
+            defaultEnd: defaultEnd,
+            onChanged: (entry) {
+              final updated = Map<int, ({LocalTime start, LocalTime end})>.of(
+                overrides,
+              );
+              if (entry != null) {
+                updated[weekday] = entry;
+              } else {
+                updated.remove(weekday);
+              }
+              onChanged(updated);
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeekdayOverrideRow extends StatelessWidget {
+  const _WeekdayOverrideRow({
+    required this.label,
+    required this.override_,
+    required this.defaultStart,
+    required this.defaultEnd,
+    required this.onChanged,
+  });
+
+  final String label;
+  final ({LocalTime start, LocalTime end})? override_;
+  final LocalTime defaultStart;
+  final LocalTime defaultEnd;
+  final ValueChanged<({LocalTime start, LocalTime end})?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(label),
+      value: override_ != null,
+      onChanged: (enabled) {
+        if (enabled) {
+          onChanged((start: defaultStart, end: defaultEnd));
+        } else {
+          onChanged(null);
+        }
+      },
+      subtitle: override_ != null
+          ? Row(
+              children: [
+                Expanded(
+                  child: _TimeField(
+                    time: override_!.start,
+                    onChanged: (value) =>
+                        onChanged((start: value, end: override_!.end)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _TimeField(
+                    time: override_!.end,
+                    onChanged: (value) =>
+                        onChanged((start: override_!.start, end: value)),
+                  ),
+                ),
+              ],
+            )
+          : null,
     );
   }
 }

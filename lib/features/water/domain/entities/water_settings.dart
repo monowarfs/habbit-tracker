@@ -15,5 +15,7 @@ sealed class WaterSettings with _$WaterSettings {
     required int reminderIntervalMinutes,
     required LocalTime reminderWindowStart,
     required LocalTime reminderWindowEnd,
+    @Default({})
+    Map<int, ({LocalTime start, LocalTime end})> reminderWindowOverrides,
   }) = _WaterSettings;
 }

@@ -227,6 +227,24 @@
   "@waterSettingsReminderWindowLabel": {
     "description": "Label for the reminder time-of-day window row."
   },
+  "waterSettingsReminderOverridesTitle": "Different times on some days",
+  "@waterSettingsReminderOverridesTitle": {
+    "description": "Expansion tile title for per-weekday reminder window overrides."
+  },
+  "weekdayMonday": "Monday",
+  "@weekdayMonday": {"description": "Weekday name."},
+  "weekdayTuesday": "Tuesday",
+  "@weekdayTuesday": {"description": "Weekday name."},
+  "weekdayWednesday": "Wednesday",
+  "@weekdayWednesday": {"description": "Weekday name."},
+  "weekdayThursday": "Thursday",
+  "@weekdayThursday": {"description": "Weekday name."},
+  "weekdayFriday": "Friday",
+  "@weekdayFriday": {"description": "Weekday name."},
+  "weekdaySaturday": "Saturday",
+  "@weekdaySaturday": {"description": "Weekday name."},
+  "weekdaySunday": "Sunday",
+  "@weekdaySunday": {"description": "Weekday name."},
   "waterPresetLight": "Light · 1.5L",
   "@waterPresetLight": {
     "description": "Water goal preset chip: 1500ml/day."
