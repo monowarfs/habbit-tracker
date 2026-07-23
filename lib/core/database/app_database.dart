@@ -104,7 +104,6 @@ class AppDatabase extends _$AppDatabase {
           waterSettingsTable.reminderWindowOverrides,
         );
       }
-      }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
       // change for a schema migration.
