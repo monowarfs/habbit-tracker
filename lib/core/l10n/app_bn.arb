@@ -105,6 +105,8 @@
   "medicineDetailStockRemaining": "{count}টি বাকি",
   "medicineDetailLowStockWarning": "মজুদ কম — শীঘ্রই পুনরায় পূরণ করুন",
   "medicineDetailRefillButton": "পুনরায় পূরণ",
+  "medicineDetailStatsSummary": "গত ৩০ দিন: {pct}% নেওয়া হয়েছে ({missed}টি নেওয়া হয়নি, {skipped}টি এড়িয়ে যাওয়া হয়েছে)",
+  "medicineDetailNoHistory": "এখনো কোনো ডোজের ইতিহাস নেই",
   "medicineStatsTitle": "ওষুধের পরিসংখ্যান",
   "medicineStatsTabStats": "পরিসংখ্যান",
   "medicineStatsTabHistory": "ইতিহাস",

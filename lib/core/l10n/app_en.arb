@@ -424,6 +424,19 @@
   "@medicineDetailRefillButton": {
     "description": "Opens the add-stock dialog."
   },
+  "medicineDetailStatsSummary": "Last 30 days: {pct}% taken ({missed} not taken, {skipped} skipped)",
+  "@medicineDetailStatsSummary": {
+    "description": "30-day adherence summary on the medicine detail screen. 'not taken' (not 'missed') keeps this consistent with dose_tile.dart's neutral wording (row 1 of the copy-pass audit).",
+    "placeholders": {
+      "pct": {"type": "int"},
+      "missed": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "medicineDetailNoHistory": "No dose history yet",
+  "@medicineDetailNoHistory": {
+    "description": "Shown instead of the stats summary when there is no dose history in the last 30 days."
+  },
   "medicineStatsTitle": "Medicine stats",
   "@medicineStatsTitle": {
     "description": "Title of the medicine stats screen."

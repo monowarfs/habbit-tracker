@@ -30,4 +30,26 @@ void main() {
       expect(bn.prayerQadhaCountLabel(3), '3টি বাকি');
     },
   );
+
+  test(
+    'medicineDetailStatsSummary/medicineDetailNoHistory are localized and '
+    'say "not taken" instead of "missed" — matching row 1\'s finding that '
+    '"missed"-adjacent-but-red-badged wording should read neutrally '
+    '(row 8, the one hardcoded-string gap the ARB grep itself missed)',
+    () async {
+      final en = await AppLocalizations.delegate.load(const Locale('en'));
+      expect(
+        en.medicineDetailStatsSummary(80, 1, 1),
+        'Last 30 days: 80% taken (1 not taken, 1 skipped)',
+      );
+      expect(en.medicineDetailNoHistory, 'No dose history yet');
+
+      final bn = await AppLocalizations.delegate.load(const Locale('bn'));
+      // Just needs to exist and be non-empty — exact Bangla wording is
+      // this task's own translation, not pinned to a specific string in
+      // this English-authored test.
+      expect(bn.medicineDetailStatsSummary(80, 1, 1), isNotEmpty);
+      expect(bn.medicineDetailNoHistory, isNotEmpty);
+    },
+  );
 }
