@@ -55,5 +55,6 @@ sealed class AppSettings with _$AppSettings {
     required bool quietHoursEnabled,
     required LocalTime quietHoursStart,
     required LocalTime quietHoursEnd,
+    String? displayName,
   }) = _AppSettings;
 }
