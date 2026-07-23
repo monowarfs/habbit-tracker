@@ -312,6 +312,7 @@
   "dataImportConfirm": "পুনরুদ্ধার করুন",
   "dataImportSuccess": "ইমপোর্ট সম্পন্ন হয়েছে",
   "dataImportFailed": "ইমপোর্ট ব্যর্থ হয়েছে: {reason}",
+  "dataExportFailed": "এক্সপোর্ট ব্যর্থ হয়েছে: {reason}",
   "whatsNewTitle": "নতুন কী আছে",
   "aboutWhatsNew": "নতুন কী আছে দেখুন",
   "changelog1_1_0_bullet1": "অ্যাপ আপডেটে নতুন কী আছে চেঞ্জলগ",

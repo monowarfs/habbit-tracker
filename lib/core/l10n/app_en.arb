@@ -893,6 +893,11 @@
     "description": "Error message shown when import validation or apply fails.",
     "placeholders": {"reason": {"type": "String"}}
   },
+  "dataExportFailed": "Export failed: {reason}",
+  "@dataExportFailed": {
+    "description": "Error message shown when export fails.",
+    "placeholders": {"reason": {"type": "String"}}
+  },
   "whatsNewTitle": "What's New",
   "@whatsNewTitle": {
     "description": "Title of the changelog bottom sheet."
