@@ -739,6 +739,14 @@
   "@reportsPeriodYear": {"description": "Reports period selector: year."},
   "reportsEmptyState": "No data for this period",
   "@reportsEmptyState": {"description": "Shown when no module has data for the selected report period."},
+  "reportsShareMonthButton": "Share my month",
+  "@reportsShareMonthButton": {
+    "description": "AppBar action tooltip: share the current month as a recap card. Only enabled while viewing the month period with data."
+  },
+  "reportsShareMonthFailed": "Couldn't create your recap card",
+  "@reportsShareMonthFailed": {
+    "description": "Snackbar shown if rendering/sharing the recap card throws."
+  },
   "reportsLongestStreak": "Longest streak: {days} days",
   "@reportsLongestStreak": {
     "description": "A module's longest-streak record on the reports screen.",
