@@ -25,7 +25,8 @@ class HabitWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_habit)
             val moduleId = getModuleId(context, appWidgetId)
-            val summaryJson = HomeWidgetPlugin.getData(context, "widget_summary_$moduleId")
+            val summaryJson = HomeWidgetPlugin.getData(context)
+                .getString("widget_summary_$moduleId", null)
 
             if (summaryJson != null) {
                 val headline = extractField(summaryJson, "headline") ?: moduleId
