@@ -2,84 +2,180 @@
 
 **Category:** Delightful · **Atlas complexity:** S · **Retention impact:** Low-Medium
 **Date:** 2026-07-23
-**Status:** Draft — high-level planning (not implementation-ready; re-scope against actual codebase state when scheduled)
+**Status:** Draft — pending review
 
-## Problem / opportunity
+## Problem
 
-Finch and Streaks both invest visibly in first-run and empty-state
-moments — the screen a brand-new user sees before they've logged
-anything is disproportionately influential on first impressions, and
-right now this app's three modules (Water/Medicine/Prayer) most likely
-share one generic empty-state treatment despite each already having its
-own distinct accent color via the `AppSemanticColors`/`ModuleAccents`
-theme extension. A first-run water screen, medicine screen, and prayer
-screen that each look and feel a little different — while staying
-visually consistent as a family — reinforces that these are three
-purpose-built experiences rather than one generic list view reskinned
-three times, at very low implementation cost since the accent-color
-infrastructure already exists.
+Each module's primary screen already renders a first-run empty state, but
+it's a single `Center(child: Text(...))` per module — no icon, no color,
+no illustration, just a plain string:
 
-## Goals
+- **Water** — `WaterHomeScreen` (`lib/features/water/presentation/screens/
+  water_home_screen.dart:132-135`): when `_visibleEntries(progress.entries)
+  .isEmpty`, renders `Padding(child: Text(l10n.waterHomeEmptyLogs))` inline
+  in the log list (not even a full-screen state — this is "no entries
+  logged today yet," always reachable since goal/quick-add UI renders
+  above it regardless).
+- **Medicine** — two separate empty states, both plain text: `medicine_
+  home_screen.dart:56` (`Center(child: Text(l10n.medicineHomeEmpty))`,
+  "No doses scheduled for today") and `medicine_list_screen.dart:81-88`
+  (`medicineListEmpty`/`medicineListArchivedEmpty`, "No medicines yet" —
+  the actual first-run-before-any-data state, since a brand-new install
+  has zero `Medicine` rows and therefore zero doses to schedule).
+- **Prayer** — `prayer_home_screen.dart:55-56`:
+  `Center(child: Text(l10n.prayerHomeEmpty))`, "No prayers scheduled for
+  today."
 
-- Give each of Water, Medicine, and Prayer's empty states (first-run,
-  before any data exists) a distinct illustration or visual treatment in
-  that module's own accent color.
-- Keep the underlying empty-state widget structure/logic shared — only
-  the illustration/art and accent application should differ per module.
-- Make the effort proportionate — simple vector illustrations or icon
-  compositions, not commissioned custom art requiring an external asset
-  pipeline.
+None of these three use an icon, illustration, or module accent color —
+just `Theme.of(context)`'s default text color on the default background.
+Each module already has a distinct accent (`ModuleAccents.water`
+`0xFF1565C0`, `.medicine` `0xFF5E35B1`, `.prayer` `0xFFB8860B` — `lib/core/
+theme/app_theme.dart:11-22`), but nothing on these screens references it
+today — `ModuleAccents` is currently only consumed by dashboard tiles/nav
+icons per its own doc comment. `flutter_svg` is **not** a dependency
+(checked `pubspec.yaml` — only `fl_chart`, no SVG/vector-asset package of
+any kind), and there is no `assets/illustrations/` directory — `pubspec
+.yaml`'s only registered asset is `assets/data/prayer_cities.json` plus
+the launcher-icon/splash images consumed by `flutter_launcher_icons`/
+`flutter_native_splash` config, not by app code.
 
-## Non-goals / out of scope
+The genuine first-run empty state per module (the one worth illustrating)
+is: Water — no entries logged today (`waterHomeEmptyLogs`); Medicine — no
+medicines added at all (`medicineListEmpty`, not `medicineHomeEmpty`,
+which fires equally for "you have medicines but none are due today" — a
+returning-user state, not first-run); Prayer — `prayerHomeEmpty` (a
+brand-new install has no `prayer_records` for today until the module's
+own materialization runs, which happens on first Prayer-tab open).
 
-- No animated illustrations in v1 (that's a larger, separate investment)
-  — static per-module art is enough to start.
-- No empty-state redesign for Settings, Dashboard, or Reports — scoped to
-  the three habit modules' own primary screens.
-- No custom illustration for every possible empty state within a module
-  (e.g., Medicine's "no doses today" vs. "no medicines added at all") —
-  start with the single most common first-run empty state per module.
+## Design
 
-## Proposed approach (high-level)
+**Recommendation: `CustomPainter`-drawn vector illustrations, not bundled
+SVG/PNG assets.** Zero new dependency (no `flutter_svg`), zero new asset
+pipeline (no `assets/illustrations/*.svg` to source/license/maintain),
+zero app-size cost, and trivial to theme — a `CustomPainter` takes
+`ModuleAccents.water`/`.medicine`/`.prayer` directly as a `Color`
+constructor argument, painted with plain `Canvas` primitives (circles,
+rounded rects, arcs — a water-drop, a pill-and-calendar glyph, a
+crescent-and-mat glyph are all well within 15-30 lines of `Canvas` calls
+each). A licensed illustration set would need per-module recoloring
+anyway (SVG tinting in Flutter means either pre-baked per-accent-color
+assets, multiplying the asset count by 3, or `ColorFilter.mode` tinting
+that only works for single-color art) — the `CustomPainter` route gets
+that "already in module accent color" property for free since it paints
+with the color directly, and needs no `flutter_svg` runtime SVG parser
+at all.
 
-This is a presentation-only change layered on whatever shared empty-state
-widget the three modules currently reuse: instead of one generic
-illustration/copy combination, the shared widget accepts a per-module
-illustration asset (or a simple parametrized vector composition) and
-already has access to that module's accent color via the existing theme
-extension, so applying module-specific coloring requires no new
-plumbing. The illustrations themselves are the actual new work — a
-distinct-but-consistent visual motif per module (e.g., a water-drop
-motif for Water, a pill/calendar motif for Medicine, a crescent/prayer-
-mat motif for Prayer), simple enough to be original vector art or icon
-compositions rather than commissioned illustration, keeping the whole
-family visually coherent as "the same app's three modules" rather than
-three unrelated styles.
+**New file: `lib/core/widgets/module_empty_state.dart`**
 
-## Dependencies & prerequisites
+```dart
+/// Shared empty-state widget for a module's primary screen — an icon-sized
+/// vector illustration in [accentColor] above a message line. Replaces the
+/// bare `Center(child: Text(...))` each module renders today.
+class ModuleEmptyState extends StatelessWidget {
+  const ModuleEmptyState({
+    super.key,
+    required this.painter,
+    required this.message,
+    required this.accentColor,
+  });
 
-- The existing shared empty-state widget/pattern used across modules.
-- The `ModuleAccents`/`AppSemanticColors` theme extension for per-module
-  coloring.
-- Either a simple in-house vector illustration approach or a licensed/
-  free illustration set consistent enough to reskin per module.
+  /// Module-specific illustration, e.g. [WaterDropPainter.new].
+  final CustomPainter Function(Color color) painter;
+  final String message;
+  final Color accentColor;
 
-## Open questions for the implementation round
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 96,
+          height: 96,
+          child: CustomPaint(painter: painter(accentColor)),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
+```
 
-- Custom-drawn simple vector art (no new dependency) vs. an illustration
-  library/asset pack (new dependency, faster but adds app size, which
-  matters for Nusrat's budget-device/limited-storage persona)?
-- Does dark mode need a distinct illustration variant, or does the same
-  art work with just a color/opacity adjustment?
-- Should Bangla and English versions differ at all (e.g., illustrated
-  text elements), or is the art purely visual/language-agnostic?
-- Is one empty-state illustration per module enough, or do secondary
-  empty states (e.g., empty history/stats view) also warrant distinct
-  treatment eventually?
+**Three new painters, one file each** (kept alongside the widget, not
+inside each module — they're generic vector art, not module-domain
+logic): `lib/core/widgets/illustrations/water_drop_painter.dart` (a
+single teardrop path + a smaller highlight circle), `.../pill_calendar_
+painter.dart` (a rounded-rect calendar outline + a capsule shape
+overlapping its corner), `.../crescent_mat_painter.dart` (a crescent arc
+via `Path.arcTo` + a small rounded-rect "mat" beneath it). Each
+constructor takes the single `Color` to paint with — no gradient, no
+per-theme variant beyond that one color, so light/dark mode is already
+handled: the same illustration on `accentColor` reads fine on both
+`ColorScheme.fromSeed` backgrounds since `ModuleAccents` colors are fixed
+(not scheme-derived), same as today's dashboard tiles.
 
-## Effort & sequencing notes
+**Call-site changes** (swap the `Text`-only branch for `ModuleEmptyState`,
+no change to the surrounding `if`/`else` structure):
 
-Complexity S — mechanically simple (reuses existing theme/widget
-infrastructure), with the real cost being illustration production rather
-than engineering. No dependency on other atlas items; cheap to schedule
-opportunistically whenever illustration assets are ready.
+- `water_home_screen.dart:132-135` → `ModuleEmptyState(painter:
+  WaterDropPainter.new, message: l10n.waterHomeEmptyLogs, accentColor:
+  ModuleAccents.water)`, still inside the existing log-list `Padding`
+  slot (this one stays inline, not full-screen, since goal/quick-add UI
+  renders above it either way).
+- `medicine_list_screen.dart:81-88` → same swap for `medicineListEmpty`/
+  `medicineListArchivedEmpty` with `PillCalendarPainter.new` and
+  `ModuleAccents.medicine`. `medicine_home_screen.dart:56`
+  (`medicineHomeEmpty`, the "nothing due today" case) is explicitly left
+  as plain `Text` — see Out of scope.
+- `prayer_home_screen.dart:55-56` → `CrescentMatPainter.new` +
+  `ModuleAccents.prayer` for `prayerHomeEmpty`.
+
+No new l10n keys — the existing `waterHomeEmptyLogs`/`medicineListEmpty`/
+`medicineListArchivedEmpty`/`prayerHomeEmpty` strings are reused verbatim
+in both `app_en.arb`/`app_bn.arb`.
+
+## Out of scope
+
+- **`medicineHomeEmpty`** ("no doses scheduled for today") — a returning-
+  user state (you have medicines, just none due today), not first-run;
+  illustrating it the same way would misrepresent "empty" as "nothing to
+  do here ever," which is wrong for that specific message. Stays plain
+  `Text`.
+- **Animated illustrations.** Static `CustomPainter` output only — an
+  `AnimationController`-driven variant is a materially larger scope
+  (frame-by-frame path interpolation or a `Tween` on painted geometry)
+  for a first-run screen a user sees once.
+- **Dashboard/Settings/Reports empty states** (`emptyDashboardMessage`,
+  `reportsEmptyState`) — out of scope; those aren't per-module and don't
+  have an accent color to apply.
+- **Secondary empty states** (Water/Medicine stats history-empty,
+  `waterStatsHistoryEmpty`) — only each module's single primary-screen
+  first-run state gets the illustration treatment.
+- **Bangla-specific art variants.** The illustrations are purely visual
+  (shapes, no embedded text/glyphs), so `app_en.arb`/`app_bn.arb` only
+  ever affect the message line below the art, never the painter.
+- **A bundled SVG/PNG asset pipeline.** Explicitly rejected above in favor
+  of `CustomPainter` — revisit only if a future illustration needs detail
+  genuinely beyond what `Canvas` primitives can express tastefully.
+
+## Global Constraints
+
+- No new dependency. `flutter_svg` is not added — confirmed absent from
+  `pubspec.yaml`'s `dependencies:` block today, and this design keeps it
+  that way.
+- No new assets, no `pubspec.yaml` `assets:` entry — every illustration is
+  drawn code, not a bundled file.
+- No l10n changes — all three call sites reuse existing arb keys.
+- No schema/migration/settings changes — purely `presentation/` layer.
+- New files: `lib/core/widgets/module_empty_state.dart`,
+  `lib/core/widgets/illustrations/water_drop_painter.dart`,
+  `lib/core/widgets/illustrations/pill_calendar_painter.dart`,
+  `lib/core/widgets/illustrations/crescent_mat_painter.dart`.
+- Modified files: `water_home_screen.dart`, `medicine_list_screen.dart`,
+  `prayer_home_screen.dart` (one `Text` → `ModuleEmptyState` swap each,
+  no structural change to surrounding widgets).
