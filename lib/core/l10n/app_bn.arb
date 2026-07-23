@@ -244,6 +244,8 @@
   "reportsPeriodYear": "বছর",
   "reportsEmptyState": "এই সময়ের জন্য কোনো তথ্য নেই",
   "reportsLongestStreak": "দীর্ঘতম স্ট্রিক: {days} দিন",
+  "recapCardMonthLabel": "{month} রিক্যাপ",
+  "recapCardLongestStreak": "{days} দিনের স্ট্রিক",
   "achievementsTitle": "অর্জন",
   "achievementUnlockedSnackbar": "অর্জন আনলক হয়েছে: {title}",
   "searchPrompt": "ওষুধ এবং আরও অনুসন্ধান করুন",

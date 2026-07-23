@@ -744,6 +744,16 @@
     "description": "A module's longest-streak record on the reports screen.",
     "placeholders": {"days": {"type": "int"}}
   },
+  "recapCardMonthLabel": "{month} recap",
+  "@recapCardMonthLabel": {
+    "description": "The shareable monthly recap card's own header text, e.g. \"July recap\".",
+    "placeholders": {"month": {"type": "String"}}
+  },
+  "recapCardLongestStreak": "{days}-day streak",
+  "@recapCardLongestStreak": {
+    "description": "A module's headline number on the recap card — a shortened form of reportsLongestStreak for the card's tighter layout.",
+    "placeholders": {"days": {"type": "int"}}
+  },
   "achievementsTitle": "Achievements",
   "@achievementsTitle": {"description": "Title of the badge gallery screen."},
   "achievementUnlockedSnackbar": "Achievement unlocked: {title}",
