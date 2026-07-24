@@ -755,6 +755,23 @@
   "@searchPrompt": {"description": "Placeholder shown before the user types a search query."},
   "searchNoResults": "No results found",
   "@searchNoResults": {"description": "Shown when a search query matches nothing."},
+  "habitStackSuggestionMedicineToWater": "You usually log water shortly after your morning dose — want your water reminder nudged to follow it?",
+  "@habitStackSuggestionMedicineToWater": {
+    "description": "Dashboard suggestion card copy: medicine -> water habit-stacking pattern detected."
+  },
+  "habitStackSuggestionPrayerToWater": "You usually log water shortly after {prayer} — want your water reminder nudged to follow it?",
+  "@habitStackSuggestionPrayerToWater": {
+    "description": "Dashboard suggestion card copy: prayer -> water habit-stacking pattern detected.",
+    "placeholders": {"prayer": {"type": "String"}}
+  },
+  "habitStackSuggestionAccept": "Nudge my reminder",
+  "@habitStackSuggestionAccept": {
+    "description": "Accepts a habit-stacking suggestion."
+  },
+  "habitStackSuggestionDismiss": "Not now",
+  "@habitStackSuggestionDismiss": {
+    "description": "Dismisses a habit-stacking suggestion (re-offered after a 30-day cooldown if the pattern still holds)."
+  },
   "medicineMarkDoneAction": "Mark done",
   "@medicineMarkDoneAction": {"description": "Dashboard quick-action label: mark the next due dose done."},
   "prayerMarkPrayedAction": "Mark prayed",

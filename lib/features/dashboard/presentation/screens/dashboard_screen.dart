@@ -12,6 +12,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
 /// otherwise every enabled module's summary card, a day-completion
@@ -67,6 +68,8 @@ class DashboardScreen extends ConsumerWidget {
                   _DayCompletionIndicator(modules: modules),
                   const SizedBox(height: 16),
                   _UpcomingStrip(modules: modules),
+                  const SizedBox(height: 16),
+                  const HabitStackSuggestionCard(),
                   const SizedBox(height: 16),
                   _QuickActionsRow(modules: modules),
                   const SizedBox(height: 16),
