@@ -102,6 +102,26 @@ class NotificationLedgerRepository {
     );
   }
 
+  /// Every terminal Done row `actioned` within the last [windowDays],
+  /// relative to [now] — the raw material
+  /// `CalculateAdaptiveOffsetUseCase` derives response-time offsets from.
+  Future<List<NotificationLedgerRow>> actionedDoneRows({
+    required int windowDays,
+    required DateTime now,
+  }) async {
+    final since = now.subtract(Duration(days: windowDays));
+    return (_db.select(_db.notificationLedgerTable)
+      ..where(
+        (t) =>
+            t.deletedAt.isNull() &
+            t.action.equals('done') &
+            t.actionAt.isNotNull() &
+            t.scheduledFor.isBiggerOrEqualValue(
+              since.toUtc().millisecondsSinceEpoch,
+            ),
+      )).get();
+  }
+
   /// Soft-deletes (cancels) [id] — used when a source falls out of the
   /// scheduling window (e.g. reminder settings changed).
   Future<void> cancel(String id) async {
