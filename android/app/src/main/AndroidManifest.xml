@@ -68,7 +68,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/water_widget_info" />
         </receiver>
-        <receiver android:exported="true" android:name=".HabitWidgetProvider"
+        <receiver android:exported="true" android:name=".PrayerWidgetProvider"
             android:label="@string/widget_prayer_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

@@ -75,7 +75,7 @@ class HabitWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun getModuleId(context: Context, appWidgetId: Int): String {
+    open fun getModuleId(context: Context, appWidgetId: Int): String {
         // Default to 'water' for single-widget setups; can be extended
         // with per-widget-instance metadata if multiple widget types ship.
         return "water"
