@@ -71,6 +71,8 @@ void main() {
     when(
       () => repo.medicinesNeedingLowStockAlert(),
     ).thenAnswer((_) async => []);
+    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
@@ -108,6 +110,10 @@ void main() {
     when(
       () => repo.medicinesNeedingLowStockAlert(),
     ).thenAnswer((_) async => []);
+    when(
+      () => repo.allMedicines(),
+    ).thenAnswer((_) async => [archivedMedicine]);
+    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
@@ -131,12 +137,134 @@ void main() {
     when(
       () => repo.medicinesNeedingLowStockAlert(),
     ).thenAnswer((_) async => [medicine]);
+    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
       expect(
         notifications.where((n) => n.sourceType == 'low_stock'),
         hasLength(1),
+      );
+    });
+  });
+
+  test(
+    'pendingNotifications includes a stock_warning notification when '
+    'projected days-remaining is within 14 days at medium+ confidence',
+    () async {
+      final now = DateTime.utc(2026, 6, 15);
+      const medicine = Medicine(
+        id: 'm1',
+        name: 'X',
+        stockEnabled: true,
+        stockCount: 10,
+      );
+      final stockEvents = List.generate(
+        10,
+        (i) => MedicineStockEvent(
+          id: 'e$i',
+          medicineId: 'm1',
+          delta: -1,
+          reason: MedicineStockEventReason.doseTaken,
+          occurredAt: now.subtract(Duration(days: 9 - i)),
+        ),
+      );
+
+      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+      when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
+      when(
+        () => repo.medicinesNeedingLowStockAlert(),
+      ).thenAnswer((_) async => []);
+      when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+      when(
+        () => repo.allStockEvents(),
+      ).thenAnswer((_) async => stockEvents);
+
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await module.pendingNotifications();
+        final warnings = notifications.where(
+          (n) => n.sourceType == 'stock_warning',
+        );
+        expect(warnings, hasLength(1));
+        expect(warnings.single.deepLinkRoute, '/medicine/m1');
+      });
+    },
+  );
+
+  test('pendingNotifications omits stock_warning when stock tracking is '
+      'disabled, even with heavy recent consumption', () async {
+    final now = DateTime.utc(2026, 6, 15);
+    const medicine = Medicine(
+      id: 'm1',
+      name: 'X',
+      stockEnabled: false,
+      stockCount: 10,
+    );
+    final stockEvents = List.generate(
+      10,
+      (i) => MedicineStockEvent(
+        id: 'e$i',
+        medicineId: 'm1',
+        delta: -1,
+        reason: MedicineStockEventReason.doseTaken,
+        occurredAt: now.subtract(Duration(days: 9 - i)),
+      ),
+    );
+
+    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
+    when(
+      () => repo.medicinesNeedingLowStockAlert(),
+    ).thenAnswer((_) async => []);
+    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(),
+    ).thenAnswer((_) async => stockEvents);
+
+    await withClock(Clock.fixed(now), () async {
+      final notifications = await module.pendingNotifications();
+      expect(
+        notifications.where((n) => n.sourceType == 'stock_warning'),
+        isEmpty,
+      );
+    });
+  });
+
+  test('pendingNotifications omits stock_warning at low confidence '
+      '(sparse consumption history)', () async {
+    final now = DateTime.utc(2026, 6, 15);
+    const medicine = Medicine(
+      id: 'm1',
+      name: 'X',
+      stockEnabled: true,
+      stockCount: 10,
+    );
+    final stockEvents = [
+      MedicineStockEvent(
+        id: 'e1',
+        medicineId: 'm1',
+        delta: -1,
+        reason: MedicineStockEventReason.doseTaken,
+        occurredAt: now.subtract(const Duration(hours: 1)),
+      ),
+    ];
+
+    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
+    when(
+      () => repo.medicinesNeedingLowStockAlert(),
+    ).thenAnswer((_) async => []);
+    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(),
+    ).thenAnswer((_) async => stockEvents);
+
+    await withClock(Clock.fixed(now), () async {
+      final notifications = await module.pendingNotifications();
+      expect(
+        notifications.where((n) => n.sourceType == 'stock_warning'),
+        isEmpty,
       );
     });
   });
