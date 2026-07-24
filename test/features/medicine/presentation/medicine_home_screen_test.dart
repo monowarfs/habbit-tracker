@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
@@ -10,6 +11,8 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
 
@@ -125,6 +128,98 @@ void main() {
       expect(missedLabel.style?.color, isNot(theme.colorScheme.error));
 
       await disposeTree(tester);
+    },
+  );
+
+  testWidgets(
+    'marking the last dose of a 7-day adherence streak done shows the '
+    'streak celebration before the achievement snackbar',
+    (tester) async {
+      final repo = MedicineRepositoryImpl(db);
+      final medicineResult = await repo.createMedicine(
+        name: 'Aspirin',
+        stockEnabled: false,
+      );
+      final medicine = (medicineResult as Success<Medicine>).value;
+      final scheduleResult = await repo.createSchedule(
+        medicineId: medicine.id,
+        rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+        startDate: const LocalDate(2026, 5, 20),
+      );
+      final schedule = (scheduleResult as Success<MedicineSchedule>).value;
+
+      // `medicine_first_dose` would otherwise unlock in the very same
+      // diff as `medicine_adherence_streak_7` — pre-seed it as
+      // already-unlocked.
+      final achievementRepo = AchievementRepository(db);
+      await achievementRepo.upsertProgress(
+        moduleId: 'medicine',
+        key: 'medicine_first_dose',
+        current: 1,
+        target: 1,
+        now: DateTime.utc(2026, 5, 21),
+      );
+
+      final today = DateTime.utc(2026, 6, 1, 8, 15);
+      // 6 prior fully-taken days.
+      for (var i = 1; i <= 6; i++) {
+        final day = today.subtract(Duration(days: i));
+        await repo.restoreDose(
+          MedicineDose(
+            id: '',
+            medicineId: medicine.id,
+            scheduleId: schedule.id,
+            scheduledFor: DateTime.utc(day.year, day.month, day.day, 8),
+            storedStatus: MedicineDoseStatus.done,
+            graceWindowMinutes: 30,
+            statusChangedAt: DateTime.utc(day.year, day.month, day.day, 8, 5),
+            stockDeltaApplied: 0,
+          ),
+        );
+      }
+
+      await withClock(Clock.fixed(today), () async {
+        await repo.materializeDoses(today);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [databaseProvider.overrideWithValue(db)],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: MedicineHomeScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Done'));
+        await tester.pump();
+        // Let the undo snackbar's enter animation finish, then time out.
+        await tester.pump(const Duration(milliseconds: 750));
+        await tester.pump(const Duration(seconds: 4));
+        await tester.pump();
+        await tester.pumpAndSettle(const Duration(seconds: 1));
+
+        // The celebration overlay appears first.
+        expect(find.text('On Schedule'), findsOneWidget);
+        expect(
+          find.text('Achievement unlocked: On Schedule'),
+          findsNothing,
+        );
+
+        // Let the overlay auto-dismiss, then the snackbar follows.
+        await tester.pump(const Duration(milliseconds: 2100));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Achievement unlocked: On Schedule'),
+          findsOneWidget,
+        );
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump(const Duration(milliseconds: 1));
+      });
     },
   );
 }

@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
+import 'package:habit_tracker/core/widgets/streak_celebration_overlay.dart';
 import 'package:habit_tracker/core/widgets/undo_snackbar.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
@@ -137,6 +139,31 @@ Future<void> _markDoneAndCelebrate(
   final module = ref
       .read(habitModulesProvider)
       .firstWhere((m) => m.id == 'medicine');
+
+  String? streakKey;
+  for (final row in newlyUnlocked) {
+    if (isStreakMilestoneKey(row.key)) {
+      streakKey = row.key;
+      break;
+    }
+  }
+  if (streakKey != null && context.mounted) {
+    final streakDefinition = module.achievementDefinitions.firstWhere(
+      (d) => d.key == streakKey,
+    );
+    final celebrationL10n = AppLocalizations.of(context)!;
+    await showStreakCelebration(
+      context,
+      title: localizedAchievementTitle(
+        celebrationL10n,
+        streakDefinition.titleKey,
+      ),
+      accentColor: module.metadata.accentColor,
+      icon: module.metadata.icon,
+    );
+  }
+  if (!context.mounted) return;
+
   final definition = module.achievementDefinitions.firstWhere(
     (d) => d.key == newlyUnlocked.first.key,
   );
