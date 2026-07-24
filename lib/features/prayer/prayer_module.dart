@@ -6,9 +6,12 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/countdown_format.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/hijri_date.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
@@ -21,21 +24,30 @@ import 'package:habit_tracker/features/prayer/domain/usecases/effective_prayer_s
 import 'package:habit_tracker/features/prayer/domain/usecases/jumuah_label.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
+import 'package:habit_tracker/features/prayer/presentation/ramadan_prayer_framing.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_history_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_qadha_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_settings_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_stats_screen.dart';
-import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
+import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The Prayer module's [HabitModule] registration
 /// (`technical/architecture.md`). Mirrors `MedicineModule`'s shape almost
 /// exactly.
 class PrayerModule implements HabitModule {
-  /// Creates the module backed by [_repository].
-  const PrayerModule(this._repository);
+  /// Creates the module backed by [_repository]. [settingsRepository] is
+  /// an optional, additive dependency used only to relabel Fajr/Maghrib
+  /// as Sehri/Iftar during Ramadan (`docs/superpowers/specs/
+  /// 02-delightful/01-ramadan-mode-design.md`) — omitted (as every
+  /// pre-existing call site/test still does), that relabeling never
+  /// happens and everything else is unchanged.
+  const PrayerModule(this._repository, {SettingsRepository? settingsRepository})
+    : _settingsRepository = settingsRepository;
 
   final PrayerRepository _repository;
+  final SettingsRepository? _settingsRepository;
 
   @override
   String get id => 'prayer';
@@ -142,24 +154,47 @@ class PrayerModule implements HabitModule {
       localDayKey(now),
       windowEnd,
     );
+    final appSettings = _settingsRepository == null
+        ? null
+        : await _settingsRepository.watchSettings().first;
     final notifications = <PendingNotification>[];
     for (final record in records) {
       if (record.storedStatus != PrayerStatus.upcoming) continue;
       if (!record.scheduledFor.isAfter(now)) continue;
-      final label =
-          isJumuahDisplay(
-            prayerName: record.prayerName,
-            date: record.prayerDate,
-            observesJumuah: settings.observesJumuah,
-          )
+      final isJumuah = isJumuahDisplay(
+        prayerName: record.prayerName,
+        date: record.prayerDate,
+        observesJumuah: settings.observesJumuah,
+      );
+      final ramadanActive = !isJumuah &&
+          appSettings != null &&
+          resolveRamadanModeActive(
+            manualOverride: appSettings.ramadanModeManualOverride,
+            autoDetectEnabled: appSettings.ramadanAutoDetectEnabled,
+            today: record.prayerDate,
+          );
+      final framing = ramadanActive
+          ? ramadanFramingFor(record.prayerName)
+          : null;
+      final label = isJumuah
           ? "Jumu'ah"
-          : _titleCase(record.prayerName.name);
+          : switch (framing) {
+              RamadanPrayerFraming.sehri => 'Sehri ends',
+              RamadanPrayerFraming.iftar => 'Iftar',
+              null => _titleCase(record.prayerName.name),
+            };
+      final body = switch (framing) {
+        RamadanPrayerFraming.sehri =>
+          'Sehri ends now — finish eating and drinking',
+        RamadanPrayerFraming.iftar => 'Time to break your fast',
+        null => "It's time for $label prayer",
+      };
       notifications.add(
         PendingNotification(
           id: record.id,
           scheduledAt: record.scheduledFor,
           title: label,
-          body: "It's time for $label prayer",
+          body: body,
           sourceType: 'prayer_record',
           deepLinkRoute: '/prayer/record/${record.id}',
           quietHoursSuppressible: false,
@@ -288,14 +323,37 @@ class PrayerModule implements HabitModule {
       }
     }
     if (next == null) return null;
-    final label = next.showAsJumuah
-        ? "Jumu'ah"
-        : _titleCase(next.record.prayerName.name);
+    final appSettings = ref.watch(appSettingsProvider).value;
+    final ramadanActive = !next.showAsJumuah &&
+        appSettings != null &&
+        resolveRamadanModeActive(
+          manualOverride: appSettings.ramadanModeManualOverride,
+          autoDetectEnabled: appSettings.ramadanAutoDetectEnabled,
+          today: next.record.prayerDate,
+        );
+    final framing = ramadanActive
+        ? ramadanFramingFor(next.record.prayerName)
+        : null;
+    final remaining = next.record.scheduledFor.difference(clock.now());
     return Builder(
-      builder: (context) => Chip(
-        avatar: const Icon(Icons.mosque, size: 16),
-        label: Text(label),
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        final label = switch (framing) {
+          null => next!.showAsJumuah
+              ? "Jumu'ah"
+              : _titleCase(next.record.prayerName.name),
+          RamadanPrayerFraming.sehri => remaining.isNegative
+              ? l10n.sehriEndsLabel
+              : l10n.sehriEndsCountdown(formatCountdown(remaining)),
+          RamadanPrayerFraming.iftar => remaining.isNegative
+              ? l10n.iftarLabel
+              : l10n.iftarCountdown(formatCountdown(remaining)),
+        };
+        return Chip(
+          avatar: const Icon(Icons.mosque, size: 16),
+          label: Text(label),
+        );
+      },
     );
   }
 

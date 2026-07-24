@@ -31,7 +31,7 @@ List<HabitModule> buildHabitModules(AppDatabase db) {
       settingsRepository: settingsRepository,
       prayerRepository: PrayerRepositoryImpl(db),
     ),
-    PrayerModule(PrayerRepositoryImpl(db)),
+    PrayerModule(PrayerRepositoryImpl(db), settingsRepository: settingsRepository),
   ];
 }
 

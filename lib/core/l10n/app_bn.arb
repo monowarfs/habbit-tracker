@@ -335,5 +335,9 @@
   "ramadanModeSettingsTitle": "রমজান মোড",
   "ramadanModeSettingsSubtitle": "রোজার সময় পানির রিমাইন্ডার সরিয়ে দিন এবং সেহরি/ইফতারের কাউন্টডাউন দেখুন",
   "ramadanModeAutoDetectToggle": "স্বয়ংক্রিয়ভাবে রমজান শনাক্ত করুন",
-  "ramadanModeManualToggle": "রমজান মোড"
+  "ramadanModeManualToggle": "রমজান মোড",
+  "sehriEndsCountdown": "সেহরি শেষ হবে {duration} পরে",
+  "iftarCountdown": "ইফতার {duration} পরে",
+  "sehriEndsLabel": "সেহরি শেষ",
+  "iftarLabel": "ইফতার"
 }
