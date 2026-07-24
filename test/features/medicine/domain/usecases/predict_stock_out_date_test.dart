@@ -35,7 +35,7 @@ void main() {
         for (var i = 0; i < 10; i++)
           event(
             delta: -9,
-            occurredAt: DateTime.utc(2026, 6, 1).add(Duration(days: i)),
+            occurredAt: DateTime.utc(2026, 6).add(Duration(days: i)),
           ),
       ];
       final result = useCase.execute(
@@ -57,7 +57,7 @@ void main() {
       for (var i = 0; i < 5; i++)
         event(
           delta: -2,
-          occurredAt: DateTime.utc(2026, 6, 1).add(Duration(days: i)),
+          occurredAt: DateTime.utc(2026, 6).add(Duration(days: i)),
         ),
     ];
     final result = useCase.execute(
@@ -125,7 +125,7 @@ void main() {
       for (var i = 0; i < 10; i++)
         event(
           delta: -9,
-          occurredAt: DateTime.utc(2026, 6, 1).add(Duration(days: i)),
+          occurredAt: DateTime.utc(2026, 6).add(Duration(days: i)),
         ),
       // A large undo that would badly skew the rate if it weren't
       // excluded — it reverses a dose-taken decrement, not a consumption.

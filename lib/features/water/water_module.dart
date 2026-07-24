@@ -18,7 +18,6 @@ import 'package:habit_tracker/features/settings/domain/entities/app_settings.dar
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
-import 'package:habit_tracker/features/water/presentation/weather_nudge_copy.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
@@ -32,23 +31,23 @@ import 'package:habit_tracker/features/water/presentation/screens/water_home_scr
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
+import 'package:habit_tracker/features/water/presentation/weather_nudge_copy.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
 
 /// The Water module's [HabitModule] registration
 /// (`technical/architecture.md`).
 class WaterModule implements HabitModule {
-  /// Creates the module backed by [_repository]. [settingsRepository] and
-  /// [prayerRepository] are optional, additive dependencies powering
+  /// Creates the module backed by [_repository]. [_settingsRepository] and
+  /// [_prayerRepository] are optional, additive dependencies powering
   /// Ramadan-mode fasting-aware reminder windows
   /// (`docs/superpowers/specs/02-delightful/01-ramadan-mode-design.md`) —
   /// omitted (as every pre-existing call site/test still does), Water
   /// behaves exactly as before and Ramadan mode never activates.
   const WaterModule(
     this._repository, {
-    SettingsRepository? settingsRepository,
-    PrayerRepository? prayerRepository,
-  }) : _settingsRepository = settingsRepository,
-       _prayerRepository = prayerRepository;
+    this._settingsRepository,
+    this._prayerRepository,
+  });
 
   final WaterRepository _repository;
   final SettingsRepository? _settingsRepository;
@@ -547,7 +546,7 @@ class WaterModule implements HabitModule {
     final goals = await _repository.allGoals();
     if (goals.isEmpty) return null;
     final today = localDayKey(clock.now());
-    final goal = ResolveGoalForDateUseCase().execute(goals, today);
+    final goal = const ResolveGoalForDateUseCase().execute(goals, today);
     final entries = await _repository.watchEntriesInRange(today, today).first;
     final totalMl = entries.fold(0, (sum, e) => sum + e.amountMl);
     final amountMl = settings.quickAddAmountsMl.isEmpty

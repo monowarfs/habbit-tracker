@@ -4,8 +4,6 @@ import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
-import 'package:habit_tracker/features/water/data/weather_client.dart';
-import 'package:habit_tracker/features/water/data/weather_location_resolver.dart';
 
 import '../../../support/test_database.dart';
 

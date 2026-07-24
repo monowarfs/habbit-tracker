@@ -9,7 +9,7 @@ void main() {
     'and accent color',
     (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: ModuleEmptyState(
               painter: WaterDropPainter.new,

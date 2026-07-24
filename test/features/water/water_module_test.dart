@@ -300,8 +300,8 @@ void main() {
   );
 
   test(
-    'pendingNotifications only produces slots outside that day\'s Fajr-to-'
-    'Maghrib fasting window when Ramadan mode is manually forced on',
+    "pendingNotifications only produces slots outside that day's Fajr-to-"
+    ' Maghrib fasting window when Ramadan mode is manually forced on',
     () async {
       ensureTimeZonesInitialized();
       final waterSettings = _settings(reminderEnabled: true).copyWith(
@@ -372,7 +372,6 @@ void main() {
         _FakeWaterRepository(waterSettings),
         settingsRepository: _FakeSettingsRepository(
           _appSettings(
-            ramadanModeManualOverride: null,
             ramadanAutoDetectEnabled: false,
           ),
         ),

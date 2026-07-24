@@ -14,7 +14,6 @@ void main() {
         // "seasonalSeed: null falls back to _seedColor" path.
         final expected = ColorScheme.fromSeed(
           seedColor: const Color(0xFF006874),
-          brightness: Brightness.light,
         );
         expect(theme.colorScheme.primary, expected.primary);
         expect(theme.colorScheme.surface, expected.surface);

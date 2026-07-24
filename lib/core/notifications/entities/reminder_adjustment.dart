@@ -11,10 +11,10 @@ sealed class ReminderAdjustment with _$ReminderAdjustment {
   /// Creates a [ReminderAdjustment].
   const factory ReminderAdjustment({
     required String moduleId,
-    String? sourceType,
     required int offsetMinutes,
     required int sampleCount,
     required String confidence,
     required int windowDays,
+    String? sourceType,
   }) = _ReminderAdjustment;
 }

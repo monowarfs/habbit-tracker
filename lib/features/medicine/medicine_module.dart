@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
@@ -26,7 +27,6 @@ import 'package:habit_tracker/features/medicine/presentation/screens/medicine_fo
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_list_screen.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_stats_screen.dart';
-import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Medicine module's [HabitModule] registration
 /// (`technical/architecture.md`). Mirrors `WaterModule`'s shape exactly.

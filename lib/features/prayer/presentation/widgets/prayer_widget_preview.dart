@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
-import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/effective_prayer_status.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
 
@@ -30,7 +29,7 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(minutes: 1), (_) => _update());
-    _update();
+    unawaited(_update());
   }
 
   @override
@@ -154,6 +153,6 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     }
-    return '${minutes} min';
+    return '$minutes min';
   }
 }

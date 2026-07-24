@@ -62,7 +62,7 @@ void main() {
           medianGapMinutes: 20,
           typicalSourceTime: LocalTime(8, 15),
         ),
-        now: DateTime.utc(2026, 7, 1),
+        now: DateTime.utc(2026, 7),
       );
 
       await pumpCard(tester);
@@ -96,7 +96,7 @@ void main() {
           medianGapMinutes: 20,
           typicalSourceTime: LocalTime(8, 15),
         ),
-        now: DateTime.utc(2026, 7, 1),
+        now: DateTime.utc(2026, 7),
       );
 
       await pumpCard(tester);
@@ -110,7 +110,7 @@ void main() {
       // loop. Instead of tapping, directly exercise the same DB logic
       // the handler performs: accept the suggestion and nudge every
       // weekday's reminder window to the typical source time.
-      final typicalTime = const LocalTime(8, 15);
+      const typicalTime = LocalTime(8, 15);
       await repository.accept('medicine_water', now: DateTime.utc(2026, 7, 2));
 
       // watchSettings() is a Drift stream — needs real async cycles.
@@ -168,7 +168,7 @@ void main() {
         medianGapMinutes: 20,
         typicalSourceTime: LocalTime(8, 15),
       ),
-      now: DateTime.utc(2026, 7, 1),
+      now: DateTime.utc(2026, 7),
     );
 
     await pumpCard(tester);

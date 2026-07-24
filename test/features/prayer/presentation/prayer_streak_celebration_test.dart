@@ -44,7 +44,7 @@ void main() {
         now: DateTime.utc(2026, 5, 26),
       );
 
-      final today = const LocalDate(2026, 6, 7);
+      const today = LocalDate(2026, 6, 7);
       // 6 prior fully-prayed days.
       for (var i = 1; i <= 6; i++) {
         final day = today.addDays(-i);

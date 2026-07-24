@@ -49,8 +49,7 @@ class RamadanSettingsScreen extends ConsumerWidget {
             SwitchListTile(
               title: Text(l10n.ramadanModeManualToggle),
               value: settings.ramadanModeManualOverride ?? false,
-              onChanged: (enabled) =>
-                  repo.updateRamadanModeManualOverride(enabled),
+              onChanged: repo.updateRamadanModeManualOverride,
             ),
         ],
       ),

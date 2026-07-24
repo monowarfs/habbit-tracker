@@ -112,12 +112,14 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<Result<void>> updateDisplayName(String? name) =>
       _update(AppSettingsTableCompanion(displayName: Value(name)));
+  @override
   Future<Result<void>> updateSeasonalAccentsEnabled({
     required bool enabled,
   }) => _update(
     AppSettingsTableCompanion(seasonalAccentsEnabled: Value(enabled)),
   );
 
+  @override
   Future<Result<void>> markWaterHydrationHintSeen() => _update(
     AppSettingsTableCompanion(
       waterHydrationHintSeenAt: Value(

@@ -87,7 +87,7 @@ void main() {
 
       expect(
         find.text(
-          "Water helps regulate temperature, joints, and energy — most "
+          'Water helps regulate temperature, joints, and energy — most '
           "adults need roughly 2-3 liters a day, more if it's hot or "
           "you're active.",
         ),

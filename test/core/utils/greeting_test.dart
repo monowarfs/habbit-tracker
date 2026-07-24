@@ -61,7 +61,7 @@ void main() {
 
     test('00:00 (midnight) is night', () {
       expect(
-        greetingPeriodFor(DateTime.utc(2026, 6, 1)),
+        greetingPeriodFor(DateTime.utc(2026, 6)),
         GreetingPeriod.night,
       );
     });

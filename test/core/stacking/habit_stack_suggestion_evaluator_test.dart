@@ -63,7 +63,6 @@ void main() {
               8,
               5,
             ),
-            stockDeltaApplied: 0,
           ),
         );
         await waterRepo.addEntry(
@@ -117,7 +116,6 @@ void main() {
               8,
               5,
             ),
-            stockDeltaApplied: 0,
           ),
         );
         await waterRepo.addEntry(

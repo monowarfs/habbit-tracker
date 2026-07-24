@@ -6,7 +6,6 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
-import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 
 void main() {
   late Directory tempDir;

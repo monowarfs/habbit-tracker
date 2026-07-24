@@ -63,6 +63,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
   Future<void> _import() async {
     final file = await LocalFileBackupTarget().download();
     if (file == null) return;
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     final String rawJson;
     try {

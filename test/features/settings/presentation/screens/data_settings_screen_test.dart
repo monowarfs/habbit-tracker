@@ -10,18 +10,27 @@ void main() {
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const DataSettingsScreen(),
+          home: DataSettingsScreen(),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(ListTile, l10n.dataSettingsExport), findsOneWidget);
-    expect(find.widgetWithText(ListTile, l10n.dataSettingsImport), findsOneWidget);
-    expect(find.widgetWithText(ListTile, l10n.dataSettingsShareLogs), findsOneWidget);
+    expect(
+      find.widgetWithText(ListTile, l10n.dataSettingsExport),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(ListTile, l10n.dataSettingsImport),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(ListTile, l10n.dataSettingsShareLogs),
+      findsOneWidget,
+    );
   });
 }

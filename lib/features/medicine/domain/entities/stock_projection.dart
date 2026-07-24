@@ -11,11 +11,11 @@ part 'stock_projection.freezed.dart';
 sealed class StockProjection with _$StockProjection {
   /// Creates a [StockProjection].
   const factory StockProjection({
-    DateTime? projectedDate,
-    int? daysRemaining,
-    double? averageRatePerDay,
     required int sampleSize,
     required String confidence,
     required int currentStock,
+    DateTime? projectedDate,
+    int? daysRemaining,
+    double? averageRatePerDay,
   }) = _StockProjection;
 }

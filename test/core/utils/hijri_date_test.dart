@@ -10,7 +10,9 @@ void main() {
       expect(ramadanDayNumber(date), 5);
     });
 
-    test('2025-04-01 (a few days after Eid al-Fitr 1446 AH) is not Ramadan', () {
+    test(
+      '2025-04-01 (a few days after Eid al-Fitr 1446 AH) is not Ramadan',
+      () {
       const date = LocalDate(2025, 4, 1);
       expect(isRamadan(date), isFalse);
       expect(ramadanDayNumber(date), isNull);

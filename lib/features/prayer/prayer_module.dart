@@ -37,14 +37,13 @@ import 'package:habit_tracker/features/settings/presentation/providers/app_setti
 /// (`technical/architecture.md`). Mirrors `MedicineModule`'s shape almost
 /// exactly.
 class PrayerModule implements HabitModule {
-  /// Creates the module backed by [_repository]. [settingsRepository] is
+  /// Creates the module backed by [_repository]. [_settingsRepository] is
   /// an optional, additive dependency used only to relabel Fajr/Maghrib
   /// as Sehri/Iftar during Ramadan (`docs/superpowers/specs/
   /// 02-delightful/01-ramadan-mode-design.md`) — omitted (as every
   /// pre-existing call site/test still does), that relabeling never
   /// happens and everything else is unchanged.
-  const PrayerModule(this._repository, {SettingsRepository? settingsRepository})
-    : _settingsRepository = settingsRepository;
+  const PrayerModule(this._repository, {this._settingsRepository});
 
   final PrayerRepository _repository;
   final SettingsRepository? _settingsRepository;

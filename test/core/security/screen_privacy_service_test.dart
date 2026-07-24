@@ -15,7 +15,9 @@ void main() {
       expect(calls, ['screenshotOn', 'leakageOn']);
     });
 
-    test('disable calls preventScreenshotOff and protectDataLeakageOff', () async {
+    test(
+      'disable calls preventScreenshotOff and protectDataLeakageOff',
+      () async {
       final calls = <String>[];
       final service = ScreenPrivacyService(
         preventScreenshotOff: () async => calls.add('screenshotOff'),

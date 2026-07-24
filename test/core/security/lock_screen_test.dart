@@ -176,10 +176,12 @@ class _StubSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
       Future.value(const Result.success(null));
+  @override
   Future<Result<void>> updateSeasonalAccentsEnabled({
     required bool enabled,
   }) => Future.value(const Result.success(null));
 
+  @override
   Future<Result<void>> updateRamadanModeManualOverride(bool? override) =>
       Future.value(const Result.success(null));
 

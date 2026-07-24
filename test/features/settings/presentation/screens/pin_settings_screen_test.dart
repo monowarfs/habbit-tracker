@@ -75,7 +75,8 @@ void main() {
   );
 
   testWidgets(
-    'toggling screen privacy calls updateScreenPrivacyEnabled on the repository',
+    'toggling screen privacy calls updateScreenPrivacyEnabled'
+    ' on the repository',
     (tester) async {
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
       final repo = _ReactiveSettingsRepo(

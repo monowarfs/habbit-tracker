@@ -23,8 +23,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final Uint8List bytes =
-          await tester.runAsync(() => RecapCardCapture.capturePng(pixelRatio: 1)) ?? Uint8List(0);
+      final bytes =
+          await tester.runAsync(
+            () => RecapCardCapture.capturePng(pixelRatio: 1),
+          ) ?? Uint8List(0);
 
       expect(bytes, isNotEmpty);
       // The 8-byte PNG file signature — proves this is real,

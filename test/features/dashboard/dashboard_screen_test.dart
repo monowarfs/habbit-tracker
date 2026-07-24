@@ -12,7 +12,6 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id);

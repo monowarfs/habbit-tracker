@@ -11,13 +11,30 @@ class WidgetSummaryData {
   const WidgetSummaryData({
     required this.moduleId,
     required this.headline,
-    this.progressFraction,
+    required this.deepLinkRoute, this.progressFraction,
     this.primaryActionLabel,
     this.primaryActionSourceId,
-    required this.deepLinkRoute,
     this.pendingCount,
     this.countdownTargetAt,
   });
+
+  /// Deserializes from a JSON map produced by [toJson].
+  factory WidgetSummaryData.fromJson(Map<String, Object?> json) =>
+      WidgetSummaryData(
+        moduleId: json['moduleId']! as String,
+        headline: json['headline']! as String,
+        progressFraction: (json['progressFraction'] as num?)?.toDouble(),
+        primaryActionLabel: json['primaryActionLabel'] as String?,
+        primaryActionSourceId: json['primaryActionSourceId'] as String?,
+        deepLinkRoute: json['deepLinkRoute']! as String,
+        pendingCount: (json['pendingCount'] as num?)?.toInt(),
+        countdownTargetAt: json['countdownTargetAt'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                json['countdownTargetAt']! as int,
+                isUtc: true,
+              )
+            : null,
+      );
 
   /// Stable module id (e.g. `'water'`, `'medicine'`, `'prayer'`).
   final String moduleId;
@@ -63,24 +80,6 @@ class WidgetSummaryData {
     'pendingCount': pendingCount,
     'countdownTargetAt': countdownTargetAt?.toUtc().millisecondsSinceEpoch,
   };
-
-  /// Deserializes from a JSON map produced by [toJson].
-  factory WidgetSummaryData.fromJson(Map<String, Object?> json) =>
-      WidgetSummaryData(
-        moduleId: json['moduleId'] as String,
-        headline: json['headline'] as String,
-        progressFraction: (json['progressFraction'] as num?)?.toDouble(),
-        primaryActionLabel: json['primaryActionLabel'] as String?,
-        primaryActionSourceId: json['primaryActionSourceId'] as String?,
-        deepLinkRoute: json['deepLinkRoute'] as String,
-        pendingCount: (json['pendingCount'] as num?)?.toInt(),
-        countdownTargetAt: json['countdownTargetAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(
-                json['countdownTargetAt'] as int,
-                isUtc: true,
-              )
-            : null,
-      );
 
   /// JSON string for passing through `HomeWidget.saveWidgetData` which
   /// only accepts `String` values.

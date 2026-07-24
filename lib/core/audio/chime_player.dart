@@ -27,7 +27,7 @@ class ChimePlayer {
   /// as a follow-up once this is in testers' hands on real devices).
   static final _context = AudioContext(
     iOS: AudioContextIOS(category: AVAudioSessionCategory.ambient),
-    android: AudioContextAndroid(
+    android: const AudioContextAndroid(
       audioFocus: AndroidAudioFocus.none,
       contentType: AndroidContentType.sonification,
       usageType: AndroidUsageType.notificationEvent,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,8 +17,8 @@ Future<GoRouter> _pumpMedicineForm(WidgetTester tester, AppDatabase db) async {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const SizedBox.shrink()),
-      GoRoute(path: '/form', builder: (_, __) => const MedicineFormScreen()),
+      GoRoute(path: '/', builder: (_, _) => const SizedBox.shrink()),
+      GoRoute(path: '/form', builder: (_, _) => const MedicineFormScreen()),
     ],
   );
   await tester.pumpWidget(
@@ -30,7 +32,7 @@ Future<GoRouter> _pumpMedicineForm(WidgetTester tester, AppDatabase db) async {
     ),
   );
   await tester.pumpAndSettle();
-  router.push('/form');
+  unawaited(router.push('/form'));
   await tester.pumpAndSettle();
   return router;
 }

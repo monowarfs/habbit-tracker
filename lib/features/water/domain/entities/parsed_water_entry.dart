@@ -10,9 +10,7 @@ part 'parsed_water_entry.freezed.dart';
 sealed class ParsedWaterEntry with _$ParsedWaterEntry {
   /// Creates a [ParsedWaterEntry].
   const factory ParsedWaterEntry({
-    int? amountMl,
+    required String confidence, required String rawText, int? amountMl,
     DateTime? loggedAt,
-    required String confidence,
-    required String rawText,
   }) = _ParsedWaterEntry;
 }

@@ -160,7 +160,7 @@ void main() {
       await settingsRepo.updateSoundEnabled(enabled: true);
 
       final chime = _MockChimePlayer();
-      when(() => chime.playDoseDoneChime()).thenAnswer((_) async {});
+      when(chime.playDoseDoneChime).thenAnswer((_) async {});
 
       await withClock(Clock.fixed(now), () async {
         await tester.pumpWidget(
@@ -180,7 +180,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.check_circle_outline));
       await tester.pump();
-      verify(() => chime.playDoseDoneChime()).called(1);
+      verify(chime.playDoseDoneChime).called(1);
     },
   );
 
@@ -204,13 +204,13 @@ void main() {
       });
 
       final chime = _MockChimePlayer();
-      when(() => chime.playDoseDoneChime()).thenAnswer((_) async {});
+      when(chime.playDoseDoneChime).thenAnswer((_) async {});
 
       await _pumpMedicineHome(tester, db, now: now, chimePlayer: chime);
 
       await tester.tap(find.byIcon(Icons.check_circle_outline));
       await tester.pump();
-      verifyNever(() => chime.playDoseDoneChime());
+      verifyNever(chime.playDoseDoneChime);
       await disposeTree(tester);
     },
   );
@@ -253,7 +253,6 @@ void main() {
             storedStatus: MedicineDoseStatus.done,
             graceWindowMinutes: 30,
             statusChangedAt: DateTime.utc(day.year, day.month, day.day, 8, 5),
-            stockDeltaApplied: 0,
           ),
         );
       }

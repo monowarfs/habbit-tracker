@@ -29,7 +29,7 @@ void main() {
       sourceModuleId: 'medicine',
       targetModuleId: 'water',
       result: result,
-      now: DateTime.utc(2026, 7, 1),
+      now: DateTime.utc(2026, 7),
     );
 
     final row = await repo.byId('medicine_water');
@@ -48,7 +48,7 @@ void main() {
         sourceModuleId: 'medicine',
         targetModuleId: 'water',
         result: result,
-        now: DateTime.utc(2026, 7, 1),
+        now: DateTime.utc(2026, 7),
       );
       await repo.accept('medicine_water', now: DateTime.utc(2026, 7, 2));
 
@@ -81,7 +81,7 @@ void main() {
         targetModuleId: 'water',
         result: result,
         sourceLabel: 'Fajr',
-        now: DateTime.utc(2026, 7, 1),
+        now: DateTime.utc(2026, 7),
       );
       await repo.dismiss('prayer_water', now: DateTime.utc(2026, 7, 2));
 
@@ -113,7 +113,7 @@ void main() {
         targetModuleId: 'water',
         result: result,
         sourceLabel: 'Fajr',
-        now: DateTime.utc(2026, 7, 1),
+        now: DateTime.utc(2026, 7),
       );
       await repo.dismiss('prayer_water', now: DateTime.utc(2026, 7, 2));
 
@@ -138,7 +138,7 @@ void main() {
       sourceModuleId: 'medicine',
       targetModuleId: 'water',
       result: result,
-      now: DateTime.utc(2026, 7, 1),
+      now: DateTime.utc(2026, 7),
     );
 
     final pending = await repo.pendingSuggestion().first;

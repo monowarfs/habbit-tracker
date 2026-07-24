@@ -32,14 +32,14 @@ void main() {
     'below minQualifyingDays returns null even at a 100% qualifying rate',
     () {
       final sourceByDay = <LocalDate, DateTime>{
-        LocalDate(2026, 6, 1): DateTime(2026, 6, 1, 8, 15),
-        LocalDate(2026, 6, 2): DateTime(2026, 6, 2, 8, 15),
-        LocalDate(2026, 6, 3): DateTime(2026, 6, 3, 8, 15),
+        const LocalDate(2026, 6, 1): DateTime(2026, 6, 1, 8, 15),
+        const LocalDate(2026, 6, 2): DateTime(2026, 6, 2, 8, 15),
+        const LocalDate(2026, 6, 3): DateTime(2026, 6, 3, 8, 15),
       };
       final targetByDay = <LocalDate, List<DateTime>>{
-        LocalDate(2026, 6, 1): [DateTime(2026, 6, 1, 8, 30)],
-        LocalDate(2026, 6, 2): [DateTime(2026, 6, 2, 8, 30)],
-        LocalDate(2026, 6, 3): [DateTime(2026, 6, 3, 8, 30)],
+        const LocalDate(2026, 6, 1): [DateTime(2026, 6, 1, 8, 30)],
+        const LocalDate(2026, 6, 2): [DateTime(2026, 6, 2, 8, 30)],
+        const LocalDate(2026, 6, 3): [DateTime(2026, 6, 3, 8, 30)],
       };
 
       expect(
@@ -118,7 +118,7 @@ void main() {
     () {
       // 20 days of source data; only the trailing 14 (relative to the
       // latest day present) should be considered.
-      final baseDay = const LocalDate(2026, 5, 20);
+      const baseDay = LocalDate(2026, 5, 20);
       final days = [for (var i = 0; i < 20; i++) baseDay.addDays(i)];
       final sourceByDay = {
         for (final day in days) day: DateTime(day.year, day.month, day.day, 8),
