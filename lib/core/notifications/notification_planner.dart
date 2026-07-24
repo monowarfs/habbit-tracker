@@ -84,10 +84,12 @@ NotificationPlan planNotifications({
               deepLinkRoute: rawPending.deepLinkRoute,
               quietHoursSuppressible: rawPending.quietHoursSuppressible,
             );
-      final inWindow = pending.scheduledAt.isAfter(now) &&
+      final inWindow =
+          pending.scheduledAt.isAfter(now) &&
           pending.scheduledAt.isBefore(windowEnd);
       if (!inWindow) continue;
-      final suppressed = pending.quietHoursSuppressible &&
+      final suppressed =
+          pending.quietHoursSuppressible &&
           (quietHours?.contains(pending.scheduledAt) ?? false);
       if (suppressed) continue;
       flattened.add((moduleId: moduleId, pending: pending));

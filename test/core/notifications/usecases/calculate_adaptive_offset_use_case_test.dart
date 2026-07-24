@@ -79,20 +79,23 @@ void main() {
     expect(result.single.confidence, 'medium');
   });
 
-  test('alternating offsets with even sample count -> median of middle two', () async {
-    final offsets = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20];
-    for (var i = 0; i < offsets.length; i++) {
-      await seedDoneRow(
-        id: 'r$i',
-        moduleId: 'water',
-        sourceType: 'water_reminder',
-        scheduledFor: DateTime.utc(2026, 6, 1, 8).add(Duration(days: i)),
-        offsetMinutes: offsets[i],
-      );
-    }
-    final result = await useCase.execute(now: now);
-    expect(result.single.offsetMinutes, 15);
-  });
+  test(
+    'alternating offsets with even sample count -> median of middle two',
+    () async {
+      final offsets = [10, 20, 10, 20, 10, 20, 10, 20, 10, 20];
+      for (var i = 0; i < offsets.length; i++) {
+        await seedDoneRow(
+          id: 'r$i',
+          moduleId: 'water',
+          sourceType: 'water_reminder',
+          scheduledFor: DateTime.utc(2026, 6, 1, 8).add(Duration(days: i)),
+          offsetMinutes: offsets[i],
+        );
+      }
+      final result = await useCase.execute(now: now);
+      expect(result.single.offsetMinutes, 15);
+    },
+  );
 
   test('all-same-time -> 0 offset', () async {
     for (var i = 0; i < 10; i++) {

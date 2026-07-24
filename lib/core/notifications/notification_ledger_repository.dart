@@ -110,16 +110,16 @@ class NotificationLedgerRepository {
     required DateTime now,
   }) async {
     final since = now.subtract(Duration(days: windowDays));
-    return (_db.select(_db.notificationLedgerTable)
-      ..where(
-        (t) =>
-            t.deletedAt.isNull() &
-            t.action.equals('done') &
-            t.actionAt.isNotNull() &
-            t.scheduledFor.isBiggerOrEqualValue(
-              since.toUtc().millisecondsSinceEpoch,
-            ),
-      )).get();
+    return (_db.select(_db.notificationLedgerTable)..where(
+          (t) =>
+              t.deletedAt.isNull() &
+              t.action.equals('done') &
+              t.actionAt.isNotNull() &
+              t.scheduledFor.isBiggerOrEqualValue(
+                since.toUtc().millisecondsSinceEpoch,
+              ),
+        ))
+        .get();
   }
 
   /// Soft-deletes (cancels) [id] — used when a source falls out of the

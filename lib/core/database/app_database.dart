@@ -156,7 +156,6 @@ class AppDatabase extends _$AppDatabase {
           waterSettingsTable,
           waterSettingsTable.lastWeatherFetchedAtMillis,
         );
-
       }
       if (from < 9) {
         // Adaptive reminder timing opt-in (`docs/superpowers/plans/

@@ -45,6 +45,7 @@ class AppSettingsTable extends Table {
   /// (`docs/superpowers/specs/02-delightful/
   /// 10-optional-sound-design-pass-design.md`) — default `false`, opt-in.
   BoolColumn get soundEnabled => boolean().withDefault(const Constant(false))();
+
   /// Manual override: `true`/`false` pins Ramadan mode; `null` (default)
   /// means "follow `isRamadan(today)` automatically"
   /// (`docs/superpowers/specs/02-delightful/01-ramadan-mode-design.md`).
@@ -61,7 +62,6 @@ class AppSettingsTable extends Table {
   /// 01-adaptive-reminder-timing-impl-plan.md`) — default `false`, opt-in.
   BoolColumn get adaptiveReminderEnabled =>
       boolean().withDefault(const Constant(false))();
-
 
   /// Whether quiet-hours notification suppression is active.
   BoolColumn get quietHoursEnabled =>
@@ -87,6 +87,7 @@ class AppSettingsTable extends Table {
   /// (`docs/superpowers/specs/02-delightful/
   /// 11-personalized-dashboard-greeting-design.md`).
   TextColumn get displayName => text().nullable()();
+
   /// Opt-out for the seasonal palette shift (Pohela Boishakh; Eid is not
   /// yet detectable, `core/theme/seasonal_occasion.dart`) — default
   /// `true` (opt-in by default, matching the feature's own "festive but
@@ -104,7 +105,6 @@ class AppSettingsTable extends Table {
   /// UTC epoch millis; null = the Prayer Qadha-context "why this
   /// matters" card hasn't been shown yet.
   IntColumn get prayerQadhaHintSeenAt => integer().nullable()();
-
 
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();

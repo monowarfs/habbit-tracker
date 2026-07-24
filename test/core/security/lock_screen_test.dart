@@ -180,7 +180,6 @@ class _StubSettingsRepo implements SettingsRepository {
     required bool enabled,
   }) => Future.value(const Result.success(null));
 
-
   Future<Result<void>> updateRamadanModeManualOverride(bool? override) =>
       Future.value(const Result.success(null));
 
@@ -193,7 +192,6 @@ class _StubSettingsRepo implements SettingsRepository {
   Future<Result<void>> updateAdaptiveReminderEnabled({
     required bool enabled,
   }) => Future.value(const Result.success(null));
-
 
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>

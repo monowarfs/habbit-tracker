@@ -66,6 +66,5 @@ sealed class AppSettings with _$AppSettings {
     @Default(true) bool ramadanAutoDetectEnabled,
 
     @Default(false) bool adaptiveReminderEnabled,
-
   }) = _AppSettings;
 }
