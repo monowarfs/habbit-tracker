@@ -16,6 +16,7 @@ class WidgetSummaryData {
     this.primaryActionSourceId,
     required this.deepLinkRoute,
     this.pendingCount,
+    this.countdownTargetAt,
   });
 
   /// Stable module id (e.g. `'water'`, `'medicine'`, `'prayer'`).
@@ -47,6 +48,10 @@ class WidgetSummaryData {
   /// meaningful (e.g. Water before any goal is set).
   final int? pendingCount;
 
+  /// UTC epoch millis of the next pending event for countdown rendering.
+  /// Only set by Prayer module; `null` for Water/Medicine.
+  final DateTime? countdownTargetAt;
+
   /// Serializes to a JSON map suitable for `HomeWidget.saveWidgetData`.
   Map<String, Object?> toJson() => {
     'moduleId': moduleId,
@@ -56,6 +61,7 @@ class WidgetSummaryData {
     'primaryActionSourceId': primaryActionSourceId,
     'deepLinkRoute': deepLinkRoute,
     'pendingCount': pendingCount,
+    'countdownTargetAt': countdownTargetAt?.toUtc().millisecondsSinceEpoch,
   };
 
   /// Deserializes from a JSON map produced by [toJson].
@@ -68,6 +74,12 @@ class WidgetSummaryData {
         primaryActionSourceId: json['primaryActionSourceId'] as String?,
         deepLinkRoute: json['deepLinkRoute'] as String,
         pendingCount: (json['pendingCount'] as num?)?.toInt(),
+        countdownTargetAt: json['countdownTargetAt'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                json['countdownTargetAt'] as int,
+                isUtc: true,
+              )
+            : null,
       );
 
   /// JSON string for passing through `HomeWidget.saveWidgetData` which
