@@ -45,8 +45,17 @@ class NotificationLedgerTable extends Table {
   /// same reasoning as [title].
   TextColumn get body => text()();
 
-  /// UTC epoch millis the OS was asked to fire at.
+  /// UTC epoch millis the OS was asked to fire at (post adaptive-reminder
+  /// offset, if any).
   IntColumn get scheduledFor => integer()();
+
+  /// UTC epoch millis of the module's own unshifted time; null when no
+  /// adaptive-reminder offset was applied (equal to [scheduledFor]).
+  /// `CalculateAdaptiveOffsetUseCase` measures response lag against this,
+  /// never against [scheduledFor] — otherwise a successful shift reads as
+  /// "no lag" next cycle and the learned offset decays back toward zero as
+  /// old pre-shift samples age out of the rolling window.
+  IntColumn get originalScheduledFor => integer().nullable()();
 
   /// UTC epoch millis, set by the notification-received handler.
   IntColumn get firedAt => integer().nullable()();

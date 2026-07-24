@@ -135,7 +135,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
     ),
   );
 
-
   @override
   Future<Result<void>> updateRamadanModeManualOverride(bool? override) =>
       _update(
@@ -150,7 +149,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateAdaptiveReminderEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(adaptiveReminderEnabled: Value(enabled)),
+  );
 
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -175,6 +180,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
           ramadanModeManualOverride: Value(settings.ramadanModeManualOverride),
           ramadanAutoDetectEnabled: Value(settings.ramadanAutoDetectEnabled),
+          adaptiveReminderEnabled: Value(settings.adaptiveReminderEnabled),
 
           updatedAt: Value(now),
         ),
@@ -237,7 +243,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
     ramadanModeManualOverride: row.ramadanModeManualOverride,
     ramadanAutoDetectEnabled: row.ramadanAutoDetectEnabled,
-
+    adaptiveReminderEnabled: row.adaptiveReminderEnabled,
   );
 }
 

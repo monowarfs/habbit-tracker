@@ -261,6 +261,11 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   }
 
   @override
+  Future<Result<void>> updateAdaptiveReminderEnabled({
+    required bool enabled,
+  }) => Future.value(const Result.success(null));
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     await _update((_) => settings);
     return const Result.success(null);

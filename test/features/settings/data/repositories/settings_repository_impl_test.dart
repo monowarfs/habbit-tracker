@@ -47,6 +47,7 @@ void main() {
     expect(firstRead.ramadanAutoDetectEnabled, isTrue);
     expect(firstRead.ramadanModeManualOverride, isNull);
 
+    expect(firstRead.adaptiveReminderEnabled, isFalse);
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -82,6 +83,11 @@ void main() {
     );
     expect(ramadanOverrideResult, isA<Success<void>>());
 
+    final adaptiveReminderResult = await repo1.updateAdaptiveReminderEnabled(
+      enabled: true,
+    );
+    expect(adaptiveReminderResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -103,6 +109,7 @@ void main() {
     expect(afterRestart.ramadanAutoDetectEnabled, isFalse);
     expect(afterRestart.ramadanModeManualOverride, isTrue);
 
+    expect(afterRestart.adaptiveReminderEnabled, isTrue);
 
     await db2.close();
   });

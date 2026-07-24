@@ -48,6 +48,7 @@ abstract class SettingsRepository {
   /// Updates the display name shown in the dashboard greeting. `null`/
   /// empty clears it back to the name-less greeting.
   Future<Result<void>> updateDisplayName(String? name);
+
   /// Enables or disables the seasonal accent-color shift (Pohela
   /// Boishakh today; Eid once a Hijri date source exists).
   Future<Result<void>> updateSeasonalAccentsEnabled({required bool enabled});
@@ -67,6 +68,9 @@ abstract class SettingsRepository {
   /// Enables or disables Hijri-calendar Ramadan auto-detection.
   Future<Result<void>> updateRamadanAutoDetectEnabled({required bool enabled});
 
+  /// Enables or disables adaptive reminder timing (auto-shifting reminder
+  /// times based on historical response offsets).
+  Future<Result<void>> updateAdaptiveReminderEnabled({required bool enabled});
 
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).

@@ -197,7 +197,8 @@ Future<Result<void>> applyImport({
                 appSettingsJson['ramadanModeManualOverride'] as bool?,
             ramadanAutoDetectEnabled:
                 appSettingsJson['ramadanAutoDetectEnabled'] as bool? ?? true,
-
+            adaptiveReminderEnabled:
+                appSettingsJson['adaptiveReminderEnabled'] as bool? ?? false,
           ),
         );
       }

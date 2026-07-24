@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/notifications/notification_planner.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 
 PendingNotification _pending(String id, DateTime scheduledAt) =>
     PendingNotification(
@@ -141,6 +142,177 @@ void main() {
 
       expect(plan.toCancel, ['n3']);
       expect(plan.toSchedule, isEmpty);
+    },
+  );
+
+  test(
+    'sourceOffsetsMinutes shifts scheduledAt for the matching '
+    '(moduleId, sourceType)',
+    () {
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', now.add(const Duration(hours: 1)))],
+        },
+        existingPending: const [],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+      );
+
+      expect(plan.toSchedule, hasLength(1));
+      expect(
+        plan.toSchedule.single.pending.scheduledAt,
+        now.add(const Duration(hours: 1, minutes: 30)),
+      );
+      expect(
+        plan.toSchedule.single.originalScheduledAt,
+        now.add(const Duration(hours: 1)),
+      );
+    },
+  );
+
+  test('an offset of 0 is identity', () {
+    final scheduledAt = now.add(const Duration(hours: 1));
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 0},
+    );
+
+    expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
+  });
+
+  test('absent (moduleId, sourceType) key is a no-op', () {
+    final scheduledAt = now.add(const Duration(hours: 1));
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+      sourceOffsetsMinutes: {('medicine', 'medicine_dose'): 45},
+    );
+
+    expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
+  });
+
+  test('a different sourceType under the same module is unaffected', () {
+    final scheduledAt = now.add(const Duration(hours: 1));
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+      sourceOffsetsMinutes: {('water', 'low_stock'): 45},
+    );
+
+    expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
+  });
+
+  test('null/empty sourceOffsetsMinutes behaves identically to before', () {
+    final scheduledAt = now.add(const Duration(hours: 1));
+    final withNull = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+    );
+    final withEmpty = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+      sourceOffsetsMinutes: const {},
+    );
+
+    expect(withNull.toSchedule.single.pending.scheduledAt, scheduledAt);
+    expect(withEmpty.toSchedule.single.pending.scheduledAt, scheduledAt);
+  });
+
+  test('offset shift can push a notification out of the window', () {
+    // Scheduled just before windowEnd (3 days out); a positive offset
+    // shifts it past the boundary, so it should be excluded and (since it
+    // was previously registered) cancelled.
+    final scheduledAt = now.add(const Duration(days: 3, minutes: -10));
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: [_ledgerRow('a', scheduledAt)],
+      now: now,
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+    );
+
+    expect(plan.toSchedule, isEmpty);
+    expect(plan.toCancel, ['a']);
+  });
+
+  test('offset interacts correctly with quiet hours suppression', () {
+    // Without the offset, 21:50 is outside a 22:00-07:00 quiet window.
+    // A +30-minute offset shifts it to 22:20, inside the window, so it
+    // should be suppressed.
+    final base = DateTime.utc(2026, 6, 1, 21, 50);
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', base)],
+      },
+      existingPending: const [],
+      now: DateTime.utc(2026, 6, 1, 12),
+      quietHours: const QuietHours(
+        start: LocalTime(22, 0),
+        end: LocalTime(7, 0),
+      ),
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+    );
+
+    expect(plan.toSchedule, isEmpty);
+  });
+
+  test(
+    'a negative offset that would push scheduledAt before now is clamped '
+    'to just after now instead of dropping the occurrence',
+    () {
+      final scheduledAt = now.add(const Duration(minutes: 15));
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', scheduledAt)],
+        },
+        existingPending: const [],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): -25},
+      );
+
+      expect(plan.toSchedule, hasLength(1));
+      expect(plan.toSchedule.single.pending.scheduledAt.isAfter(now), isTrue);
+    },
+  );
+
+  test(
+    'an already-registered notification is rescheduled when a newly '
+    'computed offset moves its actual fire time',
+    () {
+      final rawScheduledAt = now.add(const Duration(hours: 1));
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', rawScheduledAt)],
+        },
+        // Previously registered at the un-shifted time (no offset was
+        // active on the prior planning cycle).
+        existingPending: [_ledgerRow('a', rawScheduledAt)],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+      );
+
+      expect(plan.toSchedule, hasLength(1));
+      expect(
+        plan.toSchedule.single.pending.scheduledAt,
+        rawScheduledAt.add(const Duration(minutes: 30)),
+      );
     },
   );
 }

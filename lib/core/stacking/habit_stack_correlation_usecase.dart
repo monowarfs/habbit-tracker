@@ -1,4 +1,5 @@
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/utils/stats.dart';
 import 'package:meta/meta.dart';
 
 /// One correlation candidate: a source module's (Medicine/Prayer)
@@ -106,8 +107,8 @@ StackCorrelationResult? findStackCorrelation({
   if (qualifyingDays < minQualifyingDays) return null;
   if (qualifyingDays / totalDaysWithSource < 0.7) return null;
 
-  final medianGap = _median(gapsMinutes);
-  final medianMinuteOfDay = _median(sourceMinutesOfDay);
+  final medianGap = median(gapsMinutes);
+  final medianMinuteOfDay = median(sourceMinutesOfDay);
   return StackCorrelationResult(
     qualifyingDays: qualifyingDays,
     totalDaysWithSource: totalDaysWithSource,
@@ -117,12 +118,4 @@ StackCorrelationResult? findStackCorrelation({
       medianMinuteOfDay % 60,
     ),
   );
-}
-
-int _median(List<int> values) {
-  final sorted = [...values]..sort();
-  final mid = sorted.length ~/ 2;
-  return sorted.length.isOdd
-      ? sorted[mid]
-      : ((sorted[mid - 1] + sorted[mid]) / 2).round();
 }

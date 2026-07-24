@@ -1160,6 +1160,18 @@
   "@settingsRamadanMode": {
     "description": "Settings-home nav entry linking to the Ramadan mode settings screen."
   },
+  "adaptiveReminderTitle": "Adaptive Reminders",
+  "@adaptiveReminderTitle": {
+    "description": "Settings-home switch title for the adaptive reminder timing toggle."
+  },
+  "adaptiveReminderDescription": "Automatically adjust reminder times based on when you typically respond.",
+  "@adaptiveReminderDescription": {
+    "description": "Explainer subtitle below the adaptive reminder timing toggle."
+  },
+  "adaptiveReminderToggleLabel": "Enable adaptive reminders",
+  "@adaptiveReminderToggleLabel": {
+    "description": "Accessibility/semantic label for the adaptive reminder timing switch."
+  },
   "ramadanModeSettingsTitle": "Ramadan mode",
   "@ramadanModeSettingsTitle": {
     "description": "AppBar title for the Ramadan mode settings screen."

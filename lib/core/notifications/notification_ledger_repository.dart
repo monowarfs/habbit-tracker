@@ -31,7 +31,10 @@ class NotificationLedgerRepository {
   }
 
   /// Records a newly-scheduled notification. Idempotent by [id] — safe to
-  /// call again for the same slot.
+  /// call again for the same slot. [originalScheduledFor] is the module's
+  /// own unshifted time — pass it whenever an adaptive-reminder offset
+  /// moved [scheduledFor] away from it, so future offset learning stays
+  /// anchored to a stable reference.
   Future<void> insertScheduled({
     required String id,
     required String moduleId,
@@ -41,6 +44,7 @@ class NotificationLedgerRepository {
     required String body,
     required DateTime scheduledFor,
     required String deepLinkRoute,
+    DateTime? originalScheduledFor,
   }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
@@ -55,6 +59,9 @@ class NotificationLedgerRepository {
             body: body,
             scheduledFor: scheduledFor.toUtc().millisecondsSinceEpoch,
             deepLinkRoute: deepLinkRoute,
+            originalScheduledFor: Value(
+              originalScheduledFor?.toUtc().millisecondsSinceEpoch,
+            ),
             createdAt: now,
             updatedAt: now,
           ),
@@ -100,6 +107,26 @@ class NotificationLedgerRepository {
         updatedAt: Value(now),
       ),
     );
+  }
+
+  /// Every terminal Done row `actioned` within the last [windowDays],
+  /// relative to [now] — the raw material
+  /// `CalculateAdaptiveOffsetUseCase` derives response-time offsets from.
+  Future<List<NotificationLedgerRow>> actionedDoneRows({
+    required int windowDays,
+    required DateTime now,
+  }) async {
+    final since = now.subtract(Duration(days: windowDays));
+    return (_db.select(_db.notificationLedgerTable)..where(
+          (t) =>
+              t.deletedAt.isNull() &
+              t.action.equals('done') &
+              t.actionAt.isNotNull() &
+              t.scheduledFor.isBiggerOrEqualValue(
+                since.toUtc().millisecondsSinceEpoch,
+              ),
+        ))
+        .get();
   }
 
   /// Soft-deletes (cancels) [id] — used when a source falls out of the

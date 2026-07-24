@@ -80,6 +80,81 @@ void main() {
     },
   );
 
+  test(
+    'actionedDoneRows returns only done/non-deleted rows within the window',
+    () async {
+      final now = DateTime.utc(2026, 6, 30);
+
+      // In-window, done — should be included.
+      await repo.insertScheduled(
+        id: 'done-in-window',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'done-in-window',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 6, 20, 8),
+        deepLinkRoute: '/water',
+      );
+      await repo.markActioned(
+        'done-in-window',
+        action: 'done',
+        actionAt: DateTime.utc(2026, 6, 20, 8, 5),
+      );
+
+      // In-window, still pending — excluded (not actioned).
+      await repo.insertScheduled(
+        id: 'pending',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'pending',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 6, 21, 8),
+        deepLinkRoute: '/water',
+      );
+
+      // In-window, done then cancelled — excluded (soft-deleted).
+      await repo.insertScheduled(
+        id: 'done-deleted',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'done-deleted',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 6, 22, 8),
+        deepLinkRoute: '/water',
+      );
+      await repo.markActioned(
+        'done-deleted',
+        action: 'done',
+        actionAt: DateTime.utc(2026, 6, 22, 8, 5),
+      );
+      await repo.cancel('done-deleted');
+
+      // Outside the 30-day window — excluded.
+      await repo.insertScheduled(
+        id: 'done-out-of-window',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'done-out-of-window',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 5, 1, 8),
+        deepLinkRoute: '/water',
+      );
+      await repo.markActioned(
+        'done-out-of-window',
+        action: 'done',
+        actionAt: DateTime.utc(2026, 5, 1, 8, 5),
+      );
+
+      final result = await repo.actionedDoneRows(windowDays: 30, now: now);
+
+      expect(result.map((r) => r.id), ['done-in-window']);
+    },
+  );
+
   test('cancel soft-deletes the row so it drops out of pendingRows', () async {
     await repo.insertScheduled(
       id: 'r1',
