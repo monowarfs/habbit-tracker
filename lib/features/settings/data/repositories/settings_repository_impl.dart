@@ -106,6 +106,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateSeasonalAccentsEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(seasonalAccentsEnabled: Value(enabled)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -124,6 +131,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           quietHoursEnabled: Value(settings.quietHoursEnabled),
           quietHoursStart: Value(settings.quietHoursStart.format()),
           quietHoursEnd: Value(settings.quietHoursEnd.format()),
+          seasonalAccentsEnabled: Value(settings.seasonalAccentsEnabled),
           updatedAt: Value(now),
         ),
       );
@@ -166,6 +174,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     quietHoursEnabled: row.quietHoursEnabled,
     quietHoursStart: LocalTime.parse(row.quietHoursStart),
     quietHoursEnd: LocalTime.parse(row.quietHoursEnd),
+    seasonalAccentsEnabled: row.seasonalAccentsEnabled,
   );
 }
 

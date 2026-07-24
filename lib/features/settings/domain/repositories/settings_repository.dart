@@ -42,6 +42,10 @@ abstract class SettingsRepository {
     required LocalTime end,
   });
 
+  /// Enables or disables the seasonal accent-color shift (Pohela
+  /// Boishakh today; Eid once a Hijri date source exists).
+  Future<Result<void>> updateSeasonalAccentsEnabled({required bool enabled});
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

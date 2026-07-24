@@ -28,6 +28,7 @@ void main() {
           quietHoursEnabled: false,
           quietHoursStart: LocalTime(22, 0),
           quietHoursEnd: LocalTime(7, 0),
+          seasonalAccentsEnabled: true,
         ),
       );
 
@@ -88,6 +89,7 @@ void main() {
           quietHoursEnabled: false,
           quietHoursStart: LocalTime(22, 0),
           quietHoursEnd: LocalTime(7, 0),
+          seasonalAccentsEnabled: true,
         ),
       );
 
@@ -217,6 +219,14 @@ class _ReactiveSettingsRepo implements SettingsRepository {
         quietHoursEnd: end,
       ),
     );
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> updateSeasonalAccentsEnabled({
+    required bool enabled,
+  }) async {
+    await _update((s) => s.copyWith(seasonalAccentsEnabled: enabled));
     return const Result.success(null);
   }
 

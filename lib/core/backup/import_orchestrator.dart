@@ -187,6 +187,8 @@ Future<Result<void>> applyImport({
             quietHoursEnd: LocalTime.parse(
               appSettingsJson['quietHoursEnd'] as String? ?? '07:00',
             ),
+            seasonalAccentsEnabled:
+                appSettingsJson['seasonalAccentsEnabled'] as bool? ?? true,
           ),
         );
       }
