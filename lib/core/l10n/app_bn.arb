@@ -330,5 +330,9 @@
   "quietHoursEnableToggle": "নীরব সময় চালু করুন",
   "quietHoursStartLabel": "শুরুর সময়",
   "quietHoursEndLabel": "শেষের সময়",
-  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।"
+  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।",
+  "weatherNudgeSettingsTitle": "আবহাওয়া-সচেতন রিমাইন্ডার",
+  "weatherNudgeSettingsExplainerBody": "পানির রিমাইন্ডারে আজকের তাপমাত্রা যোগ করুন। লোকেশন অ্যাক্সেস এবং ইন্টারনেট সংযোগ প্রয়োজন; আপনি যেকোনো সময় এটি বন্ধ করতে পারেন।",
+  "weatherNudgeClauseHot": "আজ {temp}°সে।",
+  "weatherNudgePermissionDeniedSnackbar": "আবহাওয়া-সচেতন রিমাইন্ডারের জন্য লোকেশন অ্যাক্সেস প্রয়োজন"
 }

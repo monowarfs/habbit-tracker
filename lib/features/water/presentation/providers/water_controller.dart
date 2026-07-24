@@ -122,4 +122,14 @@ class WaterController extends _$WaterController {
         );
     if (result case Failure(:final error)) logException(error);
   }
+
+  /// Enables or disables the weather-derived reminder-copy clause
+  /// (`docs/superpowers/specs/02-delightful/
+  /// 07-weather-aware-water-nudge-copy-design.md`).
+  Future<void> updateWeatherNudgeEnabled({required bool enabled}) async {
+    final result = await ref
+        .read(waterRepositoryProvider)
+        .updateWeatherNudgeEnabled(enabled: enabled);
+    if (result case Failure(:final error)) logException(error);
+  }
 }

@@ -2,18 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_permission_explainer_screen.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/water/data/weather_location_resolver.dart';
 import 'package:habit_tracker/features/water/domain/water_goal_presets.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
+import 'package:habit_tracker/features/water/presentation/weather_nudge_explainer.dart';
 
 /// The Water module's own settings: daily goal, quick-add presets, and
 /// reminder preferences (FR-W-01/03/10).
 class WaterSettingsScreen extends ConsumerWidget {
-  /// Creates the water settings screen.
-  const WaterSettingsScreen({super.key});
+  /// Creates the water settings screen. [resolveWeatherLocationOverride]
+  /// overrides `resolveWeatherLocation` — test-only seam, since
+  /// `geolocator`'s platform channel isn't available under `flutter test`.
+  const WaterSettingsScreen({super.key, this.resolveWeatherLocationOverride});
+
+  /// Test seam for `resolveWeatherLocation`.
+  final Future<Result<WeatherLocation>> Function()?
+  resolveWeatherLocationOverride;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -167,6 +176,25 @@ class WaterSettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
+          const Divider(height: 32),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.weatherNudgeSettingsTitle),
+            subtitle: Text(l10n.weatherNudgeSettingsExplainerBody),
+            value: settings.weatherNudgeEnabled,
+            onChanged: (enabled) async {
+              if (enabled) {
+                final granted = await showWeatherNudgeExplainer(
+                  context,
+                  resolveLocation: resolveWeatherLocationOverride,
+                );
+                if (!granted) return;
+              }
+              unawaited(
+                controller.updateWeatherNudgeEnabled(enabled: enabled),
+              );
+            },
+          ),
         ],
       ),
     );
