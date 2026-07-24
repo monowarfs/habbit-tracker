@@ -42,7 +42,7 @@ void main() {
         final defaultTheme = AppTheme.light(isBangla: false);
         final seasonalTheme = AppTheme.light(
           isBangla: false,
-          seasonalSeed: SeasonalAccent.poholaBoishakh.seedColor,
+          seasonalSeed: SeasonalAccent.pohelaBoishakh.seedColor,
         );
         expect(
           seasonalTheme.colorScheme.primary,
@@ -58,7 +58,7 @@ void main() {
         final defaultTheme = AppTheme.light(isBangla: false);
         final seasonalTheme = AppTheme.light(
           isBangla: false,
-          seasonalSeed: SeasonalAccent.poholaBoishakh.seedColor,
+          seasonalSeed: SeasonalAccent.pohelaBoishakh.seedColor,
         );
         final defaultSuccess = defaultTheme
             .extension<AppSemanticColors>()!

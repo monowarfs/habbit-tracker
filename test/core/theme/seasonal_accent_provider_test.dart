@@ -40,7 +40,7 @@ void main() {
       await withClock(Clock.fixed(DateTime.utc(2026, 4, 14, 8)), () {
         expect(
           container.read(seasonalAccentSeedProvider),
-          SeasonalAccent.poholaBoishakh.seedColor,
+          SeasonalAccent.pohelaBoishakh.seedColor,
         );
       });
     },
@@ -80,10 +80,10 @@ void main() {
   );
 
   test(
-    'SeasonalAccent.poholaBoishakh has the expected red seed color',
+    'SeasonalAccent.pohelaBoishakh has the expected red seed color',
     () {
       expect(
-        SeasonalAccent.poholaBoishakh.seedColor,
+        SeasonalAccent.pohelaBoishakh.seedColor,
         const Color(0xFFC62828),
       );
     },

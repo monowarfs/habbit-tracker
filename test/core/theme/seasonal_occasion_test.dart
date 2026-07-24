@@ -7,21 +7,21 @@ void main() {
     test('13 April is inside the Pohela Boishakh window', () {
       expect(
         activeSeasonalOccasion(const LocalDate(2026, 4, 13)),
-        SeasonalOccasion.poholaBoishakh,
+        SeasonalOccasion.pohelaBoishakh,
       );
     });
 
     test('14 April (the day itself) is inside the window', () {
       expect(
         activeSeasonalOccasion(const LocalDate(2026, 4, 14)),
-        SeasonalOccasion.poholaBoishakh,
+        SeasonalOccasion.pohelaBoishakh,
       );
     });
 
     test('15 April is inside the window', () {
       expect(
         activeSeasonalOccasion(const LocalDate(2026, 4, 15)),
-        SeasonalOccasion.poholaBoishakh,
+        SeasonalOccasion.pohelaBoishakh,
       );
     });
 

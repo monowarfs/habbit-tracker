@@ -24,7 +24,7 @@ final seasonalAccentSeedProvider = Provider<Color?>((ref) {
   final occasion = activeSeasonalOccasion(localDayKey(clock.now()));
   return switch (occasion) {
     null => null,
-    SeasonalOccasion.poholaBoishakh => SeasonalAccent.poholaBoishakh.seedColor,
+    SeasonalOccasion.pohelaBoishakh => SeasonalAccent.pohelaBoishakh.seedColor,
     SeasonalOccasion.eid => SeasonalAccent.eid.seedColor,
   };
 });
