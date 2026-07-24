@@ -545,6 +545,30 @@
   "@medicineDetailRefillButton": {
     "description": "Opens the add-stock dialog."
   },
+  "stockProjectionTitle": "Stock Projection",
+  "@stockProjectionTitle": {
+    "description": "Title for the predictive stock-out-date card on the medicine detail screen."
+  },
+  "stockProjectionBody": "At current pace, out in ~{days} days (around {date})",
+  "@stockProjectionBody": {
+    "description": "Body text showing the projected stock-out timeframe.",
+    "placeholders": {
+      "days": {"type": "int"},
+      "date": {"type": "String"}
+    }
+  },
+  "stockProjectionNoData": "Not enough data to project",
+  "@stockProjectionNoData": {
+    "description": "Shown when there isn't enough dose-taken history to compute a stock projection."
+  },
+  "stockProjectionLowConfidence": "Based on limited data — more accurate as you log more doses",
+  "@stockProjectionLowConfidence": {
+    "description": "Footnote shown below a low-confidence stock projection."
+  },
+  "stockProjectionAlreadyOut": "Stock depleted",
+  "@stockProjectionAlreadyOut": {
+    "description": "Shown when a medicine's tracked stock count is already zero."
+  },
   "medicineDetailStatsSummary": "Last 30 days: {pct}% taken ({missed} not taken, {skipped} skipped)",
   "@medicineDetailStatsSummary": {
     "description": "30-day adherence summary on the medicine detail screen. 'not taken' (not 'missed') keeps this consistent with dose_tile.dart's neutral wording (row 1 of the copy-pass audit).",
