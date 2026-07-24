@@ -67,6 +67,10 @@ abstract class SettingsRepository {
   /// Enables or disables Hijri-calendar Ramadan auto-detection.
   Future<Result<void>> updateRamadanAutoDetectEnabled({required bool enabled});
 
+  /// Enables or disables adaptive reminder timing (auto-shifting reminder
+  /// times based on historical response offsets).
+  Future<Result<void>> updateAdaptiveReminderEnabled({required bool enabled});
+
 
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).

@@ -53,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -157,6 +157,14 @@ class AppDatabase extends _$AppDatabase {
           waterSettingsTable.lastWeatherFetchedAtMillis,
         );
 
+      }
+      if (from < 9) {
+        // Adaptive reminder timing opt-in (`docs/superpowers/plans/
+        // ai-powered/01-adaptive-reminder-timing-impl-plan.md`).
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.adaptiveReminderEnabled,
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

@@ -56,6 +56,12 @@ class AppSettingsTable extends Table {
   BoolColumn get ramadanAutoDetectEnabled =>
       boolean().withDefault(const Constant(true))();
 
+  /// Whether reminder times auto-shift based on historical `done`-action
+  /// response offsets (`docs/superpowers/plans/ai-powered/
+  /// 01-adaptive-reminder-timing-impl-plan.md`) — default `false`, opt-in.
+  BoolColumn get adaptiveReminderEnabled =>
+      boolean().withDefault(const Constant(false))();
+
 
   /// Whether quiet-hours notification suppression is active.
   BoolColumn get quietHoursEnabled =>

@@ -65,5 +65,7 @@ sealed class AppSettings with _$AppSettings {
     bool? ramadanModeManualOverride,
     @Default(true) bool ramadanAutoDetectEnabled,
 
+    @Default(false) bool adaptiveReminderEnabled,
+
   }) = _AppSettings;
 }
