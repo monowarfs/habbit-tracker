@@ -38,8 +38,8 @@ class SeasonalAccent {
   final Color seedColor;
 
   /// Pohela Boishakh — traditional red-and-white motif.
-  static const poholaBoishakh = SeasonalAccent(
-    occasion: SeasonalOccasion.poholaBoishakh,
+  static const pohelaBoishakh = SeasonalAccent(
+    occasion: SeasonalOccasion.pohelaBoishakh,
     seedColor: Color(0xFFC62828),
   );
 

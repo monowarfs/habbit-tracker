@@ -5,7 +5,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 /// 12-seasonal-theme-accents-design.md`).
 enum SeasonalOccasion {
   /// Pohela Boishakh (Bengali New Year), 14 April Gregorian.
-  poholaBoishakh,
+  pohelaBoishakh,
 
   /// Eid-ul-Fitr/Eid-ul-Adha — detection blocked on a Hijri date source
   /// this app doesn't have yet (see [activeSeasonalOccasion]'s doc
@@ -31,7 +31,7 @@ enum SeasonalOccasion {
 /// unconditionally never returns it.
 SeasonalOccasion? activeSeasonalOccasion(LocalDate today) {
   if (today.month == 4 && (today.day - 14).abs() <= 1) {
-    return SeasonalOccasion.poholaBoishakh;
+    return SeasonalOccasion.pohelaBoishakh;
   }
   return null;
 }
