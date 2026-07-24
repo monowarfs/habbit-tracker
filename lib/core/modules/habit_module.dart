@@ -110,6 +110,11 @@ enum ModuleDayStatusKind {
   /// progress).
   missed,
 
+  /// The module was paused on this day (e.g. life-event pause or all
+  /// items archived). Paused days are excluded from streak calculations
+  /// — they neither count nor break streaks.
+  paused,
+
   /// No data for this day (before the module's first use, or a day still
   /// in progress with nothing logged yet).
   none,

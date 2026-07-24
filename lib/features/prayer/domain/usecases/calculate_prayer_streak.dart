@@ -36,6 +36,7 @@ class CalculatePrayerStreakUseCase {
     required Map<LocalDate, List<PrayerRecord>> recordsByDay,
     required LocalDate earliestDay,
     required LocalDate today,
+    Set<LocalDate> pausedDays = const {},
   }) {
     if (earliestDay.compareTo(today) > 0) {
       return const PrayerStreakResult(current: 0, longest: 0);
@@ -47,6 +48,10 @@ class CalculatePrayerStreakUseCase {
 
     var day = earliestDay;
     while (day.compareTo(today) <= 0) {
+      if (pausedDays.contains(day)) {
+        day = day.addDays(1);
+        continue;
+      }
       final records = recordsByDay[day] ?? const [];
       if (records.length < 5 ||
           records.any((r) => r.storedStatus == PrayerStatus.upcoming)) {
