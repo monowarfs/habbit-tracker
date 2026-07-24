@@ -116,6 +116,16 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable.seasonalAccentsEnabled,
         );
 
+        // "Why this matters" micro-education card dismissal flags.
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.waterHydrationHintSeenAt,
+        );
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.prayerQadhaHintSeenAt,
+        );
+
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

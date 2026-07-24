@@ -118,6 +118,23 @@ class SettingsRepositoryImpl implements SettingsRepository {
     AppSettingsTableCompanion(seasonalAccentsEnabled: Value(enabled)),
   );
 
+  Future<Result<void>> markWaterHydrationHintSeen() => _update(
+    AppSettingsTableCompanion(
+      waterHydrationHintSeenAt: Value(
+        clock.now().toUtc().millisecondsSinceEpoch,
+      ),
+    ),
+  );
+
+  @override
+  Future<Result<void>> markPrayerQadhaHintSeen() => _update(
+    AppSettingsTableCompanion(
+      prayerQadhaHintSeenAt: Value(
+        clock.now().toUtc().millisecondsSinceEpoch,
+      ),
+    ),
+  );
+
 
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
@@ -187,6 +204,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
     quietHoursEnd: LocalTime.parse(row.quietHoursEnd),
     displayName: row.displayName,
     seasonalAccentsEnabled: row.seasonalAccentsEnabled,
+
+    waterHydrationHintSeenAt: row.waterHydrationHintSeenAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.waterHydrationHintSeenAt!,
+            isUtc: true,
+          ),
+    prayerQadhaHintSeenAt: row.prayerQadhaHintSeenAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.prayerQadhaHintSeenAt!,
+            isUtc: true,
+          ),
 
   );
 }

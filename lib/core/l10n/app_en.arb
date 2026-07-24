@@ -313,6 +313,10 @@
   "@waterPresetActive": {
     "description": "Water goal preset chip: 3000ml/day."
   },
+  "waterHydrationHintCard": "Water helps regulate temperature, joints, and energy — most adults need roughly 2-3 liters a day, more if it's hot or you're active.",
+  "@waterHydrationHintCard": {
+    "description": "One-time \"why this matters\" hint card on the Water settings screen, explaining the health rationale for a daily water goal."
+  },
   "medicineHomeEmpty": "No doses scheduled for today",
   "@medicineHomeEmpty": {
     "description": "Shown on the medicine home screen when there are no doses today."
@@ -598,6 +602,8 @@
   "@prayerQadhaMakeupButton": {"description": "Tooltip for the -1 Qadha make-up control."},
   "prayerQadhaEditButton": "Set balance",
   "@prayerQadhaEditButton": {"description": "Tooltip/title for the manual Qadha balance entry dialog."},
+  "prayerQadhaHintCard": "Qadha lets you make up a missed prayer later — it's a normal part of practice, not a separate obligation on top of your regular five.",
+  "@prayerQadhaHintCard": {"description": "One-time \"why this matters\" hint card on the Qadha screen, explaining what Qadha is for."},
   "prayerStatsTitle": "Prayer stats",
   "@prayerStatsTitle": {"description": "Title of the prayer stats screen."},
   "prayerStatsCurrentStreak": "Current streak: {days} days",

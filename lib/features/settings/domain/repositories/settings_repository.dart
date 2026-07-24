@@ -52,6 +52,14 @@ abstract class SettingsRepository {
   /// Boishakh today; Eid once a Hijri date source exists).
   Future<Result<void>> updateSeasonalAccentsEnabled({required bool enabled});
 
+  /// Marks the Water hydration-science "why this matters" card as shown
+  /// — it never renders again after this.
+  Future<Result<void>> markWaterHydrationHintSeen();
+
+  /// Marks the Prayer Qadha-context "why this matters" card as shown —
+  /// it never renders again after this.
+  Future<Result<void>> markPrayerQadhaHintSeen();
+
 
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).

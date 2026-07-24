@@ -248,4 +248,14 @@ class _ReactiveSettingsRepo implements SettingsRepository {
     await _update((_) => settings);
     return const Result.success(null);
   }
+
+  @override
+  Future<Result<void>> markWaterHydrationHintSeen() async {
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> markPrayerQadhaHintSeen() async {
+    return const Result.success(null);
+  }
 }

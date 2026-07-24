@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/widgets/dismissible_hint_card.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 
 Future<void> _pumpWaterSettings(WidgetTester tester, AppDatabase db) async {
@@ -78,4 +79,31 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  testWidgets(
+    'shows the hydration hint card until dismissed, then never again',
+    (tester) async {
+      await _pumpWaterSettings(tester, db);
+
+      expect(
+        find.text(
+          "Water helps regulate temperature, joints, and energy — most "
+          "adults need roughly 2-3 liters a day, more if it's hot or "
+          "you're active.",
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DismissibleHintCard), findsNothing);
+
+      await disposeTree(tester);
+      await _pumpWaterSettings(tester, db);
+      expect(find.byType(DismissibleHintCard), findsNothing);
+
+      await disposeTree(tester);
+    },
+  );
 }

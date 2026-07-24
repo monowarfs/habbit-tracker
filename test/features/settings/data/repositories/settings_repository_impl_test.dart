@@ -41,6 +41,9 @@ void main() {
 
     expect(firstRead.seasonalAccentsEnabled, isTrue);
 
+    expect(firstRead.waterHydrationHintSeenAt, isNull);
+    expect(firstRead.prayerQadhaHintSeenAt, isNull);
+
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -62,6 +65,11 @@ void main() {
     );
     expect(seasonalResult, isA<Success<void>>());
 
+    final waterHintResult = await repo1.markWaterHydrationHintSeen();
+    expect(waterHintResult, isA<Success<void>>());
+    final prayerHintResult = await repo1.markPrayerQadhaHintSeen();
+    expect(prayerHintResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -76,6 +84,9 @@ void main() {
     expect(afterRestart.soundEnabled, isTrue);
 
     expect(afterRestart.seasonalAccentsEnabled, isFalse);
+
+    expect(afterRestart.waterHydrationHintSeenAt, isNotNull);
+    expect(afterRestart.prayerQadhaHintSeenAt, isNotNull);
 
 
     await db2.close();

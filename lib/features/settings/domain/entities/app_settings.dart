@@ -59,5 +59,8 @@ sealed class AppSettings with _$AppSettings {
     String? displayName,
     required bool seasonalAccentsEnabled,
 
+    DateTime? waterHydrationHintSeenAt,
+    DateTime? prayerQadhaHintSeenAt,
+
   }) = _AppSettings;
 }
