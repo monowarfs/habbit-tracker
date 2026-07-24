@@ -22,6 +22,7 @@ const _testSettings = AppSettings(
   pinLockTimeoutSeconds: 0,
   biometricEnabled: false,
   screenPrivacyEnabled: false,
+  soundEnabled: false,
   quietHoursEnabled: false,
   quietHoursStart: LocalTime(22, 0),
   quietHoursEnd: LocalTime(7, 0),
@@ -166,6 +167,10 @@ class _StubSettingsRepo implements SettingsRepository {
     required LocalTime start,
     required LocalTime end,
   }) => Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
 
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>

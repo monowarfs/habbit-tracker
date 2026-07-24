@@ -88,6 +88,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
       );
 
   @override
+  Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
+      _update(AppSettingsTableCompanion(soundEnabled: Value(enabled)));
+
+  @override
   Future<Result<void>> updateLastSeenAppVersion(String version) => _update(
     AppSettingsTableCompanion(lastSeenAppVersion: Value(version)),
   );
@@ -121,6 +125,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           pinLockTimeoutSeconds: Value(settings.pinLockTimeoutSeconds),
           biometricEnabled: Value(settings.biometricEnabled),
           screenPrivacyEnabled: Value(settings.screenPrivacyEnabled),
+          soundEnabled: Value(settings.soundEnabled),
           quietHoursEnabled: Value(settings.quietHoursEnabled),
           quietHoursStart: Value(settings.quietHoursStart.format()),
           quietHoursEnd: Value(settings.quietHoursEnd.format()),
@@ -156,6 +161,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     pinLockTimeoutSeconds: row.pinLockTimeoutSeconds,
     biometricEnabled: row.biometricEnabled,
     screenPrivacyEnabled: row.screenPrivacyEnabled,
+    soundEnabled: row.soundEnabled,
     onboardingCompletedAt: row.onboardingCompletedAt == null
         ? null
         : DateTime.fromMillisecondsSinceEpoch(

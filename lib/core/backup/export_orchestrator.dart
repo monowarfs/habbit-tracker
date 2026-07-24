@@ -44,6 +44,7 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'pinLockTimeoutSeconds': settings.pinLockTimeoutSeconds,
   'biometricEnabled': settings.biometricEnabled,
   'screenPrivacyEnabled': settings.screenPrivacyEnabled,
+  'soundEnabled': settings.soundEnabled,
   'quietHoursEnabled': settings.quietHoursEnabled,
   'quietHoursStart': settings.quietHoursStart.format(),
   'quietHoursEnd': settings.quietHoursEnd.format(),
