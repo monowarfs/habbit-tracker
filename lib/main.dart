@@ -18,12 +18,13 @@ import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/screen_privacy_service.dart';
 import 'package:habit_tracker/core/shortcuts/quick_action_handler.dart';
 import 'package:habit_tracker/core/shortcuts/shortcut_items.dart';
+import 'package:habit_tracker/core/stacking/habit_stack_suggestion_evaluator.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/wearable/wearable_sync_helper.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
 import 'package:habit_tracker/core/widgets/widget_background_handler.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
-import 'package:habit_tracker/core/wearable/wearable_sync_helper.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
@@ -89,6 +90,10 @@ Future<void> main() async {
       // top up on app start; `_AppLifecycleReplanner` below repeats this on
       // every subsequent resume.
       unawaited(planAndApplyNotifications(db: db));
+      // Habit-stacking suggestions piggyback on the same trigger — no
+      // new timer, no new call site (`docs/superpowers/specs/
+      // 02-delightful/04-habit-stacking-suggestions-design.md`).
+      unawaited(evaluateStackSuggestions(db: db));
     },
     (error, stack) =>
         logger.e('uncaught zone error', error: error, stackTrace: stack),
@@ -181,6 +186,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     // foreground resume, not just cold start.
     if (state == AppLifecycleState.resumed) {
       unawaited(planAndApplyNotifications(db: ref.read(databaseProvider)));
+      unawaited(evaluateStackSuggestions(db: ref.read(databaseProvider)));
       unawaited(refreshAllWidgets(ref.read(databaseProvider)));
       unawaited(syncWearableData(ref.read(databaseProvider)));
     }
