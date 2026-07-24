@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/widgets/dismissible_hint_card.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// Five Qadha counters with a "−1" make-up control and manual balance
 /// entry (FR-P-04/05).
@@ -16,10 +18,18 @@ class PrayerQadhaScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final counters = ref.watch(prayerQadhaCountersProvider).value ?? const [];
+    final appSettings = ref.watch(appSettingsProvider).value;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.prayerQadhaTitle)),
       body: ListView(
         children: [
+          if (appSettings?.prayerQadhaHintSeenAt == null)
+            DismissibleHintCard(
+              message: l10n.prayerQadhaHintCard,
+              onDismiss: () => ref
+                  .read(settingsRepositoryProvider)
+                  .markPrayerQadhaHintSeen(),
+            ),
           for (final counter in counters)
             ListTile(
               title: Text(_labelFor(l10n, counter.prayerName)),

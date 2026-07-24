@@ -142,6 +142,7 @@
   "prayerQadhaCountLabel": "{count}টি বাকি",
   "prayerQadhaMakeupButton": "একটি আদায় হিসেবে চিহ্নিত করুন",
   "prayerQadhaEditButton": "ব্যালেন্স নির্ধারণ করুন",
+  "prayerQadhaHintCard": "কাজা আপনাকে পরে একটি ছুটে যাওয়া নামাজ আদায় করার সুযোগ দেয় — এটি অনুশীলনের একটি স্বাভাবিক অংশ, আপনার নিয়মিত পাঁচ ওয়াক্তের বাইরে আলাদা কোনো দায়িত্ব নয়।",
   "prayerStatsTitle": "নামাজের পরিসংখ্যান",
   "prayerStatsCurrentStreak": "বর্তমান ধারাবাহিকতা: {days} দিন",
   "prayerStatsLongestStreak": "দীর্ঘতম ধারাবাহিকতা: {days} দিন",
