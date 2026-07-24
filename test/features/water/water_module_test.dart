@@ -138,9 +138,11 @@ AppSettings _appSettings({
   pinLockTimeoutSeconds: 0,
   biometricEnabled: true,
   screenPrivacyEnabled: false,
+      soundEnabled: false,
   quietHoursEnabled: false,
   quietHoursStart: const LocalTime(22, 0),
   quietHoursEnd: const LocalTime(7, 0),
+      seasonalAccentsEnabled: true,
   ramadanModeManualOverride: ramadanModeManualOverride,
   ramadanAutoDetectEnabled: ramadanAutoDetectEnabled,
 );

@@ -229,25 +229,34 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateDisplayName(String? name) async {
     await _update((s) => s.copyWith(displayName: name));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> updateRamadanModeManualOverride(bool? override) async {
     await _update((s) => s.copyWith(ramadanModeManualOverride: override));
-
     return const Result.success(null);
   }
 
   @override
   Future<Result<void>> updateSoundEnabled({required bool enabled}) async {
     await _update((s) => s.copyWith(soundEnabled: enabled));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> updateSeasonalAccentsEnabled({
     required bool enabled,
   }) async {
     await _update((s) => s.copyWith(seasonalAccentsEnabled: enabled));
+    return const Result.success(null);
+  }
 
+  @override
   Future<Result<void>> updateRamadanAutoDetectEnabled({
     required bool enabled,
   }) async {
     await _update((s) => s.copyWith(ramadanAutoDetectEnabled: enabled));
-
     return const Result.success(null);
   }
 

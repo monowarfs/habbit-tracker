@@ -83,6 +83,26 @@ class _FakeSettingsRepo implements SettingsRepository {
     return const Result.success(null);
   }
 
+
+  @override
+  Future<Result<void>> updateDisplayName(String? name) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateSeasonalAccentsEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> markWaterHydrationHintSeen() =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> markPrayerQadhaHintSeen() =>
+      Future.value(const Result.success(null));
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
       Future.value(const Result.success(null));
@@ -96,9 +116,11 @@ const _initial = AppSettings(
   pinLockTimeoutSeconds: 0,
   biometricEnabled: true,
   screenPrivacyEnabled: false,
+      soundEnabled: false,
   quietHoursEnabled: false,
   quietHoursStart: LocalTime(22, 0),
   quietHoursEnd: LocalTime(7, 0),
+  seasonalAccentsEnabled: true,
 );
 
 void main() {

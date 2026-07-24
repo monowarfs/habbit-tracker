@@ -55,6 +55,7 @@
   "settingsDisplayNameNotSet": "Not set",
   "@settingsDisplayNameNotSet": {
     "description": "Subtitle shown on the display-name row when no name has been set yet."
+  },
   "settingsSeasonalAccentsToggle": "Seasonal color accents",
   "@settingsSeasonalAccentsToggle": {
     "description": "Toggle label for the seasonal theme-accent opt-out."
@@ -1106,7 +1107,7 @@
   "settingsSoundToggle": "Play a chime when a dose is marked done",
   "@settingsSoundToggle": {
     "description": "Switch label enabling/disabling the dose-done completion chime."
-
+  },
   "settingsRamadanMode": "Ramadan mode",
   "@settingsRamadanMode": {
     "description": "Settings-home nav entry linking to the Ramadan mode settings screen."
@@ -1148,7 +1149,7 @@
   "iftarLabel": "Iftar",
   "@iftarLabel": {
     "description": "Fallback label once Maghrib has just passed and a countdown is no longer meaningful."
-
+  },
   "weatherNudgeSettingsTitle": "Weather-aware reminders",
   "@weatherNudgeSettingsTitle": {
     "description": "Toggle title for weather-derived reminder copy."

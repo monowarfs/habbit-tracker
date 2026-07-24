@@ -8,6 +8,7 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 
 - **3 Habit Modules** — Water, Medicine, Prayer — each with full domain/data/presentation slices
 - **Material 3 Design** — light/dark/system theme, teal seed color, per-module accent colors, `AppSemanticColors` extension
+- **Seasonal Accent Colors** — automatic Pohela Boishakh (Bengali New Year) theme accent with opt-out toggle
 - **Bengali & English** — full bilingual UI via `gen_l10n`, including Bangla line-height adjustments
 - **Bottom Navigation** — GoRouter `StatefulShellRoute` with 5 tabs: Dashboard, Water, Medicine, Prayer, Settings
 - **Offline-First** — Drift (SQLite) database, no backend required, all data lives on device
@@ -19,6 +20,10 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Streak calculation and achievement system
 - Stats screen with period bar charts and history calendar
 - Per-reminder-window overrides (different times on different weekdays)
+- **Weather-aware reminders** — opt-in temperature clause in reminder copy (Open-Meteo API, cached via WorkManager)
+- **Ramadan-aware reminders** — fasting-aware window splitting (before Fajr / after Maghrib) with Sehri/Iftar relabeling
+- **Habit-stacking suggestions** — detects Medicine/Prayer → Water correlations and nudges reminder timing
+- **Empty-state illustrations** — custom-painted water drop illustration on empty log screen
 
 ### Medicine
 
@@ -27,6 +32,8 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Stock ledger with low-stock crossing detection
 - 30-day rolling dose materialization window
 - Dose timeline, detail, and stats screens
+- **Optional completion chime** — opt-in sound effect when marking a dose done (respects silent mode)
+- **Gentle no-guilt copy** — missed doses use neutral outline color instead of error red
 
 ### Prayer
 
@@ -35,6 +42,9 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Daily checklist toggle with per-day history calendar
 - Qadha (make-up) counter with −1 control
 - Streak, adherence %, and 7-day chart
+- **Ramadan mode** — Hijri-calendar detection, Sehri/Iftar countdown chips, fasting-aware reminder relabeling
+- **Prayer countdown widget** — Android home screen widget showing time until next prayer
+- **Gentle no-guilt copy** — "Due for Qadha" framing replaces "Missed" verdict
 
 ### Notifications & Reminders
 
@@ -43,6 +53,8 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Quiet-hours suppression (app-defined sleep window, DST-immune)
 - Android WorkManager periodic top-up (8-hour cycle)
 - Per-module `pendingNotifications()` contract — each module owns its own schedule
+- **Weather-aware copy** — Water reminders include temperature when fresh weather data is cached
+- **Ramadan-aware scheduling** — Water reminders split around fasting hours (before Fajr / after Maghrib)
 
 ### Security
 
@@ -55,24 +67,29 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 
 ### Dashboard
 
+- **Personalized greeting** — time-of-day-aware greeting with optional display name
 - Day-completion indicator per module
 - Upcoming strip showing next actionable items
 - Quick-actions row (one-tap log/mark-done)
 - Global month calendar (bottom sheet)
 - Cross-module search
+- **Habit-stacking suggestions** — dismissible cards detecting cross-module correlations
+- **Micro-education cards** — one-time "why this matters" hints for Water hydration and Prayer Qadha
 
 ### Data Management
 
 - Full backup export/import (JSON envelope, per-module round-trip)
 - Import validation with preview (row counts per module, replace warning)
 - Export/share via OS share sheet
+- **Shareable monthly recap card** — 1080×1920 gradient card with module streaks, shareable via OS share sheet
 
 ### Home Screen Widgets (Android)
 
 - Interactive widgets for Water (quick-add) and Medicine (mark-done)
-- Display-only widget for Prayer (next prayer time)
+- **Prayer countdown widget** — shows time remaining until next prayer, auto-refreshes every 30 minutes
 - Background tap handler — actions work without opening the app
 - Refresh on foreground resume + periodic WorkManager top-up
+- **In-app widget preview** — Prayer settings screen shows a live countdown preview
 
 ### Wearable (Flutter-side foundation)
 
@@ -98,6 +115,7 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Module-contributed achievement definitions
 - Progress evaluated from each module's own data
 - Achievement gallery screen
+- **Streak celebration overlay** — brief confetti animation on streak milestones (7/30/100-day), respects reduced motion
 
 ### Responsive Layout
 
@@ -118,6 +136,7 @@ Feature-first, Clean Architecture (`domain` / `data` / `presentation`) per modul
 lib/
 ├── core/                        # Shared infrastructure
 │   ├── achievements/            # Achievement engine + repository
+│   ├── audio/                   # ChimePlayer (dose-done sound)
 │   ├── changelog/               # What's New data + presentation
 │   ├── database/                # Drift database, tables, migrations
 │   ├── error/                   # AppException / Result<T> taxonomy
@@ -129,17 +148,18 @@ lib/
 │   ├── router/                  # GoRouter config + route constants
 │   ├── security/                # PIN lock, biometrics, screen privacy
 │   ├── shortcuts/               # App shortcuts / quick actions
-│   ├── theme/                   # Material 3 themes, module accents
-│   ├── utils/                   # LocalDate, LocalTime, day bucketing
+│   ├── stacking/                # Habit-stacking correlation heuristic
+│   ├── theme/                   # Material 3 themes, module accents, seasonal accents
+│   ├── utils/                   # LocalDate, LocalTime, day bucketing, Hijri, greeting
 │   ├── wearable/                # Wear OS MethodChannel bridge
-│   └── widgets/                 # Shared widgets, responsive breakpoints
+│   └── widgets/                 # Shared widgets, illustrations, responsive breakpoints
 ├── features/
-│   ├── dashboard/               # Dashboard screen
+│   ├── dashboard/               # Dashboard screen + greeting + stacking suggestions
 │   ├── medicine/                # Medicine module (domain/data/presentation)
-│   ├── prayer/                  # Prayer module
-│   ├── reports/                 # Reports screen
+│   ├── prayer/                  # Prayer module + Ramadan framing
+│   ├── reports/                 # Reports screen + shareable recap card
 │   ├── settings/                # Settings (domain/data/presentation)
-│   └── water/                   # Water module
+│   └── water/                   # Water module + weather client
 └── main.dart                    # Entry point, ProviderContainer, lifecycle hooks
 ```
 
@@ -219,6 +239,11 @@ dart run flutter_native_splash:create
 | Security | flutter_secure_storage, local_auth, PBKDF2 |
 | Localization | gen_l10n (en/bn) |
 | Analysis | very_good_analysis |
+| Audio | audioplayers (dose-done chime) |
+| Weather | Open-Meteo API (weather-aware reminders) |
+| Hijri Calendar | hijri (Ramadan detection) |
+| Location | geolocator (GPS for weather/prayer) |
+| Sharing | share_plus (recap card sharing) |
 
 ## Testing
 

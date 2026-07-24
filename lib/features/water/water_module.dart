@@ -14,11 +14,11 @@ import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_times.dart';
-
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
+import 'package:habit_tracker/features/water/presentation/weather_nudge_copy.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
@@ -32,7 +32,6 @@ import 'package:habit_tracker/features/water/presentation/screens/water_home_scr
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
-import 'package:habit_tracker/features/water/presentation/weather_nudge_copy.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
 
 /// The Water module's [HabitModule] registration
@@ -174,40 +173,6 @@ class WaterModule implements HabitModule {
             manualOverride: appSettings.ramadanModeManualOverride,
             autoDetectEnabled: appSettings.ramadanAutoDetectEnabled,
             today: day,
-      final day = localDayKey(now).addDays(dayOffset);
-      final weekday = day.toDateTimeUtc().weekday;
-      final override = settings.reminderWindowOverrides[weekday];
-      final windowStartTime = override?.start ?? settings.reminderWindowStart;
-      final windowEndTime = override?.end ?? settings.reminderWindowEnd;
-      var slot = day.toDateTimeUtc().toLocal().add(
-        Duration(
-          hours: windowStartTime.hour,
-          minutes: windowStartTime.minute,
-        ),
-      );
-      final windowEnd = day.toDateTimeUtc().toLocal().add(
-        Duration(
-          hours: windowEndTime.hour,
-          minutes: windowEndTime.minute,
-        ),
-      );
-      while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
-        if (slot.isAfter(now)) {
-          notifications.add(
-            PendingNotification(
-              id:
-                  'water_reminder_'
-                  '${day.year}${day.month.toString().padLeft(2, '0')}'
-                  '${day.day.toString().padLeft(2, '0')}_'
-                  '${slot.hour}_${slot.minute}',
-              scheduledAt: slot,
-              title: 'Time to drink water',
-              body: body,
-              sourceType: 'water_reminder',
-              deepLinkRoute: '/water',
-              quietHoursSuppressible: true,
-            ),
-
           );
       final windows = ramadanActive
           ? await _fastingAwareWindows(day, settings)
@@ -235,7 +200,7 @@ class WaterModule implements HabitModule {
                     '${slot.hour}_${slot.minute}',
                 scheduledAt: slot,
                 title: 'Time to drink water',
-                body: 'Keep your water goal on track.',
+                body: body,
                 sourceType: 'water_reminder',
                 deepLinkRoute: '/water',
                 quietHoursSuppressible: true,
@@ -584,11 +549,6 @@ class WaterModule implements HabitModule {
     final today = localDayKey(clock.now());
     final goal = ResolveGoalForDateUseCase().execute(goals, today);
     final entries = await _repository.watchEntriesInRange(today, today).first;
-    final goal = const ResolveGoalForDateUseCase().execute(goals, today);
-    final entries = await _repository
-        .watchEntriesInRange(today, today)
-        .first;
-
     final totalMl = entries.fold(0, (sum, e) => sum + e.amountMl);
     final amountMl = settings.quickAddAmountsMl.isEmpty
         ? 250

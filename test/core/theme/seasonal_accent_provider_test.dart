@@ -17,6 +17,7 @@ AppSettings _makeSettings({bool seasonalAccentsEnabled = true}) =>
       pinLockTimeoutSeconds: 0,
       biometricEnabled: true,
       screenPrivacyEnabled: false,
+      soundEnabled: false,
       quietHoursEnabled: false,
       quietHoursStart: const LocalTime(22, 0),
       quietHoursEnd: const LocalTime(7, 0),

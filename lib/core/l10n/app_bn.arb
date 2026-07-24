@@ -363,8 +363,7 @@
   "prayerCountdownFormatMinutes": "{minutes} মিনিট",
   "prayerCountdownFormatHoursMinutes": "{hours}ঘ {minutes}মি",
   "settingsSound": "শব্দ",
-  "settingsSoundToggle": "ডোজ সম্পন্ন হিসেবে চিহ্নিত হলে একটি সুর বাজান"
-
+  "settingsSoundToggle": "ডোজ সম্পন্ন হিসেবে চিহ্নিত হলে একটি সুর বাজান",
   "settingsRamadanMode": "রমজান মোড",
   "ramadanModeSettingsTitle": "রমজান মোড",
   "ramadanModeSettingsSubtitle": "রোজার সময় পানির রিমাইন্ডার সরিয়ে দিন এবং সেহরি/ইফতারের কাউন্টডাউন দেখুন",
@@ -373,8 +372,7 @@
   "sehriEndsCountdown": "সেহরি শেষ হবে {duration} পরে",
   "iftarCountdown": "ইফতার {duration} পরে",
   "sehriEndsLabel": "সেহরি শেষ",
-  "iftarLabel": "ইফতার"
-
+  "iftarLabel": "ইফতার",
   "weatherNudgeSettingsTitle": "আবহাওয়া-সচেতন রিমাইন্ডার",
   "weatherNudgeSettingsExplainerBody": "পানির রিমাইন্ডারে আজকের তাপমাত্রা যোগ করুন। লোকেশন অ্যাক্সেস এবং ইন্টারনেট সংযোগ প্রয়োজন; আপনি যেকোনো সময় এটি বন্ধ করতে পারেন।",
   "weatherNudgeClauseHot": "আজ {temp}°সে।",
