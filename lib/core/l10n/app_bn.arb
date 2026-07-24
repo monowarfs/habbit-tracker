@@ -330,5 +330,7 @@
   "quietHoursEnableToggle": "নীরব সময় চালু করুন",
   "quietHoursStartLabel": "শুরুর সময়",
   "quietHoursEndLabel": "শেষের সময়",
-  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।"
+  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।",
+  "settingsSound": "শব্দ",
+  "settingsSoundToggle": "ডোজ সম্পন্ন হিসেবে চিহ্নিত হলে একটি সুর বাজান"
 }
