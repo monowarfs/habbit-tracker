@@ -177,6 +177,34 @@
   "@waterAddEntryNotesLabel": {
     "description": "Label for the optional free-text notes field on the add/edit water entry screen."
   },
+  "waterQuickAddHintText": "e.g. 2 glasses just now",
+  "@waterQuickAddHintText": {
+    "description": "Hint text for the natural-language quick-add text field."
+  },
+  "waterQuickAddPreviewTitle": "Log {amount} at {time}",
+  "@waterQuickAddPreviewTitle": {
+    "description": "Preview title showing the parsed amount and time before confirming a natural-language quick-add.",
+    "placeholders": {
+      "amount": {"type": "String"},
+      "time": {"type": "String"}
+    }
+  },
+  "waterQuickAddConfirmButton": "Log",
+  "@waterQuickAddConfirmButton": {
+    "description": "Button confirming a parsed natural-language quick-add entry."
+  },
+  "waterQuickAddEditButton": "Edit",
+  "@waterQuickAddEditButton": {
+    "description": "Button switching from the natural-language quick-add preview to the custom-amount form."
+  },
+  "waterQuickAddUnparsedMessage": "Couldn't understand that — try a number and unit",
+  "@waterQuickAddUnparsedMessage": {
+    "description": "Shown when the natural-language quick-add parser couldn't extract an amount from the typed text."
+  },
+  "waterQuickAddConfidenceWarning": "Check this looks right",
+  "@waterQuickAddConfidenceWarning": {
+    "description": "Shown below a medium/low confidence natural-language quick-add preview, prompting the user to double-check before logging."
+  },
   "logNotesSheetTitle": "Notes",
   "@logNotesSheetTitle": {
     "description": "Title of the shared bottom sheet used to add/edit a free-text note on a Medicine dose or Prayer record."
