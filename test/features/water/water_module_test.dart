@@ -92,12 +92,18 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
 WaterSettings _settings({
   required bool reminderEnabled,
   List<int> quickAddAmountsMl = const [250, 500, 750],
+  bool weatherNudgeEnabled = false,
+  double? lastWeatherTemperatureCelsius,
+  DateTime? lastWeatherFetchedAt,
 }) => WaterSettings(
   quickAddAmountsMl: quickAddAmountsMl,
   reminderEnabled: reminderEnabled,
   reminderIntervalMinutes: 120,
   reminderWindowStart: const LocalTime(8, 0),
   reminderWindowEnd: const LocalTime(10, 0),
+  weatherNudgeEnabled: weatherNudgeEnabled,
+  lastWeatherTemperatureCelsius: lastWeatherTemperatureCelsius,
+  lastWeatherFetchedAt: lastWeatherFetchedAt,
 );
 
 void main() {
@@ -133,6 +139,74 @@ void main() {
             isTrue,
           );
         }
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications appends the weather clause when enabled and the '
+    'cached reading is fresh',
+    () async {
+      final now = DateTime(2026, 6, 1, 9);
+      final module = WaterModule(
+        _FakeWaterRepository(
+          _settings(
+            reminderEnabled: true,
+            weatherNudgeEnabled: true,
+            lastWeatherTemperatureCelsius: 34,
+            lastWeatherFetchedAt: now.subtract(const Duration(hours: 1)),
+          ),
+        ),
+      );
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await module.pendingNotifications();
+        expect(
+          notifications.first.body,
+          "Keep your water goal on track. It's 34°C today.",
+        );
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications omits the weather clause when the cached '
+    'reading is older than the 6-hour staleness ceiling',
+    () async {
+      final now = DateTime(2026, 6, 1, 9);
+      final module = WaterModule(
+        _FakeWaterRepository(
+          _settings(
+            reminderEnabled: true,
+            weatherNudgeEnabled: true,
+            lastWeatherTemperatureCelsius: 34,
+            lastWeatherFetchedAt: now.subtract(const Duration(hours: 7)),
+          ),
+        ),
+      );
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await module.pendingNotifications();
+        expect(notifications.first.body, 'Keep your water goal on track.');
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications omits the weather clause when weatherNudgeEnabled '
+    'is false, even with a fresh cached reading',
+    () async {
+      final now = DateTime(2026, 6, 1, 9);
+      final module = WaterModule(
+        _FakeWaterRepository(
+          _settings(
+            reminderEnabled: true,
+            lastWeatherTemperatureCelsius: 34,
+            lastWeatherFetchedAt: now,
+          ),
+        ),
+      );
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await module.pendingNotifications();
+        expect(notifications.first.body, 'Keep your water goal on track.');
       });
     },
   );

@@ -7,8 +7,10 @@ import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
+import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
@@ -22,8 +24,8 @@ import 'package:habit_tracker/features/water/presentation/screens/water_home_scr
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
+import 'package:habit_tracker/features/water/presentation/weather_nudge_copy.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
-import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Water module's [HabitModule] registration
 /// (`technical/architecture.md`).
@@ -127,6 +129,16 @@ class WaterModule implements HabitModule {
     if (!settings.reminderEnabled) return [];
 
     final now = clock.now();
+    final fetchedAt = settings.lastWeatherFetchedAt;
+    final weatherClause =
+        settings.weatherNudgeEnabled &&
+            fetchedAt != null &&
+            now.difference(fetchedAt) < weatherCacheStalenessCeiling
+        ? weatherNudgeClause(settings.lastWeatherTemperatureCelsius!)
+        : null;
+    final body = weatherClause == null
+        ? 'Keep your water goal on track.'
+        : 'Keep your water goal on track. $weatherClause';
     final notifications = <PendingNotification>[];
     for (var dayOffset = 0; dayOffset <= _lookaheadDays; dayOffset++) {
       final day = localDayKey(now).addDays(dayOffset);
@@ -157,7 +169,7 @@ class WaterModule implements HabitModule {
                   '${slot.hour}_${slot.minute}',
               scheduledAt: slot,
               title: 'Time to drink water',
-              body: 'Keep your water goal on track.',
+              body: body,
               sourceType: 'water_reminder',
               deepLinkRoute: '/water',
               quietHoursSuppressible: true,
@@ -426,7 +438,7 @@ class WaterModule implements HabitModule {
     final goals = await _repository.allGoals();
     if (goals.isEmpty) return null;
     final today = localDayKey(clock.now());
-    final goal = ResolveGoalForDateUseCase().execute(goals, today);
+    final goal = const ResolveGoalForDateUseCase().execute(goals, today);
     final entries = await _repository
         .watchEntriesInRange(today, today)
         .first;
