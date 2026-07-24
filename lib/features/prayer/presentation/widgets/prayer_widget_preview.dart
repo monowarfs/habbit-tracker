@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
@@ -43,7 +44,7 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
     final settings = await ref.read(prayerSettingsProvider.future);
     final location = await ref.read(resolvedPrayerLocationProvider.future);
     if (location == null) return;
-    final now = DateTime.now();
+    final now = clock.now();
     final today = localDayKey(now);
     final records = await repository.recordsInRange(today, today);
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
@@ -112,7 +113,7 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
     if (_headline == null) {
       return const SizedBox.shrink();
     }
-    final remaining = _nextPrayerTime?.difference(DateTime.now());
+    final remaining = _nextPrayerTime?.difference(clock.now());
     final countdownText = remaining != null && remaining.isNegative
         ? ''
         : _formatCountdown(remaining ?? Duration.zero);
