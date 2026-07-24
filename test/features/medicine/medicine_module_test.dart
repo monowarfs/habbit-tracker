@@ -141,20 +141,29 @@ void main() {
     });
   });
 
-  test('onNotificationAction(done) marks the dose done', () async {
-    when(
-      () => repo.markDoseDone(
-        any(),
-        fromOtherSource: any(named: 'fromOtherSource'),
-      ),
-    ).thenAnswer((_) async => const Result.success(null));
+  test(
+    'onNotificationAction(done) marks the dose done — and, being a '
+    'plain test() with no Flutter test binding registered, doubles as '
+    'the regression guard that this background-isolate path never '
+    'grows a dependency on ChimePlayer/audioplayers '
+    '(docs/superpowers/specs/02-delightful/'
+    '10-optional-sound-design-pass-design.md): a real AudioPlayer '
+    'platform-channel call here would throw without one registered',
+    () async {
+      when(
+        () => repo.markDoseDone(
+          any(),
+          fromOtherSource: any(named: 'fromOtherSource'),
+        ),
+      ).thenAnswer((_) async => const Result.success(null));
 
-    await module.onNotificationAction('d1', NotificationActionType.done);
+      await module.onNotificationAction('d1', NotificationActionType.done);
 
-    verify(
-      () => repo.markDoseDone('d1', fromOtherSource: false),
-    ).called(1);
-  });
+      verify(
+        () => repo.markDoseDone('d1', fromOtherSource: false),
+      ).called(1);
+    },
+  );
 
   test('onNotificationAction(skip) marks the dose skipped', () async {
     when(
