@@ -479,7 +479,8 @@ class PrayerModule implements HabitModule {
     await _repository.sweepMissedPrayers(now, location);
     await _repository.materializeRecords(now, location);
     final today = localDayKey(now);
-    final records = await _repository.recordsInRange(today, today);
+    // First try today's records only.
+    var records = await _repository.recordsInRange(today, today);
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     var pendingCount = 0;
     PrayerRecord? firstPending;
@@ -501,6 +502,30 @@ class PrayerModule implements HabitModule {
         firstPending ??= record;
       }
     }
+    // Midnight rollover: if no pending today, widen to tomorrow.
+    if (firstPending == null) {
+      final tomorrow = today.addDays(1);
+      records = await _repository.recordsInRange(today, tomorrow);
+      records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+      for (final record in records) {
+        final cutoff = cutoffForPrayer(
+          record: record,
+          sameDayRecordsSorted: records,
+          ishaDayRolloverTime: settings.ishaDayRolloverTime,
+          ianaTimezone: location.ianaTimezone,
+        );
+        final status = effectivePrayerStatus(
+          storedStatus: record.storedStatus,
+          scheduledFor: record.scheduledFor,
+          cutoff: cutoff,
+          now: now,
+        );
+        if (status == PrayerStatus.due || status == PrayerStatus.upcoming) {
+          pendingCount++;
+          firstPending ??= record;
+        }
+      }
+    }
     if (firstPending == null) return null;
     final label = _titleCase(firstPending.prayerName.name);
     final timeStr =
@@ -511,6 +536,7 @@ class PrayerModule implements HabitModule {
       headline: '$label · $timeStr',
       deepLinkRoute: '/prayer',
       pendingCount: pendingCount,
+      countdownTargetAt: firstPending.scheduledFor,
     );
   }
 
