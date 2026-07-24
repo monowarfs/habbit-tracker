@@ -90,6 +90,17 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/ramadan'),
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.schedule_outlined),
+            title: Text(l10n.adaptiveReminderTitle),
+            subtitle: Text(l10n.adaptiveReminderDescription),
+            value:
+                ref.watch(appSettingsProvider).value?.adaptiveReminderEnabled ??
+                false,
+            onChanged: (value) => ref
+                .read(settingsRepositoryProvider)
+                .updateAdaptiveReminderEnabled(enabled: value),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsSound),
           SwitchListTile(
