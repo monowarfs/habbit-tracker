@@ -173,11 +173,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 10) {
         // installDate + lastRecapYear + lastActivityAt + nudgeSentAfter
-        // for retention features (Specs 01, 02).
+        // + recapEnabled for retention features (Specs 01, 02).
         await m.addColumn(appSettingsTable, appSettingsTable.installDate);
         await m.addColumn(appSettingsTable, appSettingsTable.lastRecapYear);
         await m.addColumn(appSettingsTable, appSettingsTable.lastActivityAt);
         await m.addColumn(appSettingsTable, appSettingsTable.nudgeSentAfter);
+        await m.addColumn(appSettingsTable, appSettingsTable.recapEnabled);
 
         // Recaps table for yearly wrapped summaries.
         await m.createTable(recapsTable);

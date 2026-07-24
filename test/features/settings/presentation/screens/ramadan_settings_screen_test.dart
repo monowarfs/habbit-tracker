@@ -111,6 +111,26 @@ class _FakeSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
       Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateInstallDate(DateTime date) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateRecapEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateLastRecapYear(int year) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateLastActivityAt(DateTime date) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateNudgeSentAfter(DateTime date) =>
+      Future.value(const Result.success(null));
 }
 
 const _initial = AppSettings(
