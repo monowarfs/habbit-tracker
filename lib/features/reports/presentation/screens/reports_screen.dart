@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,9 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/features/reports/presentation/providers/reports_providers.dart';
+import 'package:habit_tracker/features/reports/presentation/recap_share_usecase.dart';
+import 'package:habit_tracker/features/reports/presentation/widgets/monthly_recap_card.dart';
+import 'package:habit_tracker/features/reports/presentation/widgets/recap_card_capture.dart';
 
 /// Weekly/monthly/yearly cross-module reports (FR-C-12/14).
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -39,6 +44,43 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     });
   }
 
+  Future<void> _shareMonth(List<ModuleReport> reports) async {
+    final overlayState = Overlay.of(context);
+    final completer = Completer<void>();
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      // Renders off-screen (far outside the visible viewport) so it
+      // lays out and paints without ever being shown to the user — the
+      // standard way to use `RenderRepaintBoundary` for a widget that
+      // isn't part of the normal visible layout (design doc, "Entry
+      // point").
+      builder: (context) => Positioned(
+        left: -9999,
+        top: 0,
+        child: Material(
+          child: RecapCardCapture(
+            child: MonthlyRecapCard(reports: reports, monthAnchor: _anchor),
+          ),
+        ),
+      ),
+    );
+    overlayState.insert(entry);
+    WidgetsBinding.instance.addPostFrameCallback((_) => completer.complete());
+    await completer.future;
+    try {
+      await shareMonthlyRecap(reports: reports, monthAnchor: _anchor);
+    } on Object {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reportsShareMonthFailed)),
+        );
+      }
+    } finally {
+      entry.remove();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -49,6 +91,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       appBar: AppBar(
         title: Text(l10n.reportsTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share),
+            tooltip: l10n.reportsShareMonthButton,
+            onPressed:
+                _period == ReportPeriod.month &&
+                    (reportsAsync.value?.isNotEmpty ?? false)
+                ? () => unawaited(_shareMonth(reportsAsync.value!))
+                : null,
+          ),
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: () => _shiftPeriod(-1),
