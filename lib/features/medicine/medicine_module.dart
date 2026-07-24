@@ -18,6 +18,7 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_e
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/predict_stock_out_date.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_detail_screen.dart';
@@ -189,6 +190,40 @@ class MedicineModule implements HabitModule {
         ),
       );
     }
+
+    // T8: a "2 weeks out" early warning, separate from the low-stock
+    // threshold crossing above — derived fresh each planning pass (no
+    // persisted crossing flag), so the id buckets by day rather than by
+    // event to avoid re-notifying more than once per day while still
+    // firing daily for as long as the projection stays inside the window.
+    const projectionUseCase = PredictStockOutDateUseCase();
+    final allStockEvents = await _repository.allStockEvents();
+    final projectableMedicines = (await _repository.allMedicines()).where(
+      (m) => m.stockEnabled && m.archivedAt == null,
+    );
+    for (final medicine in projectableMedicines) {
+      final projection = projectionUseCase.execute(
+        medicine: medicine,
+        stockEvents: allStockEvents,
+        now: now,
+      );
+      final daysRemaining = projection.daysRemaining;
+      if (daysRemaining == null || daysRemaining > 14) continue;
+      if (projection.confidence == 'low') continue;
+      notifications.add(
+        PendingNotification(
+          id: 'medicine_stockwarn_${medicine.id}_${localDayKey(now)}',
+          scheduledAt: now.add(const Duration(minutes: 1)),
+          title: '${medicine.name} is running low',
+          body:
+              'At current pace, out of ${medicine.name} in '
+              '~$daysRemaining days',
+          sourceType: 'stock_warning',
+          deepLinkRoute: '/medicine/${medicine.id}',
+          quietHoursSuppressible: true,
+        ),
+      );
+    }
     return notifications;
   }
 
@@ -197,8 +232,9 @@ class MedicineModule implements HabitModule {
     String sourceId,
     NotificationActionType action,
   ) async {
-    if (sourceId.startsWith('medicine_lowstock_')) {
-      return; // low-stock notifications have no dose to act on
+    if (sourceId.startsWith('medicine_lowstock_') ||
+        sourceId.startsWith('medicine_stockwarn_')) {
+      return; // synthetic stock alerts have no dose to act on
     }
     switch (action) {
       case NotificationActionType.done:
@@ -526,9 +562,7 @@ class MedicineModule implements HabitModule {
       moduleId: id,
       headline: '${medicine?.name ?? "Medicine"} · $timeStr',
       deepLinkRoute: '/medicine',
-      primaryActionLabel: status == MedicineDoseStatus.due
-          ? 'Mark done'
-          : null,
+      primaryActionLabel: status == MedicineDoseStatus.due ? 'Mark done' : null,
       primaryActionSourceId: status == MedicineDoseStatus.due
           ? firstDue.id
           : null,
