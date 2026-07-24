@@ -64,6 +64,12 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/quiet-hours'),
           ),
+          ListTile(
+            leading: const Icon(Icons.nightlight_round),
+            title: Text(l10n.settingsRamadanMode),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/ramadan'),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsSecurity),
           ListTile(

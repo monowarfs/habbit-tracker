@@ -330,5 +330,10 @@
   "quietHoursEnableToggle": "নীরব সময় চালু করুন",
   "quietHoursStartLabel": "শুরুর সময়",
   "quietHoursEndLabel": "শেষের সময়",
-  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।"
+  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।",
+  "settingsRamadanMode": "রমজান মোড",
+  "ramadanModeSettingsTitle": "রমজান মোড",
+  "ramadanModeSettingsSubtitle": "রোজার সময় পানির রিমাইন্ডার সরিয়ে দিন এবং সেহরি/ইফতারের কাউন্টডাউন দেখুন",
+  "ramadanModeAutoDetectToggle": "স্বয়ংক্রিয়ভাবে রমজান শনাক্ত করুন",
+  "ramadanModeManualToggle": "রমজান মোড"
 }
