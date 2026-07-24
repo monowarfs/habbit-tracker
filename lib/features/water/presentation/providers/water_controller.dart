@@ -1,10 +1,13 @@
+import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
 import 'package:habit_tracker/features/water/domain/usecases/log_water_entry.dart';
+import 'package:habit_tracker/features/water/domain/usecases/parse_water_quick_add.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -28,6 +31,28 @@ class WaterController extends _$WaterController {
     amountMl: amountMl,
     source: WaterEntrySource.quick,
   );
+
+  /// Parses [rawText] (`docs/superpowers/plans/ai-powered/
+  /// 02-natural-language-quick-add-impl-plan.md`) and logs it if an amount
+  /// could be extracted; a no-op otherwise (the widget's preview already
+  /// warned the user before they tapped Log).
+  Future<void> logFromParsedText(
+    String rawText, {
+    required WaterUnit waterUnit,
+  }) {
+    final parsed = const ParseWaterQuickAddUseCase().execute(
+      rawText: rawText,
+      now: clock.now(),
+      waterUnit: waterUnit,
+    );
+    final amountMl = parsed.amountMl;
+    if (amountMl == null || amountMl <= 0) return Future.value();
+    return _log(
+      amountMl: amountMl,
+      source: WaterEntrySource.quick,
+      loggedAt: parsed.loggedAt,
+    );
+  }
 
   /// Logs a custom amount, optionally backdated (FR-W-03/FR-W-05).
   Future<void> logCustom({
