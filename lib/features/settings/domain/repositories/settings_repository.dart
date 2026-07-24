@@ -42,6 +42,14 @@ abstract class SettingsRepository {
     required LocalTime end,
   });
 
+  /// Marks the Water hydration-science "why this matters" card as shown
+  /// — it never renders again after this.
+  Future<Result<void>> markWaterHydrationHintSeen();
+
+  /// Marks the Prayer Qadha-context "why this matters" card as shown —
+  /// it never renders again after this.
+  Future<Result<void>> markPrayerQadhaHintSeen();
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

@@ -55,5 +55,7 @@ sealed class AppSettings with _$AppSettings {
     required bool quietHoursEnabled,
     required LocalTime quietHoursStart,
     required LocalTime quietHoursEnd,
+    DateTime? waterHydrationHintSeenAt,
+    DateTime? prayerQadhaHintSeenAt,
   }) = _AppSettings;
 }

@@ -106,6 +106,24 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> markWaterHydrationHintSeen() => _update(
+    AppSettingsTableCompanion(
+      waterHydrationHintSeenAt: Value(
+        clock.now().toUtc().millisecondsSinceEpoch,
+      ),
+    ),
+  );
+
+  @override
+  Future<Result<void>> markPrayerQadhaHintSeen() => _update(
+    AppSettingsTableCompanion(
+      prayerQadhaHintSeenAt: Value(
+        clock.now().toUtc().millisecondsSinceEpoch,
+      ),
+    ),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -166,6 +184,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
     quietHoursEnabled: row.quietHoursEnabled,
     quietHoursStart: LocalTime.parse(row.quietHoursStart),
     quietHoursEnd: LocalTime.parse(row.quietHoursEnd),
+    waterHydrationHintSeenAt: row.waterHydrationHintSeenAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.waterHydrationHintSeenAt!,
+            isUtc: true,
+          ),
+    prayerQadhaHintSeenAt: row.prayerQadhaHintSeenAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.prayerQadhaHintSeenAt!,
+            isUtc: true,
+          ),
   );
 }
 

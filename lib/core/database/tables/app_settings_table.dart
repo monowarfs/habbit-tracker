@@ -61,6 +61,15 @@ class AppSettingsTable extends Table {
   /// upgrade from a pre-changelog build).
   TextColumn get lastSeenAppVersion => text().nullable()();
 
+  /// UTC epoch millis; null = the Water hydration-science "why this
+  /// matters" card hasn't been shown yet (`docs/superpowers/specs/
+  /// 02-delightful/06-why-this-matters-micro-education-cards-design.md`).
+  IntColumn get waterHydrationHintSeenAt => integer().nullable()();
+
+  /// UTC epoch millis; null = the Prayer Qadha-context "why this
+  /// matters" card hasn't been shown yet.
+  IntColumn get prayerQadhaHintSeenAt => integer().nullable()();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

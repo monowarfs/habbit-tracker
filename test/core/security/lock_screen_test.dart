@@ -170,4 +170,12 @@ class _StubSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
       Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> markWaterHydrationHintSeen() =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> markPrayerQadhaHintSeen() =>
+      Future.value(const Result.success(null));
 }
