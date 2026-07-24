@@ -4,9 +4,12 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
 import 'package:habit_tracker/features/prayer/prayer_module.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,6 +21,7 @@ void main() {
   late PrayerModule module;
 
   setUpAll(() {
+    ensureTimeZonesInitialized();
     registerFallbackValue(const LocalDate(2026, 1, 1));
     registerFallbackValue(DateTime.utc(2026, 6));
     registerFallbackValue(
@@ -343,5 +347,86 @@ void main() {
     when(() => repo.wipeAll()).thenAnswer((_) async {});
     await module.wipeData();
     verify(() => repo.wipeAll()).called(1);
+  });
+
+  group('widgetSummary', () {
+    test('returns countdownTargetAt matching next pending prayer', () async {
+      final now = DateTime.utc(2026, 6, 1, 7);
+      final record = PrayerRecord(
+        id: 'r1',
+        prayerDate: const LocalDate(2026, 6, 1),
+        prayerName: PrayerName.dhuhr,
+        scheduledFor: DateTime.utc(2026, 6, 1, 8),
+        storedStatus: PrayerStatus.upcoming,
+      );
+      when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
+      when(() => repo.sweepMissedPrayers(any(), any())).thenAnswer((_) async {});
+      when(() => repo.materializeRecords(any(), any())).thenAnswer((_) async {});
+      when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async => [record]);
+
+      await withClock(Clock.fixed(now), () async {
+        final summary = await module.widgetSummary();
+        expect(summary, isNotNull);
+        expect(summary!.countdownTargetAt, equals(record.scheduledFor));
+        expect(summary.headline, contains('Dhuhr'));
+      });
+    });
+
+    test('after Isha, returns tomorrow Fajr scheduledFor (midnight rollover)',
+        () async {
+      final now = DateTime.utc(2026, 6, 1, 22); // after Isha
+      final todayRecord = PrayerRecord(
+        id: 'r-today',
+        prayerDate: const LocalDate(2026, 6, 1),
+        prayerName: PrayerName.isha,
+        scheduledFor: DateTime.utc(2026, 6, 1, 20),
+        storedStatus: PrayerStatus.prayed,
+      );
+      final tomorrowRecord = PrayerRecord(
+        id: 'r-tomorrow',
+        prayerDate: const LocalDate(2026, 6, 2),
+        prayerName: PrayerName.fajr,
+        scheduledFor: DateTime.utc(2026, 6, 2, 5),
+        storedStatus: PrayerStatus.upcoming,
+      );
+      when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
+      when(() => repo.sweepMissedPrayers(any(), any())).thenAnswer((_) async {});
+      when(() => repo.materializeRecords(any(), any())).thenAnswer((_) async {});
+      // First call (today only) returns only Isha (prayed)
+      // Second call (today+tomorrow) returns both records.
+      var callCount = 0;
+      when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) return [todayRecord];
+        return [todayRecord, tomorrowRecord];
+      });
+
+      await withClock(Clock.fixed(now), () async {
+        final summary = await module.widgetSummary();
+        expect(summary, isNotNull);
+        expect(summary!.countdownTargetAt, equals(tomorrowRecord.scheduledFor));
+        expect(summary.headline, contains('Fajr'));
+      });
+    });
+
+    test('returns null when all prayers done', () async {
+      final now = DateTime.utc(2026, 6, 1, 7);
+      final record = PrayerRecord(
+        id: 'r1',
+        prayerDate: const LocalDate(2026, 6, 1),
+        prayerName: PrayerName.fajr,
+        scheduledFor: DateTime.utc(2026, 6, 1, 5),
+        storedStatus: PrayerStatus.prayed,
+      );
+      when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
+      when(() => repo.sweepMissedPrayers(any(), any())).thenAnswer((_) async {});
+      when(() => repo.materializeRecords(any(), any())).thenAnswer((_) async {});
+      when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async => [record]);
+
+      await withClock(Clock.fixed(now), () async {
+        final summary = await module.widgetSummary();
+        expect(summary, isNull);
+      });
+    });
   });
 }
