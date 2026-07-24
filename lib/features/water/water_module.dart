@@ -2,12 +2,20 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/hijri_date.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
+import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
+import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
+import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_times.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
@@ -23,15 +31,26 @@ import 'package:habit_tracker/features/water/presentation/screens/water_settings
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
-import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 
 /// The Water module's [HabitModule] registration
 /// (`technical/architecture.md`).
 class WaterModule implements HabitModule {
-  /// Creates the module backed by [_repository].
-  const WaterModule(this._repository);
+  /// Creates the module backed by [_repository]. [settingsRepository] and
+  /// [prayerRepository] are optional, additive dependencies powering
+  /// Ramadan-mode fasting-aware reminder windows
+  /// (`docs/superpowers/specs/02-delightful/01-ramadan-mode-design.md`) —
+  /// omitted (as every pre-existing call site/test still does), Water
+  /// behaves exactly as before and Ramadan mode never activates.
+  const WaterModule(
+    this._repository, {
+    SettingsRepository? settingsRepository,
+    PrayerRepository? prayerRepository,
+  }) : _settingsRepository = settingsRepository,
+       _prayerRepository = prayerRepository;
 
   final WaterRepository _repository;
+  final SettingsRepository? _settingsRepository;
+  final PrayerRepository? _prayerRepository;
 
   @override
   String get id => 'water';
@@ -126,48 +145,138 @@ class WaterModule implements HabitModule {
     final settings = await _repository.watchSettings().first;
     if (!settings.reminderEnabled) return [];
 
+    final appSettings = _settingsRepository == null
+        ? null
+        : await _settingsRepository.watchSettings().first;
+
     final now = clock.now();
     final notifications = <PendingNotification>[];
+    final today = localDayKey(now);
     for (var dayOffset = 0; dayOffset <= _lookaheadDays; dayOffset++) {
-      final day = localDayKey(now).addDays(dayOffset);
-      final weekday = day.toDateTimeUtc().weekday;
-      final override = settings.reminderWindowOverrides[weekday];
-      final windowStartTime = override?.start ?? settings.reminderWindowStart;
-      final windowEndTime = override?.end ?? settings.reminderWindowEnd;
-      var slot = day.toDateTimeUtc().toLocal().add(
-        Duration(
-          hours: windowStartTime.hour,
-          minutes: windowStartTime.minute,
-        ),
-      );
-      final windowEnd = day.toDateTimeUtc().toLocal().add(
-        Duration(
-          hours: windowEndTime.hour,
-          minutes: windowEndTime.minute,
-        ),
-      );
-      while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
-        if (slot.isAfter(now)) {
-          notifications.add(
-            PendingNotification(
-              id:
-                  'water_reminder_'
-                  '${day.year}${day.month.toString().padLeft(2, '0')}'
-                  '${day.day.toString().padLeft(2, '0')}_'
-                  '${slot.hour}_${slot.minute}',
-              scheduledAt: slot,
-              title: 'Time to drink water',
-              body: 'Keep your water goal on track.',
-              sourceType: 'water_reminder',
-              deepLinkRoute: '/water',
-              quietHoursSuppressible: true,
-            ),
+      final day = today.addDays(dayOffset);
+      final ramadanActive =
+          appSettings != null &&
+          _prayerRepository != null &&
+          resolveRamadanModeActive(
+            manualOverride: appSettings.ramadanModeManualOverride,
+            autoDetectEnabled: appSettings.ramadanAutoDetectEnabled,
+            today: day,
           );
+      final windows = ramadanActive
+          ? await _fastingAwareWindows(day, settings)
+          : [_weekdayWindow(day, settings)];
+      for (final window in windows) {
+        final localMidnight = DateTime(
+          day.year,
+          day.month,
+          day.day,
+        ).toUtc();
+        var slot = localMidnight.toLocal().add(
+          Duration(hours: window.start.hour, minutes: window.start.minute),
+        );
+        final windowEnd = localMidnight.toLocal().add(
+          Duration(hours: window.end.hour, minutes: window.end.minute),
+        );
+        while (slot.isBefore(windowEnd) || slot.isAtSameMomentAs(windowEnd)) {
+          if (slot.isAfter(now)) {
+            notifications.add(
+              PendingNotification(
+                id:
+                    'water_reminder_'
+                    '${day.year}${day.month.toString().padLeft(2, '0')}'
+                    '${day.day.toString().padLeft(2, '0')}_'
+                    '${slot.hour}_${slot.minute}',
+                scheduledAt: slot,
+                title: 'Time to drink water',
+                body: 'Keep your water goal on track.',
+                sourceType: 'water_reminder',
+                deepLinkRoute: '/water',
+                quietHoursSuppressible: true,
+              ),
+            );
+          }
+          slot = slot.add(Duration(minutes: settings.reminderIntervalMinutes));
         }
-        slot = slot.add(Duration(minutes: settings.reminderIntervalMinutes));
       }
     }
     return notifications;
+  }
+
+  ({LocalTime start, LocalTime end}) _weekdayWindow(
+    LocalDate day,
+    WaterSettings settings,
+  ) {
+    final weekday = day.toDateTimeUtc().weekday;
+    final override = settings.reminderWindowOverrides[weekday];
+    return (
+      start: override?.start ?? settings.reminderWindowStart,
+      end: override?.end ?? settings.reminderWindowEnd,
+    );
+  }
+
+  /// The non-fasting sub-windows within [day]: before that day's Fajr
+  /// (the tail of the previous night's eating hours) and after that
+  /// day's Maghrib (that night's Iftar onward), each clipped to the
+  /// user's own configured window (`01-ramadan-mode-design.md`'s Design
+  /// §3: "clips the window to whichever is narrower ... so a user who
+  /// only wants morning reminders anyway isn't suddenly nudged at 9pm
+  /// right after Iftar"). Falls back to the single plain weekday window,
+  /// unclipped, if location resolution fails — Ramadan mode degrades to
+  /// "no behavior change" rather than throwing.
+  Future<List<({LocalTime start, LocalTime end})>> _fastingAwareWindows(
+    LocalDate day,
+    WaterSettings settings,
+  ) async {
+    final userWindow = _weekdayWindow(day, settings);
+    final prayerSettings = await _prayerRepository!.getSettings();
+    final locationResult = await resolveLocation(prayerSettings);
+    if (locationResult case Failure()) return [userWindow];
+    final location = (locationResult as Success<ResolvedLocation>).value;
+    final times = calculatePrayerTimes(
+      date: day,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      ianaTimezone: location.ianaTimezone,
+      method: prayerSettings.calculationMethod,
+      asrMethod: prayerSettings.asrMethod,
+    );
+    final fajrLocal = _asLocalTime(times.fajr);
+    final maghribLocal = _asLocalTime(times.maghrib);
+    final windows = <({LocalTime start, LocalTime end})>[];
+    final morning = _clip(
+      (start: const LocalTime(0, 0), end: fajrLocal),
+      userWindow,
+    );
+    if (morning != null) windows.add(morning);
+    final evening = _clip(
+      (start: maghribLocal, end: const LocalTime(23, 59)),
+      userWindow,
+    );
+    if (evening != null) windows.add(evening);
+    return windows;
+  }
+
+  LocalTime _asLocalTime(DateTime utcInstant) {
+    final local = utcInstant.toLocal();
+    return LocalTime(local.hour, local.minute);
+  }
+
+  /// Intersects [candidate] with [userWindow], or `null` if the
+  /// intersection is empty (e.g. the user's own configured window sits
+  /// entirely inside daylight/fasting hours — correctly zero reminders
+  /// that day, not a bug).
+  ({LocalTime start, LocalTime end})? _clip(
+    ({LocalTime start, LocalTime end}) candidate,
+    ({LocalTime start, LocalTime end}) userWindow,
+  ) {
+    final start = candidate.start.compareTo(userWindow.start) >= 0
+        ? candidate.start
+        : userWindow.start;
+    final end = candidate.end.compareTo(userWindow.end) <= 0
+        ? candidate.end
+        : userWindow.end;
+    if (start.compareTo(end) >= 0) return null;
+    return (start: start, end: end);
   }
 
   @override
@@ -390,8 +499,8 @@ class WaterModule implements HabitModule {
       await _repository.updateQuickAddAmounts(
         (settingsJson['quickAddAmountsMl'] as List<dynamic>).cast<int>(),
       );
-      final overridesJson = settingsJson['reminderWindowOverrides']
-              as Map<String, dynamic>? ??
+      final overridesJson =
+          settingsJson['reminderWindowOverrides'] as Map<String, dynamic>? ??
           const {};
       await _repository.updateReminderSettings(
         enabled: settingsJson['reminderEnabled'] as bool,
@@ -427,14 +536,11 @@ class WaterModule implements HabitModule {
     if (goals.isEmpty) return null;
     final today = localDayKey(clock.now());
     final goal = ResolveGoalForDateUseCase().execute(goals, today);
-    final entries = await _repository
-        .watchEntriesInRange(today, today)
-        .first;
+    final entries = await _repository.watchEntriesInRange(today, today).first;
     final totalMl = entries.fold(0, (sum, e) => sum + e.amountMl);
-    final amountMl =
-        settings.quickAddAmountsMl.isEmpty
-            ? 250
-            : settings.quickAddAmountsMl.first;
+    final amountMl = settings.quickAddAmountsMl.isEmpty
+        ? 250
+        : settings.quickAddAmountsMl.first;
     final remaining = goal.goalMl - totalMl;
     return WidgetSummaryData(
       moduleId: id,

@@ -5,6 +5,11 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
+import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
+import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_times.dart';
+import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_settings.dart';
@@ -89,6 +94,22 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   }
 }
 
+class _FakePrayerRepository extends Fake implements PrayerRepository {
+  _FakePrayerRepository(this._settings);
+  final PrayerSettings _settings;
+
+  @override
+  Future<PrayerSettings> getSettings() async => _settings;
+}
+
+class _FakeSettingsRepository extends Fake implements SettingsRepository {
+  _FakeSettingsRepository(this._settings);
+  final AppSettings _settings;
+
+  @override
+  Stream<AppSettings> watchSettings() => Stream.value(_settings);
+}
+
 WaterSettings _settings({
   required bool reminderEnabled,
   List<int> quickAddAmountsMl = const [250, 500, 750],
@@ -98,6 +119,34 @@ WaterSettings _settings({
   reminderIntervalMinutes: 120,
   reminderWindowStart: const LocalTime(8, 0),
   reminderWindowEnd: const LocalTime(10, 0),
+);
+
+AppSettings _appSettings({
+  bool? ramadanModeManualOverride,
+  bool ramadanAutoDetectEnabled = true,
+}) => AppSettings(
+  locale: AppLocale.en,
+  themeMode: AppThemeMode.system,
+  waterUnit: WaterUnit.ml,
+  pinEnabled: false,
+  pinLockTimeoutSeconds: 0,
+  biometricEnabled: true,
+  screenPrivacyEnabled: false,
+  quietHoursEnabled: false,
+  quietHoursStart: const LocalTime(22, 0),
+  quietHoursEnd: const LocalTime(7, 0),
+  ramadanModeManualOverride: ramadanModeManualOverride,
+  ramadanAutoDetectEnabled: ramadanAutoDetectEnabled,
+);
+
+const _dhakaPrayerSettings = PrayerSettings(
+  id: 'singleton',
+  calculationMethod: CalculationMethod.karachi,
+  asrMethod: AsrMethod.hanafi,
+  locationMode: LocationMode.manual,
+  manualLatitude: 23.8103,
+  manualLongitude: 90.4125,
+  manualTimezone: 'Asia/Dhaka',
 );
 
 void main() {
@@ -171,6 +220,127 @@ void main() {
 
       expect(repo.capturedAmountMl, 250);
       expect(repo.capturedSource, WaterEntrySource.quick);
+    },
+  );
+
+  test(
+    'pendingNotifications only produces slots outside that day\'s Fajr-to-'
+    'Maghrib fasting window when Ramadan mode is manually forced on',
+    () async {
+      ensureTimeZonesInitialized();
+      final waterSettings = _settings(reminderEnabled: true).copyWith(
+        reminderWindowStart: const LocalTime(0, 0),
+        reminderWindowEnd: const LocalTime(23, 59),
+      );
+      final module = WaterModule(
+        _FakeWaterRepository(waterSettings),
+        settingsRepository: _FakeSettingsRepository(
+          _appSettings(ramadanModeManualOverride: true),
+        ),
+        prayerRepository: _FakePrayerRepository(_dhakaPrayerSettings),
+      );
+
+      final now = DateTime.utc(2026, 3, 15, 3);
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await module.pendingNotifications();
+        expect(notifications, isNotEmpty);
+
+        for (final n in notifications) {
+          final day = localDayKey(n.scheduledAt);
+          final times = calculatePrayerTimes(
+            date: day,
+            latitude: _dhakaPrayerSettings.manualLatitude!,
+            longitude: _dhakaPrayerSettings.manualLongitude!,
+            ianaTimezone: _dhakaPrayerSettings.manualTimezone!,
+            method: _dhakaPrayerSettings.calculationMethod,
+            asrMethod: _dhakaPrayerSettings.asrMethod,
+          );
+          final fajrLocal = times.fajr.toLocal();
+          final maghribLocal = times.maghrib.toLocal();
+          final fajrOnDay = DateTime(
+            day.year,
+            day.month,
+            day.day,
+            fajrLocal.hour,
+            fajrLocal.minute,
+          );
+          final maghribOnDay = DateTime(
+            day.year,
+            day.month,
+            day.day,
+            maghribLocal.hour,
+            maghribLocal.minute,
+          );
+          final beforeFajr = n.scheduledAt.isBefore(fajrOnDay);
+          final afterMaghrib = !n.scheduledAt.isBefore(maghribOnDay);
+          expect(
+            beforeFajr || afterMaghrib,
+            isTrue,
+            reason: 'slot at ${n.scheduledAt} falls inside the fast on $day '
+                '(Fajr $fajrOnDay, Maghrib $maghribOnDay)',
+          );
+        }
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications is unchanged when the optional deps are supplied '
+    'but Ramadan mode resolves to off',
+    () async {
+      final waterSettings = _settings(reminderEnabled: true);
+      final now = DateTime(2026, 6, 1, 9);
+
+      final baseline = WaterModule(_FakeWaterRepository(waterSettings));
+      final withDeps = WaterModule(
+        _FakeWaterRepository(waterSettings),
+        settingsRepository: _FakeSettingsRepository(
+          _appSettings(
+            ramadanModeManualOverride: null,
+            ramadanAutoDetectEnabled: false,
+          ),
+        ),
+        prayerRepository: _FakePrayerRepository(_dhakaPrayerSettings),
+      );
+
+      await withClock(Clock.fixed(now), () async {
+        final a = await baseline.pendingNotifications();
+        final b = await withDeps.pendingNotifications();
+        expect(
+          b.map((n) => n.scheduledAt),
+          a.map((n) => n.scheduledAt),
+        );
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications falls back to the plain window when Ramadan is '
+    'active but location resolution fails',
+    () async {
+      final waterSettings = _settings(reminderEnabled: true);
+      final now = DateTime(2026, 3, 15, 9);
+      const autoPrayerSettings = PrayerSettings(
+        id: 'singleton',
+        calculationMethod: CalculationMethod.karachi,
+        asrMethod: AsrMethod.hanafi,
+        locationMode: LocationMode.auto,
+      );
+
+      final baseline = WaterModule(_FakeWaterRepository(waterSettings));
+      final withDeps = WaterModule(
+        _FakeWaterRepository(waterSettings),
+        settingsRepository: _FakeSettingsRepository(
+          _appSettings(ramadanModeManualOverride: true),
+        ),
+        prayerRepository: _FakePrayerRepository(autoPrayerSettings),
+      );
+
+      await withClock(Clock.fixed(now), () async {
+        final a = await baseline.pendingNotifications();
+        final b = await withDeps.pendingNotifications();
+        expect(b.map((n) => n.scheduledAt), a.map((n) => n.scheduledAt));
+      });
     },
   );
 
