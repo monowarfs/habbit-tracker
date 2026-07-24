@@ -44,6 +44,14 @@
   "@themeModeDark": {
     "description": "Option label: always use the dark theme."
   },
+  "settingsSeasonalAccentsToggle": "Seasonal color accents",
+  "@settingsSeasonalAccentsToggle": {
+    "description": "Toggle label for the seasonal theme-accent opt-out."
+  },
+  "settingsSeasonalAccentsDescription": "Subtly shift the app's color around Pohela Boishakh",
+  "@settingsSeasonalAccentsDescription": {
+    "description": "Subtitle explaining the seasonal theme-accent toggle."
+  },
   "emptyDashboardMessage": "Enable a module in Settings to get started",
   "@emptyDashboardMessage": {
     "description": "Shown on the dashboard when no module is enabled yet."

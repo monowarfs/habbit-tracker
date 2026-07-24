@@ -11,6 +11,8 @@
   "themeModeSystem": "সিস্টেম",
   "themeModeLight": "লাইট",
   "themeModeDark": "ডার্ক",
+  "settingsSeasonalAccentsToggle": "ঋতুভিত্তিক রঙের ছোঁয়া",
+  "settingsSeasonalAccentsDescription": "পহেলা বৈশাখের আশেপাশে অ্যাপের রঙে সামান্য পরিবর্তন",
   "emptyDashboardMessage": "শুরু করতে সেটিংসে একটি মডিউল চালু করুন",
   "commonSave": "সংরক্ষণ করুন",
   "commonCancel": "বাতিল",
