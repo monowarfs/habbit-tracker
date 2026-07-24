@@ -110,6 +110,12 @@ class AppDatabase extends _$AppDatabase {
         // Optional dose-done completion chime, off by default.
         await m.addColumn(appSettingsTable, appSettingsTable.soundEnabled);
 
+        // Seasonal theme accent opt-out.
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.seasonalAccentsEnabled,
+        );
+
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

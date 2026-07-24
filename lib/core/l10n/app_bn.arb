@@ -14,6 +14,9 @@
   "settingsProfile": "প্রোফাইল",
   "settingsDisplayName": "আপনার নাম",
   "settingsDisplayNameNotSet": "সেট করা হয়নি",
+  "settingsSeasonalAccentsToggle": "ঋতুভিত্তিক রঙের ছোঁয়া",
+  "settingsSeasonalAccentsDescription": "পহেলা বৈশাখের আশেপাশে অ্যাপের রঙে সামান্য পরিবর্তন",
+
   "emptyDashboardMessage": "শুরু করতে সেটিংসে একটি মডিউল চালু করুন",
   "dashboardGreetingMorning": "শুভ সকাল",
   "dashboardGreetingMorningNamed": "শুভ সকাল, {name}",

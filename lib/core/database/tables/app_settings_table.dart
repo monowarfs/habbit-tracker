@@ -70,6 +70,15 @@ class AppSettingsTable extends Table {
   /// (`docs/superpowers/specs/02-delightful/
   /// 11-personalized-dashboard-greeting-design.md`).
   TextColumn get displayName => text().nullable()();
+  /// Opt-out for the seasonal palette shift (Pohela Boishakh; Eid is not
+  /// yet detectable, `core/theme/seasonal_occasion.dart`) — default
+  /// `true` (opt-in by default, matching the feature's own "festive but
+  /// tasteful" framing), flip off for users who never want the app's
+  /// look to change (`docs/superpowers/specs/02-delightful/
+  /// 12-seasonal-theme-accents-design.md`).
+  BoolColumn get seasonalAccentsEnabled =>
+      boolean().withDefault(const Constant(true))();
+
 
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();

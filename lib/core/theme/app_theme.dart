@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/theme/seasonal_occasion.dart';
 
 /// The app-wide Material 3 seed color (teal), per `strategies/theme.md`.
 ///
@@ -19,6 +20,38 @@ class ModuleAccents {
 
   /// Prayer module accent.
   static const Color prayer = Color(0xFFB8860B);
+}
+
+/// A curated seasonal occasion this app acknowledges cosmetically
+/// (`core/theme/seasonal_occasion.dart`) — a substitute `ColorScheme`
+/// seed, applied only when Settings' opt-out isn't set and today falls
+/// in the active window.
+class SeasonalAccent {
+  /// Creates a seasonal accent pairing an [occasion] with its
+  /// [seedColor].
+  const SeasonalAccent({required this.occasion, required this.seedColor});
+
+  /// The occasion this accent represents.
+  final SeasonalOccasion occasion;
+
+  /// The substitute `ColorScheme.fromSeed` seed color for this occasion.
+  final Color seedColor;
+
+  /// Pohela Boishakh — traditional red-and-white motif.
+  static const pohelaBoishakh = SeasonalAccent(
+    occasion: SeasonalOccasion.pohelaBoishakh,
+    seedColor: Color(0xFFC62828),
+  );
+
+  /// Both Eid occasions share one accent (traditional Eid green) — a
+  /// curated design decision, not a per-Eid distinction. Unreachable
+  /// today: `activeSeasonalOccasion` never returns
+  /// [SeasonalOccasion.eid] until a Hijri date source exists
+  /// (`core/theme/seasonal_occasion.dart`).
+  static const eid = SeasonalAccent(
+    occasion: SeasonalOccasion.eid,
+    seedColor: Color(0xFF2E7D32),
+  );
 }
 
 /// App-specific semantic colors beyond the standard M3 `ColorScheme` roles.
@@ -63,27 +96,36 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 class AppTheme {
   const AppTheme._();
 
-  /// Light theme, seeded from [_seedColor].
-  static ThemeData light({required bool isBangla}) => _build(
-    brightness: Brightness.light,
-    semanticColors: AppSemanticColors.light,
-    isBangla: isBangla,
-  );
+  /// Light theme, seeded from [_seedColor] unless [seasonalSeed]
+  /// overrides it (a curated seasonal accent, `core/theme/
+  /// seasonal_accent_provider.dart` — `null` when no occasion is active
+  /// or the user opted out).
+  static ThemeData light({required bool isBangla, Color? seasonalSeed}) =>
+      _build(
+        brightness: Brightness.light,
+        semanticColors: AppSemanticColors.light,
+        isBangla: isBangla,
+        seedColor: seasonalSeed ?? _seedColor,
+      );
 
-  /// Dark theme, seeded from [_seedColor].
-  static ThemeData dark({required bool isBangla}) => _build(
-    brightness: Brightness.dark,
-    semanticColors: AppSemanticColors.dark,
-    isBangla: isBangla,
-  );
+  /// Dark theme, seeded from [_seedColor] unless [seasonalSeed] overrides
+  /// it.
+  static ThemeData dark({required bool isBangla, Color? seasonalSeed}) =>
+      _build(
+        brightness: Brightness.dark,
+        semanticColors: AppSemanticColors.dark,
+        isBangla: isBangla,
+        seedColor: seasonalSeed ?? _seedColor,
+      );
 
   static ThemeData _build({
     required Brightness brightness,
     required AppSemanticColors semanticColors,
     required bool isBangla,
+    required Color seedColor,
   }) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: _seedColor,
+      seedColor: seedColor,
       brightness: brightness,
     );
     return ThemeData(

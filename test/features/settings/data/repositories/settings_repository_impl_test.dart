@@ -39,6 +39,8 @@ void main() {
     expect(firstRead.displayName, isNull);
     expect(firstRead.soundEnabled, isFalse);
 
+    expect(firstRead.seasonalAccentsEnabled, isTrue);
+
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -55,6 +57,11 @@ void main() {
     final soundResult = await repo1.updateSoundEnabled(enabled: true);
     expect(soundResult, isA<Success<void>>());
 
+    final seasonalResult = await repo1.updateSeasonalAccentsEnabled(
+      enabled: false,
+    );
+    expect(seasonalResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -67,6 +74,8 @@ void main() {
     expect(afterRestart.screenPrivacyEnabled, isTrue);
     expect(afterRestart.displayName, 'Nadia');
     expect(afterRestart.soundEnabled, isTrue);
+
+    expect(afterRestart.seasonalAccentsEnabled, isFalse);
 
 
     await db2.close();

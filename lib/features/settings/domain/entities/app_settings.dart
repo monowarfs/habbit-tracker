@@ -57,5 +57,7 @@ sealed class AppSettings with _$AppSettings {
     required LocalTime quietHoursStart,
     required LocalTime quietHoursEnd,
     String? displayName,
+    required bool seasonalAccentsEnabled,
+
   }) = _AppSettings;
 }

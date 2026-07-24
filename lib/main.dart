@@ -19,6 +19,7 @@ import 'package:habit_tracker/core/security/screen_privacy_service.dart';
 import 'package:habit_tracker/core/shortcuts/quick_action_handler.dart';
 import 'package:habit_tracker/core/shortcuts/shortcut_items.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/theme/seasonal_accent_provider.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/app_error_widget.dart';
 import 'package:habit_tracker/core/widgets/widget_background_handler.dart';
@@ -198,6 +199,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     final themeMode = ref.watch(themeControllerProvider);
     final locale = ref.watch(localeControllerProvider);
     final isBangla = locale.languageCode == 'bn';
+    final seasonalSeed = ref.watch(seasonalAccentSeedProvider);
     // Single call site for applying screen privacy (`strategies/
     // security.md`): fires once on cold start with whatever was
     // persisted, and again on every Settings toggle — never called
@@ -217,8 +219,8 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     });
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: AppTheme.light(isBangla: isBangla),
-      darkTheme: AppTheme.dark(isBangla: isBangla),
+      theme: AppTheme.light(isBangla: isBangla, seasonalSeed: seasonalSeed),
+      darkTheme: AppTheme.dark(isBangla: isBangla, seasonalSeed: seasonalSeed),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: supportedLocales,

@@ -26,6 +26,7 @@ const _testSettings = AppSettings(
   quietHoursEnabled: false,
   quietHoursStart: LocalTime(22, 0),
   quietHoursEnd: LocalTime(7, 0),
+  seasonalAccentsEnabled: true,
 );
 
 void main() {
@@ -175,6 +176,10 @@ class _StubSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
       Future.value(const Result.success(null));
+  Future<Result<void>> updateSeasonalAccentsEnabled({
+    required bool enabled,
+  }) => Future.value(const Result.success(null));
+
 
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
