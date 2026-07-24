@@ -6,8 +6,10 @@ import 'package:habit_tracker/features/medicine/data/repositories/medicine_repos
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedule.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/stock_projection.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/predict_stock_out_date.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'medicine_providers.g.dart';
@@ -38,6 +40,28 @@ Future<Medicine?> medicineById(Ref ref, String id) {
 @riverpod
 Stream<List<MedicineSchedule>> medicineSchedules(Ref ref, String medicineId) {
   return ref.watch(medicineRepositoryProvider).watchSchedules(medicineId);
+}
+
+/// Projected stock-out date for [medicineId]
+/// (`docs/superpowers/plans/ai-powered/
+/// 03-predictive-stock-out-date-impl-plan.md`) — derived at read time,
+/// never persisted, from the medicine's own stock ledger.
+@riverpod
+Future<StockProjection> stockProjection(Ref ref, String medicineId) async {
+  final medicine = await ref.watch(medicineByIdProvider(medicineId).future);
+  if (medicine == null || !medicine.stockEnabled) {
+    return const StockProjection(
+      sampleSize: 0,
+      confidence: 'low',
+      currentStock: 0,
+    );
+  }
+  final events = await ref.watch(medicineRepositoryProvider).allStockEvents();
+  return const PredictStockOutDateUseCase().execute(
+    medicine: medicine,
+    stockEvents: events,
+    now: clock.now(),
+  );
 }
 
 /// Every dose scheduled today, across every medicine.

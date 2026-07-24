@@ -9,6 +9,7 @@ import 'package:habit_tracker/features/medicine/domain/usecases/expand_repeat_ru
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:habit_tracker/features/medicine/presentation/widgets/stock_card.dart';
+import 'package:habit_tracker/features/medicine/presentation/widgets/stock_projection_card.dart';
 import 'package:intl/intl.dart';
 
 /// A medicine's detail screen: 7-day schedule preview (computed directly
@@ -26,6 +27,9 @@ class MedicineDetailScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final medicine = ref.watch(medicineByIdProvider(medicineId)).value;
     final schedules = ref.watch(medicineSchedulesProvider(medicineId)).value;
+    final stockProjection = ref
+        .watch(stockProjectionProvider(medicineId))
+        .value;
     final controller = ref.read(medicineControllerProvider.notifier);
 
     if (medicine == null || schedules == null) {
@@ -89,6 +93,12 @@ class MedicineDetailScreen extends ConsumerWidget {
             medicine: medicine,
             onRefill: (amount) => controller.refillStock(medicineId, amount),
           ),
+          if (medicine.stockEnabled &&
+              medicine.stockCount != null &&
+              stockProjection != null) ...[
+            const SizedBox(height: 8),
+            StockProjectionCard(projection: stockProjection),
+          ],
           const SizedBox(height: 16),
           Text(
             l10n.medicineDetailNext7DaysLabel,
