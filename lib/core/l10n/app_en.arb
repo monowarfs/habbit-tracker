@@ -60,6 +60,42 @@
   "@emptyDashboardMessage": {
     "description": "Shown on the dashboard when no module is enabled yet."
   },
+  "dashboardGreetingMorning": "Good morning",
+  "@dashboardGreetingMorning": {
+    "description": "Dashboard greeting, time-of-day bucket: morning (05:00-11:59), no display name set."
+  },
+  "dashboardGreetingMorningNamed": "Good morning, {name}",
+  "@dashboardGreetingMorningNamed": {
+    "description": "Dashboard greeting, time-of-day bucket: morning, display name set.",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "dashboardGreetingAfternoon": "Good afternoon",
+  "@dashboardGreetingAfternoon": {
+    "description": "Dashboard greeting, time-of-day bucket: afternoon (12:00-16:59), no display name set."
+  },
+  "dashboardGreetingAfternoonNamed": "Good afternoon, {name}",
+  "@dashboardGreetingAfternoonNamed": {
+    "description": "Dashboard greeting, time-of-day bucket: afternoon, display name set.",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "dashboardGreetingEvening": "Good evening",
+  "@dashboardGreetingEvening": {
+    "description": "Dashboard greeting, time-of-day bucket: evening (17:00-20:59), no display name set."
+  },
+  "dashboardGreetingEveningNamed": "Good evening, {name}",
+  "@dashboardGreetingEveningNamed": {
+    "description": "Dashboard greeting, time-of-day bucket: evening, display name set.",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "dashboardGreetingNight": "Hello",
+  "@dashboardGreetingNight": {
+    "description": "Dashboard greeting, time-of-day bucket: night (21:00-04:59), no display name set."
+  },
+  "dashboardGreetingNightNamed": "Hello, {name}",
+  "@dashboardGreetingNightNamed": {
+    "description": "Dashboard greeting, time-of-day bucket: night, display name set.",
+    "placeholders": {"name": {"type": "String"}}
+  },
   "commonSave": "Save",
   "@commonSave": {
     "description": "Generic save button label, reused across modules."

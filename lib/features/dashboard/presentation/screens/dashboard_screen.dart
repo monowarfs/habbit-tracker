@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +8,13 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
+import 'package:habit_tracker/core/utils/greeting.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
 /// otherwise every enabled module's summary card, a day-completion
@@ -64,6 +67,8 @@ class DashboardScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  const _DashboardGreeting(),
+                  const SizedBox(height: 8),
                   _DayCompletionIndicator(modules: modules),
                   const SizedBox(height: 16),
                   _UpcomingStrip(modules: modules),
@@ -75,6 +80,32 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
     );
+  }
+}
+
+class _DashboardGreeting extends ConsumerWidget {
+  const _DashboardGreeting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final name = ref.watch(appSettingsProvider).value?.displayName;
+    final period = greetingPeriodFor(clock.now());
+    final text = switch ((period, name)) {
+      (GreetingPeriod.morning, final String n?) =>
+        l10n.dashboardGreetingMorningNamed(n),
+      (GreetingPeriod.morning, null) => l10n.dashboardGreetingMorning,
+      (GreetingPeriod.afternoon, final String n?) =>
+        l10n.dashboardGreetingAfternoonNamed(n),
+      (GreetingPeriod.afternoon, null) => l10n.dashboardGreetingAfternoon,
+      (GreetingPeriod.evening, final String n?) =>
+        l10n.dashboardGreetingEveningNamed(n),
+      (GreetingPeriod.evening, null) => l10n.dashboardGreetingEvening,
+      (GreetingPeriod.night, final String n?) =>
+        l10n.dashboardGreetingNightNamed(n),
+      (GreetingPeriod.night, null) => l10n.dashboardGreetingNight,
+    };
+    return Text(text, style: Theme.of(context).textTheme.headlineSmall);
   }
 }
 
