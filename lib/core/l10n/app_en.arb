@@ -424,6 +424,19 @@
   "@medicineDetailRefillButton": {
     "description": "Opens the add-stock dialog."
   },
+  "medicineDetailStatsSummary": "Last 30 days: {pct}% taken ({missed} not taken, {skipped} skipped)",
+  "@medicineDetailStatsSummary": {
+    "description": "30-day adherence summary on the medicine detail screen. 'not taken' (not 'missed') keeps this consistent with dose_tile.dart's neutral wording (row 1 of the copy-pass audit).",
+    "placeholders": {
+      "pct": {"type": "int"},
+      "missed": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "medicineDetailNoHistory": "No dose history yet",
+  "@medicineDetailNoHistory": {
+    "description": "Shown instead of the stats summary when there is no dose history in the last 30 days."
+  },
   "medicineStatsTitle": "Medicine stats",
   "@medicineStatsTitle": {
     "description": "Title of the medicine stats screen."
@@ -514,15 +527,15 @@
   "@prayerStatusDue": {"description": "Label for a prayer within its current window."},
   "prayerStatusPrayed": "Prayed",
   "@prayerStatusPrayed": {"description": "Label for a prayer marked prayed."},
-  "prayerStatusMissed": "Missed",
-  "@prayerStatusMissed": {"description": "Label for a prayer past its cutoff, unactioned."},
+  "prayerStatusMissedDue": "Due for Qadha",
+  "@prayerStatusMissedDue": {"description": "Label for a prayer past its cutoff, unactioned — phrased as an actionable next step (make it up via Qadha) rather than a verdict."},
   "prayerHistoryTitle": "History",
   "@prayerHistoryTitle": {"description": "Title of the prayer history calendar screen."},
   "prayerQadhaTitle": "Qadha",
   "@prayerQadhaTitle": {"description": "Title of the Qadha screen."},
-  "prayerQadhaCountLabel": "{count} owed",
+  "prayerQadhaCountLabel": "{count} remaining",
   "@prayerQadhaCountLabel": {
-    "description": "Current Qadha balance for one prayer.",
+    "description": "Current Qadha balance for one prayer — phrased as a neutral remaining-count, not a debt owed.",
     "placeholders": {"count": {"type": "int"}}
   },
   "prayerQadhaMakeupButton": "Mark one made up",

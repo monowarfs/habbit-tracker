@@ -107,10 +107,12 @@ class MedicineDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       stats.total == 0
-                          ? 'No dose history yet'
-                          : 'Last 30 days: $takenPct% taken '
-                                '(${stats.missed} missed, '
-                                '${stats.skipped} skipped)',
+                          ? l10n.medicineDetailNoHistory
+                          : l10n.medicineDetailStatsSummary(
+                              takenPct,
+                              stats.missed,
+                              stats.skipped,
+                            ),
                     ),
                   ),
                 );

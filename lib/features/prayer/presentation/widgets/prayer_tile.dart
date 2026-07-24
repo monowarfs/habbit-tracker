@@ -93,6 +93,6 @@ class PrayerTile extends StatelessWidget {
         PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
         PrayerStatus.due => l10n.prayerStatusDue,
         PrayerStatus.prayed => l10n.prayerStatusPrayed,
-        PrayerStatus.missed => l10n.prayerStatusMissed,
+        PrayerStatus.missed => l10n.prayerStatusMissedDue,
       };
 }
