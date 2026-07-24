@@ -88,14 +88,6 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 1));
   });
-import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
-import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
-
-void main() {
-  late AppDatabase db;
-
-  setUp(() => db = AppDatabase(NativeDatabase.memory()));
-  tearDown(() => db.close());
 
   testWidgets(
     'the sound toggle defaults off and persists when switched on',
@@ -128,5 +120,4 @@ void main() {
       expect(tester.widget<SwitchListTile>(tile).value, isTrue);
     },
   );
-
 }

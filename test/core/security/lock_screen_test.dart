@@ -170,8 +170,10 @@ class _StubSettingsRepo implements SettingsRepository {
 
   @override
   Future<Result<void>> updateDisplayName(String? name) =>
-  Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
 
+  @override
+  Future<Result<void>> updateSoundEnabled({required bool enabled}) =>
       Future.value(const Result.success(null));
 
   @override

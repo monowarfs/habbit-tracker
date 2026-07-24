@@ -352,7 +352,7 @@
   "widgetPrayerDescription": "পরবর্তী নামাজ পর্যন্ত বাকি সময় দেখায়",
   "prayerCountdownWidgetPreview": "উইজেট পূর্বরূপ",
   "prayerCountdownFormatMinutes": "{minutes} মিনিট",
-  "prayerCountdownFormatHoursMinutes": "{hours}ঘ {minutes}মি"
+  "prayerCountdownFormatHoursMinutes": "{hours}ঘ {minutes}মি",
   "settingsSound": "শব্দ",
   "settingsSoundToggle": "ডোজ সম্পন্ন হিসেবে চিহ্নিত হলে একটি সুর বাজান"
 

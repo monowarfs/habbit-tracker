@@ -1067,6 +1067,7 @@
         "type": "int"
       }
     }
+  },
   "settingsSound": "Sound",
   "@settingsSound": {
     "description": "Settings section header for the in-app chime toggle."

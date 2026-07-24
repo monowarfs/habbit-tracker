@@ -227,9 +227,12 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateDisplayName(String? name) async {
     await _update((s) => s.copyWith(displayName: name));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> updateSoundEnabled({required bool enabled}) async {
     await _update((s) => s.copyWith(soundEnabled: enabled));
-
     return const Result.success(null);
   }
 
