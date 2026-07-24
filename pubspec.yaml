@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   adhan_dart: ^2.0.1
+  audioplayers: ^6.8.1
   clock: ^1.1.2
   cupertino_icons: ^1.0.8
   drift: ^2.34.2
@@ -69,6 +70,7 @@ flutter:
   generate: true
   assets:
     - assets/data/prayer_cities.json
+    - assets/sounds/dose_done_chime.mp3
 
 flutter_launcher_icons:
   android: true

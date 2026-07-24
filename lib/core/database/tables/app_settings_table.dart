@@ -41,6 +41,11 @@ class AppSettingsTable extends Table {
   BoolColumn get screenPrivacyEnabled =>
       boolean().withDefault(const Constant(false))();
 
+  /// Whether the in-app dose-done completion chime is played
+  /// (`docs/superpowers/specs/02-delightful/
+  /// 10-optional-sound-design-pass-design.md`) — default `false`, opt-in.
+  BoolColumn get soundEnabled => boolean().withDefault(const Constant(false))();
+
   /// Whether quiet-hours notification suppression is active.
   BoolColumn get quietHoursEnabled =>
       boolean().withDefault(const Constant(false))();

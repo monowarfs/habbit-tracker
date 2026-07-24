@@ -25,6 +25,7 @@ void main() {
           pinLockTimeoutSeconds: 0,
           biometricEnabled: true,
           screenPrivacyEnabled: false,
+          soundEnabled: false,
           quietHoursEnabled: false,
           quietHoursStart: LocalTime(22, 0),
           quietHoursEnd: LocalTime(7, 0),
@@ -85,6 +86,7 @@ void main() {
           pinLockTimeoutSeconds: 0,
           biometricEnabled: false,
           screenPrivacyEnabled: false,
+          soundEnabled: false,
           quietHoursEnabled: false,
           quietHoursStart: LocalTime(22, 0),
           quietHoursEnd: LocalTime(7, 0),
@@ -225,6 +227,9 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateDisplayName(String? name) async {
     await _update((s) => s.copyWith(displayName: name));
+  Future<Result<void>> updateSoundEnabled({required bool enabled}) async {
+    await _update((s) => s.copyWith(soundEnabled: enabled));
+
     return const Result.success(null);
   }
 

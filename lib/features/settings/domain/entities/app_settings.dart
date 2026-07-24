@@ -50,6 +50,7 @@ sealed class AppSettings with _$AppSettings {
     required int pinLockTimeoutSeconds,
     required bool biometricEnabled,
     required bool screenPrivacyEnabled,
+    required bool soundEnabled,
     DateTime? onboardingCompletedAt,
     String? lastSeenAppVersion,
     required bool quietHoursEnabled,

@@ -1067,5 +1067,13 @@
         "type": "int"
       }
     }
+  "settingsSound": "Sound",
+  "@settingsSound": {
+    "description": "Settings section header for the in-app chime toggle."
+  },
+  "settingsSoundToggle": "Play a chime when a dose is marked done",
+  "@settingsSoundToggle": {
+    "description": "Switch label enabling/disabling the dose-done completion chime."
+
   }
 }

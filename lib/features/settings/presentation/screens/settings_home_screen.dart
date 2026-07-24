@@ -85,6 +85,16 @@ class SettingsHomeScreen extends ConsumerWidget {
             onTap: () => context.push('/settings/quiet-hours'),
           ),
           const Divider(),
+          _SectionHeader(l10n.settingsSound),
+          SwitchListTile(
+            secondary: const Icon(Icons.volume_up_outlined),
+            title: Text(l10n.settingsSoundToggle),
+            value: ref.watch(appSettingsProvider).value?.soundEnabled ?? false,
+            onChanged: (value) => ref
+                .read(settingsRepositoryProvider)
+                .updateSoundEnabled(enabled: value),
+          ),
+          const Divider(),
           _SectionHeader(l10n.settingsSecurity),
           ListTile(
             leading: const Icon(Icons.lock_outline),

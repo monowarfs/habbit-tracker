@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 
 void main() {
   late Directory tempDir;
@@ -36,6 +37,8 @@ void main() {
     expect(firstRead.biometricEnabled, isTrue);
     expect(firstRead.screenPrivacyEnabled, isFalse);
     expect(firstRead.displayName, isNull);
+    expect(firstRead.soundEnabled, isFalse);
+
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -49,6 +52,9 @@ void main() {
     expect(privacyResult, isA<Success<void>>());
     final displayNameResult = await repo1.updateDisplayName('Nadia');
     expect(displayNameResult, isA<Success<void>>());
+    final soundResult = await repo1.updateSoundEnabled(enabled: true);
+    expect(soundResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -60,6 +66,8 @@ void main() {
     expect(afterRestart.biometricEnabled, isFalse);
     expect(afterRestart.screenPrivacyEnabled, isTrue);
     expect(afterRestart.displayName, 'Nadia');
+    expect(afterRestart.soundEnabled, isTrue);
+
 
     await db2.close();
   });

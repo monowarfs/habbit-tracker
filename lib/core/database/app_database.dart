@@ -107,6 +107,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 8) {
         // Dashboard greeting's optional display name.
         await m.addColumn(appSettingsTable, appSettingsTable.displayName);
+        // Optional dose-done completion chime, off by default.
+        await m.addColumn(appSettingsTable, appSettingsTable.soundEnabled);
+
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/audio/chime_player.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
@@ -14,16 +15,29 @@ import 'package:habit_tracker/features/achievements/presentation/achievement_loc
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:habit_tracker/features/medicine/presentation/widgets/dose_tile.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The Medicine module's home screen: today's dose timeline, grouped
 /// chronologically, tap to take/skip (FR-M-02's most complex UI surface).
 class MedicineHomeScreen extends ConsumerWidget {
   /// Creates the medicine home screen. [highlightDoseId], if set, came
-  /// from a notification tap deep link (FR-C-09).
-  const MedicineHomeScreen({super.key, this.highlightDoseId});
+  /// from a notification tap deep link (FR-C-09). [chimePlayer] is a
+  /// test-only seam — production code always falls back to
+  /// [ChimePlayer.instance] (resolved in [build], not here, so this
+  /// constructor stays `const` for the existing
+  /// `const MedicineHomeScreen()` route call site in
+  /// `medicine_module.dart`).
+  const MedicineHomeScreen({
+    super.key,
+    this.highlightDoseId,
+    this.chimePlayer,
+  });
 
   /// Dose id to visually highlight, if opened via deep link.
   final String? highlightDoseId;
+
+  /// Test seam for [ChimePlayer.instance].
+  final ChimePlayer? chimePlayer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,8 +79,12 @@ class MedicineHomeScreen extends ConsumerWidget {
                     child: DoseTile(
                       view: view,
                       highlighted: view.dose.id == highlightDoseId,
-                      onDone: () =>
-                          _markDoneAndCelebrate(context, ref, view.dose.id),
+                      onDone: () => _markDoneAndCelebrate(
+                        context,
+                        ref,
+                        view.dose.id,
+                        chimePlayer ?? ChimePlayer.instance,
+                      ),
                       onSkip: () => _skipWithUndo(context, ref, view.dose.id),
                       onNoteTap: () async {
                         final result = await showNoteEditorSheet(
@@ -102,6 +120,7 @@ Future<void> _markDoneAndCelebrate(
   BuildContext context,
   WidgetRef ref,
   String doseId,
+  ChimePlayer chimePlayer,
 ) async {
   // Captured synchronously (not re-read inside the deferred `onUndo`
   // below, which can fire after this widget's element is disposed).
@@ -114,6 +133,16 @@ Future<void> _markDoneAndCelebrate(
       .toSet();
 
   await controller.markDoseDone(doseId);
+
+  // The chime is wired here — the UI-only call site — and nowhere in
+  // `MedicineController`/`MedicineRepository`/`MedicineModule`, because
+  // `MedicineModule.onNotificationAction` (the Done/Snooze/Skip
+  // background-isolate path) calls the repository directly and has no
+  // audio session to play into (`docs/superpowers/specs/02-delightful/
+  // 10-optional-sound-design-pass-design.md`).
+  if (ref.read(appSettingsProvider).value?.soundEnabled ?? false) {
+    unawaited(chimePlayer.playDoseDoneChime());
+  }
 
   var wasUndone = false;
   if (context.mounted) {
