@@ -128,6 +128,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           quietHoursEnabled: Value(settings.quietHoursEnabled),
           quietHoursStart: Value(settings.quietHoursStart.format()),
           quietHoursEnd: Value(settings.quietHoursEnd.format()),
+          displayName: Value(settings.displayName),
           updatedAt: Value(now),
         ),
       );
