@@ -1,4 +1,3 @@
-import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/notifications/entities/reminder_adjustment.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 

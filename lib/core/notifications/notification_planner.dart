@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/core/notifications/usecases/calculate_adaptive_offset_use_case.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 
@@ -63,11 +64,26 @@ NotificationPlan planNotifications({
   int windowDays = 3,
   int iosPendingCap = 64,
   QuietHours? quietHours,
+  Map<String, int>? moduleOffsetsMinutes,
 }) {
   final windowEnd = now.add(Duration(days: windowDays));
   final flattened = <ModulePendingNotification>[];
   pendingByModule.forEach((moduleId, list) {
-    for (final pending in list) {
+    for (final rawPending in list) {
+      final offsetMinutes = moduleOffsetsMinutes?[moduleId] ?? 0;
+      final pending = offsetMinutes == 0
+          ? rawPending
+          : PendingNotification(
+              id: rawPending.id,
+              scheduledAt: rawPending.scheduledAt.add(
+                Duration(minutes: offsetMinutes),
+              ),
+              title: rawPending.title,
+              body: rawPending.body,
+              sourceType: rawPending.sourceType,
+              deepLinkRoute: rawPending.deepLinkRoute,
+              quietHoursSuppressible: rawPending.quietHoursSuppressible,
+            );
       final inWindow = pending.scheduledAt.isAfter(now) &&
           pending.scheduledAt.isBefore(windowEnd);
       if (!inWindow) continue;
@@ -113,16 +129,37 @@ Future<void> planAndApplyNotifications({
     pendingByModule[module.id] = await module.pendingNotifications();
   }
   final settings = await SettingsRepositoryImpl(db).watchSettings().first;
+  final resolvedNow = now ?? clock.now();
+
+  Map<String, int>? moduleOffsetsMinutes;
+  if (settings.adaptiveReminderEnabled) {
+    final adjustments = await CalculateAdaptiveOffsetUseCase(
+      ledger,
+    ).execute(now: resolvedNow);
+    moduleOffsetsMinutes = <String, int>{};
+    final offsetsByModule = <String, List<int>>{};
+    for (final adjustment in adjustments) {
+      offsetsByModule
+          .putIfAbsent(adjustment.moduleId, () => [])
+          .add(adjustment.offsetMinutes);
+    }
+    offsetsByModule.forEach((moduleId, offsets) {
+      moduleOffsetsMinutes![moduleId] =
+          (offsets.reduce((a, b) => a + b) / offsets.length).round();
+    });
+  }
+
   final plan = planNotifications(
     pendingByModule: pendingByModule,
     existingPending: existingPending,
-    now: now ?? clock.now(),
+    now: resolvedNow,
     quietHours: settings.quietHoursEnabled
         ? QuietHours(
             start: settings.quietHoursStart,
             end: settings.quietHoursEnd,
           )
         : null,
+    moduleOffsetsMinutes: moduleOffsetsMinutes,
   );
   for (final id in plan.toCancel) {
     await NotificationService.instance.cancel(id);
