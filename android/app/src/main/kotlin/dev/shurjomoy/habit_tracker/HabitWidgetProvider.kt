@@ -30,7 +30,20 @@ class HabitWidgetProvider : AppWidgetProvider() {
 
             if (summaryJson != null) {
                 val headline = extractField(summaryJson, "headline") ?: moduleId
-                views.setTextViewText(R.id.widget_headline, headline)
+                // Append countdown if target time is present and in the future.
+                val countdownTargetAt = extractFieldNumeric(summaryJson, "countdownTargetAt")
+                val now = System.currentTimeMillis()
+                if (countdownTargetAt != null) {
+                    val remaining = countdownTargetAt - now
+                    if (remaining > 0) {
+                        val countdownText = formatCountdown(remaining)
+                        views.setTextViewText(R.id.widget_headline, "$headline\n$countdownText")
+                    } else {
+                        views.setTextViewText(R.id.widget_headline, headline)
+                    }
+                } else {
+                    views.setTextViewText(R.id.widget_headline, headline)
+                }
 
                 val actionLabel = extractField(summaryJson, "primaryActionLabel")
                 val sourceId = extractField(summaryJson, "primaryActionSourceId")
@@ -85,5 +98,22 @@ class HabitWidgetProvider : AppWidgetProvider() {
     private fun extractField(json: String, field: String): String? {
         val pattern = "\"$field\":\\s*\"([^\"]*)\"".toRegex()
         return pattern.find(json)?.groupValues?.get(1)
+    }
+
+    /** Extracts a numeric (Long) field from a JSON string. */
+    private fun extractFieldNumeric(json: String, field: String): Long? {
+        val pattern = "\"$field\":\\s*(\\d+)".toRegex()
+        return pattern.find(json)?.groupValues?.get(1)?.toLongOrNull()
+    }
+
+    /** Formats remaining milliseconds as "Xh Ym" or "Y min". */
+    private fun formatCountdown(millis: Long): String {
+        val totalMinutes = millis / 60000
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        return when {
+            hours > 0 -> "${hours}h ${minutes}m"
+            else -> "${minutes} min"
+        }
     }
 }
