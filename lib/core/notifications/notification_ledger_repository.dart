@@ -31,7 +31,10 @@ class NotificationLedgerRepository {
   }
 
   /// Records a newly-scheduled notification. Idempotent by [id] — safe to
-  /// call again for the same slot.
+  /// call again for the same slot. [originalScheduledFor] is the module's
+  /// own unshifted time — pass it whenever an adaptive-reminder offset
+  /// moved [scheduledFor] away from it, so future offset learning stays
+  /// anchored to a stable reference.
   Future<void> insertScheduled({
     required String id,
     required String moduleId,
@@ -41,6 +44,7 @@ class NotificationLedgerRepository {
     required String body,
     required DateTime scheduledFor,
     required String deepLinkRoute,
+    DateTime? originalScheduledFor,
   }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
@@ -55,6 +59,9 @@ class NotificationLedgerRepository {
             body: body,
             scheduledFor: scheduledFor.toUtc().millisecondsSinceEpoch,
             deepLinkRoute: deepLinkRoute,
+            originalScheduledFor: Value(
+              originalScheduledFor?.toUtc().millisecondsSinceEpoch,
+            ),
             createdAt: now,
             updatedAt: now,
           ),

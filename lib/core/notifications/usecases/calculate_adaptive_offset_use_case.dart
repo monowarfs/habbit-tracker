@@ -1,5 +1,6 @@
 import 'package:habit_tracker/core/notifications/entities/reminder_adjustment.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
+import 'package:habit_tracker/core/utils/stats.dart';
 
 /// Derives per-`(moduleId, sourceType)` reminder-time offsets from
 /// historical `done`-action response times
@@ -42,7 +43,14 @@ class CalculateAdaptiveOffsetUseCase {
     for (final row in rows) {
       final actionAt = row.actionAt;
       if (actionAt == null) continue;
-      final offsetMinutes = (actionAt - row.scheduledFor) ~/ 60000;
+      // Measure against the module's own unshifted time, never the
+      // (possibly already-adjusted) scheduledFor — otherwise a successful
+      // shift reads as "no lag" and the learned offset decays back toward
+      // zero as pre-shift samples age out of the rolling window.
+      final baseline = row.originalScheduledFor ?? row.scheduledFor;
+      final offsetMinutes = DateTime.fromMillisecondsSinceEpoch(
+        actionAt,
+      ).difference(DateTime.fromMillisecondsSinceEpoch(baseline)).inMinutes;
       offsetsByGroup
           .putIfAbsent((row.moduleId, row.sourceType), () => [])
           .add(offsetMinutes);
@@ -54,8 +62,9 @@ class CalculateAdaptiveOffsetUseCase {
       if (samples.length < minSamples) continue;
 
       final (moduleId, sourceType) = entry.key;
-      final median = _median(samples);
-      final clamped = median.clamp(-maxOffsetMinutes, maxOffsetMinutes);
+      final clamped = median(
+        samples,
+      ).clamp(-maxOffsetMinutes, maxOffsetMinutes);
 
       adjustments.add(
         ReminderAdjustment(
@@ -69,12 +78,5 @@ class CalculateAdaptiveOffsetUseCase {
       );
     }
     return adjustments;
-  }
-
-  int _median(List<int> values) {
-    final sorted = [...values]..sort();
-    final mid = sorted.length ~/ 2;
-    if (sorted.length.isOdd) return sorted[mid];
-    return ((sorted[mid - 1] + sorted[mid]) / 2).round();
   }
 }

@@ -51,7 +51,7 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'seasonalAccentsEnabled': settings.seasonalAccentsEnabled,
   'ramadanModeManualOverride': settings.ramadanModeManualOverride,
   'ramadanAutoDetectEnabled': settings.ramadanAutoDetectEnabled,
-
+  'adaptiveReminderEnabled': settings.adaptiveReminderEnabled,
 };
 
 Map<String, Object?> _achievementToJson(AchievementRow row) => {

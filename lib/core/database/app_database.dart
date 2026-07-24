@@ -164,6 +164,10 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable,
           appSettingsTable.adaptiveReminderEnabled,
         );
+        await m.addColumn(
+          notificationLedgerTable,
+          notificationLedgerTable.originalScheduledFor,
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

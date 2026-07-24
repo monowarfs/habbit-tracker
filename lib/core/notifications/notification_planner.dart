@@ -9,9 +9,17 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 
 /// One module's pending notification, paired with its owning module id.
+/// `originalScheduledAt` is the module's own unshifted time — always equal
+/// to `pending.scheduledAt` unless an adaptive-reminder offset shifted it.
+/// The ledger records `originalScheduledAt` (never the shifted time) so
+/// `CalculateAdaptiveOffsetUseCase`'s future response-time measurements
+/// stay anchored to a stable reference instead of the previous cycle's own
+/// correction — otherwise a successful shift looks like "no lag" and the
+/// learned offset decays back toward zero as old samples age out.
 typedef ModulePendingNotification = ({
   String moduleId,
   PendingNotification pending,
+  DateTime originalScheduledAt,
 });
 
 /// What the planner decided needs to change to bring the OS's registered
@@ -64,26 +72,34 @@ NotificationPlan planNotifications({
   int windowDays = 3,
   int iosPendingCap = 64,
   QuietHours? quietHours,
-  Map<String, int>? moduleOffsetsMinutes,
+  Map<(String moduleId, String sourceType), int>? sourceOffsetsMinutes,
 }) {
   final windowEnd = now.add(Duration(days: windowDays));
   final flattened = <ModulePendingNotification>[];
   pendingByModule.forEach((moduleId, list) {
     for (final rawPending in list) {
-      final offsetMinutes = moduleOffsetsMinutes?[moduleId] ?? 0;
-      final pending = offsetMinutes == 0
-          ? rawPending
-          : PendingNotification(
-              id: rawPending.id,
-              scheduledAt: rawPending.scheduledAt.add(
-                Duration(minutes: offsetMinutes),
-              ),
-              title: rawPending.title,
-              body: rawPending.body,
-              sourceType: rawPending.sourceType,
-              deepLinkRoute: rawPending.deepLinkRoute,
-              quietHoursSuppressible: rawPending.quietHoursSuppressible,
-            );
+      final offsetMinutes =
+          sourceOffsetsMinutes?[(moduleId, rawPending.sourceType)] ?? 0;
+      var pending = rawPending;
+      if (offsetMinutes != 0) {
+        var shiftedAt = rawPending.scheduledAt.add(
+          Duration(minutes: offsetMinutes),
+        );
+        // A negative offset must never push a reminder into the past —
+        // that would silently drop the occurrence instead of shifting it.
+        if (!shiftedAt.isAfter(now)) {
+          shiftedAt = now.add(const Duration(minutes: 1));
+        }
+        pending = PendingNotification(
+          id: rawPending.id,
+          scheduledAt: shiftedAt,
+          title: rawPending.title,
+          body: rawPending.body,
+          sourceType: rawPending.sourceType,
+          deepLinkRoute: rawPending.deepLinkRoute,
+          quietHoursSuppressible: rawPending.quietHoursSuppressible,
+        );
+      }
       final inWindow =
           pending.scheduledAt.isAfter(now) &&
           pending.scheduledAt.isBefore(windowEnd);
@@ -92,7 +108,11 @@ NotificationPlan planNotifications({
           pending.quietHoursSuppressible &&
           (quietHours?.contains(pending.scheduledAt) ?? false);
       if (suppressed) continue;
-      flattened.add((moduleId: moduleId, pending: pending));
+      flattened.add((
+        moduleId: moduleId,
+        pending: pending,
+        originalScheduledAt: rawPending.scheduledAt,
+      ));
     }
   });
   flattened.sort(
@@ -101,11 +121,18 @@ NotificationPlan planNotifications({
   final capped = flattened.take(iosPendingCap).toList();
 
   final cappedIds = capped.map((e) => e.pending.id).toSet();
-  final existingIds = existingPending.map((r) => r.id).toSet();
+  final existingScheduledForById = {
+    for (final r in existingPending) r.id: r.scheduledFor,
+  };
 
-  final toSchedule = capped
-      .where((e) => !existingIds.contains(e.pending.id))
-      .toList();
+  final toSchedule = capped.where((e) {
+    final existingMillis = existingScheduledForById[e.pending.id];
+    if (existingMillis == null) return true;
+    // Already registered — only re-schedule if its actual fire time moved
+    // since it was last recorded (e.g. a newly-computed adaptive offset).
+    return existingMillis !=
+        e.pending.scheduledAt.toUtc().millisecondsSinceEpoch;
+  }).toList();
   final toCancel = existingPending
       .where((r) => !cappedIds.contains(r.id))
       .map((r) => r.id)
@@ -133,22 +160,21 @@ Future<void> planAndApplyNotifications({
   final settings = await SettingsRepositoryImpl(db).watchSettings().first;
   final resolvedNow = now ?? clock.now();
 
-  Map<String, int>? moduleOffsetsMinutes;
+  Map<(String, String), int>? sourceOffsetsMinutes;
   if (settings.adaptiveReminderEnabled) {
     final adjustments = await CalculateAdaptiveOffsetUseCase(
       ledger,
     ).execute(now: resolvedNow);
-    moduleOffsetsMinutes = <String, int>{};
-    final offsetsByModule = <String, List<int>>{};
-    for (final adjustment in adjustments) {
-      offsetsByModule
-          .putIfAbsent(adjustment.moduleId, () => [])
-          .add(adjustment.offsetMinutes);
-    }
-    offsetsByModule.forEach((moduleId, offsets) {
-      moduleOffsetsMinutes![moduleId] =
-          (offsets.reduce((a, b) => a + b) / offsets.length).round();
-    });
+    // Only 'high' confidence (>=20 samples) is acted on automatically —
+    // 'medium' is a suggestion-only tier, never auto-applied to real
+    // scheduling (`docs/superpowers/specs/03-ai-powered/
+    // 01-adaptive-reminder-timing-design.md`).
+    sourceOffsetsMinutes = {
+      for (final adjustment in adjustments)
+        if (adjustment.confidence == 'high')
+          (adjustment.moduleId, adjustment.sourceType!):
+              adjustment.offsetMinutes,
+    };
   }
 
   final plan = planNotifications(
@@ -161,7 +187,7 @@ Future<void> planAndApplyNotifications({
             end: settings.quietHoursEnd,
           )
         : null,
-    moduleOffsetsMinutes: moduleOffsetsMinutes,
+    sourceOffsetsMinutes: sourceOffsetsMinutes,
   );
   for (final id in plan.toCancel) {
     await NotificationService.instance.cancel(id);
@@ -177,6 +203,7 @@ Future<void> planAndApplyNotifications({
       body: entry.pending.body,
       scheduledFor: entry.pending.scheduledAt,
       deepLinkRoute: entry.pending.deepLinkRoute,
+      originalScheduledFor: entry.originalScheduledAt,
     );
     await NotificationService.instance.schedule(
       entry.pending,

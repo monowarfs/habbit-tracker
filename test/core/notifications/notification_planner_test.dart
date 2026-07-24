@@ -145,22 +145,30 @@ void main() {
     },
   );
 
-  test('moduleOffsetsMinutes shifts scheduledAt for the matching module', () {
-    final plan = planNotifications(
-      pendingByModule: {
-        'water': [_pending('a', now.add(const Duration(hours: 1)))],
-      },
-      existingPending: const [],
-      now: now,
-      moduleOffsetsMinutes: {'water': 30},
-    );
+  test(
+    'sourceOffsetsMinutes shifts scheduledAt for the matching '
+    '(moduleId, sourceType)',
+    () {
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', now.add(const Duration(hours: 1)))],
+        },
+        existingPending: const [],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+      );
 
-    expect(plan.toSchedule, hasLength(1));
-    expect(
-      plan.toSchedule.single.pending.scheduledAt,
-      now.add(const Duration(hours: 1, minutes: 30)),
-    );
-  });
+      expect(plan.toSchedule, hasLength(1));
+      expect(
+        plan.toSchedule.single.pending.scheduledAt,
+        now.add(const Duration(hours: 1, minutes: 30)),
+      );
+      expect(
+        plan.toSchedule.single.originalScheduledAt,
+        now.add(const Duration(hours: 1)),
+      );
+    },
+  );
 
   test('an offset of 0 is identity', () {
     final scheduledAt = now.add(const Duration(hours: 1));
@@ -170,13 +178,13 @@ void main() {
       },
       existingPending: const [],
       now: now,
-      moduleOffsetsMinutes: {'water': 0},
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 0},
     );
 
     expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
   });
 
-  test('absent module key in moduleOffsetsMinutes is a no-op', () {
+  test('absent (moduleId, sourceType) key is a no-op', () {
     final scheduledAt = now.add(const Duration(hours: 1));
     final plan = planNotifications(
       pendingByModule: {
@@ -184,13 +192,27 @@ void main() {
       },
       existingPending: const [],
       now: now,
-      moduleOffsetsMinutes: {'medicine': 45},
+      sourceOffsetsMinutes: {('medicine', 'medicine_dose'): 45},
     );
 
     expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
   });
 
-  test('null/empty moduleOffsetsMinutes behaves identically to before', () {
+  test('a different sourceType under the same module is unaffected', () {
+    final scheduledAt = now.add(const Duration(hours: 1));
+    final plan = planNotifications(
+      pendingByModule: {
+        'water': [_pending('a', scheduledAt)],
+      },
+      existingPending: const [],
+      now: now,
+      sourceOffsetsMinutes: {('water', 'low_stock'): 45},
+    );
+
+    expect(plan.toSchedule.single.pending.scheduledAt, scheduledAt);
+  });
+
+  test('null/empty sourceOffsetsMinutes behaves identically to before', () {
     final scheduledAt = now.add(const Duration(hours: 1));
     final withNull = planNotifications(
       pendingByModule: {
@@ -205,7 +227,7 @@ void main() {
       },
       existingPending: const [],
       now: now,
-      moduleOffsetsMinutes: const {},
+      sourceOffsetsMinutes: const {},
     );
 
     expect(withNull.toSchedule.single.pending.scheduledAt, scheduledAt);
@@ -223,7 +245,7 @@ void main() {
       },
       existingPending: [_ledgerRow('a', scheduledAt)],
       now: now,
-      moduleOffsetsMinutes: {'water': 30},
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
     );
 
     expect(plan.toSchedule, isEmpty);
@@ -245,9 +267,52 @@ void main() {
         start: LocalTime(22, 0),
         end: LocalTime(7, 0),
       ),
-      moduleOffsetsMinutes: {'water': 30},
+      sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
     );
 
     expect(plan.toSchedule, isEmpty);
   });
+
+  test(
+    'a negative offset that would push scheduledAt before now is clamped '
+    'to just after now instead of dropping the occurrence',
+    () {
+      final scheduledAt = now.add(const Duration(minutes: 15));
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', scheduledAt)],
+        },
+        existingPending: const [],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): -25},
+      );
+
+      expect(plan.toSchedule, hasLength(1));
+      expect(plan.toSchedule.single.pending.scheduledAt.isAfter(now), isTrue);
+    },
+  );
+
+  test(
+    'an already-registered notification is rescheduled when a newly '
+    'computed offset moves its actual fire time',
+    () {
+      final rawScheduledAt = now.add(const Duration(hours: 1));
+      final plan = planNotifications(
+        pendingByModule: {
+          'water': [_pending('a', rawScheduledAt)],
+        },
+        // Previously registered at the un-shifted time (no offset was
+        // active on the prior planning cycle).
+        existingPending: [_ledgerRow('a', rawScheduledAt)],
+        now: now,
+        sourceOffsetsMinutes: {('water', 'water_reminder'): 30},
+      );
+
+      expect(plan.toSchedule, hasLength(1));
+      expect(
+        plan.toSchedule.single.pending.scheduledAt,
+        rawScheduledAt.add(const Duration(minutes: 30)),
+      );
+    },
+  );
 }

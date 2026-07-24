@@ -25,6 +25,7 @@ void main() {
     required String sourceType,
     required DateTime scheduledFor,
     required int offsetMinutes,
+    DateTime? originalScheduledFor,
   }) async {
     await ledgerRepo.insertScheduled(
       id: id,
@@ -35,11 +36,14 @@ void main() {
       body: 'body',
       scheduledFor: scheduledFor,
       deepLinkRoute: '/$moduleId',
+      originalScheduledFor: originalScheduledFor,
     );
     await ledgerRepo.markActioned(
       id,
       action: 'done',
-      actionAt: scheduledFor.add(Duration(minutes: offsetMinutes)),
+      actionAt: (originalScheduledFor ?? scheduledFor).add(
+        Duration(minutes: offsetMinutes),
+      ),
     );
   }
 
@@ -165,4 +169,29 @@ void main() {
     expect(water.offsetMinutes, 10);
     expect(medicine.offsetMinutes, -20);
   });
+
+  test(
+    'measures the offset against originalScheduledFor, not the '
+    'already-adjusted scheduledFor, so a previously-applied shift does '
+    'not erase itself',
+    () async {
+      // Each row's OS-fire time (scheduledFor) was already shifted +30min
+      // by a prior cycle; the user responds right at that shifted time
+      // (0 lag relative to it), but their lag relative to the module's
+      // true original time is still +30min and must remain the result.
+      for (var i = 0; i < 10; i++) {
+        final original = DateTime.utc(2026, 6, 1, 8).add(Duration(days: i));
+        await seedDoneRow(
+          id: 'r$i',
+          moduleId: 'water',
+          sourceType: 'water_reminder',
+          scheduledFor: original.add(const Duration(minutes: 30)),
+          originalScheduledFor: original,
+          offsetMinutes: 30,
+        );
+      }
+      final result = await useCase.execute(now: now);
+      expect(result.single.offsetMinutes, 30);
+    },
+  );
 }
