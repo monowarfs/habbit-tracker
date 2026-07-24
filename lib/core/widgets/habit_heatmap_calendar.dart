@@ -45,6 +45,8 @@ class HabitHeatmapCalendar extends StatelessWidget {
     required this.maxValue,
     required this.onDayTap,
     this.today,
+    this.useSquareCells = false,
+    this.tooltipForDay,
     super.key,
   });
 
@@ -70,6 +72,14 @@ class HabitHeatmapCalendar extends StatelessWidget {
 
   /// Defaults to the real current date; overridable for tests.
   final LocalDate? today;
+
+  /// When true, renders square cells (like GitHub's contribution chart)
+  /// instead of circles.
+  final bool useSquareCells;
+
+  /// Optional callback to generate a tooltip message for a day cell.
+  /// Return null to show no tooltip.
+  final String Function(LocalDate day, ModuleDayStatus? status)? tooltipForDay;
 
   Color _colorFor(BuildContext context, ModuleDayStatus? status) {
     final colors = Theme.of(context).colorScheme;
@@ -146,7 +156,8 @@ class HabitHeatmapCalendar extends StatelessWidget {
         final status = dayStatus[day];
         final isFuture = day.compareTo(effectiveToday) > 0;
         final isToday = day.compareTo(effectiveToday) == 0;
-        return Semantics(
+        final tooltipMsg = tooltipForDay?.call(day, status);
+        final cell = Semantics(
           label: _semanticsLabel(l10n, day, status),
           // The Text/Icon below are purely visual — this label already
           // fully describes the cell, so their own semantics (e.g. the
@@ -161,7 +172,11 @@ class HabitHeatmapCalendar extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: _colorFor(context, status),
-                    shape: BoxShape.circle,
+                    shape: useSquareCells
+                        ? BoxShape.rectangle
+                        : BoxShape.circle,
+                    borderRadius:
+                        useSquareCells ? BorderRadius.circular(3) : null,
                     border: isToday
                         ? Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -209,6 +224,13 @@ class HabitHeatmapCalendar extends StatelessWidget {
               ),
             ),
           ),
+        );
+
+        if (tooltipMsg == null) return cell;
+        return Tooltip(
+          message: tooltipMsg,
+          triggerMode: TooltipTriggerMode.tap,
+          child: cell,
         );
       },
     );

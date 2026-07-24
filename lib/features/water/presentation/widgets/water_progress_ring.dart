@@ -10,7 +10,7 @@ class WaterProgressRing extends StatelessWidget {
     required this.totalMl,
     required this.goalMl,
     required this.unit,
-    this.size = 160,
+    this.size = 220,
     this.showLabel = true,
     super.key,
   });

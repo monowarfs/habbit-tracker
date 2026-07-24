@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/providers/module_day_status_provider.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -16,8 +17,10 @@ import 'package:habit_tracker/features/water/domain/usecases/aggregate_water_ser
 import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_date.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
+import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/streak_card.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_log_tile.dart';
+import 'package:intl/intl.dart';
 
 enum _ChartRange { week, month, year }
 
@@ -192,9 +195,22 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
           HabitHeatmapCalendar(
             month: monthStart,
             dayStatus: dayStatus,
-            accentColor: ModuleAccents.water,
+            accentColor: Colors.green,
             maxValue: maxValue,
             onDayTap: (day) => setState(() => _selectedDay = day),
+            useSquareCells: true,
+            tooltipForDay: (day, status) {
+              final dateStr = DateFormat.MMMd().format(day.toDateTimeUtc());
+              if (status == null || status.kind == ModuleDayStatusKind.none) {
+                return dateStr;
+              }
+              final amount = formatWaterAmount(
+                context,
+                status.value.toInt(),
+                unit,
+              );
+              return '$dateStr — $amount';
+            },
           ),
         if (_selectedDay case final day?)
           for (final entry in (entries ?? const []).where(
