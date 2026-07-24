@@ -18,6 +18,7 @@ import 'package:habit_tracker/features/settings/presentation/providers/app_setti
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
+import 'package:habit_tracker/features/water/presentation/widgets/natural_language_quick_add.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/quick_add_button.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_log_tile.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/water_progress_ring.dart';
@@ -128,6 +129,14 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
                       label: Text(l10n.waterHomeCustomAddButton),
                     ),
                   ],
+                ),
+                const SizedBox(height: 12),
+                NaturalLanguageQuickAdd(
+                  unit: unit,
+                  onLog: (parsed) => ref
+                      .read(waterControllerProvider.notifier)
+                      .logFromParsedText(parsed),
+                  onEdit: () => context.push('/water/add'),
                 ),
                 const SizedBox(height: 24),
                 Text(
