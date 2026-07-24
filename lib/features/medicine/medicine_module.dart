@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -18,6 +19,7 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_schedul
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
+import 'package:habit_tracker/features/medicine/domain/usecases/calculate_adherence.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/predict_stock_out_date.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
@@ -633,5 +635,67 @@ class MedicineModule implements HabitModule {
       'prn' => const RepeatRule.prn(),
       _ => RepeatRule.fixedDaily(timesOfDay: times),
     };
+  }
+
+  @override
+  Future<ModuleYearStats?> yearAggregation(DateRange yearRange) async {
+    final doses = await _repository.dosesInRange(
+      yearRange.start,
+      yearRange.end,
+    );
+    if (doses.isEmpty) return null;
+
+    final now = clock.now();
+    final adherence = calculateAdherence(doses: doses, now: now);
+
+    // Compute longest consecutive streak of days where all due doses were
+    // taken (simplified — a day with no due doses is not counted).
+    final dosesByDay = <LocalDate, List<MedicineDose>>{};
+    for (final dose in doses) {
+      final day = LocalDate.fromDateTime(dose.scheduledFor.toLocal());
+      dosesByDay.putIfAbsent(day, () => []).add(dose);
+    }
+
+    var longest = 0;
+    var running = 0;
+    var day = yearRange.start;
+    while (day.compareTo(yearRange.end) <= 0) {
+      final dayDoses = dosesByDay[day] ?? const [];
+      if (dayDoses.isNotEmpty &&
+          dayDoses.every((d) =>
+              d.storedStatus == MedicineDoseStatus.done ||
+              d.storedStatus == MedicineDoseStatus.skipped)) {
+        running++;
+        if (running > longest) longest = running;
+      } else {
+        running = 0;
+      }
+      day = day.addDays(1);
+    }
+
+    final dosesTaken = adherence.takenOnTime + adherence.takenLate;
+    final adherencePercent = adherence.total > 0
+        ? dosesTaken / adherence.total * 100
+        : 0.0;
+
+    // Compute months active.
+    final monthsActive = <int>{};
+    for (final d in dosesByDay.keys) {
+      monthsActive.add(d.month);
+    }
+
+    return moduleYearStatsFromColor(
+      moduleId: id,
+      displayName: metadata.displayName,
+      accentColor: metadata.accentColor,
+      totalDoses: adherence.total,
+      dosesTaken: dosesTaken,
+      adherencePercent: adherencePercent,
+      longestConsecutiveStreak: longest,
+      longestStreakAll: longest,
+      bestDayValue: dosesTaken,
+      monthsActive: monthsActive.length,
+      monthsTotal: 12,
+    );
   }
 }
