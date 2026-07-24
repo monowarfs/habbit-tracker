@@ -7,6 +7,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/illustrations/crescent_mat_painter.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
@@ -70,6 +71,29 @@ void main() {
 
     expect(find.text('No prayers scheduled for today'), findsOneWidget);
   });
+
+  testWidgets(
+    "empty state's illustration is painted in Prayer's own accent color",
+    (tester) async {
+      when(
+        () => repo.watchRecordsForDay(any()),
+      ).thenAnswer((_) => Stream.value(const []));
+      when(
+        () => repo.watchSettings(),
+      ).thenAnswer((_) => Stream.value(settings));
+
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 6)), () async {
+        await tester.pumpWidget(buildApp());
+        await tester.pumpAndSettle();
+      });
+
+      final customPaint = tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .firstWhere((w) => w.painter is CrescentMatPainter);
+      final painter = customPaint.painter! as CrescentMatPainter;
+      expect(painter.color, ModuleAccents.prayer);
+    },
+  );
 
   testWidgets('shows a tile per record, labeled by prayer name', (
     tester,

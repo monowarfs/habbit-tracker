@@ -7,6 +7,8 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/illustrations/water_drop_painter.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
@@ -58,6 +60,22 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  testWidgets(
+    "empty state's illustration is painted in Water's own accent color",
+    (tester) async {
+      final now = DateTime.utc(2026, 6, 1, 8);
+      await _pumpWaterHome(tester, db, now: now);
+
+      final customPaint = tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .firstWhere((w) => w.painter is WaterDropPainter);
+      final painter = customPaint.painter! as WaterDropPainter;
+      expect(painter.color, ModuleAccents.water);
+
+      await disposeTree(tester);
+    },
+  );
 
   testWidgets('partial state: some progress logged, goal not yet met', (
     tester,

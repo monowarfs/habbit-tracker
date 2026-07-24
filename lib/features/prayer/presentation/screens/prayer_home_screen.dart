@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/illustrations/crescent_mat_painter.dart';
+import 'package:habit_tracker/core/widgets/module_empty_state.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
@@ -53,7 +56,11 @@ class PrayerHomeScreen extends ConsumerWidget {
       body: views == null
           ? const Center(child: CircularProgressIndicator())
           : views.isEmpty
-          ? Center(child: Text(l10n.prayerHomeEmpty))
+          ? ModuleEmptyState(
+              painter: CrescentMatPainter.new,
+              message: l10n.prayerHomeEmpty,
+              accentColor: ModuleAccents.prayer,
+            )
           : ListView.builder(
               itemCount: views.length,
               itemBuilder: (context, index) {

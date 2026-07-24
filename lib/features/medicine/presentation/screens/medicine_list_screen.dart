@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/illustrations/pill_calendar_painter.dart';
+import 'package:habit_tracker/core/widgets/module_empty_state.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 
 /// Lists every medicine, active and archived, in two tabs (FR-M-10).
@@ -80,12 +83,12 @@ class _MedicineListView extends ConsumerWidget {
         : medicines;
     if (filtered.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
-      return Center(
-        child: Text(
-          archivedOnly
-              ? l10n.medicineListArchivedEmpty
-              : l10n.medicineListEmpty,
-        ),
+      return ModuleEmptyState(
+        painter: PillCalendarPainter.new,
+        message: archivedOnly
+            ? l10n.medicineListArchivedEmpty
+            : l10n.medicineListEmpty,
+        accentColor: ModuleAccents.medicine,
       );
     }
     return ListView(
