@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
 import 'package:habit_tracker/core/wearable/wearable_sync_helper.dart';
+import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
 import 'package:workmanager/workmanager.dart';
 
 /// Unique WorkManager task name for the periodic notification top-up.
@@ -20,6 +21,7 @@ void notificationWorkmanagerCallbackDispatcher() {
     final db = AppDatabase();
     try {
       await planAndApplyNotifications(db: db);
+      await refreshWeatherCacheIfStale(db);
       await refreshAllWidgets(db);
       await syncWearableData(db);
     } finally {
