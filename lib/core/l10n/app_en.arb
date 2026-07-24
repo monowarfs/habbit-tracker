@@ -1034,5 +1034,38 @@
   "quietHoursDescription": "Suppress non-critical notifications during sleep hours. Medicine dose and prayer reminders are never suppressed.",
   "@quietHoursDescription": {
     "description": "Description text explaining what quiet hours does."
+  },
+  "widgetPrayerName": "Prayer Countdown",
+  "@widgetPrayerName": {
+    "description": "Label for the prayer widget in the Android widget picker."
+  },
+  "widgetPrayerDescription": "Shows time remaining until the next prayer",
+  "@widgetPrayerDescription": {
+    "description": "Description for the prayer widget in the Android widget picker."
+  },
+  "prayerCountdownWidgetPreview": "Widget Preview",
+  "@prayerCountdownWidgetPreview": {
+    "description": "Button label to preview the prayer widget in-app."
+  },
+  "prayerCountdownFormatMinutes": "{minutes} min",
+  "@prayerCountdownFormatMinutes": {
+    "description": "Format for countdown minutes only.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerCountdownFormatHoursMinutes": "{hours}h {minutes}m",
+  "@prayerCountdownFormatHoursMinutes": {
+    "description": "Format for countdown hours and minutes.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
   }
 }

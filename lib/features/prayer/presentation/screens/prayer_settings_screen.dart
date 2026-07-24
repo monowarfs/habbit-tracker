@@ -8,6 +8,7 @@ import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.da
 import 'package:habit_tracker/features/prayer/presentation/prayer_city_labels.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_controller.dart';
 import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
+import 'package:habit_tracker/features/prayer/presentation/widgets/prayer_widget_preview.dart';
 
 /// Calculation method, Asr madhab, Jumu'ah toggle, location, reminders,
 /// Isha day-rollover time, and the "using manual location" banner (D-09).
@@ -162,6 +163,7 @@ class PrayerSettingsScreen extends ConsumerWidget {
               preReminderEnabled: value,
             ),
           ),
+          const PrayerWidgetPreview(),
         ],
       ),
     );
