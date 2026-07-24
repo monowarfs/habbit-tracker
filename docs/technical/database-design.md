@@ -153,6 +153,28 @@ migration.
 | unlocked_at | INTEGER NULL | UTC; null = not yet unlocked |
 | created_at, updated_at, deleted_at | INTEGER | |
 
+### `habit_stack_suggestions`
+
+Backs the habit-stacking suggestion card added in
+`../superpowers/specs/02-delightful/04-habit-stacking-suggestions-design.md`.
+Cross-module (not owned by any single module's own section below), same
+reasoning as `achievements` — a small, independently-queryable, multi-row
+table, not a JSON blob in `app_settings`. At most two rows exist in v1.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | `'{sourceModuleId}_{targetModuleId}'`, e.g. `'medicine_water'` |
+| source_module_id | TEXT | `'medicine'` \| `'prayer'` |
+| target_module_id | TEXT | always `'water'` in v1 |
+| status | TEXT | `'pending'` \| `'accepted'` \| `'dismissed'` |
+| qualifying_days | INTEGER | |
+| median_gap_minutes | INTEGER | |
+| typical_source_time | TEXT | local `"HH:mm"` |
+| source_label | TEXT NULL | e.g. `'Fajr'`; always null for the medicine pair |
+| last_evaluated_at | INTEGER | UTC; backs the 24h re-evaluation guard |
+| responded_at | INTEGER NULL | UTC; null while pending |
+| created_at, updated_at | INTEGER | |
+
 ---
 
 ## Water module

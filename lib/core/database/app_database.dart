@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
+import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
@@ -33,6 +34,7 @@ part 'app_database.g.dart';
     AppSettingsTable,
     NotificationLedgerTable,
     AchievementsTable,
+    HabitStackSuggestionsTable,
     WaterGoalsTable,
     WaterLogsTable,
     WaterSettingsTable,
@@ -51,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -103,6 +105,10 @@ class AppDatabase extends _$AppDatabase {
           waterSettingsTable,
           waterSettingsTable.reminderWindowOverrides,
         );
+      }
+      if (from < 8) {
+        // Habit-stacking suggestions (medicine/prayer -> water).
+        await m.createTable(habitStackSuggestionsTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
