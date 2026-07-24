@@ -187,6 +187,13 @@ Future<Result<void>> applyImport({
             quietHoursEnd: LocalTime.parse(
               appSettingsJson['quietHoursEnd'] as String? ?? '07:00',
             ),
+            // An older export made before these two fields existed must
+            // still import cleanly, at the same defaults a fresh install
+            // gets (`null`/`true`).
+            ramadanModeManualOverride:
+                appSettingsJson['ramadanModeManualOverride'] as bool?,
+            ramadanAutoDetectEnabled:
+                appSettingsJson['ramadanAutoDetectEnabled'] as bool? ?? true,
           ),
         );
       }

@@ -106,6 +106,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateRamadanModeManualOverride(bool? override) =>
+      _update(
+        AppSettingsTableCompanion(ramadanModeManualOverride: Value(override)),
+      );
+
+  @override
+  Future<Result<void>> updateRamadanAutoDetectEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(ramadanAutoDetectEnabled: Value(enabled)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -124,6 +137,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           quietHoursEnabled: Value(settings.quietHoursEnabled),
           quietHoursStart: Value(settings.quietHoursStart.format()),
           quietHoursEnd: Value(settings.quietHoursEnd.format()),
+          ramadanModeManualOverride: Value(settings.ramadanModeManualOverride),
+          ramadanAutoDetectEnabled: Value(settings.ramadanAutoDetectEnabled),
           updatedAt: Value(now),
         ),
       );
@@ -166,6 +181,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     quietHoursEnabled: row.quietHoursEnabled,
     quietHoursStart: LocalTime.parse(row.quietHoursStart),
     quietHoursEnd: LocalTime.parse(row.quietHoursEnd),
+    ramadanModeManualOverride: row.ramadanModeManualOverride,
+    ramadanAutoDetectEnabled: row.ramadanAutoDetectEnabled,
   );
 }
 

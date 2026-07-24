@@ -42,6 +42,13 @@ abstract class SettingsRepository {
     required LocalTime end,
   });
 
+  /// Manual Ramadan-mode override: `true`/`false` pins it, `null` clears
+  /// the override back to auto-detection.
+  Future<Result<void>> updateRamadanModeManualOverride(bool? override);
+
+  /// Enables or disables Hijri-calendar Ramadan auto-detection.
+  Future<Result<void>> updateRamadanAutoDetectEnabled({required bool enabled});
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

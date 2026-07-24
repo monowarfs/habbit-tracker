@@ -221,6 +221,20 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   }
 
   @override
+  Future<Result<void>> updateRamadanModeManualOverride(bool? override) async {
+    await _update((s) => s.copyWith(ramadanModeManualOverride: override));
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> updateRamadanAutoDetectEnabled({
+    required bool enabled,
+  }) async {
+    await _update((s) => s.copyWith(ramadanAutoDetectEnabled: enabled));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     await _update((_) => settings);
     return const Result.success(null);
