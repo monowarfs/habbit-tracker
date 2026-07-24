@@ -64,6 +64,7 @@
   "waterPresetLight": "হালকা · ১.৫ লি",
   "waterPresetStandard": "স্বাভাবিক · ২ লি",
   "waterPresetActive": "সক্রিয় · ৩ লি",
+  "waterHydrationHintCard": "পানি শরীরের তাপমাত্রা, জয়েন্ট এবং শক্তি নিয়ন্ত্রণে সাহায্য করে — বেশিরভাগ প্রাপ্তবয়স্কদের দিনে প্রায় ২-৩ লিটার পানি প্রয়োজন, গরমে বা সক্রিয় থাকলে আরও বেশি।",
   "medicineHomeEmpty": "আজকের জন্য কোনো ডোজ নির্ধারিত নেই",
   "medicineDoseUndoSnackbar": "ডোজ আপডেট করা হয়েছে",
   "medicineHomeAllMedicinesButton": "সব ওষুধ",

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_permission_explainer_screen.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/widgets/dismissible_hint_card.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/water_goal_presets.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
@@ -21,6 +23,7 @@ class WaterSettingsScreen extends ConsumerWidget {
     final goal = ref.watch(currentWaterGoalProvider).value;
     final settings = ref.watch(waterSettingsProvider).value;
     final controller = ref.read(waterControllerProvider.notifier);
+    final appSettings = ref.watch(appSettingsProvider).value;
 
     if (goal == null || settings == null) {
       return Scaffold(
@@ -34,6 +37,16 @@ class WaterSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (appSettings?.waterHydrationHintSeenAt == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: DismissibleHintCard(
+                message: l10n.waterHydrationHintCard,
+                onDismiss: () => ref
+                    .read(settingsRepositoryProvider)
+                    .markWaterHydrationHintSeen(),
+              ),
+            ),
           Wrap(
             spacing: 8,
             children: [
