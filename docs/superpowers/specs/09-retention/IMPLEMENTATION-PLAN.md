@@ -1,454 +1,303 @@
-# 09-Retention Category: Implementation Plan
+# 09-Retention Category: Consolidated Implementation Plan
 
 **Date:** 2026-07-25
 **Status:** Implementation-Ready (verified against codebase)
-**Scope:** 11 specs across 4 phases, estimated 8-10 feature runs
+**Scope:** 11 specs, 81 tasks, 81 commits across 5 phases
 
 ---
 
-## Phase 1: Foundation Infrastructure (Run 16-17)
+## Dependency graph
 
-These are cross-cutting infrastructure pieces that multiple specs depend on. They must be built first.
+```
+Spec 01 (Yearly Recap) ─────────────────────────────────────────────┐
+  ├─ installDate ──────────┬───────────────────────────────────────┤
+  ├─ ModuleDayStatusKind.paused ─┬─────────────────────────────────┤
+  └─ Pause-aware streaks ───────┤                                  │
+                                │                                  │
+Spec 02 (Re-engagement Nudge) ──┤ (needs installDate + paused)     │
+                                │                                  │
+Spec 03 (Archive/Revive) ───────┤ (needs paused + streaks)         │
+                                │                                  │
+Spec 04 (Life-Event Pause) ─────┤ (needs paused + streaks)         │
+                                │                                  │
+Spec 05 (Quarterly Recalibration) (needs installDate)              │
+                                │                                  │
+Spec 06 (Anniversary Badge) ────┤ (needs installDate)              │
+  │                             │                                  │
+  └─ Spec 10 (Cosmetic Rewards) ┤ (needs Spec 06 achievements)    │
+                                │                                  │
+Spec 07 (Progressive Onboarding) (independent — new system)        │
+                                                                ◄──┘
+Spec 08 (Data Reassurance) ───── (independent — copy only)
+  │
+  └─ Spec 11 (Data Longevity) ── (needs Spec 08 copy)
 
-### Run 16: Install-Date Tracking + ModuleDayStatusKind.paused
+Spec 09 (Household Plan) ─────── BLOCKED on multi-profile (outside category)
+```
 
-**Goal:** Add the two foundational data points that 6+ specs depend on.
-
-#### Task 16.1: Add `installDate` to `app_settings`
-- **File:** `lib/core/database/tables/app_settings_table.dart`
-  - Add `IntColumn get installDate => integer().nullable()('install_date');`
-  - Note: All timestamps in this table use `IntColumn` (UTC epoch millis), not `DateTimeColumn`. The domain entity (`AppSettings`) converts via `_toDomain` mapper.
-- **File:** `lib/core/database/app_database.dart`
-  - Bump `schemaVersion` from 9 to 10
-  - Add migration: `if (from < 10) { await m.addColumn(appSettings, appSettings.installDate); }`
-- **File:** `lib/features/settings/domain/entities/app_settings.dart`
-  - Add `DateTime? installDate` field to `AppSettings` Freezed class
-- **File:** `lib/features/settings/domain/repositories/settings_repository.dart`
-  - Add `Future<void> updateInstallDate(DateTime date)` to abstract interface
-- **File:** `lib/features/settings/data/repositories/settings_repository_impl.dart`
-  - In `_ensureSeeded()`, set `installDate` to `clock.now().millisecondsSinceEpoch` if null
-  - Implement `updateInstallDate()` — writes millis to DB, updates in-memory cache
-- **File:** `lib/main.dart`
-  - In `main()`, after `ProviderContainer` creation, call `settingsRepository.updateInstallDate()` if not already set
-- **Tests:** `test/features/settings/` — verify installDate is set on first launch, not overwritten on subsequent launches
-- **Commit:** `feat: add installDate tracking to app_settings`
-
-#### Task 16.2: Add `ModuleDayStatusKind.paused` variant
-- **File:** `lib/core/modules/habit_module.dart`
-  - Add `paused` to `ModuleDayStatusKind` enum
-- **File:** `lib/core/reports/day_status_streaks.dart`
-  - Update `longestStreak()` and `currentStreak()` to accept `Set<LocalDate> pausedDays` parameter
-  - Paused days are skipped in streak walk (neither breaking nor extending)
-- **File:** `lib/core/reports/aggregate_report_usecase.dart`
-  - Update `execute()` to accept and exclude paused days from aggregation
-- **File:** `lib/features/water/domain/usecases/calculate_water_streak.dart`
-  - Add `pausedDays` parameter to `CalculateWaterStreakUseCase`
-- **File:** `lib/features/prayer/domain/usecases/calculate_prayer_streak.dart`
-  - Add `pausedDays` parameter to `CalculatePrayerStreakUseCase`
-- **File:** `lib/features/medicine/domain/usecases/calculate_adherence.dart`
-  - Add `pausedDays` parameter to `calculateAdherence()`
-- **File:** `lib/core/widgets/habit_heatmap_calendar.dart`
-  - Add `paused` case to `_colorFor()` with a distinct neutral color (e.g., striped pattern or light gray)
-  - Update `heatmapAlphaFor()` to handle `paused`
-- **File:** `lib/core/widgets/global_month_calendar.dart`
-  - Add `paused` case to `combinedDayStatusKind()`
-- **Tests:** `test/core/reports/` — verify paused days are excluded from streak calculations
-- **Commit:** `feat: add ModuleDayStatusKind.paused variant and pause-aware streak calculators`
-
-#### Task 16.3: Add `lastActivityAt` tracking
-- **File:** `lib/core/database/tables/app_settings_table.dart`
-  - Add `IntColumn get lastActivityAt => integer().nullable()('last_activity_at');`
-- **File:** `lib/core/database/app_database.dart`
-  - Include in schema version 10 migration
-- **File:** `lib/features/settings/domain/entities/app_settings.dart`
-  - Add `DateTime? lastActivityAt` field
-- **File:** `lib/features/settings/domain/repositories/settings_repository.dart`
-  - Add `Future<void> recordActivity()` to abstract interface
-- **File:** `lib/features/settings/data/repositories/settings_repository_impl.dart`
-  - Implement `recordActivity()` — writes `clock.now().millisecondsSinceEpoch` to `lastActivityAt`
-- **File:** `lib/core/notifications/last_activity_repository.dart` (new)
-  - Simple wrapper: `Future<DateTime?> getLastActivity()` reads from `app_settings`
-  - Delegates to `SettingsRepository.recordActivity()` for writes
-- **Files:** `lib/features/water/data/repositories/water_repository_impl.dart`, `lib/features/medicine/data/repositories/medicine_repository_impl.dart`, `lib/features/prayer/data/repositories/prayer_repository_impl.dart`
-  - **Design note:** These repositories don't currently depend on `SettingsRepository`. Two options:
-    - **Option A (preferred):** Inject `SettingsRepository` via constructor. Each module's repository already takes `AppDatabase`; add `SettingsRepository` as a second parameter.
-    - **Option B:** Each module's presentation controller calls `recordActivity()` after repository writes. This keeps domain/data layers clean but requires controller changes.
-  - After each write operation, call `settingsRepository.recordActivity()`
-- **Tests:** `test/core/notifications/` — verify lastActivityAt updates on each module write
-- **Commit:** `feat: add cross-module lastActivityAt tracking`
-
-### Run 17: Module Enable/Disable + Archive Data Model
-
-**Goal:** Add module visibility control and archive data model.
-
-#### Task 17.1: Add module enable/disable mechanism
-- **File:** `lib/core/database/tables/app_settings_table.dart`
-  - Add `TextColumn get enabledModules => text().withDefault(const Constant('["water","medicine","prayer"]'))('enabled_modules');` (JSON array)
-- **File:** `lib/core/database/app_database.dart`
-  - Bump `schemaVersion` from 10 to 11
-  - Add migration: `if (from < 11) { await m.addColumn(appSettings, appSettings.enabledModules); }`
-- **File:** `lib/features/settings/domain/entities/app_settings.dart`
-  - Add `List<String> enabledModules` field with default `['water', 'medicine', 'prayer']`
-- **File:** `lib/features/settings/domain/repositories/settings_repository.dart`
-  - Add `Future<void> toggleModule(String moduleId, bool enabled)` to interface
-  - Add `bool isModuleEnabled(String moduleId)` to interface
-- **File:** `lib/features/settings/data/repositories/settings_repository_impl.dart`
-  - Implement `toggleModule()` and `isModuleEnabled()`
-- **File:** `lib/core/modules/module_registry.dart`
-  - Add `enabledModulesProvider` Riverpod provider (reads from `settingsRepositoryProvider`)
-  - **DO NOT modify `buildHabitModules()`** — this function is used by background isolate and WorkManager callback, which need ALL modules regardless of enabled state
-  - Create `visibleModulesProvider` that filters modules by enabled state for UI use
-- **File:** `lib/core/router/app_router.dart`
-  - `StatefulShellRoute` branches filter by `visibleModulesProvider`
-- **File:** `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
-  - Use `visibleModulesProvider` instead of `habitModulesProvider`
-- **Tests:** `test/core/modules/` — verify module filtering works for UI, all modules still available for background
-- **Commit:** `feat: add module enable/disable mechanism`
-
-#### Task 17.2: Add archive data model
-- **File:** `lib/features/water/data/tables/water_goals_table.dart`
-  - Add `IntColumn get archivedAt => integer().nullable()('archived_at');`
-  - Note: `water_goals` already has `deletedAt` for soft-delete. `archivedAt` is semantically different: archived = hidden but restorable, deleted = gone.
-- **File:** `lib/features/medicine/data/tables/medicine_schedules_table.dart`
-  - Add `IntColumn get archivedAt => integer().nullable()('archived_at');`
-  - Note: `medicine_schedules` already has `deletedAt`. Also note that `medicines_table.dart` already has `archivedAt` at the medicine level — this is a different concept (schedule-level archive vs. medicine-level archive).
-- **File:** `lib/core/database/app_database.dart`
-  - Include in schema version 11 migration
-- **File:** `lib/features/water/domain/entities/water_goal.dart`
-  - Add `DateTime? archivedAt` field
-- **File:** `lib/features/medicine/domain/entities/medicine_schedule.dart`
-  - Add `DateTime? archivedAt` field
-- **File:** `lib/features/water/data/repositories/water_repository_impl.dart`
-  - Add `archiveGoal(String goalId)` method
-  - Add `reviveGoal(String goalId)` method
-  - Add `getArchivedGoals()` method
-  - Update `allGoals()` to exclude archived goals (add `archivedAt.isNull()` filter)
-- **File:** `lib/features/medicine/data/repositories/medicine_repository_impl.dart`
-  - Add `archiveSchedule(String scheduleId)` method
-  - Add `reviveSchedule(String scheduleId)` method
-  - Add `getArchivedSchedules()` method
-  - Update `allSchedules()` to exclude archived schedules
-- **File:** `lib/features/medicine/domain/usecases/schedule_activity.dart`
-  - Update `isScheduleActive()` to also check `archivedAt` — archived schedules are not active
-  - Note: Water has no equivalent `isScheduleActive` usecase; water goal resolution uses `ResolveGoalForDateUseCase` which queries `allGoals()` (already filtered by archive status)
-- **Tests:** `test/features/water/`, `test/features/medicine/` — verify archive/revive lifecycle
-- **Commit:** `feat: add archive data model for water goals and medicine schedules`
+**Critical path:** Spec 01 → Spec 03/04 → Spec 06 → Spec 10
 
 ---
 
-## Phase 2: Core Retention Features (Run 18-19)
+## Execution phases
 
-### Run 18: Life-Event Pause Mode + Re-Engagement Nudge
+### Phase 1: Foundation (Spec 01 + cross-cutting infrastructure)
 
-**Goal:** Implement the two highest-impact retention features.
+All 5 later specs depend on these foundations. Build them first.
 
-#### Task 18.1: Life-Event Pause Mode (Spec 04)
-- **File:** `lib/core/pause/pause_range.dart` (new)
-  - `PauseRange` Freezed class: `id`, `moduleId` (nullable for app-wide), `startDate`, `endDate`, `reason` (optional, not displayed)
-- **File:** `lib/core/database/tables/pause_ranges_table.dart` (new Drift table)
-  - Columns: `id` (text, pk), `module_id` (text, nullable), `start_date` (integer — millis), `end_date` (integer — millis), `created_at` (integer — millis)
-- **File:** `lib/core/database/app_database.dart`
-  - Add `PauseRanges` table to `@DriftDatabase`
-  - Bump `schemaVersion` from 11 to 12
-  - Add migration for new table
-- **File:** `lib/core/pause/pause_repository.dart` (new)
-  - `createPause(PauseRange range)` — validate no overlap with existing pauses
-  - `cancelPause(String pauseId)`
-  - `getActivePausesForDate(LocalDate date)` — returns all pauses covering a given date
-  - `getPausedDaysInRange(LocalDate start, LocalDate end)` — returns `Set<LocalDate>` for streak calculators
-  - `watchPauses()` — stream for UI
-- **File:** `lib/core/modules/habit_module.dart`
-  - Add `Set<LocalDate> getPausedDays(LocalDate start, LocalDate end)` to `HabitModule` contract
-- **Files:** Each module's `dayStatus()` implementation
-  - Accept `pausedDays` parameter, return `ModuleDayStatusKind.paused` for paused days
-- **File:** `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
-  - Update `_DayCompletionIndicator` to exclude paused modules from count
-- **File:** `lib/core/notifications/notification_planner.dart`
-  - In `planAndApplyNotifications()`, skip notification scheduling for paused date ranges
-- **File:** `lib/features/water/presentation/screens/water_settings_screen.dart` (or new screen)
-  - Add "Pause Tracking" section with date range picker
-- **File:** `lib/features/medicine/presentation/screens/medicine_settings_screen.dart` (or new screen)
-  - Add "Pause Tracking" section
-- **File:** `lib/core/widgets/habit_heatmap_calendar.dart`
-  - Add paused visual treatment (striped pattern or distinct neutral color)
-- **File:** `lib/core/widgets/global_month_calendar.dart`
-  - Add paused rendering
-- **Localization:** Add en/bn strings for pause-related UI
-- **Tests:** `test/core/pause/`, `test/features/water/`, `test/features/medicine/`
-- **Commit:** `feat: implement life-event pause mode`
+#### Run 16: installDate + ModuleDayStatusKind.paused + lastActivityAt
 
-#### Task 18.2: Gentle Re-Engagement Nudge (Spec 02)
-- **File:** `lib/core/notifications/reengagement_nudge.dart` (new)
-  - `ReengagementNudge` class with `evaluate()` method:
-    - Read `lastActivityAt` from `app_settings`
-    - If `lastActivityAt` is null OR `(clock.now() - lastActivityAt).inDays >= 7`:
-      - Check if nudge already sent since last activity (query `notification_ledger` for `source_type = 'reengagement_nudge'` with `scheduled_for > lastActivityAt`)
-      - If not sent, return a `PendingNotification` with system moduleId
-- **File:** `lib/core/notifications/notification_planner.dart`
-  - In `planAndApplyNotifications()`, after module notifications, call `ReengagementNudge().evaluate()`
-  - If nudge is returned, add to pending notifications list
-  - Ensure nudge has `quietHoursSuppressible: true` (gentle, not urgent)
-- **File:** `lib/core/notifications/notification_action_handler.dart`
-  - Handle `moduleId == '_system'` case — on tap, navigate to dashboard
-  - On dismiss/snooze, no-op (single nudge, no reschedule)
-- **File:** `lib/core/notifications/notification_ledger_repository.dart`
-  - Add `hasNudgeFiredSince(DateTime since)` query method
-- **Localization:** Add en/bn strings for nudge notification title/body
-- **Tests:** `test/core/notifications/reengagement_nudge_test.dart`
-- **Commit:** `feat: implement gentle re-engagement nudge after inactivity`
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 16.1 | 01 | `installDate` column on `app_settings` | `app_settings_table.dart`, `app_settings.dart`, `settings_repository_impl.dart`, `app_database.dart` (migration v10), `main.dart` | `feat(db): add installDate column to app_settings (migration 10)` |
+| 16.2 | 01 | `ModuleDayStatusKind.paused` variant + pause-aware streaks | `habit_module.dart`, `day_status_streaks.dart`, `calculate_water_streak.dart`, `calculate_adherence.dart`, `calculate_prayer_streak.dart` | `feat: add ModuleDayStatusKind.paused and pause-aware streak calculators` |
+| 16.3 | 02 | `lastActivityAt` + `nudgeSentAfter` on `app_settings` | `app_settings_table.dart` (add 2 cols), `settings_repository_impl.dart`, `app_database.dart` (same migration v10) | `feat(db): add last_activity_at and nudge_sent_after to app_settings` |
 
-### Run 19: Archive/Revive UI + Quarterly Goal Recalibration
+#### Run 17: Archive data model + module enable/disable
 
-**Goal:** Complete the archive/revive user flow and add goal recalibration prompt.
-
-#### Task 19.1: Archive/Revive UI (Spec 03)
-- **File:** `lib/features/water/presentation/screens/water_archived_screen.dart` (new)
-  - List archived water goals with "Revive" button
-  - Empty state: "No archived goals"
-- **File:** `lib/features/medicine/presentation/screens/medicine_archived_screen.dart` (new)
-  - List archived medicine schedules with "Revive" button
-  - Empty state: "No archived schedules"
-- **File:** `lib/features/water/presentation/screens/water_settings_screen.dart`
-  - Add "Archived Goals" navigation item
-- **File:** `lib/features/medicine/presentation/screens/medicine_settings_screen.dart`
-  - Add "Archived Schedules" navigation item
-- **File:** Each module's presentation/controller
-  - Add `archiveGoal/schedule()` action
-  - Add `reviveGoal/schedule()` action
-  - On revive: re-run activation logic (recompute next-due dates, re-register notifications)
-- **File:** `lib/core/notifications/notification_planner.dart`
-  - On archive: cancel all pending notifications for the archived item
-  - On revive: the module's `pendingNotifications()` naturally includes the revived item
-- **File:** `lib/features/reports/presentation/screens/reports_screen.dart`
-  - Exclude archived items from active reports
-  - Optionally add "Archived" filter toggle
-- **Localization:** Add en/bn strings for archive/revive UI
-- **Tests:** `test/features/water/`, `test/features/medicine/`
-- **Commit:** `feat: add archive/revive UI for water goals and medicine schedules`
-
-#### Task 19.2: Quarterly Goal-Recalibration Prompt (Spec 05)
-- **File:** `lib/core/database/tables/app_settings_table.dart`
-  - Add `IntColumn get lastGoalRecalibrationShownAt => integer().nullable()('last_goal_recalibration_shown_at');`
-- **File:** `lib/core/database/app_database.dart`
-  - Include in schema version 12 migration
-- **File:** `lib/features/settings/domain/entities/app_settings.dart`
-  - Add `DateTime? lastGoalRecalibrationShownAt` field
-- **File:** `lib/core/goals/goal_recalibration_prompt.dart` (new)
-  - `evaluateGoalRecalibration()` method:
-    - Read `lastGoalRecalibrationShownAt` from settings
-    - Read each module's goal last-edited timestamp
-    - If `(clock.now() - lastGoalRecalibrationShownAt).inDays >= 90`:
-      - Return prompt for each module whose goal hasn't been edited in 90+ days
-- **File:** `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
-  - Add `GoalRecalibrationBanner` widget at top of dashboard
-  - Shows dismissible banner: "Still tracking [Water target]? [Update] [Not now]"
-- **File:** `lib/features/water/presentation/screens/water_settings_screen.dart`
-  - Ensure goal editing updates a `lastGoalEditedAt` timestamp (if not already tracked)
-- **Localization:** Add en/bn strings for recalibration prompt
-- **Tests:** `test/core/goals/`, `test/features/dashboard/`
-- **Commit:** `feat: add quarterly goal-recalibration prompt`
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 17.1 | 03 | `archived_at` columns on `water_goals` + `medicine_schedules` | `water_goals_table.dart`, `medicine_schedules_table.dart`, `app_database.dart` (migration v12) | `feat(db): add archived_at columns to water_goals and medicine_schedules (migration 12)` |
+| 17.2 | 03 | Archive/revive logic in Water repository | `water_repository_impl.dart`, `water_goal.dart` | `feat(water): add archive/revive logic for water goals` |
+| 17.3 | 03 | Archive/revive logic in Medicine repository | `medicine_repository_impl.dart`, `medicine.dart` | `feat(medicine): add archive/revive logic for medicine schedules` |
+| 17.4 | 03 | `dayStatus()` returns `paused` for archived days | `water_module.dart`, `medicine_module.dart` | `feat: dayStatus returns paused for days where all items are archived` |
 
 ---
 
-## Phase 3: Celebration & Trust (Run 20-21)
+### Phase 2: Core retention features
 
-### Run 20: Anniversary Badge + Data Trust Copy
+#### Run 18: Life-Event Pause + Re-engagement Nudge
 
-**Goal:** Add tenure-based celebration and trust-building copy.
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 18.1 | 04 | `pause_ranges` table + `PauseRepository` | `pause_ranges_table.dart` (new), `pause_repository.dart` (new), `app_database.dart` (migration v13) | `feat(db): add pause_ranges table (migration 13)` |
+| 18.2 | 04 | `PauseService` — create/cancel/paused-days | `pause_service.dart` (new) | `feat(pauses): add PauseService with notification suppression` |
+| 18.3 | 04 | Wire pause into `dayStatus()` for all modules | `water_module.dart`, `medicine_module.dart`, `prayer_module.dart` | `feat: dayStatus returns paused for days within active pause ranges` |
+| 18.4 | 04 | Pause UI — create/edit/cancel | `create_pause_screen.dart` (new), `active_pauses_card.dart` (new), module settings screens | `feat(pauses): add create/edit/cancel pause UI` |
+| 18.5 | 04 | Dashboard calendar — paused visual indicator | `global_month_calendar.dart` | `feat(dashboard): render paused days with distinct visual indicator` |
+| 18.6 | 04 | Achievement freeze during pause | `achievement_engine.dart` | `feat(achievements): freeze progress during module pauses` |
+| 18.7 | 02 | `LastActivityRepository` — cross-module query | `last_activity_repository.dart` (new) | `feat(nudges): add LastActivityRepository for cross-module activity query` |
+| 18.8 | 02 | Re-engagement trigger logic (pure) | `reengagement_trigger.dart` (new) | `feat(nudges): add re-engagement trigger logic (pure)` |
+| 18.9 | 02 | System-level nudge builder | `reengagement_nudge.dart` (new) | `feat(nudges): add system-level re-engagement notification builder` |
+| 18.10 | 02 | Wire trigger into app lifecycle + planner | `reengagement_check.dart` (new), `main.dart`, `notification_planner.dart` | `feat(nudges): wire re-engagement check into app lifecycle and planner` |
+| 18.11 | 02 | Settings toggle + activity tracking on writes | `app_settings.dart`, `settings_repository.dart`, module controllers | `feat(nudges): add settings toggle and activity tracking on module writes` |
+| 18.12 | 02 | Dashboard fallback banner | `reengagement_banner.dart` (new), `dashboard_screen.dart` | `feat(dashboard): add re-engagement fallback banner` |
 
-#### Task 20.1: Anniversary Badge (Spec 06)
-- **File:** `lib/core/achievements/achievement_engine.dart`
-  - Add `evaluateGlobal()` method for non-module achievements
-  - Add trigger: on each app open, check if `installDate` anniversary has been crossed
-- **File:** `lib/core/modules/habit_module.dart`
-  - Add `AchievementDefinition` for system-level achievements (moduleId = `_system`)
-  - Add `anniversary_1_year` definition
-- **File:** `lib/core/achievements/achievement_repository.dart`
-  - Add `watchByModuleAndKey(String moduleId, String key)` to check if already awarded
-- **File:** `lib/core/database/app_database.dart`
-  - Ensure `achievements` table has `milestone_value` column (for year number) — add in schema version 13 migration
-- **File:** `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
-  - On app open, trigger `achievementEngine.evaluateGlobal()` (once per day, not every resume)
-- **Localization:** Add en/bn strings for anniversary badge title/description
-- **Tests:** `test/core/achievements/`
-- **Commit:** `feat: add anniversary badge for 1-year tenure`
+#### Run 19: Archive UI + Quarterly Recalibration + Anniversary Badge
 
-#### Task 20.2: Data Trust Copy (Specs 08 + 11)
-- **File:** `lib/features/settings/presentation/screens/data_settings_screen.dart`
-  - Add `DataTrustCard` widget with two sections:
-    - Section 1 (Spec 08): "Your data never left this device" — explains local-only storage
-    - Section 2 (Spec 11): "Your history is never pruned" — explains data longevity guarantee
-  - Consolidated into one card to avoid duplication
-- **File:** `lib/core/l10n/app_en.arb`
-  - Add keys: `dataTrustCardTitle`, `dataTrustCardBody`, `dataLongevityTitle`, `dataLongevityBody`
-- **File:** `lib/core/l10n/app_bn.arb`
-  - Add Bengali translations for all new keys
-- **File:** `docs/engineering/retention-audit.md` (new)
-  - Document every table's retention behavior (permanent/rolling/capped)
-  - Confirm no silent pruning exists
-  - Note notification_ledger FIFO eviction policy (excluded from guarantee)
-- **Tests:** Widget tests for DataTrustCard rendering
-- **Commit:** `feat: add data trust and longevity guarantee copy to Data settings`
-
-### Run 21: Yearly Recap
-
-**Goal:** Implement the year-in-review experience.
-
-#### Task 21.1: YearSummary data shape
-- **File:** `lib/core/reports/year_summary.dart` (new)
-  - `YearSummary` Freezed class with per-module sub-objects:
-    - `WaterYearStats`: totalMl, averageDailyMl, daysGoalMet, longestStreak
-    - `MedicineYearStats`: adherencePercent, dosesTaken, dosesTotal, longestStreak
-    - `PrayerYearStats`: onTimePercent, prayersCompleted, longestStreak
-    - `OverallStats`: longestStreakAll, bestDay, totalActiveDays
-  - `yearNumber` (1, 2, 3, ...), `installDate`, `generatedAt`
-- **File:** `lib/core/reports/year_summary_repository.dart` (new)
-  - `generateYearSummary(int yearNumber)` — calls each module's aggregation use cases
-  - `saveYearSummary(YearSummary summary)` — persists to `recaps` table
-  - `getYearSummary(int yearNumber)` — retrieves cached summary
-  - `getStoredRecapYears()` — lists available recaps (max 5)
-- **File:** `lib/core/database/tables/recaps_table.dart` (new Drift table)
-  - Columns: `year_number` (integer, pk), `summary_json` (text), `generated_at` (integer — millis)
-- **File:** `lib/core/database/app_database.dart`
-  - Add `Recaps` table, bump schema version to 13
-- **Tests:** `test/core/reports/year_summary_test.dart`
-- **Commit:** `feat: add YearSummary data shape and repository`
-
-#### Task 21.2: Recap presentation
-- **File:** `lib/features/dashboard/presentation/screens/yearly_recap_screen.dart` (new)
-  - Story-card flow: swipe through cards, one per module + combined card
-  - Each card: hero stat, supporting stats, optional animation
-  - "Not enough data" fallback screen (< 200 active days)
-- **File:** `lib/features/dashboard/presentation/widgets/recap_card.dart` (new)
-  - Reusable card widget for each module's hero stat
-- **File:** `lib/core/router/app_router.dart`
-  - Add `/recap` route
-- **File:** `lib/main.dart`
-  - In `didChangeAppLifecycleState(resumed)`, check if recap is due (rolling 365-day anniversary of installDate, once per day)
-  - If due and not yet shown, navigate to `/recap`
-- **File:** `lib/features/settings/presentation/screens/settings_home_screen.dart`
-  - Add "Past Recaps" navigation item (max 5 stored)
-- **Localization:** Add en/bn strings for all recap card text
-- **Tests:** `test/features/dashboard/`
-- **Commit:** `feat: implement yearly recap story-card flow`
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 19.1 | 03 | Archived items screens + revive UI | `archived_goals_screen.dart` (new), `archived_schedules_screen.dart` (new) | `feat: add archived items screens and revive UI for water/medicine` |
+| 19.2 | 03 | Reports "(Archived)" label | `reports_screen.dart` | `feat(reports): show (Archived) label for archived periods` |
+| 19.3 | 05 | `recalibration_markers` table | `recalibration_markers_table.dart` (new), `app_database.dart` (migration v14) | `feat(db): add recalibration_markers table (migration 14)` |
+| 19.4 | 05 | `RecalibrationRepository` + `RecalibrationService` | `recalibration_repository.dart` (new), `recalibration_service.dart` (new) | `feat(recalibration): add RecalibrationRepository and service` |
+| 19.5 | 05 | Recalibration trigger logic (pure) | `recalibration_trigger.dart` (new) | `feat(recalibration): add recalibration trigger logic (pure)` |
+| 19.6 | 05 | `RecalibrationCard` widget | `recalibration_card.dart` (new) | `feat(recalibration): add RecalibrationCard widget` |
+| 19.7 | 05 | Wire into Water + Medicine screens | `water_home_screen.dart`, `medicine_home_screen.dart` | `feat: wire recalibration prompt into module screens` |
+| 19.8 | 05 | Goal-edit timestamp tracking | Water/Medicine repositories | `feat: track goal-edit timestamps for recalibration anchoring` |
+| 19.9 | 05 | Settings toggle + session-level cap | `app_settings.dart`, `recalibration_session_tracker.dart` (new) | `feat(settings): add recalibration prompts toggle` |
+| 19.10 | 06 | `milestone_value` column on `achievements` | `achievements_table.dart`, `app_database.dart` (migration v15) | `feat(db): add milestone_value column to achievements table (migration 15)` |
+| 19.11 | 06 | Tenure evaluator (pure) | `tenure_evaluator.dart` (new) | `feat(achievements): add tenure milestone evaluator` |
+| 19.12 | 06 | Wire tenure evaluation into app lifecycle | `tenure_check.dart` (new), `main.dart` | `feat(achievements): wire tenure evaluation into app lifecycle` |
+| 19.13 | 06 | Tenure achievement display definitions | `achievement_definitions.dart` (new) | `feat(achievements): add tenure achievement display definitions` |
 
 ---
 
-## Phase 4: Advanced Retention (Run 22+, Year 2+)
+### Phase 3: Celebration + trust
 
-### Run 22: Loyalty Milestone Cosmetic Rewards (Spec 10)
+#### Run 20: Yearly Recap + Data Trust
 
-**Goal:** Add tenure-based cosmetic unlocks.
-
-#### Task 22.1: Cosmetic unlock infrastructure
-- **File:** `lib/core/achievements/cosmetic_unlock.dart` (new)
-  - `CosmeticUnlock` Freezed class: `achievementKey`, `cosmeticType` (enum: themeAccent), `cosmeticValue` (String)
-  - `CosmeticUnlockRepository`: `getUnlocks()`, `applyUnlock(String key)`, `getSelectedCosmetic()`
-- **File:** `lib/core/database/tables/cosmetic_unlocks_table.dart` (new Drift table)
-  - Columns: `achievement_key` (text, pk), `cosmetic_type` (text), `cosmetic_value` (text), `unlocked_at` (integer — millis)
-- **File:** `lib/core/database/app_database.dart`
-  - Add table, bump schema version to 14
-- **File:** `lib/core/achievements/achievement_engine.dart`
-  - Emit `Stream<AchievementEvent>` when achievements are awarded
-  - Map `anniversary_2_year` achievement to cosmetic unlock
-- **Tests:** `test/core/achievements/cosmetic_unlock_test.dart`
-- **Commit:** `feat: add cosmetic unlock infrastructure`
-
-#### Task 22.2: Cosmetic rewards UI
-- **File:** `lib/features/settings/presentation/screens/cosmetic_unlocks_screen.dart` (new)
-  - Gallery of unlocked cosmetics (theme accents)
-  - "Apply" button for each, "Default" option
-- **File:** `lib/features/settings/presentation/screens/settings_home_screen.dart`
-  - Add "Unlocks" navigation item
-- **File:** `lib/core/theme/app_theme.dart`
-  - Add cosmetic accent override layer (extends `ModuleAccents`)
-- **File:** `lib/core/theme/theme_controller.dart`
-  - Read selected cosmetic from repository, apply accent override
-- **Localization:** Add en/bn strings
-- **Tests:** Widget tests for cosmetic unlocks screen
-- **Commit:** `feat: add cosmetic rewards UI with theme accent support`
-
-### Run 23: Progressive Module Unlock Onboarding (Spec 07)
-
-**Goal:** Reshape onboarding for new users.
-
-#### Task 23.1: Onboarding flow
-- **File:** `lib/features/onboarding/presentation/screens/onboarding_welcome_screen.dart` (new)
-  - Welcome screen: "Let's start with Water tracking"
-- **File:** `lib/features/onboarding/presentation/screens/onboarding_water_setup_screen.dart` (new)
-  - Guided water goal setup
-- **File:** `lib/features/onboarding/presentation/screens/onboarding_complete_screen.dart` (new)
-  - "You're all set! We'll suggest Medicine and Prayer when you're ready."
-- **File:** `lib/core/router/app_router.dart`
-  - Add `/onboarding/*` routes
-  - Redirect to `/onboarding` if `onboardingCompletedAt` is null
-- **File:** `lib/core/database/tables/app_settings_table.dart`
-  - Add `TextColumn get onboardingProgress => text().nullable()('onboarding_progress');` (JSON: current step, completed steps)
-- **File:** `lib/core/database/app_database.dart`
-  - Include in migration (schema version 15)
-- **Tests:** `test/features/onboarding/`
-- **Commit:** `feat: add progressive onboarding flow`
-
-#### Task 23.2: Module suggestion system
-- **File:** `lib/features/onboarding/presentation/widgets/module_suggestion_card.dart` (new)
-  - Banner: "Ready to track Medicine? [Set up] [Not now]"
-  - Appears on dashboard after 7 days + 10+ water logs
-- **File:** `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
-  - Add suggestion card logic (check onboarding progress, elapsed time, activity count)
-- **File:** `lib/features/settings/presentation/screens/settings_home_screen.dart`
-  - Add "Enable Modules" section with toggles for each module
-- **Localization:** Add en/bn strings
-- **Tests:** Widget tests for suggestion card
-- **Commit:** `feat: add module suggestion system for new users`
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 20.1 | 01 | `recaps` table + `RecapRepository` | `recaps_table.dart` (new), `recap_repository.dart` (new), `app_database.dart` (migration v16) | `feat(db): add recaps table (migration 16)` |
+| 20.2 | 01 | `YearSummary` / `ModuleYearStats` data shapes | `year_summary.dart` (new) | `feat(recaps): add YearSummary and ModuleYearStats data shapes` |
+| 20.3 | 01 | `YearRecapGeneratorUseCase` | `recap_generator.dart` (new) | `feat(recaps): add RecapRepository and YearRecapGeneratorUseCase` |
+| 20.4 | 01 | Recap trigger mechanism | `recap_trigger.dart` (new), `recap_check.dart` (new) | `feat(recaps): add trigger mechanism and app-lifecycle wiring` |
+| 20.5 | 01 | Yearly recap story-card UI | `yearly_recap_screen.dart` (new), card widgets | `feat(recaps): add yearly recap story cards and full-screen UI` |
+| 20.6 | 01 | "Past Recaps" settings screen | `past_recaps_screen.dart` (new) | `feat(recaps): add Past Recaps screen in Settings` |
+| 20.7 | 08 | Data privacy reassurance card | `data_privacy_reassurance_card.dart` (new), `data_settings_screen.dart` | `feat(settings): add data privacy reassurance card to Data settings` |
+| 20.8 | 11 | Data longevity guarantee card | `data_longevity_guarantee_card.dart` (new), `data_settings_screen.dart` | `feat(settings): add data longevity guarantee card to Data settings` |
+| 20.9 | 11 | Notification ledger bounded cleanup | `notification_ledger_repository.dart` | `feat(notifications): add bounded cleanup for notification_ledger (90-day FIFO)` |
+| 20.10 | 11 | Retention audit document | `docs/engineering/retention-audit.md` (new) | `docs: add retention-audit.md documenting every table's retention behavior` |
 
 ---
 
-## Phase 5: Household Plan (Run 24+, Year 2+, Blocked)
+### Phase 4: Onboarding + cosmetic rewards
 
-### Spec 09: Household/Family Plan Hook
+#### Run 21: Progressive Module Unlock + Cosmetic Rewards
 
-**Status:** BLOCKED on multi-profile data model and Premium subscription infrastructure.
-
-**Prerequisites (outside this category):**
-1. Multi-profile data model (every table needs `profile_id` scoping)
-2. Premium subscription/billing infrastructure
-3. Profile switching UI
-
-**When unblocked:**
-- Add `profile_id` to all tables (massive migration)
-- Add profile management screens
-- Add household linking mechanism (device-to-device sync or shared code)
-- Add family member tracking (separate data per profile)
-- Position hook for year-2+ users
+| Task | Spec | What | Files | Commit |
+|------|------|------|-------|--------|
+| 21.1 | 07 | `module_settings` + `onboarding_progress` tables | `module_settings_table.dart` (new), `onboarding_progress_table.dart` (new), `app_database.dart` (migration v17) | `feat(db): add module_settings and onboarding_progress tables (migration 17)` |
+| 21.2 | 07 | `ModuleSettingsRepository` | `module_settings_repository.dart` (new) | `feat(modules): add ModuleSettingsRepository for enable/disable` |
+| 21.3 | 07 | Wire module filtering into `module_registry` | `module_registry.dart` | `feat(modules): wire module enable/disable into module_registry` |
+| 21.4 | 07 | Onboarding flow — screens + routing | `onboarding_welcome_screen.dart` (new), `onboarding_module_selection_screen.dart` (new), `onboarding_complete_screen.dart` (new), `app_router.dart` | `feat(onboarding): add progressive module unlock onboarding flow` |
+| 21.5 | 07 | Dashboard suggestion card | `module_suggestion_card.dart` (new), `dashboard_screen.dart` | `feat(dashboard): add "You might also like" module suggestion card` |
+| 21.6 | 07 | Notification re-plan on module toggle | `module_settings_repository.dart` | `feat(modules): re-plan notifications on module enable/disable` |
+| 21.7 | 07 | Settings module toggles | `settings_home_screen.dart` | `feat(settings): add module enable/disable toggles` |
+| 21.8 | 10 | `cosmetic_unlocks` table | `cosmetic_unlocks_table.dart` (new), `app_database.dart` (migration v18) | `feat(db): add cosmetic_unlocks table (migration 18)` |
+| 21.9 | 10 | Achievement engine stream events | `achievement_engine.dart` | `feat(achievements): emit stream events on achievement unlock` |
+| 21.10 | 10 | `CosmeticUnlockEngine` + `CosmeticRepository` | `cosmetic_unlock_engine.dart` (new), `cosmetic_repository.dart` (new) | `feat(cosmetics): add CosmeticUnlockEngine and CosmeticRepository` |
+| 21.11 | 10 | "Midnight" theme accent | `app_theme.dart`, `cosmetic_accent_provider.dart` (new) | `feat(theme): add Midnight accent cosmetic option` |
+| 21.12 | 10 | Settings "Unlocks" section | `unlocks_screen.dart` (new), `settings_home_screen.dart` | `feat(settings): add Unlocks section for cosmetic rewards` |
+| 21.13 | 10 | Wire cosmetic evaluation into lifecycle | `main.dart` | `feat: wire cosmetic evaluation into app lifecycle` |
 
 ---
 
-## Schema Migration Sequence
+### Phase 5: Household (blocked)
 
-| Version | Tables Added/Modified | Specs |
-|---------|----------------------|-------|
+#### Spec 09: Household/Family Plan Hook
+
+**Status:** BLOCKED on multi-profile data model and Premium subscription infrastructure (outside this category).
+
+**When unblocked — implementation tasks from individual plan:**
+
+| Task | What | Files |
+|------|------|-------|
+| 22.1 | `household_banner_dismissed` on `app_settings` | `app_settings_table.dart`, `app_database.dart` (migration) |
+| 22.2 | Tenure-based banner trigger (pure) | `household_trigger.dart` (new) |
+| 22.3 | Dashboard household banner | `household_banner.dart` (new), `dashboard_screen.dart` |
+| 22.4 | Settings "Household" placeholder | `household_settings_screen.dart` (new) |
+| 22.5 | Positioning documentation | `docs/engineering/household-plan-positioning.md` (new) |
+
+---
+
+## Localization summary
+
+| Spec | New keys (en/bn) |
+|------|-------------------|
+| 01 — Yearly Recap | ~30 |
+| 02 — Re-engagement Nudge | ~8 |
+| 03 — Archive/Revive | ~15 |
+| 04 — Life-Event Pause | ~20 |
+| 05 — Quarterly Recalibration | ~12 |
+| 06 — Anniversary Badge | ~6 |
+| 07 — Progressive Onboarding | ~20 |
+| 08 — Data Reassurance | ~3 |
+| 09 — Household Plan | ~8 |
+| 10 — Cosmetic Rewards | ~8 |
+| 11 — Data Longevity | ~5 |
+| **Total** | **~135** |
+
+---
+
+## Schema migration sequence
+
+| Version | What changes | Specs |
+|---------|-------------|-------|
 | 9 (current) | — | — |
-| 10 | `app_settings`: add `install_date` (int), `last_activity_at` (int) | 01, 02, 05, 06 |
-| 11 | `app_settings`: add `enabled_modules` (text); `water_goals`: add `archived_at` (int); `medicine_schedules`: add `archived_at` (int) | 03, 07 |
-| 12 | `pause_ranges` (new table); `app_settings`: add `last_goal_recalibration_shown_at` (int) | 04, 05 |
-| 13 | `recaps` (new table); `achievements`: add `milestone_value` (int) | 01, 06 |
-| 14 | `cosmetic_unlocks` (new table) | 10 |
-| 15 | `app_settings`: add `onboarding_progress` (text) | 07 |
+| 10 | `app_settings`: +`install_date`, +`last_activity_at`, +`nudge_sent_after` | 01, 02 |
+| 11 | *(reserved — module enable/disable if coalesced here)* | — |
+| 12 | `water_goals`: +`archived_at`; `medicine_schedules`: +`archived_at` | 03 |
+| 13 | `pause_ranges` (new table) | 04 |
+| 14 | `recalibration_markers` (new table) | 05 |
+| 15 | `achievements`: +`milestone_value` | 06 |
+| 16 | `recaps` (new table) | 01 |
+| 17 | `module_settings` (new); `onboarding_progress` (new) | 07 |
+| 18 | `cosmetic_unlocks` (new table) | 10 |
 
 **Note:** All migrations must be tested end-to-end: upgrade from version N-1 to N with existing data must not lose any rows. All timestamp columns use `IntColumn` (UTC epoch millis) to match existing table conventions.
 
 ---
 
-## Verification Plan
+## Commit sequence (all 81)
 
-After each run, verify:
+| # | Commit | Spec |
+|---|--------|------|
+| 1 | `feat(db): add installDate column to app_settings (migration 10)` | 01 |
+| 2 | `feat(settings): add installDate, recapEnabled, lastRecapYear to AppSettings` | 01 |
+| 3 | `feat: add ModuleDayStatusKind.paused and pause-aware streak calculators` | 01 |
+| 4 | `feat(recaps): add YearSummary and ModuleYearStats data shapes` | 01 |
+| 5 | `feat(recaps): add RecapRepository and YearRecapGeneratorUseCase` | 01 |
+| 6 | `feat(recaps): add trigger mechanism and app-lifecycle wiring` | 01 |
+| 7 | `feat(recaps): add yearly recap story cards and full-screen UI` | 01 |
+| 8 | `feat(recaps): add Past Recaps screen in Settings` | 01 |
+| 9 | `feat(i18n): add en/bn localization for yearly recap` | 01 |
+| 10 | `feat(settings): add recap feature toggle` | 01 |
+| 11 | `feat(db): add last_activity_at and nudge_sent_after to app_settings (migration 11)` | 02 |
+| 12 | `feat(nudges): add LastActivityRepository for cross-module activity query` | 02 |
+| 13 | `feat(nudges): add re-engagement trigger logic (pure)` | 02 |
+| 14 | `feat(nudges): add system-level re-engagement notification builder` | 02 |
+| 15 | `feat(nudges): wire re-engagement check into app lifecycle and planner` | 02 |
+| 16 | `feat(nudges): add settings toggle and activity tracking on module writes` | 02 |
+| 17 | `feat(i18n): add en/bn strings for re-engagement nudge` | 02 |
+| 18 | `feat(db): add archived_at columns to water_goals and medicine_schedules (migration 12)` | 03 |
+| 19 | `feat(water): add archive/revive logic for water goals` | 03 |
+| 20 | `feat(medicine): add archive/revive logic for medicine schedules` | 03 |
+| 21 | `feat: dayStatus returns paused for days where all items are archived` | 03 |
+| 22 | `feat: add archived items screens and revive UI for water/medicine` | 03 |
+| 23 | `feat(reports): show (Archived) label for archived periods` | 03 |
+| 24 | `feat(i18n): add en/bn strings for archive/revive flow` | 03 |
+| 25 | `feat(db): add pause_ranges table (migration 13)` | 04 |
+| 26 | `feat(pauses): add PauseRepository with overlap validation` | 04 |
+| 27 | `feat(pauses): add PauseService with notification suppression` | 04 |
+| 28 | `feat: dayStatus returns paused for days within active pause ranges` | 04 |
+| 29 | `feat: wire pause-aware pausedDays into streak calculators` | 04 |
+| 30 | `feat(pauses): add create/edit/cancel pause UI` | 04 |
+| 31 | `feat(dashboard): render paused days with distinct visual indicator` | 04 |
+| 32 | `feat(achievements): freeze progress during module pauses` | 04 |
+| 33 | `feat(settings): add pause management entry` | 04 |
+| 34 | `feat(i18n): add en/bn strings for pause mode` | 04 |
+| 35 | `feat(db): add recalibration_markers table (migration 14)` | 05 |
+| 36 | `feat(recalibration): add RecalibrationRepository` | 05 |
+| 37 | `feat(recalibration): add recalibration trigger logic (pure)` | 05 |
+| 38 | `feat(recalibration): add RecalibrationService orchestration` | 05 |
+| 39 | `feat(recalibration): add RecalibrationCard widget` | 05 |
+| 40 | `feat(water): wire recalibration prompt into water home screen` | 05 |
+| 41 | `feat(medicine): wire recalibration prompt into medicine home screen` | 05 |
+| 42 | `feat: track goal-edit timestamps for recalibration anchoring` | 05 |
+| 43 | `feat(settings): add recalibration prompts toggle` | 05 |
+| 44 | `feat(recalibration): add session-level prompt cap` | 05 |
+| 45 | `feat(i18n): add en/bn strings for recalibration prompts` | 05 |
+| 46 | `feat(db): add milestone_value column to achievements table (migration 15)` | 06 |
+| 47 | `feat(achievements): add tenure milestone evaluator` | 06 |
+| 48 | `feat(achievements): wire tenure evaluation into app lifecycle` | 06 |
+| 49 | `feat(achievements): add tenure achievement display definitions` | 06 |
+| 50 | `feat(i18n): add en/bn strings for tenure anniversary badges` | 06 |
+| 51 | `feat(db): add module_settings and onboarding_progress tables (migration 17)` | 07 |
+| 52 | `feat(modules): add ModuleSettingsRepository for enable/disable` | 07 |
+| 53 | `feat(modules): wire module enable/disable into module_registry` | 07 |
+| 54 | `feat(onboarding): add progressive module unlock onboarding flow` | 07 |
+| 55 | `feat(onboarding): add onboarding state providers` | 07 |
+| 56 | `feat(dashboard): add "You might also like" module suggestion card` | 07 |
+| 57 | `feat(modules): re-plan notifications on module enable/disable` | 07 |
+| 58 | `feat(settings): add module enable/disable toggles` | 07 |
+| 59 | `feat(i18n): add en/bn strings for onboarding and module suggestions` | 07 |
+| 60 | `feat(settings): add data privacy reassurance card to Data settings` | 08 |
+| 61 | `feat(i18n): audit and consolidate near-duplicate privacy copy` | 08 |
+| 62 | `feat(i18n): add en/bn strings for data privacy reassurance` | 08 |
+| 63 | `feat(db): add household_banner_dismissed to app_settings (migration 17)` | 09 |
+| 64 | `feat(household): add tenure-based banner trigger logic` | 09 |
+| 65 | `feat(dashboard): add household plan suggestion banner` | 09 |
+| 66 | `feat(settings): add household settings placeholder screen` | 09 |
+| 67 | `docs: add household plan positioning document` | 09 |
+| 68 | `feat(i18n): add en/bn strings for household plan hook` | 09 |
+| 69 | `feat(db): add cosmetic_unlocks table (migration 18)` | 10 |
+| 70 | `feat(achievements): emit stream events on achievement unlock` | 10 |
+| 71 | `feat(cosmetics): add CosmeticUnlockEngine for achievement-to-cosmetic mapping` | 10 |
+| 72 | `feat(cosmetics): add CosmeticRepository` | 10 |
+| 73 | `feat(theme): add Midnight accent cosmetic option` | 10 |
+| 74 | `feat(settings): add Unlocks section for cosmetic rewards` | 10 |
+| 75 | `feat: wire cosmetic evaluation into app lifecycle` | 10 |
+| 76 | `feat(i18n): add en/bn strings for cosmetic unlocks` | 10 |
+| 77 | `docs: add retention-audit.md documenting every table's retention behavior` | 11 |
+| 78 | `feat(settings): add data longevity guarantee card to Data settings` | 11 |
+| 79 | `feat(notifications): add bounded cleanup for notification_ledger (90-day FIFO)` | 11 |
+| 80 | `docs: add data longevity check to schema migration checklist` | 11 |
+| 81 | `feat(i18n): add en/bn strings for data longevity guarantee` | 11 |
+
+---
+
+## Verification plan
+
+After each run:
 1. `flutter analyze` — no new warnings
 2. `flutter test` — all tests pass
 3. `dart format --output=none --set-exit-if-changed .` — formatting check
 4. Manual smoke test on Android/iOS simulator
 5. Migration test: upgrade from previous schema version
 
-After all 4 phases complete:
+After all phases complete:
 1. Full regression test suite
 2. Performance test: database query times with 3+ years of simulated data
 3. Accessibility audit: screen reader, reduced motion, color contrast
@@ -457,17 +306,39 @@ After all 4 phases complete:
 
 ---
 
-## Risk Register
+## Risk register
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Schema migration conflicts between runs | High | Centralized migration plan (this document), version sequencing |
 | Pause mode complexity breaks streak calculations | High | Extensive unit tests for streak calculators with paused days |
-| Notification planner module-only contract | Medium | Extend with `_system` moduleId convention |
-| Achievement engine can't handle cross-cutting achievements | Medium | Add `evaluateGlobal()` method |
+| Notification planner module-only contract | Medium | Extend with system-level candidate injection (Spec 02) |
+| Achievement engine can't handle cross-cutting achievements | Medium | Add tenure evaluator as separate app-lifecycle path (Spec 06) |
 | YearSummary data shape mismatch across modules | Medium | Define standardized Freezed class, enforce in tests |
 | Archive/revive notification re-registration | Medium | Test revive path end-to-end with notification scheduler |
-| `buildHabitModules()` filtering breaks background callers | Medium | Only filter at UI/router level, not in `buildHabitModules()` |
-| Module repositories lack `SettingsRepository` dependency | Medium | Inject via constructor in Task 16.3 |
-| Device storage growth over 3-4 years | Low | Monitor via retention audit, document in guarantee |
+| `buildHabitModules()` filtering breaks background callers | Medium | Only filter at UI/router level, not in `buildHabitModules()` (Spec 07) |
+| Module repositories lack `SettingsRepository` dependency | Medium | Activity tracking via presentation controllers (Option B, Spec 02) |
+| Device storage growth over 3-4 years | Low | Monitor via retention audit, document in guarantee (Spec 11) |
 | Localization drift (en/bn mismatch) | Low | CI check for ARB key parity |
+| Spec 09 blocked on multi-profile | High | Implement trigger/UI now, defer profile management to Premium category |
+| Notification ledger unbounded growth | Low | Add 90-day FIFO cleanup (Spec 11 T3) |
+
+---
+
+## Individual plan files
+
+Each spec has a detailed implementation plan with file-level task breakdowns:
+
+| Spec | Plan file |
+|------|-----------|
+| 01 — Yearly Recap | `plans/2026-07-25-yearly-wrapped-recap.md` |
+| 02 — Re-engagement Nudge | `plans/2026-07-25-gentle-reengagement-nudge.md` |
+| 03 — Archive/Revive | `plans/2026-07-25-habit-archive-revive-flow.md` |
+| 04 — Life-Event Pause | `plans/2026-07-25-life-event-pause-mode.md` |
+| 05 — Quarterly Recalibration | `plans/2026-07-25-quarterly-goal-recalibration-prompt.md` |
+| 06 — Anniversary Badge | `plans/2026-07-25-anniversary-badge.md` |
+| 07 — Progressive Onboarding | `plans/2026-07-25-progressive-module-unlock.md` |
+| 08 — Data Reassurance | `plans/2026-07-25-data-reassurance.md` |
+| 09 — Household Plan | `plans/2026-07-25-household-family-plan-hook.md` |
+| 10 — Cosmetic Rewards | `plans/2026-07-25-loyalty-milestone-cosmetic-rewards.md` |
+| 11 — Data Longevity | `plans/2026-07-25-silent-data-longevity-guarantee.md` |
