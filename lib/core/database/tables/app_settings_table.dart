@@ -44,8 +44,7 @@ class AppSettingsTable extends Table {
   /// Whether the in-app dose-done completion chime is played
   /// (`docs/superpowers/specs/02-delightful/
   /// 10-optional-sound-design-pass-design.md`) — default `false`, opt-in.
-  BoolColumn get soundEnabled =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get soundEnabled => boolean().withDefault(const Constant(false))();
 
   /// Whether quiet-hours notification suppression is active.
   BoolColumn get quietHoursEnabled =>
@@ -56,8 +55,7 @@ class AppSettingsTable extends Table {
       text().withDefault(const Constant('22:00'))();
 
   /// Quiet-hours window end, `"HH:mm"` wall-clock format.
-  TextColumn get quietHoursEnd =>
-      text().withDefault(const Constant('07:00'))();
+  TextColumn get quietHoursEnd => text().withDefault(const Constant('07:00'))();
 
   /// UTC epoch millis; null = onboarding not yet completed.
   IntColumn get onboardingCompletedAt => integer().nullable()();

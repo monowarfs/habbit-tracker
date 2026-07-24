@@ -165,7 +165,9 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   }
 
   @override
-  Future<Result<void>> updateScreenPrivacyEnabled({required bool enabled}) async {
+  Future<Result<void>> updateScreenPrivacyEnabled({
+    required bool enabled,
+  }) async {
     await _update((s) => s.copyWith(screenPrivacyEnabled: enabled));
     return const Result.success(null);
   }
