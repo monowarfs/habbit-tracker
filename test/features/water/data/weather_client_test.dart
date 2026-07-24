@@ -1,8 +1,8 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/features/water/data/weather_client.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('parses a successful response into a WeatherSnapshot', () async {
@@ -60,7 +60,9 @@ void main() {
   });
 
   test('malformed JSON is a Failure', () async {
-    final client = MockClient((request) async => http.Response('not json', 200));
+    final client = MockClient(
+      (request) async => http.Response('not json', 200),
+    );
 
     final result = await fetchCurrentWeather(
       latitude: 0,

@@ -330,6 +330,54 @@ class WaterRepositoryImpl implements WaterRepository {
     await _db.delete(_db.waterSettingsTable).go();
   }
 
+  @override
+  Future<Result<void>> updateWeatherNudgeEnabled({
+    required bool enabled,
+  }) async {
+    try {
+      await _ensureSettingsSeeded();
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.waterSettingsTable,
+      )..where((t) => t.id.equals(_settingsSingletonId))).write(
+        WaterSettingsTableCompanion(
+          weatherNudgeEnabled: Value(enabled),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(
+        AppException.storage('update_weather_nudge_enabled', e),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> updateWeatherCache({
+    required double temperatureCelsius,
+    required DateTime fetchedAt,
+  }) async {
+    try {
+      await _ensureSettingsSeeded();
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.waterSettingsTable,
+      )..where((t) => t.id.equals(_settingsSingletonId))).write(
+        WaterSettingsTableCompanion(
+          lastWeatherTemperatureCelsius: Value(temperatureCelsius),
+          lastWeatherFetchedAtMillis: Value(
+            fetchedAt.toUtc().millisecondsSinceEpoch,
+          ),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('update_weather_cache', e));
+    }
+  }
+
   WaterEntry _entryFromRow(WaterLogRow row) => WaterEntry(
     id: row.id,
     amountMl: row.amountMl,
@@ -363,6 +411,14 @@ class WaterRepositoryImpl implements WaterRepository {
           end: LocalTime.parse((entry.value as Map)['end'] as String),
         ),
     },
+    weatherNudgeEnabled: row.weatherNudgeEnabled,
+    lastWeatherTemperatureCelsius: row.lastWeatherTemperatureCelsius,
+    lastWeatherFetchedAt: row.lastWeatherFetchedAtMillis == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.lastWeatherFetchedAtMillis!,
+            isUtc: true,
+          ),
   );
 }
 

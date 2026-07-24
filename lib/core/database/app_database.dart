@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -102,6 +102,22 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           waterSettingsTable,
           waterSettingsTable.reminderWindowOverrides,
+        );
+      }
+      if (from < 8) {
+        // Weather-aware water reminder copy (`docs/superpowers/specs/
+        // 02-delightful/07-weather-aware-water-nudge-copy-design.md`).
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.weatherNudgeEnabled,
+        );
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.lastWeatherTemperatureCelsius,
+        );
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.lastWeatherFetchedAtMillis,
         );
       }
       // Seam: when schemaVersion increments further, add
