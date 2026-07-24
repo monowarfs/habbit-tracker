@@ -1,8 +1,10 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
 import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
@@ -34,6 +36,8 @@ class PrayerController extends _$PrayerController {
       return;
     }
     await ref.read(achievementEngineProvider).evaluate('prayer');
+    final db = ref.read(databaseProvider);
+    await refreshWidgetsForModule(db, 'prayer');
   }
 
   /// Applies the "−1" Qadha make-up control (FR-P-05).
@@ -41,7 +45,12 @@ class PrayerController extends _$PrayerController {
     final result = await ref
         .read(prayerRepositoryProvider)
         .markQadhaMakeup(prayerName);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return;
+    }
+    final db = ref.read(databaseProvider);
+    await refreshWidgetsForModule(db, 'prayer');
   }
 
   /// Sets a Qadha counter directly (FR-P-04's onboarding/Settings entry).
@@ -49,7 +58,12 @@ class PrayerController extends _$PrayerController {
     final result = await ref
         .read(prayerRepositoryProvider)
         .setQadhaBalance(prayerName, count);
-    if (result case Failure(:final error)) logException(error);
+    if (result case Failure(:final error)) {
+      logException(error);
+      return;
+    }
+    final db = ref.read(databaseProvider);
+    await refreshWidgetsForModule(db, 'prayer');
   }
 
   /// Annotates a record with a free-text note, legal in any status.
