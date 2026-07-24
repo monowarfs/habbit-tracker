@@ -47,15 +47,20 @@ class WaterProgressRing extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: fraction),
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOut,
-            builder: (context, value, child) => CircularProgressIndicator(
-              value: value,
-              strokeWidth: size / 10,
-              color: ringColor,
-              backgroundColor: ringColor.withValues(alpha: 0.15),
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: fraction),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOut,
+              builder: (context, value, child) => Padding(
+                padding: EdgeInsets.all(size * 0.1),
+                child: CircularProgressIndicator(
+                  value: value,
+                  strokeWidth: size / 10,
+                  color: ringColor,
+                  backgroundColor: ringColor.withValues(alpha: 0.15),
+                ),
+              ),
             ),
           ),
           if (showLabel)
