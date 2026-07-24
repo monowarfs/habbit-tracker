@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
+import 'package:habit_tracker/features/settings/presentation/widgets/display_name_editor_sheet.dart';
 
 /// The Settings tab: sectioned entry points into Appearance, Language,
 /// Notifications, Security, Data, and About
@@ -15,12 +16,31 @@ class SettingsHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final pinEnabled =
-        ref.watch(appSettingsProvider).value?.pinEnabled ?? false;
+    final settings = ref.watch(appSettingsProvider).value;
+    final pinEnabled = settings?.pinEnabled ?? false;
+    final displayName = settings?.displayName;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: ListView(
         children: [
+          _SectionHeader(l10n.settingsProfile),
+          ListTile(
+            leading: const Icon(Icons.badge_outlined),
+            title: Text(l10n.settingsDisplayName),
+            subtitle: Text(displayName ?? l10n.settingsDisplayNameNotSet),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final name = await showDisplayNameEditorSheet(
+                context,
+                initialName: displayName,
+              );
+              if (!context.mounted) return;
+              await ref
+                  .read(settingsRepositoryProvider)
+                  .updateDisplayName(name);
+            },
+          ),
+          const Divider(),
           _SectionHeader(l10n.settingsAppearance),
           ListTile(
             leading: const Icon(Icons.palette_outlined),

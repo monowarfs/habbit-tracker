@@ -50,8 +50,7 @@ class AppSettingsTable extends Table {
       text().withDefault(const Constant('22:00'))();
 
   /// Quiet-hours window end, `"HH:mm"` wall-clock format.
-  TextColumn get quietHoursEnd =>
-      text().withDefault(const Constant('07:00'))();
+  TextColumn get quietHoursEnd => text().withDefault(const Constant('07:00'))();
 
   /// UTC epoch millis; null = onboarding not yet completed.
   IntColumn get onboardingCompletedAt => integer().nullable()();
@@ -60,6 +59,12 @@ class AppSettingsTable extends Table {
   /// the feature hasn't recorded a version yet (fresh install or
   /// upgrade from a pre-changelog build).
   TextColumn get lastSeenAppVersion => text().nullable()();
+
+  /// Optional user-set display name for the dashboard greeting; null =
+  /// no name set, greeting degrades to a name-less form
+  /// (`docs/superpowers/specs/02-delightful/
+  /// 11-personalized-dashboard-greeting-design.md`).
+  TextColumn get displayName => text().nullable()();
 
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();

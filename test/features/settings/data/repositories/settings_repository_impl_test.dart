@@ -35,6 +35,7 @@ void main() {
     expect(firstRead.themeMode, AppThemeMode.system);
     expect(firstRead.biometricEnabled, isTrue);
     expect(firstRead.screenPrivacyEnabled, isFalse);
+    expect(firstRead.displayName, isNull);
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -46,6 +47,8 @@ void main() {
       enabled: true,
     );
     expect(privacyResult, isA<Success<void>>());
+    final displayNameResult = await repo1.updateDisplayName('Nadia');
+    expect(displayNameResult, isA<Success<void>>());
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -56,6 +59,7 @@ void main() {
     expect(afterRestart.themeMode, AppThemeMode.dark);
     expect(afterRestart.biometricEnabled, isFalse);
     expect(afterRestart.screenPrivacyEnabled, isTrue);
+    expect(afterRestart.displayName, 'Nadia');
 
     await db2.close();
   });

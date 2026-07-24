@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -103,6 +103,10 @@ class AppDatabase extends _$AppDatabase {
           waterSettingsTable,
           waterSettingsTable.reminderWindowOverrides,
         );
+      }
+      if (from < 8) {
+        // Dashboard greeting's optional display name.
+        await m.addColumn(appSettingsTable, appSettingsTable.displayName);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
