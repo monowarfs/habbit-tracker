@@ -330,5 +330,10 @@
   "quietHoursEnableToggle": "নীরব সময় চালু করুন",
   "quietHoursStartLabel": "শুরুর সময়",
   "quietHoursEndLabel": "শেষের সময়",
-  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।"
+  "quietHoursDescription": "ঘুমের সময় গুরুত্বহীন বিজ্ঞপ্তি দমন করুন। ওষুধের ডোজ এবং নামাজের রিমাইন্ডার কখনই দমন করা হয় না।",
+  "widgetPrayerName": "নামাজ কাউন্টডাউন",
+  "widgetPrayerDescription": "পরবর্তী নামাজ পর্যন্ত বাকি সময় দেখায়",
+  "prayerCountdownWidgetPreview": "উইজেট পূর্বরূপ",
+  "prayerCountdownFormatMinutes": "{minutes} মিনিট",
+  "prayerCountdownFormatHoursMinutes": "{hours}ঘ {minutes}মি"
 }
