@@ -123,6 +123,14 @@ class MedicineController extends _$MedicineController {
     if (result case Failure(:final error)) logException(error);
   }
 
+  /// Updates a medicine's name.
+  Future<void> updateMedicineName(String id, String name) async {
+    final result = await ref
+        .read(medicineRepositoryProvider)
+        .updateMedicine(id, name: name);
+    if (result case Failure(:final error)) logException(error);
+  }
+
   /// Restores an archived medicine.
   Future<void> restoreMedicine(String id) async {
     final result = await ref

@@ -422,11 +422,15 @@
   "@medicineFormFrequencyPrn": {
     "description": "Repeat-rule option: no fixed schedule."
   },
+  "medicineFormTimeLabel": "Time",
+  "@medicineFormTimeLabel": {
+    "description": "Label for the time picker row in the schedule step."
+  },
   "medPresetOnceDaily": "Once daily",
   "@medPresetOnceDaily": {
     "description": "Medicine schedule preset title: one dose a day at 8am."
   },
-  "medPresetOnceDailyDesc": "One dose every day at 8:00 AM",
+  "medPresetOnceDailyDesc": "One dose every day at 8:00 PM",
   "@medPresetOnceDailyDesc": {
     "description": "Medicine schedule preset subtitle for medPresetOnceDaily."
   },
@@ -442,7 +446,7 @@
   "@medPresetEveryOtherDay": {
     "description": "Medicine schedule preset title: one dose every 2 days."
   },
-  "medPresetEveryOtherDayDesc": "One dose every 2 days at 8:00 AM",
+  "medPresetEveryOtherDayDesc": "One dose every 2 days at 8:00 PM",
   "@medPresetEveryOtherDayDesc": {
     "description": "Medicine schedule preset subtitle for medPresetEveryOtherDay."
   },
@@ -465,6 +469,34 @@
   "medicineFormSaveButton": "Save",
   "@medicineFormSaveButton": {
     "description": "Saves the new medicine."
+  },
+  "medicineFormDurationLabel": "Duration",
+  "@medicineFormDurationLabel": {
+    "description": "Label for the duration selector in the schedule step."
+  },
+  "medicineFormDuration7Days": "7 days",
+  "@medicineFormDuration7Days": {
+    "description": "Duration option: 7 days."
+  },
+  "medicineFormDuration15Days": "15 days",
+  "@medicineFormDuration15Days": {
+    "description": "Duration option: 15 days."
+  },
+  "medicineFormDuration1Month": "1 month",
+  "@medicineFormDuration1Month": {
+    "description": "Duration option: 1 month."
+  },
+  "medicineFormDuration3Months": "3 months",
+  "@medicineFormDuration3Months": {
+    "description": "Duration option: 3 months."
+  },
+  "medicineFormDurationCustom": "Custom",
+  "@medicineFormDurationCustom": {
+    "description": "Duration option: pick a custom end date."
+  },
+  "medicineFormDurationIndefinite": "Indefinite",
+  "@medicineFormDurationIndefinite": {
+    "description": "Duration option: no end date."
   },
   "medicineDetailNext7DaysLabel": "Next 7 days",
   "@medicineDetailNext7DaysLabel": {
@@ -497,6 +529,22 @@
   "medicineDetailNoHistory": "No dose history yet",
   "@medicineDetailNoHistory": {
     "description": "Shown instead of the stats summary when there is no dose history in the last 30 days."
+  },
+  "medicineDetailRename": "Rename",
+  "@medicineDetailRename": {
+    "description": "Menu item to rename a medicine."
+  },
+  "medicineDetailEditSchedule": "Edit schedule",
+  "@medicineDetailEditSchedule": {
+    "description": "Menu item to edit a medicine's schedule."
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic cancel button label."
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Generic save button label."
   },
   "medicineStatsTitle": "Medicine stats",
   "@medicineStatsTitle": {

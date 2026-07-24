@@ -28,7 +28,7 @@ const medicineSchedulePresets = [
   MedicineSchedulePreset(
     labelKey: 'medPresetOnceDaily',
     descriptionKey: 'medPresetOnceDailyDesc',
-    rule: RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+    rule: RepeatRule.fixedDaily(timesOfDay: [LocalTime(20, 0)]),
   ),
   MedicineSchedulePreset(
     labelKey: 'medPresetTwiceDaily',
@@ -42,7 +42,7 @@ const medicineSchedulePresets = [
     descriptionKey: 'medPresetEveryOtherDayDesc',
     rule: RepeatRule.everyNDays(
       intervalDays: 2,
-      timesOfDay: [LocalTime(8, 0)],
+      timesOfDay: [LocalTime(20, 0)],
     ),
   ),
   MedicineSchedulePreset(

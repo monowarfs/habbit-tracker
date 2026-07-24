@@ -89,7 +89,7 @@ void main() {
       schedules.single.rule,
       const RepeatRule.everyNDays(
         intervalDays: 2,
-        timesOfDay: [LocalTime(8, 0)],
+        timesOfDay: [LocalTime(20, 0)],
       ),
     );
 
@@ -117,7 +117,7 @@ void main() {
     expect(schedules, hasLength(1));
     expect(
       schedules.single.rule,
-      const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+      const RepeatRule.fixedDaily(timesOfDay: [LocalTime(20, 0)]),
     );
 
     await disposeTree(tester);

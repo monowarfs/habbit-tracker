@@ -21,7 +21,7 @@ MedicineRepository medicineRepository(Ref ref) {
 LocalDate _today() => localDayKey(clock.now());
 
 /// Every (non-deleted) medicine, optionally including archived ones.
-@riverpod
+@Riverpod(keepAlive: true)
 Stream<List<Medicine>> medicines(Ref ref, {required bool includeArchived}) {
   return ref
       .watch(medicineRepositoryProvider)
@@ -41,7 +41,7 @@ Stream<List<MedicineSchedule>> medicineSchedules(Ref ref, String medicineId) {
 }
 
 /// Every dose scheduled today, across every medicine.
-@riverpod
+@Riverpod(keepAlive: true)
 Stream<List<MedicineDose>> todaysDoses(Ref ref) {
   return ref.watch(medicineRepositoryProvider).watchDosesForDay(_today());
 }
@@ -54,7 +54,7 @@ typedef MedicineDateRange = ({LocalDate start, LocalDate end});
 /// by Riverpod so screens that `ref.watch` this (e.g. the stats screen's
 /// 7-day chart, the detail screen's 30-day adherence lookback) don't
 /// re-query on every rebuild the way an inline `FutureBuilder` would.
-@riverpod
+@Riverpod(keepAlive: true)
 Future<List<MedicineDose>> medicineDosesInRange(
   Ref ref,
   MedicineDateRange range,
@@ -78,6 +78,8 @@ typedef MedicineDoseView = ({
 List<MedicineDoseView>? todaysDoseViews(Ref ref) {
   final doses = ref.watch(todaysDosesProvider).value;
   final medicines = ref.watch(medicinesProvider(includeArchived: false)).value;
+  // If either stream hasn't emitted yet, return null (loading state).
+  // If the database is empty, both will be empty lists (not null).
   if (doses == null || medicines == null) return null;
   final medicinesById = {for (final m in medicines) m.id: m};
   final now = clock.now();

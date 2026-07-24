@@ -38,7 +38,12 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   final _stockCountController = TextEditingController();
   final _stockThresholdController = TextEditingController();
 
-  RepeatRule _rule = const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]);
+  RepeatRule _rule = const RepeatRule.fixedDaily(
+    timesOfDay: [LocalTime(20, 0)],
+  );
+
+  /// Selected duration in days, or null for indefinite.
+  int? _durationDays;
 
   @override
   void dispose() {
@@ -62,6 +67,10 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 
   Future<void> _save() async {
+    final startDate = LocalDate.fromDateTime(clock.now());
+    final endDate = _durationDays != null
+        ? startDate.addDays(_durationDays!)
+        : null;
     await ref
         .read(medicineControllerProvider.notifier)
         .createMedicine(
@@ -77,7 +86,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               ? int.tryParse(_stockThresholdController.text)
               : null,
           rule: _rule,
-          startDate: LocalDate.fromDateTime(clock.now()),
+          startDate: startDate,
+          endDate: endDate,
         );
     if (mounted) context.pop();
   }
@@ -117,6 +127,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           _ScheduleStep(
             rule: _rule,
             onRuleChanged: (r) => setState(() => _rule = r),
+            durationDays: _durationDays,
+            onDurationChanged: (d) => setState(() => _durationDays = d),
           ),
         ],
       ),
@@ -273,65 +285,227 @@ class _StockStep extends StatelessWidget {
 }
 
 class _ScheduleStep extends StatelessWidget {
-  const _ScheduleStep({required this.rule, required this.onRuleChanged});
+  const _ScheduleStep({
+    required this.rule,
+    required this.onRuleChanged,
+    required this.durationDays,
+    required this.onDurationChanged,
+  });
 
   final RepeatRule rule;
   final ValueChanged<RepeatRule> onRuleChanged;
+  final int? durationDays;
+  final ValueChanged<int?> onDurationChanged;
+
+  List<LocalTime> _currentTimes() => switch (rule) {
+    FixedDailyRule(:final timesOfDay) => timesOfDay,
+    EveryNDaysRule(:final timesOfDay) => timesOfDay,
+    WeekdaySetRule(:final timesOfDay) => timesOfDay,
+    PrnRule() => const [],
+  };
+
+  Future<void> _pickTime(BuildContext context) async {
+    final current = _currentTimes();
+    final initial = current.isNotEmpty
+        ? current.first
+        : const LocalTime(20, 0);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: initial.hour,
+        minute: initial.minute,
+      ),
+    );
+    if (picked == null) return;
+    final newTime = LocalTime(picked.hour, picked.minute);
+    final newTimes = [newTime, ..._currentTimes().skip(1)];
+    onRuleChanged(_ruleWithTimes(newTimes));
+  }
+
+  RepeatRule _ruleWithTimes(List<LocalTime> times) => switch (rule) {
+    FixedDailyRule() => RepeatRule.fixedDaily(timesOfDay: times),
+    EveryNDaysRule(:final intervalDays) =>
+      RepeatRule.everyNDays(
+        intervalDays: intervalDays,
+        timesOfDay: times,
+      ),
+    WeekdaySetRule(:final weekdaysMask) =>
+      RepeatRule.weekdaySet(
+        weekdaysMask: weekdaysMask,
+        timesOfDay: times,
+      ),
+    PrnRule() => rule,
+  };
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final times = _currentTimes();
     final selected = switch (rule) {
       FixedDailyRule() => 0,
       EveryNDaysRule() => 1,
       WeekdaySetRule() => 2,
       PrnRule() => 3,
     };
+    final timeLabel = times.isNotEmpty
+        ? times
+            .map(
+              (t) =>
+                  '${t.hour.toString().padLeft(2, '0')}:'
+                  '${t.minute.toString().padLeft(2, '0')}',
+            )
+            .join(', ')
+        : '—';
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: RadioGroup<int>(
-        groupValue: selected,
-        onChanged: (value) => switch (value) {
-          0 => onRuleChanged(
-            const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
-          ),
-          1 => onRuleChanged(
-            const RepeatRule.everyNDays(
-              intervalDays: 2,
-              timesOfDay: [LocalTime(8, 0)],
+      child: ListView(
+        children: [
+          RadioGroup<int>(
+            groupValue: selected,
+            onChanged: (value) => switch (value) {
+              0 => onRuleChanged(
+                const RepeatRule.fixedDaily(
+                  timesOfDay: [LocalTime(20, 0)],
+                ),
+              ),
+              1 => onRuleChanged(
+                const RepeatRule.everyNDays(
+                  intervalDays: 2,
+                  timesOfDay: [LocalTime(20, 0)],
+                ),
+              ),
+              2 => onRuleChanged(
+                const RepeatRule.weekdaySet(
+                  weekdaysMask: 0x7F,
+                  timesOfDay: [LocalTime(20, 0)],
+                ),
+              ),
+              3 => onRuleChanged(const RepeatRule.prn()),
+              _ => null,
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.medicineFormFrequencyLabel),
+                RadioListTile<int>(
+                  title: Text(
+                    l10n.medicineFormFrequencyFixedDaily,
+                  ),
+                  value: 0,
+                ),
+                RadioListTile<int>(
+                  title: Text(
+                    l10n.medicineFormFrequencyEveryOtherDay,
+                  ),
+                  value: 1,
+                ),
+                RadioListTile<int>(
+                  title: Text(
+                    l10n.medicineFormFrequencyWeekdays,
+                  ),
+                  value: 2,
+                ),
+                RadioListTile<int>(
+                  title: Text(l10n.medicineFormFrequencyPrn),
+                  value: 3,
+                ),
+                if (selected != 3) ...[
+                  const SizedBox(height: 16),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.access_time),
+                    title: Text(l10n.medicineFormTimeLabel),
+                    subtitle: Text(timeLabel),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _pickTime(context),
+                  ),
+                ],
+              ],
             ),
           ),
-          2 => onRuleChanged(
-            const RepeatRule.weekdaySet(
-              weekdaysMask: 0x7F,
-              timesOfDay: [LocalTime(8, 0)],
-            ),
+          const SizedBox(height: 24),
+          Text(l10n.medicineFormDurationLabel),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _DurationChip(
+                label: l10n.medicineFormDuration7Days,
+                selected: durationDays == 7,
+                onTap: () => onDurationChanged(7),
+              ),
+              _DurationChip(
+                label: l10n.medicineFormDuration15Days,
+                selected: durationDays == 15,
+                onTap: () => onDurationChanged(15),
+              ),
+              _DurationChip(
+                label: l10n.medicineFormDuration1Month,
+                selected: durationDays == 30,
+                onTap: () => onDurationChanged(30),
+              ),
+              _DurationChip(
+                label: l10n.medicineFormDuration3Months,
+                selected: durationDays == 90,
+                onTap: () => onDurationChanged(90),
+              ),
+              _DurationChip(
+                label: l10n.medicineFormDurationCustom,
+                selected: durationDays != null &&
+                    ![7, 15, 30, 90].contains(durationDays),
+                onTap: () => _pickEndDate(context),
+              ),
+              _DurationChip(
+                label: l10n.medicineFormDurationIndefinite,
+                selected: durationDays == null,
+                onTap: () => onDurationChanged(null),
+              ),
+            ],
           ),
-          3 => onRuleChanged(const RepeatRule.prn()),
-          _ => null,
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.medicineFormFrequencyLabel),
-            RadioListTile<int>(
-              title: Text(l10n.medicineFormFrequencyFixedDaily),
-              value: 0,
-            ),
-            RadioListTile<int>(
-              title: Text(l10n.medicineFormFrequencyEveryOtherDay),
-              value: 1,
-            ),
-            RadioListTile<int>(
-              title: Text(l10n.medicineFormFrequencyWeekdays),
-              value: 2,
-            ),
-            RadioListTile<int>(
-              title: Text(l10n.medicineFormFrequencyPrn),
-              value: 3,
-            ),
-          ],
-        ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickEndDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked == null) return;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final days = picked.difference(today).inDays;
+    onDurationChanged(days > 0 ? days : 1);
+  }
+}
+
+class _DurationChip extends StatelessWidget {
+  const _DurationChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: colorScheme.primaryContainer,
+      labelStyle: TextStyle(
+        color: selected
+            ? colorScheme.onPrimaryContainer
+            : colorScheme.onSurface,
       ),
     );
   }

@@ -60,9 +60,23 @@ class MedicineDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(medicine.name),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => context.push('/medicine/$medicineId/edit'),
+          PopupMenuButton<String>(
+            onSelected: (value) => _handleMenuAction(
+              context,
+              ref,
+              value,
+              medicine.name,
+            ),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'rename',
+                child: Text(l10n.medicineDetailRename),
+              ),
+              PopupMenuItem(
+                value: 'edit',
+                child: Text(l10n.medicineDetailEditSchedule),
+              ),
+            ],
           ),
         ],
       ),
@@ -121,5 +135,50 @@ class MedicineDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _handleMenuAction(
+    BuildContext context,
+    WidgetRef ref,
+    String action,
+    String currentName,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(medicineControllerProvider.notifier);
+    switch (action) {
+      case 'rename':
+        final nameController = TextEditingController(text: currentName);
+        final newName = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.medicineDetailRename),
+            content: TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: l10n.medicineFormNameLabel,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(nameController.text.trim()),
+                child: Text(l10n.commonSave),
+              ),
+            ],
+          ),
+        );
+        if (newName != null && newName.isNotEmpty && newName != currentName) {
+          await controller.updateMedicineName(medicineId, newName);
+        }
+      case 'edit':
+        if (context.mounted) {
+          await context.push('/medicine/$medicineId/edit');
+        }
+    }
   }
 }
