@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/water/domain/entities/parsed_water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/widgets/natural_language_quick_add.dart';
 
 Future<void> _pump(
   WidgetTester tester, {
-  required ValueChanged<String> onLog,
+  required ValueChanged<ParsedWaterEntry> onLog,
   required VoidCallback onEdit,
 }) async {
   await tester.pumpWidget(
@@ -83,19 +84,24 @@ void main() {
     expect(find.text(l10n.waterQuickAddUnparsedMessage), findsOneWidget);
   });
 
-  testWidgets('tapping Log calls onLog with the raw text', (tester) async {
-    String? logged;
-    await _pump(tester, onLog: (text) => logged = text, onEdit: () {});
+  testWidgets(
+    'tapping Log calls onLog with the exact entry shown in the preview',
+    (tester) async {
+      ParsedWaterEntry? logged;
+      await _pump(tester, onLog: (entry) => logged = entry, onEdit: () {});
 
-    await tester.enterText(find.byType(TextField), '2 glasses just now');
-    await tester.pump(const Duration(milliseconds: 350));
+      await tester.enterText(find.byType(TextField), '2 glasses just now');
+      await tester.pump(const Duration(milliseconds: 350));
 
-    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
-    await tester.tap(find.text(l10n.waterQuickAddConfirmButton));
-    await tester.pump();
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      await tester.tap(find.text(l10n.waterQuickAddConfirmButton));
+      await tester.pump();
 
-    expect(logged, '2 glasses just now');
-  });
+      expect(logged, isNotNull);
+      expect(logged!.amountMl, 500);
+      expect(logged!.confidence, 'high');
+    },
+  );
 
   testWidgets('tapping Edit calls onEdit', (tester) async {
     var editTapped = false;
@@ -139,4 +145,52 @@ void main() {
     await tester.pump();
     expect(find.byType(Card), findsNothing);
   });
+
+  testWidgets(
+    'changing the unit re-parses the already-typed bare number instead of '
+    'logging a stale preview under the new unit',
+    (tester) async {
+      ParsedWaterEntry? logged;
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: NaturalLanguageQuickAdd(
+              unit: WaterUnit.ml,
+              onLog: (entry) => logged = entry,
+              onEdit: () {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), '8');
+      await tester.pump(const Duration(milliseconds: 350));
+
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+      // Switch to flOz — the same bare "8" now means ~237ml, not 8ml.
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: NaturalLanguageQuickAdd(
+              unit: WaterUnit.flOz,
+              onLog: (entry) => logged = entry,
+              onEdit: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text(l10n.waterQuickAddConfirmButton));
+      await tester.pump();
+
+      expect(logged, isNotNull);
+      expect(logged!.amountMl, 237);
+    },
+  );
 }

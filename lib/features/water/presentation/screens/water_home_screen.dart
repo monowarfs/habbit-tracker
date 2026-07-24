@@ -133,9 +133,9 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
                 const SizedBox(height: 12),
                 NaturalLanguageQuickAdd(
                   unit: unit,
-                  onLog: (text) => ref
+                  onLog: (parsed) => ref
                       .read(waterControllerProvider.notifier)
-                      .logFromParsedText(text, waterUnit: unit),
+                      .logFromParsedText(parsed),
                   onEdit: () => context.push('/water/add'),
                 ),
                 const SizedBox(height: 24),

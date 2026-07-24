@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/water/domain/water_unit_conversion.dart';
 import 'package:intl/intl.dart';
-
-const _mlPerFlOz = 29.5735;
 
 /// Converts [amountMl] to the display unit (display-only — storage always
 /// stays canonical ml, D-01/FR-W-02).
 int waterDisplayValue(int amountMl, WaterUnit unit) =>
-    unit == WaterUnit.ml ? amountMl : (amountMl / _mlPerFlOz).round();
+    unit == WaterUnit.ml ? amountMl : (amountMl / mlPerFlOz).round();
 
 /// The unit abbreviation shown next to a formatted amount.
 String waterUnitLabel(WaterUnit unit) => unit == WaterUnit.ml ? 'ml' : 'fl oz';

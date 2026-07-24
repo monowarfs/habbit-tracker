@@ -1,13 +1,11 @@
-import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
-import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/water/domain/entities/parsed_water_entry.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/domain/repositories/water_repository.dart';
 import 'package:habit_tracker/features/water/domain/usecases/log_water_entry.dart';
-import 'package:habit_tracker/features/water/domain/usecases/parse_water_quick_add.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -32,19 +30,15 @@ class WaterController extends _$WaterController {
     source: WaterEntrySource.quick,
   );
 
-  /// Parses [rawText] (`docs/superpowers/plans/ai-powered/
-  /// 02-natural-language-quick-add-impl-plan.md`) and logs it if an amount
-  /// could be extracted; a no-op otherwise (the widget's preview already
-  /// warned the user before they tapped Log).
-  Future<void> logFromParsedText(
-    String rawText, {
-    required WaterUnit waterUnit,
-  }) {
-    final parsed = const ParseWaterQuickAddUseCase().execute(
-      rawText: rawText,
-      now: clock.now(),
-      waterUnit: waterUnit,
-    );
+  /// Logs an already-parsed natural-language quick-add entry
+  /// (`docs/superpowers/plans/ai-powered/
+  /// 02-natural-language-quick-add-impl-plan.md`) — takes the exact
+  /// [ParsedWaterEntry] the widget's preview showed and the user confirmed,
+  /// rather than re-parsing the raw text here: re-parsing against a fresh
+  /// clock/unit at tap-time could silently log something the user never
+  /// actually saw. A no-op if no amount could be extracted (the preview
+  /// already warned the user before they tapped Log).
+  Future<void> logFromParsedText(ParsedWaterEntry parsed) {
     final amountMl = parsed.amountMl;
     if (amountMl == null || amountMl <= 0) return Future.value();
     return _log(

@@ -26,8 +26,11 @@ class NaturalLanguageQuickAdd extends StatefulWidget {
   /// The user's preferred display unit (D-01/FR-W-02).
   final WaterUnit unit;
 
-  /// Called with the raw text when the user taps "Log".
-  final ValueChanged<String> onLog;
+  /// Called with the confirmed parse when the user taps "Log" — the exact
+  /// entry shown in the preview, never re-parsed at tap-time (re-parsing
+  /// against a fresh clock/unit could silently diverge from what the user
+  /// approved).
+  final ValueChanged<ParsedWaterEntry> onLog;
 
   /// Called when the user taps "Edit" — switches to the custom-amount form.
   final VoidCallback onEdit;
@@ -44,10 +47,31 @@ class _NaturalLanguageQuickAddState extends State<NaturalLanguageQuickAdd> {
   ParsedWaterEntry? _parsed;
 
   @override
+  void didUpdateWidget(NaturalLanguageQuickAdd oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The preview was parsed under the old unit — a bare number means
+    // something different in ml vs. fl oz, so re-parse rather than let a
+    // stale preview be logged under the new unit.
+    if (oldWidget.unit != widget.unit) _reparse(_controller.text);
+  }
+
+  @override
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _reparse(String text) {
+    setState(
+      () => _parsed = text.trim().isEmpty
+          ? null
+          : _parser.execute(
+              rawText: text,
+              now: clock.now(),
+              waterUnit: widget.unit,
+            ),
+    );
   }
 
   void _onChanged(String text) {
@@ -58,18 +82,14 @@ class _NaturalLanguageQuickAddState extends State<NaturalLanguageQuickAdd> {
     }
     _debounce = Timer(_debounceDuration, () {
       if (!mounted) return;
-      setState(
-        () => _parsed = _parser.execute(
-          rawText: text,
-          now: clock.now(),
-          waterUnit: widget.unit,
-        ),
-      );
+      _reparse(text);
     });
   }
 
   void _log() {
-    widget.onLog(_controller.text);
+    final parsed = _parsed;
+    if (parsed == null) return;
+    widget.onLog(parsed);
     _controller.clear();
     setState(() => _parsed = null);
   }

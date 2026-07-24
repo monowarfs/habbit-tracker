@@ -1,5 +1,6 @@
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/water/domain/entities/parsed_water_entry.dart';
+import 'package:habit_tracker/features/water/domain/water_unit_conversion.dart';
 
 final _justNowPattern = RegExp(
   r'\b(just now|right now|now)\b',
@@ -141,7 +142,7 @@ class ParseWaterQuickAddUseCase {
     if (rawUnit == null) {
       // Bare number: interpreted in whatever unit the user displays
       // amounts in.
-      return waterUnit == WaterUnit.flOz ? 29.5735 : 1;
+      return waterUnit == WaterUnit.flOz ? mlPerFlOz : 1;
     }
     final unit = rawUnit
         .toLowerCase()
@@ -149,7 +150,7 @@ class ParseWaterQuickAddUseCase {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
     if (unit.startsWith('fl') || unit.startsWith('fluid') || unit == 'oz') {
-      return 29.5735;
+      return mlPerFlOz;
     }
     if (unit.startsWith('cup')) return 240;
     if (unit.startsWith('glass')) return 250;
