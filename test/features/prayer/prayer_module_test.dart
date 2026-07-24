@@ -12,9 +12,13 @@ import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.da
 import 'package:habit_tracker/features/prayer/domain/entities/resolved_location.dart';
 import 'package:habit_tracker/features/prayer/domain/repositories/prayer_repository.dart';
 import 'package:habit_tracker/features/prayer/prayer_module.dart';
+import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
+import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockPrayerRepository extends Mock implements PrayerRepository {}
+
+class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
 void main() {
   late _MockPrayerRepository repo;
@@ -126,6 +130,68 @@ void main() {
       await withClock(Clock.fixed(now), () async {
         final notifications = await module.pendingNotifications();
         expect(notifications, hasLength(2)); // on-time + pre-reminder
+      });
+    },
+  );
+
+  test(
+    'pendingNotifications frames Fajr as "Sehri ends" and Maghrib as '
+    '"Iftar" when Ramadan mode is manually forced on via the optional '
+    'settings dependency',
+    () async {
+      final now = DateTime.utc(2026, 3, 15, 3);
+      final fajr = PrayerRecord(
+        id: 'r-fajr',
+        prayerDate: const LocalDate(2026, 3, 15),
+        prayerName: PrayerName.fajr,
+        scheduledFor: DateTime.utc(2026, 3, 15, 5),
+        storedStatus: PrayerStatus.upcoming,
+      );
+      final maghrib = PrayerRecord(
+        id: 'r-maghrib',
+        prayerDate: const LocalDate(2026, 3, 15),
+        prayerName: PrayerName.maghrib,
+        scheduledFor: DateTime.utc(2026, 3, 15, 12),
+        storedStatus: PrayerStatus.upcoming,
+      );
+
+      final settingsRepo = _MockSettingsRepository();
+      when(() => settingsRepo.watchSettings()).thenAnswer(
+        (_) => Stream.value(
+          const AppSettings(
+            locale: AppLocale.en,
+            themeMode: AppThemeMode.system,
+            waterUnit: WaterUnit.ml,
+            pinEnabled: false,
+            pinLockTimeoutSeconds: 0,
+            biometricEnabled: true,
+            screenPrivacyEnabled: false,
+            quietHoursEnabled: false,
+            quietHoursStart: LocalTime(22, 0),
+            quietHoursEnd: LocalTime(7, 0),
+            ramadanModeManualOverride: true,
+          ),
+        ),
+      );
+      final ramadanModule = PrayerModule(repo, settingsRepository: settingsRepo);
+
+      when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
+      when(() => repo.sweepMissedPrayers(any(), any())).thenAnswer((_) async {});
+      when(() => repo.materializeRecords(any(), any())).thenAnswer((_) async {});
+      when(
+        () => repo.recordsInRange(any(), any()),
+      ).thenAnswer((_) async => [fajr, maghrib]);
+
+      await withClock(Clock.fixed(now), () async {
+        final notifications = await ramadanModule.pendingNotifications();
+        final fajrNotification = notifications.firstWhere(
+          (n) => n.id == 'r-fajr',
+        );
+        final maghribNotification = notifications.firstWhere(
+          (n) => n.id == 'r-maghrib',
+        );
+        expect(fajrNotification.title, 'Sehri ends');
+        expect(maghribNotification.title, 'Iftar');
       });
     },
   );

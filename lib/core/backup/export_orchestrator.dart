@@ -49,6 +49,9 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'quietHoursStart': settings.quietHoursStart.format(),
   'quietHoursEnd': settings.quietHoursEnd.format(),
   'seasonalAccentsEnabled': settings.seasonalAccentsEnabled,
+  'ramadanModeManualOverride': settings.ramadanModeManualOverride,
+  'ramadanAutoDetectEnabled': settings.ramadanAutoDetectEnabled,
+
 };
 
 Map<String, Object?> _achievementToJson(AchievementRow row) => {

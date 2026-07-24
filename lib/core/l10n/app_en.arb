@@ -1090,5 +1090,47 @@
   "@settingsSoundToggle": {
     "description": "Switch label enabling/disabling the dose-done completion chime."
 
+  "settingsRamadanMode": "Ramadan mode",
+  "@settingsRamadanMode": {
+    "description": "Settings-home nav entry linking to the Ramadan mode settings screen."
+  },
+  "ramadanModeSettingsTitle": "Ramadan mode",
+  "@ramadanModeSettingsTitle": {
+    "description": "AppBar title for the Ramadan mode settings screen."
+  },
+  "ramadanModeSettingsSubtitle": "Shift water reminders outside fasting hours and show Sehri/Iftar countdowns",
+  "@ramadanModeSettingsSubtitle": {
+    "description": "Explanatory subtitle on the Ramadan mode settings screen."
+  },
+  "ramadanModeAutoDetectToggle": "Detect Ramadan automatically",
+  "@ramadanModeAutoDetectToggle": {
+    "description": "Toggle enabling automatic Hijri-calendar Ramadan detection."
+  },
+  "ramadanModeManualToggle": "Ramadan mode",
+  "@ramadanModeManualToggle": {
+    "description": "Manual override toggle, shown only while auto-detect is off."
+  },
+  "sehriEndsCountdown": "Sehri ends in {duration}",
+  "@sehriEndsCountdown": {
+    "description": "Dashboard/Prayer countdown label shown before Fajr during Ramadan.",
+    "placeholders": {
+      "duration": {"type": "String"}
+    }
+  },
+  "iftarCountdown": "Iftar in {duration}",
+  "@iftarCountdown": {
+    "description": "Dashboard/Prayer countdown label shown before Maghrib during Ramadan.",
+    "placeholders": {
+      "duration": {"type": "String"}
+    }
+  },
+  "sehriEndsLabel": "Sehri ends",
+  "@sehriEndsLabel": {
+    "description": "Fallback label once Fajr has just passed and a countdown is no longer meaningful."
+  },
+  "iftarLabel": "Iftar",
+  "@iftarLabel": {
+    "description": "Fallback label once Maghrib has just passed and a countdown is no longer meaningful."
+
   }
 }

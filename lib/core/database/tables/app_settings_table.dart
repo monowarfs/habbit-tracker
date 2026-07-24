@@ -45,6 +45,17 @@ class AppSettingsTable extends Table {
   /// (`docs/superpowers/specs/02-delightful/
   /// 10-optional-sound-design-pass-design.md`) — default `false`, opt-in.
   BoolColumn get soundEnabled => boolean().withDefault(const Constant(false))();
+  /// Manual override: `true`/`false` pins Ramadan mode; `null` (default)
+  /// means "follow `isRamadan(today)` automatically"
+  /// (`docs/superpowers/specs/02-delightful/01-ramadan-mode-design.md`).
+  BoolColumn get ramadanModeManualOverride => boolean().nullable()();
+
+  /// Whether Ramadan-mode auto-detection is enabled at all. Default
+  /// `true`; a user who turns it off never sees the mode unless they
+  /// also pin [ramadanModeManualOverride].
+  BoolColumn get ramadanAutoDetectEnabled =>
+      boolean().withDefault(const Constant(true))();
+
 
   /// Whether quiet-hours notification suppression is active.
   BoolColumn get quietHoursEnabled =>

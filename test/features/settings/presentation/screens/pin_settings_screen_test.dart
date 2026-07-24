@@ -229,6 +229,9 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateDisplayName(String? name) async {
     await _update((s) => s.copyWith(displayName: name));
+  Future<Result<void>> updateRamadanModeManualOverride(bool? override) async {
+    await _update((s) => s.copyWith(ramadanModeManualOverride: override));
+
     return const Result.success(null);
   }
 
@@ -239,6 +242,11 @@ class _ReactiveSettingsRepo implements SettingsRepository {
     required bool enabled,
   }) async {
     await _update((s) => s.copyWith(seasonalAccentsEnabled: enabled));
+
+  Future<Result<void>> updateRamadanAutoDetectEnabled({
+    required bool enabled,
+  }) async {
+    await _update((s) => s.copyWith(ramadanAutoDetectEnabled: enabled));
 
     return const Result.success(null);
   }

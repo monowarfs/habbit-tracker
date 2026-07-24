@@ -44,6 +44,9 @@ void main() {
     expect(firstRead.waterHydrationHintSeenAt, isNull);
     expect(firstRead.prayerQadhaHintSeenAt, isNull);
 
+    expect(firstRead.ramadanAutoDetectEnabled, isTrue);
+    expect(firstRead.ramadanModeManualOverride, isNull);
+
 
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
@@ -70,6 +73,15 @@ void main() {
     final prayerHintResult = await repo1.markPrayerQadhaHintSeen();
     expect(prayerHintResult, isA<Success<void>>());
 
+    final ramadanAutoDetectResult = await repo1.updateRamadanAutoDetectEnabled(
+      enabled: false,
+    );
+    expect(ramadanAutoDetectResult, isA<Success<void>>());
+    final ramadanOverrideResult = await repo1.updateRamadanModeManualOverride(
+      true,
+    );
+    expect(ramadanOverrideResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -87,6 +99,9 @@ void main() {
 
     expect(afterRestart.waterHydrationHintSeenAt, isNotNull);
     expect(afterRestart.prayerQadhaHintSeenAt, isNotNull);
+
+    expect(afterRestart.ramadanAutoDetectEnabled, isFalse);
+    expect(afterRestart.ramadanModeManualOverride, isTrue);
 
 
     await db2.close();

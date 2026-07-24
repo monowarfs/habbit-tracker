@@ -5,6 +5,7 @@ import 'package:habit_tracker/features/medicine/data/repositories/medicine_repos
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
 import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
 import 'package:habit_tracker/features/prayer/prayer_module.dart';
+import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/water_module.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,10 +23,15 @@ part 'module_registry.g.dart';
 /// and adding one line below — no other file in this list or in `core/` is
 /// touched.
 List<HabitModule> buildHabitModules(AppDatabase db) {
+  final settingsRepository = SettingsRepositoryImpl(db);
   return [
     MedicineModule(MedicineRepositoryImpl(db)),
-    WaterModule(WaterRepositoryImpl(db)),
-    PrayerModule(PrayerRepositoryImpl(db)),
+    WaterModule(
+      WaterRepositoryImpl(db),
+      settingsRepository: settingsRepository,
+      prayerRepository: PrayerRepositoryImpl(db),
+    ),
+    PrayerModule(PrayerRepositoryImpl(db), settingsRepository: settingsRepository),
   ];
 }
 

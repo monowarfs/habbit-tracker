@@ -126,6 +126,17 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable.prayerQadhaHintSeenAt,
         );
 
+        // Ramadan mode (`docs/superpowers/specs/02-delightful/
+        // 01-ramadan-mode-design.md`).
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.ramadanModeManualOverride,
+        );
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.ramadanAutoDetectEnabled,
+        );
+
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

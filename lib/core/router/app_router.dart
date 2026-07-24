@@ -15,6 +15,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/language_se
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/quiet_hours_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/ramadan_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -66,6 +67,9 @@ class AppRoutes {
 
   /// Quiet hours settings screen.
   static const String settingsQuietHours = '/settings/quiet-hours';
+
+  /// Ramadan mode settings screen.
+  static const String settingsRamadan = '/settings/ramadan';
 
   /// PIN entry (top-level redirect target, not a normal pushed route).
   static const String lock = '/lock';
@@ -156,6 +160,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'quiet-hours',
                     builder: (context, state) => const QuietHoursScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ramadan',
+                    builder: (context, state) => const RamadanSettingsScreen(),
                   ),
                   GoRoute(
                     path: 'pin',

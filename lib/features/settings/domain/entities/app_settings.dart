@@ -62,5 +62,8 @@ sealed class AppSettings with _$AppSettings {
     DateTime? waterHydrationHintSeenAt,
     DateTime? prayerQadhaHintSeenAt,
 
+    bool? ramadanModeManualOverride,
+    @Default(true) bool ramadanAutoDetectEnabled,
+
   }) = _AppSettings;
 }

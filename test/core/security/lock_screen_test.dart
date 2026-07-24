@@ -181,6 +181,15 @@ class _StubSettingsRepo implements SettingsRepository {
   }) => Future.value(const Result.success(null));
 
 
+  Future<Result<void>> updateRamadanModeManualOverride(bool? override) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateRamadanAutoDetectEnabled({
+    required bool enabled,
+  }) => Future.value(const Result.success(null));
+
+
   @override
   Future<Result<void>> restoreSettings(AppSettings settings) =>
       Future.value(const Result.success(null));
