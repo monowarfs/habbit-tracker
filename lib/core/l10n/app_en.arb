@@ -44,6 +44,18 @@
   "@themeModeDark": {
     "description": "Option label: always use the dark theme."
   },
+  "settingsProfile": "Profile",
+  "@settingsProfile": {
+    "description": "Settings section header for the display-name row."
+  },
+  "settingsDisplayName": "Your name",
+  "@settingsDisplayName": {
+    "description": "Label for the display-name row and its editor sheet title."
+  },
+  "settingsDisplayNameNotSet": "Not set",
+  "@settingsDisplayNameNotSet": {
+    "description": "Subtitle shown on the display-name row when no name has been set yet."
+  },
   "emptyDashboardMessage": "Enable a module in Settings to get started",
   "@emptyDashboardMessage": {
     "description": "Shown on the dashboard when no module is enabled yet."
