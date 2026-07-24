@@ -79,4 +79,17 @@ abstract class WaterRepository {
   /// Deletes every row this module owns — the wipe half of import's
   /// replace semantics (`HabitModule.wipeData()`).
   Future<void> wipeAll();
+
+  /// Enables or disables the weather-derived reminder-copy clause. Default
+  /// false — opt-in only, since enabling it implies location + network
+  /// access.
+  Future<Result<void>> updateWeatherNudgeEnabled({required bool enabled});
+
+  /// Caches the latest successful weather fetch. Called only by the
+  /// WorkManager cache refresher, never from `pendingNotifications()`'s
+  /// own hot path.
+  Future<Result<void>> updateWeatherCache({
+    required double temperatureCelsius,
+    required DateTime fetchedAt,
+  });
 }

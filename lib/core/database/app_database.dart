@@ -142,6 +142,21 @@ class AppDatabase extends _$AppDatabase {
         // Habit-stacking suggestions (medicine/prayer -> water).
         await m.createTable(habitStackSuggestionsTable);
 
+        // Weather-aware water reminder copy (`docs/superpowers/specs/
+        // 02-delightful/07-weather-aware-water-nudge-copy-design.md`).
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.weatherNudgeEnabled,
+        );
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.lastWeatherTemperatureCelsius,
+        );
+        await m.addColumn(
+          waterSettingsTable,
+          waterSettingsTable.lastWeatherFetchedAtMillis,
+        );
+
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

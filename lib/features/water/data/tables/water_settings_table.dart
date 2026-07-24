@@ -41,6 +41,22 @@ class WaterSettingsTable extends Table {
   TextColumn get reminderWindowOverrides =>
       text().withDefault(const Constant('{}'))();
 
+  /// Opt-in: attach a weather-derived clause to reminder copy
+  /// (`docs/superpowers/specs/02-delightful/
+  /// 07-weather-aware-water-nudge-copy-design.md`). Default `false` —
+  /// never silently turns on network/location access.
+  BoolColumn get weatherNudgeEnabled =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Last successful weather fetch's temperature, cached alongside the
+  /// reading itself so `pendingNotifications()` never needs a network
+  /// round-trip on its own hot path — populated only by the WorkManager
+  /// refresh, read-only from `pendingNotifications()`.
+  RealColumn get lastWeatherTemperatureCelsius => real().nullable()();
+
+  /// UTC epoch millis of [lastWeatherTemperatureCelsius]'s fetch.
+  IntColumn get lastWeatherFetchedAtMillis => integer().nullable()();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

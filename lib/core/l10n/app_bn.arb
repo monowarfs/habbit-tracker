@@ -375,4 +375,9 @@
   "sehriEndsLabel": "সেহরি শেষ",
   "iftarLabel": "ইফতার"
 
+  "weatherNudgeSettingsTitle": "আবহাওয়া-সচেতন রিমাইন্ডার",
+  "weatherNudgeSettingsExplainerBody": "পানির রিমাইন্ডারে আজকের তাপমাত্রা যোগ করুন। লোকেশন অ্যাক্সেস এবং ইন্টারনেট সংযোগ প্রয়োজন; আপনি যেকোনো সময় এটি বন্ধ করতে পারেন।",
+  "weatherNudgeClauseHot": "আজ {temp}°সে।",
+  "weatherNudgePermissionDeniedSnackbar": "আবহাওয়া-সচেতন রিমাইন্ডারের জন্য লোকেশন অ্যাক্সেস প্রয়োজন"
+
 }

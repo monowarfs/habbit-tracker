@@ -1149,5 +1149,24 @@
   "@iftarLabel": {
     "description": "Fallback label once Maghrib has just passed and a countdown is no longer meaningful."
 
+  "weatherNudgeSettingsTitle": "Weather-aware reminders",
+  "@weatherNudgeSettingsTitle": {
+    "description": "Toggle title for weather-derived reminder copy."
+  },
+  "weatherNudgeSettingsExplainerBody": "Add today's temperature to water reminders. Requires location access and an internet connection; you can turn this off at any time.",
+  "@weatherNudgeSettingsExplainerBody": {
+    "description": "Explainer dialog body shown before requesting location for weather-aware reminders."
+  },
+  "weatherNudgeClauseHot": "It's {temp}°C today.",
+  "@weatherNudgeClauseHot": {
+    "description": "Documents the exact English wording `weatherNudgeClause` (Dart, non-localized) produces — for translators/future use, not itself called from that pure formatter.",
+    "placeholders": {
+      "temp": {"type": "int"}
+    }
+  },
+  "weatherNudgePermissionDeniedSnackbar": "Location access is needed for weather-aware reminders",
+  "@weatherNudgePermissionDeniedSnackbar": {
+    "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
+
   }
 }

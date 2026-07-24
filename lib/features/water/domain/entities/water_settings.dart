@@ -17,5 +17,8 @@ sealed class WaterSettings with _$WaterSettings {
     required LocalTime reminderWindowEnd,
     @Default({})
     Map<int, ({LocalTime start, LocalTime end})> reminderWindowOverrides,
+    @Default(false) bool weatherNudgeEnabled,
+    double? lastWeatherTemperatureCelsius,
+    DateTime? lastWeatherFetchedAt,
   }) = _WaterSettings;
 }
