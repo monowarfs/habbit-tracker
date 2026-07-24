@@ -15,7 +15,7 @@ import es.antonborri.home_widget.HomeWidgetPlugin
  * and renders a simple RemoteViews layout with headline + optional
  * action button.
  */
-class HabitWidgetProvider : AppWidgetProvider() {
+open class HabitWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,
