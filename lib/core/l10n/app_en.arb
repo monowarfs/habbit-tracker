@@ -1758,6 +1758,22 @@
   "@feedbackDescription": {
     "description": "Description for the feedback entry in Settings."
   },
+  "trendArrowUp": "Improving",
+  "@trendArrowUp": {
+    "description": "Label for upward trend arrow."
+  },
+  "trendArrowDown": "Declining",
+  "@trendArrowDown": {
+    "description": "Label for downward trend arrow."
+  },
+  "trendArrowFlat": "Stable",
+  "@trendArrowFlat": {
+    "description": "Label for flat trend arrow."
+  },
+  "trendArrowVsPrevious": "vs. previous period",
+  "@trendArrowVsPrevious": {
+    "description": "Label showing trend comparison to previous period."
+  },
   "unlocksTitle": "Unlocks",
   "@unlocksTitle": {
     "description": "Title of the unlocks screen."

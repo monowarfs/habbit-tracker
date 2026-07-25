@@ -11,6 +11,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
+import 'package:habit_tracker/core/widgets/trend_arrow.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/domain/usecases/aggregate_water_series.dart';
@@ -126,6 +127,20 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             ],
             color: ModuleAccents.water,
             targetLine: goal?.goalMl.toDouble(),
+          ),
+        if (series != null && series.length >= 2)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TrendArrow(
+                  current: series.last.totalMl.toDouble(),
+                  previous: series[series.length - 2].totalMl.toDouble(),
+                  label: l10n.trendArrowVsPrevious,
+                ),
+              ],
+            ),
           ),
         const SizedBox(height: 16),
         if (streak != null) StreakCard(streak: streak),
