@@ -44,6 +44,7 @@ dependencies:
   screen_protector: ^1.4.2
   share_plus: ^13.2.1
   sqlite3: ^3.4.0
+  url_launcher: ^6.2.0
   timezone: ^0.11.1
   uuid: ^4.6.0
   # Android-only periodic top-up of the notification scheduling window

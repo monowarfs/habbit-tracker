@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
-import 'package:habit_tracker/core/notifications/notification_service.dart';
-import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/core/modules/module_settings_providers.dart';
+import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/features/community/community_links.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/display_name_editor_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// The Settings tab: sectioned entry points into Appearance, Language,
 /// Notifications, Security, Data, and About
@@ -205,6 +207,36 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           _ModuleToggleTile(moduleId: 'medicine', label: l10n.navMedicine),
           _ModuleToggleTile(moduleId: 'prayer', label: l10n.navPrayer),
+          const Divider(),
+          _SectionHeader(l10n.settingsCommunity),
+          ListTile(
+            leading: const Icon(Icons.forum_outlined),
+            title: Text(l10n.communityJoinTitle),
+            subtitle: Text(l10n.communityJoinDescription),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final uri = Uri.parse(CommunityLinks.communityUrl);
+              try {
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(CommunityLinks.communityUrlDisplay),
+                    ),
+                  );
+                }
+              } on Object {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(CommunityLinks.communityUrlDisplay),
+                    ),
+                  );
+                }
+              }
+            },
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsAbout),
           ListTile(
