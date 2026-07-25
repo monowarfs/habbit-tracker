@@ -81,4 +81,39 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 1));
   });
+
+  testWidgets(
+    'shows the error, not the empty-state copy, when the provider errors',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            habitModulesProvider.overrideWith((ref) => [_WaterModule()]),
+            notificationEffectivenessProvider.overrideWith(
+              (ref) => Future<Map<String, EffectivenessResult>>.error(
+                StateError('ledger query failed'),
+              ),
+            ),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: NotificationReliabilityScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+      expect(
+        find.text(l10n.notificationEffectivenessEmpty),
+        findsNothing,
+      );
+      expect(find.textContaining('ledger query failed'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 1));
+    },
+  );
 }

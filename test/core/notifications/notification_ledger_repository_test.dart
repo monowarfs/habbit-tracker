@@ -155,6 +155,68 @@ void main() {
     },
   );
 
+  test(
+    'firedRows returns only non-deleted rows already past scheduledFor, '
+    'within the window',
+    () async {
+      final now = DateTime.utc(2026, 6, 30);
+
+      // In-window, already past scheduledFor — should be included.
+      await repo.insertScheduled(
+        id: 'past-in-window',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'past-in-window',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 6, 20, 8),
+        deepLinkRoute: '/water',
+      );
+
+      // In-window but scheduled in the future relative to now — excluded
+      // (hasn't fired yet).
+      await repo.insertScheduled(
+        id: 'future',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'future',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 7, 1, 8),
+        deepLinkRoute: '/water',
+      );
+
+      // Past scheduledFor but cancelled — excluded (soft-deleted).
+      await repo.insertScheduled(
+        id: 'past-deleted',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'past-deleted',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 6, 22, 8),
+        deepLinkRoute: '/water',
+      );
+      await repo.cancel('past-deleted');
+
+      // Outside the 30-day window — excluded.
+      await repo.insertScheduled(
+        id: 'past-out-of-window',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'past-out-of-window',
+        title: 'title',
+        body: 'body',
+        scheduledFor: DateTime.utc(2026, 5, 1, 8),
+        deepLinkRoute: '/water',
+      );
+
+      final result = await repo.firedRows(windowDays: 30, now: now);
+
+      expect(result.map((r) => r.id), ['past-in-window']);
+    },
+  );
+
   test('cancel soft-deletes the row so it drops out of pendingRows', () async {
     await repo.insertScheduled(
       id: 'r1',

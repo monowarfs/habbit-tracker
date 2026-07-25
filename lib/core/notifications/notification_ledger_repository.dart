@@ -129,22 +129,32 @@ class NotificationLedgerRepository {
         .get();
   }
 
-  /// Every row that actually fired within the last [windowDays], relative
-  /// to [now], regardless of what (if anything) happened after —
+  /// Every row whose reminder should already have fired — `scheduledFor`
+  /// in the past — within the last [windowDays], relative to [now],
+  /// regardless of what (if anything) happened after —
   /// `NotificationEffectivenessUseCase`'s raw material for the "Reminder
   /// Effectiveness" self-metric.
+  ///
+  /// Windows on `scheduledFor` rather than `firedAt`: nothing in the
+  /// notification stack populates `firedAt` today (`flutter_local_
+  /// notifications` has no cross-platform "notification delivered"
+  /// callback, only a tap callback), so gating on it would make this query
+  /// — and the effectiveness metric itself — permanently empty. A locally
+  /// scheduled alarm firing at its scheduled time is the best available
+  /// proxy.
   Future<List<NotificationLedgerRow>> firedRows({
     required int windowDays,
     required DateTime now,
   }) async {
     final since = now.subtract(Duration(days: windowDays));
+    final nowMillis = now.toUtc().millisecondsSinceEpoch;
     return (_db.select(_db.notificationLedgerTable)..where(
           (t) =>
               t.deletedAt.isNull() &
-              t.firedAt.isNotNull() &
               t.scheduledFor.isBiggerOrEqualValue(
                 since.toUtc().millisecondsSinceEpoch,
-              ),
+              ) &
+              t.scheduledFor.isSmallerOrEqualValue(nowMillis),
         ))
         .get();
   }

@@ -27,26 +27,31 @@ class NotificationEffectivenessUseCase {
   /// Creates the use case.
   const NotificationEffectivenessUseCase();
 
-  /// Calculates the effectiveness rate from ledger [entries].
+  /// Calculates the effectiveness rate from already-fired ledger [entries]
+  /// (e.g. from `NotificationLedgerRepository.firedRows`) — this method
+  /// trusts its caller to have already decided what counts as "fired";
+  /// every entry passed in counts toward the denominator.
   ///
   /// A fired notification counts as "acted on" only if its `done` action
   /// landed within [attributionWindow] of firing — a Done recorded hours
-  /// later is more likely unrelated to that specific reminder.
+  /// later is more likely unrelated to that specific reminder. Falls back
+  /// to `scheduledFor` as the fire instant when `firedAt` is unset (see
+  /// `firedRows`'s doc comment for why that's usually the case).
   EffectivenessResult calculate({
     required List<NotificationLedgerRow> entries,
     Duration attributionWindow = const Duration(hours: 4),
   }) {
-    final fired = entries.where((e) => e.firedAt != null).toList();
-    final acted = fired.where((e) {
+    final acted = entries.where((e) {
       if (e.action != 'done' || e.actionAt == null) return false;
-      final delay = Duration(milliseconds: e.actionAt! - e.firedAt!);
-      return delay <= attributionWindow;
+      final firedAtMillis = e.firedAt ?? e.scheduledFor;
+      final delay = Duration(milliseconds: e.actionAt! - firedAtMillis);
+      return !delay.isNegative && delay <= attributionWindow;
     }).length;
 
     return EffectivenessResult(
-      total: fired.length,
+      total: entries.length,
       acted: acted,
-      rate: fired.isEmpty ? 0 : acted / fired.length,
+      rate: entries.isEmpty ? 0 : acted / entries.length,
     );
   }
 }

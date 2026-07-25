@@ -45,7 +45,7 @@ class NotificationReliabilityScreen extends ConsumerWidget {
             loading: () => const [
               Center(child: CircularProgressIndicator()),
             ],
-            error: (_, _) => [Text(l10n.notificationEffectivenessEmpty)],
+            error: (error, stack) => [Center(child: Text('$error'))],
           ),
         ],
       ),
@@ -67,23 +67,19 @@ class _EffectivenessTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final empty = result == null || result!.total == 0;
+    final r = result ?? const EffectivenessResult(total: 0, acted: 0, rate: 0);
+    final empty = r.total == 0;
     return ListTile(
       leading: CircleAvatar(backgroundColor: accentColor, radius: 6),
       title: Text(displayName),
       subtitle: Text(
         empty
             ? l10n.notificationEffectivenessEmpty
-            : l10n.notificationEffectivenessDescription(
-                result!.acted,
-                result!.total,
-              ),
+            : l10n.notificationEffectivenessDescription(r.acted, r.total),
       ),
       trailing: empty
           ? null
-          : Text(
-              l10n.notificationEffectivenessRate((result!.rate * 100).round()),
-            ),
+          : Text(l10n.notificationEffectivenessRate((r.rate * 100).round())),
     );
   }
 }
