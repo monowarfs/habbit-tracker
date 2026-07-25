@@ -129,6 +129,26 @@ class NotificationLedgerRepository {
         .get();
   }
 
+  /// Every row that actually fired within the last [windowDays], relative
+  /// to [now], regardless of what (if anything) happened after —
+  /// `NotificationEffectivenessUseCase`'s raw material for the "Reminder
+  /// Effectiveness" self-metric.
+  Future<List<NotificationLedgerRow>> firedRows({
+    required int windowDays,
+    required DateTime now,
+  }) async {
+    final since = now.subtract(Duration(days: windowDays));
+    return (_db.select(_db.notificationLedgerTable)..where(
+          (t) =>
+              t.deletedAt.isNull() &
+              t.firedAt.isNotNull() &
+              t.scheduledFor.isBiggerOrEqualValue(
+                since.toUtc().millisecondsSinceEpoch,
+              ),
+        ))
+        .get();
+  }
+
   /// Soft-deletes (cancels) [id] — used when a source falls out of the
   /// scheduling window (e.g. reminder settings changed).
   Future<void> cancel(String id) async {
