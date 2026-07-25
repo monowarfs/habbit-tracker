@@ -483,6 +483,24 @@
   "dataPrivacyReassuranceBody": "আপনার সকল অভ্যাস, লগ এবং ইতিহাস আপনার ডিভাইসে স্থানীয়ভাবে সংরক্ষিত হয়। কিছুই ক্লাউডে আপলোড করা হয় না, এবং কোনো অ্যাকাউন্টের প্রয়োজন নেই।",
   "dataLongevityGuaranteeTitle": "আপনার তথ্য কখনো মুছে ফেলা হয় না",
   "dataLongevityGuaranteeBody": "আপনার অভ্যাসের ইতিহাস, লগ এবং সেটিংস আপনার ডিভাইসে স্থায়ীভাবে সংরক্ষিত হয়। অ্যাপ আপডেট কখনো আপনার তথ্য মুছে ফেলে বা সীমিত করে না।",
-  "dataLongevityGuaranteeMedicineCaveat": "আপনার ডোজ ইতিহাস সবসময় সংরক্ষিত থাকে। আসন্ন ডোজের স্বল্পমেয়াদী পূর্বাভাস প্রয়োজন অনুযায়ী পুনর্গঠিত হয় — এগুলো আপনার ইতিহাস নয়।"
+  "dataLongevityGuaranteeMedicineCaveat": "আপনার ডোজ ইতিহাস সবসময় সংরক্ষিত থাকে। আসন্ন ডোজের স্বল্পমেয়াদী পূর্বাভাস প্রয়োজন অনুযায়ী পুনর্গঠিত হয় — এগুলো আপনার ইতিহাস নয়।",
+  "onboardingWelcomeTitle": "হ্যাবিট ট্র্যাকারে স্বাগতম",
+  "onboardingWelcomeBody": "একদিন একদিন করে স্থায়ী অভ্যাস তৈরি করুন।",
+  "onboardingGetStarted": "শুরু করুন",
+  "onboardingModuleTitle": "আপনার মডিউল বাছাই করুন",
+  "onboardingModuleRecommended": "সুপারিশকৃত",
+  "onboardingModuleAlsoAvailable": "এছাড়াও পাওয়া যায়",
+  "onboardingModuleSkip": "আমি জানি আমি কী চাই",
+  "onboardingModuleWaterDesc": "আপনার দৈনিক পানির পরিমাণ ট্র্যাক করুন।",
+  "onboardingModuleMedicineDesc": "কখনো ডোজ মিস করবেন না।",
+  "onboardingModulePrayerDesc": "আপনার নামাজের সময়সূচি ট্র্যাক রাখুন।",
+  "onboardingCompleteTitle": "সব প্রস্তুত!",
+  "onboardingCompleteBody": "চলুন অভ্যাস তৈরি শুরু করি।",
+  "onboardingCompleteButton": "শুরু",
+  "moduleSuggestionTitle": "আপনি এটাও পছন্দ করতে পারেন",
+  "moduleSuggestionBody": "এই মডিউল দিয়ে আপনার {module} ট্র্যাক করুন।",
+  "moduleSuggestionEnable": "{module} সক্রিয় করুন",
+  "moduleSuggestionDismiss": "এখন নয়",
+  "settingsModules": "মডিউল"
 
 }

@@ -12,6 +12,9 @@ import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_
 import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
@@ -118,6 +121,22 @@ GoRouter buildAppRouter(
       return '${AppRoutes.lock}?from=$from';
     },
     routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingWelcomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'modules',
+            builder: (context, state) =>
+                const OnboardingModuleSelectionScreen(),
+          ),
+          GoRoute(
+            path: 'complete',
+            builder: (context, state) =>
+                const OnboardingCompleteScreen(),
+          ),
+        ],
+      ),
       GoRoute(
         path: AppRoutes.lock,
         builder: (context, state) =>

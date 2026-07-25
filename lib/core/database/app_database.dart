@@ -7,6 +7,8 @@ import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
+import 'package:habit_tracker/core/database/tables/module_settings_table.dart';
+import 'package:habit_tracker/core/database/tables/onboarding_progress_table.dart';
 import 'package:habit_tracker/core/database/tables/recalibration_markers_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
@@ -51,6 +53,8 @@ part 'app_database.g.dart';
     RecapsTable,
     PauseRangesTable,
     RecalibrationMarkersTable,
+    ModuleSettingsTable,
+    OnboardingProgressTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -59,7 +63,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -220,6 +224,26 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           achievementsTable,
           achievementsTable.milestoneValue,
+        );
+      }
+      if (from < 16) {
+        await m.createTable(moduleSettingsTable);
+        await m.createTable(onboardingProgressTable);
+        // Seed Water as enabled by default (backward-compatible).
+        final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+        await into(moduleSettingsTable).insert(
+          ModuleSettingsTableCompanion.insert(
+            moduleId: 'water',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+        // Mark onboarding as completed for existing users.
+        await into(onboardingProgressTable).insert(
+          OnboardingProgressTableCompanion.insert(
+            id: 'singleton',
+            completedAt: Value(now),
+          ),
         );
       }
       // Seam: when schemaVersion increments further, add

@@ -1660,6 +1660,84 @@
   "@dataLongevityGuaranteeMedicineCaveat": {
     "description": "Medicine caveat on the data longevity guarantee card."
   },
+  "onboardingWelcomeTitle": "Welcome to Habit Tracker",
+  "@onboardingWelcomeTitle": {
+    "description": "Title of the onboarding welcome screen."
+  },
+  "onboardingWelcomeBody": "Build lasting habits, one day at a time.",
+  "@onboardingWelcomeBody": {
+    "description": "Body text of the onboarding welcome screen."
+  },
+  "onboardingGetStarted": "Get Started",
+  "@onboardingGetStarted": {
+    "description": "Button to start onboarding."
+  },
+  "onboardingModuleTitle": "Choose your modules",
+  "@onboardingModuleTitle": {
+    "description": "Title of the module selection screen."
+  },
+  "onboardingModuleRecommended": "Recommended",
+  "@onboardingModuleRecommended": {
+    "description": "Label for recommended modules."
+  },
+  "onboardingModuleAlsoAvailable": "Also available",
+  "@onboardingModuleAlsoAvailable": {
+    "description": "Label for optional modules."
+  },
+  "onboardingModuleSkip": "I know what I want",
+  "@onboardingModuleSkip": {
+    "description": "Button to skip module selection."
+  },
+  "onboardingModuleWaterDesc": "Track your daily water intake.",
+  "@onboardingModuleWaterDesc": {
+    "description": "Description for the water module in onboarding."
+  },
+  "onboardingModuleMedicineDesc": "Never miss a dose.",
+  "@onboardingModuleMedicineDesc": {
+    "description": "Description for the medicine module in onboarding."
+  },
+  "onboardingModulePrayerDesc": "Keep your prayer schedule on track.",
+  "@onboardingModulePrayerDesc": {
+    "description": "Description for the prayer module in onboarding."
+  },
+  "onboardingCompleteTitle": "You're all set!",
+  "@onboardingCompleteTitle": {
+    "description": "Title of the onboarding complete screen."
+  },
+  "onboardingCompleteBody": "Let's start building habits.",
+  "@onboardingCompleteBody": {
+    "description": "Body text of the onboarding complete screen."
+  },
+  "onboardingCompleteButton": "Start",
+  "@onboardingCompleteButton": {
+    "description": "Button to finish onboarding and go to the app."
+  },
+  "moduleSuggestionTitle": "You might also like",
+  "@moduleSuggestionTitle": {
+    "description": "Title of the module suggestion card."
+  },
+  "moduleSuggestionBody": "Track your {module} with this module.",
+  "@moduleSuggestionBody": {
+    "description": "Body text of the module suggestion card.",
+    "placeholders": {
+      "module": {"type": "String"}
+    }
+  },
+  "moduleSuggestionEnable": "Enable {module}",
+  "@moduleSuggestionEnable": {
+    "description": "Button to enable a suggested module.",
+    "placeholders": {
+      "module": {"type": "String"}
+    }
+  },
+  "moduleSuggestionDismiss": "Not now",
+  "@moduleSuggestionDismiss": {
+    "description": "Button to dismiss a module suggestion."
+  },
+  "settingsModules": "Modules",
+  "@settingsModules": {
+    "description": "Settings section header for module toggles."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

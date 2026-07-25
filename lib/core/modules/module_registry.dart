@@ -25,29 +25,46 @@ part 'module_registry.g.dart';
 /// Adding a future module (e.g. Sleep) means writing `lib/features/sleep/`
 /// and adding one line below — no other file in this list or in `core/` is
 /// touched.
-List<HabitModule> buildHabitModules(AppDatabase db) {
+List<HabitModule> buildHabitModules(
+  AppDatabase db, {
+  Set<String>? enabledModules,
+}) {
   final settingsRepository = SettingsRepositoryImpl(db);
   final pauseService = PauseService(
     pauseRepository: PauseRepository(db),
     notificationLedger: NotificationLedgerRepository(db),
   );
-  return [
-    MedicineModule(
-      MedicineRepositoryImpl(db),
-      pauseService: pauseService,
+  final allModules = [
+    (
+      id: 'medicine',
+      module: MedicineModule(
+        MedicineRepositoryImpl(db),
+        pauseService: pauseService,
+      ),
     ),
-    WaterModule(
-      WaterRepositoryImpl(db),
-      settingsRepository: settingsRepository,
-      prayerRepository: PrayerRepositoryImpl(db),
-      pauseService: pauseService,
+    (
+      id: 'water',
+      module: WaterModule(
+        WaterRepositoryImpl(db),
+        settingsRepository: settingsRepository,
+        prayerRepository: PrayerRepositoryImpl(db),
+        pauseService: pauseService,
+      ),
     ),
-    PrayerModule(
-      PrayerRepositoryImpl(db),
-      settingsRepository: settingsRepository,
-      pauseService: pauseService,
+    (
+      id: 'prayer',
+      module: PrayerModule(
+        PrayerRepositoryImpl(db),
+        settingsRepository: settingsRepository,
+        pauseService: pauseService,
+      ),
     ),
   ];
+  if (enabledModules == null) return allModules.map((e) => e.module).toList();
+  return allModules
+      .where((e) => enabledModules.contains(e.id))
+      .map((e) => e.module)
+      .toList();
 }
 
 /// The single shared list of registered modules, for widget code that has a
