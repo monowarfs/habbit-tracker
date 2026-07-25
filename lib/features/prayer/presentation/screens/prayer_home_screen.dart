@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/widgets/illustrations/crescent_mat_painter.dart';
@@ -63,7 +64,11 @@ class PrayerHomeScreen extends ConsumerWidget {
               message: l10n.prayerHomeEmpty,
               accentColor: ModuleAccents.prayer,
             )
-          : ListView.builder(
+          : Column(
+              children: [
+                const ActivePausesCard(moduleId: 'prayer'),
+                Expanded(
+                  child: ListView.builder(
               itemCount: views.length,
               itemBuilder: (context, index) {
                 final view = views[index];
@@ -90,6 +95,9 @@ class PrayerHomeScreen extends ConsumerWidget {
                   },
                 );
               },
+            ),
+                ),
+              ],
             ),
     );
   }
