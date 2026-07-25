@@ -467,6 +467,7 @@
   "pauseConfirmBackfillBody": "এটি {start} থেকে {end} পর্যন্ত দিনগুলো বিরতিতে চিহ্নিত করবে। চালিয়ে যাবেন?",
   "pauseConfirmCancel": "এই বিরতি বাতিল করবেন? ধারাবাহিকতা পুনরায় শুরু হবে।",
   "pauseActiveLabel": "{date} পর্যন্ত বিরতি",
-  "pauseOverlapError": "এই পরিসীমা একটি বিদ্যমান বিরতির সাথে মিলে যাচ্ছে।"
+  "pauseOverlapError": "এই পরিসীমা একটি বিদ্যমান বিরতির সাথে মিলে যাচ্ছে।",
+  "pauseEndDateMustBeAfterStart": "শেষ তারিখ শুরুর তারিখের পরে হতে হবে"
 
 }

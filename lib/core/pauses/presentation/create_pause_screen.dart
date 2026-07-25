@@ -113,12 +113,12 @@ class _CreatePauseScreenState extends ConsumerState<CreatePauseScreen> {
   }
 
   Future<void> _create() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_endDate.compareTo(_startDate) < 0) {
-      setState(() => _error = 'End date must be after start date');
+      setState(() => _error = l10n.pauseEndDateMustBeAfterStart);
       return;
     }
-
-    final l10n = AppLocalizations.of(context)!;
     final today = LocalDate.fromDateTime(DateTime.now());
     final isBackfill = _startDate.compareTo(today) <= 0;
 

@@ -1596,6 +1596,10 @@
   "@pauseOverlapError": {
     "description": "Error shown when creating a pause that overlaps."
   },
+  "pauseEndDateMustBeAfterStart": "End date must be after start date",
+  "@pauseEndDateMustBeAfterStart": {
+    "description": "Error shown when end date is before start date."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 
