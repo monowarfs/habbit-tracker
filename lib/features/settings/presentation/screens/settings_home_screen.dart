@@ -136,6 +136,13 @@ class SettingsHomeScreen extends ConsumerWidget {
                 .updateSoundEnabled(enabled: value),
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.diamond_outlined),
+            title: Text(l10n.unlocksTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/unlocks'),
+          ),
+          const Divider(),
           _SectionHeader(l10n.settingsSecurity),
           ListTile(
             leading: const Icon(Icons.lock_outline),
