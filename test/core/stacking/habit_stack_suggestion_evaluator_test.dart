@@ -130,8 +130,9 @@ void main() {
         await evaluateStackSuggestions(db: db);
       });
       final repository = HabitStackSuggestionRepository(db);
-      final firstEvaluatedAt =
-          (await repository.byId('medicine_water'))!.lastEvaluatedAt;
+      final firstEvaluatedAt = (await repository.byId(
+        'medicine_water',
+      ))!.lastEvaluatedAt;
 
       // Adds a same-day water log that would otherwise change the
       // computed result, to make the "no-op" observable.

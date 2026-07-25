@@ -79,10 +79,12 @@ class QuietHoursScreen extends ConsumerWidget {
     );
     if (picked == null || !context.mounted) return;
     final newTime = LocalTime(picked.hour, picked.minute);
-    await ref.read(settingsRepositoryProvider).updateQuietHours(
-      enabled: settings.quietHoursEnabled,
-      start: isStart ? newTime : settings.quietHoursStart,
-      end: isStart ? settings.quietHoursEnd : newTime,
-    );
+    await ref
+        .read(settingsRepositoryProvider)
+        .updateQuietHours(
+          enabled: settings.quietHoursEnabled,
+          start: isStart ? newTime : settings.quietHoursStart,
+          end: isStart ? settings.quietHoursEnd : newTime,
+        );
   }
 }

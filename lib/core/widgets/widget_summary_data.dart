@@ -11,7 +11,8 @@ class WidgetSummaryData {
   const WidgetSummaryData({
     required this.moduleId,
     required this.headline,
-    required this.deepLinkRoute, this.progressFraction,
+    required this.deepLinkRoute,
+    this.progressFraction,
     this.primaryActionLabel,
     this.primaryActionSourceId,
     this.pendingCount,

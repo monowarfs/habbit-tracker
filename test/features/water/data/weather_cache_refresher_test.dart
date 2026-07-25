@@ -8,45 +8,49 @@ import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
 import '../../../support/test_database.dart';
 
 void main() {
-  test('no-ops (never resolves location) when weatherNudgeEnabled is false',
-      () async {
-    final db = testDatabase();
-    addTearDown(db.close);
-    final repo = WaterRepositoryImpl(db);
-
-    await refreshWeatherCacheIfStale(
-      db,
-      resolveLocation: () async => fail('should not be called'),
-    );
-
-    expect((await repo.watchSettings().first).lastWeatherFetchedAt, isNull);
-  });
-
-  test('no-ops when the cache is already fresh (under the 6-hour ceiling)',
-      () async {
-    final db = testDatabase();
-    addTearDown(db.close);
-    final repo = WaterRepositoryImpl(db);
-    final now = DateTime.utc(2026, 6, 1, 12);
-
-    await withClock(Clock.fixed(now), () async {
-      await repo.updateWeatherNudgeEnabled(enabled: true);
-      await repo.updateWeatherCache(
-        temperatureCelsius: 30,
-        fetchedAt: now.subtract(const Duration(hours: 1)),
-      );
+  test(
+    'no-ops (never resolves location) when weatherNudgeEnabled is false',
+    () async {
+      final db = testDatabase();
+      addTearDown(db.close);
+      final repo = WaterRepositoryImpl(db);
 
       await refreshWeatherCacheIfStale(
         db,
         resolveLocation: () async => fail('should not be called'),
       );
 
-      expect(
-        (await repo.watchSettings().first).lastWeatherTemperatureCelsius,
-        30,
-      );
-    });
-  });
+      expect((await repo.watchSettings().first).lastWeatherFetchedAt, isNull);
+    },
+  );
+
+  test(
+    'no-ops when the cache is already fresh (under the 6-hour ceiling)',
+    () async {
+      final db = testDatabase();
+      addTearDown(db.close);
+      final repo = WaterRepositoryImpl(db);
+      final now = DateTime.utc(2026, 6, 1, 12);
+
+      await withClock(Clock.fixed(now), () async {
+        await repo.updateWeatherNudgeEnabled(enabled: true);
+        await repo.updateWeatherCache(
+          temperatureCelsius: 30,
+          fetchedAt: now.subtract(const Duration(hours: 1)),
+        );
+
+        await refreshWeatherCacheIfStale(
+          db,
+          resolveLocation: () async => fail('should not be called'),
+        );
+
+        expect(
+          (await repo.watchSettings().first).lastWeatherTemperatureCelsius,
+          30,
+        );
+      });
+    },
+  );
 
   test('fetches and caches a fresh reading when enabled and stale', () async {
     final db = testDatabase();
@@ -71,8 +75,7 @@ void main() {
     });
   });
 
-  test('leaves the cache untouched when location resolution fails',
-      () async {
+  test('leaves the cache untouched when location resolution fails', () async {
     final db = testDatabase();
     addTearDown(db.close);
     final repo = WaterRepositoryImpl(db);

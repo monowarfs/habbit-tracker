@@ -24,8 +24,7 @@ class RecapsTable extends Table {
   TextColumn get summaryJson => text()();
 
   /// Whether the user has dismissed this recap from the full-screen view.
-  BoolColumn get dismissed =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get dismissed => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};

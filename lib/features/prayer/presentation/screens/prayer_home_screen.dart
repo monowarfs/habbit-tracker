@@ -69,33 +69,33 @@ class PrayerHomeScreen extends ConsumerWidget {
                 const ActivePausesCard(moduleId: 'prayer'),
                 Expanded(
                   child: ListView.builder(
-              itemCount: views.length,
-              itemBuilder: (context, index) {
-                final view = views[index];
-                return PrayerTile(
-                  view: view,
-                  highlighted: view.record.id == highlightRecordId,
-                  onToggle: () => _togglePrayedAndCelebrate(
-                    context,
-                    ref,
-                    view.record.id,
-                    currentlyPrayed:
-                        view.effectiveStatus == PrayerStatus.prayed,
+                    itemCount: views.length,
+                    itemBuilder: (context, index) {
+                      final view = views[index];
+                      return PrayerTile(
+                        view: view,
+                        highlighted: view.record.id == highlightRecordId,
+                        onToggle: () => _togglePrayedAndCelebrate(
+                          context,
+                          ref,
+                          view.record.id,
+                          currentlyPrayed:
+                              view.effectiveStatus == PrayerStatus.prayed,
+                        ),
+                        onNoteTap: () async {
+                          final result = await showNoteEditorSheet(
+                            context,
+                            initialNotes: view.record.notes,
+                          );
+                          if (context.mounted) {
+                            await ref
+                                .read(prayerControllerProvider.notifier)
+                                .updatePrayerNotes(view.record.id, result);
+                          }
+                        },
+                      );
+                    },
                   ),
-                  onNoteTap: () async {
-                    final result = await showNoteEditorSheet(
-                      context,
-                      initialNotes: view.record.notes,
-                    );
-                    if (context.mounted) {
-                      await ref
-                          .read(prayerControllerProvider.notifier)
-                          .updatePrayerNotes(view.record.id, result);
-                    }
-                  },
-                );
-              },
-            ),
                 ),
               ],
             ),

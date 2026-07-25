@@ -84,8 +84,7 @@ class WaterRepositoryImpl implements WaterRepository {
     await _ensureGoalSeeded();
     final rows = await (_db.select(
       _db.waterGoalsTable,
-    )..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull()))
-        .get();
+    )..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull())).get();
     return rows.map(_goalFromRow).toList(growable: false);
   }
 
@@ -308,13 +307,15 @@ class WaterRepositoryImpl implements WaterRepository {
           reminderIntervalMinutes: Value(intervalMinutes),
           reminderWindowStart: Value(windowStart.format()),
           reminderWindowEnd: Value(windowEnd.format()),
-          reminderWindowOverrides: Value(jsonEncode({
-            for (final entry in windowOverrides.entries)
-              '${entry.key}': {
-                'start': entry.value.start.format(),
-                'end': entry.value.end.format(),
-              },
-          })),
+          reminderWindowOverrides: Value(
+            jsonEncode({
+              for (final entry in windowOverrides.entries)
+                '${entry.key}': {
+                  'start': entry.value.start.format(),
+                  'end': entry.value.end.format(),
+                },
+            }),
+          ),
           updatedAt: Value(now),
         ),
       );
@@ -419,20 +420,23 @@ class WaterRepositoryImpl implements WaterRepository {
 
   @override
   Future<List<WaterGoal>> archivedGoals() async {
-    final rows = await (_db.select(_db.waterGoalsTable)
-          ..where(
-            (t) => t.archivedAt.isNotNull() & t.deletedAt.isNull(),
-          )
-          ..orderBy([(t) => OrderingTerm.desc(t.archivedAt)]))
-        .get();
+    final rows =
+        await (_db.select(_db.waterGoalsTable)
+              ..where(
+                (t) => t.archivedAt.isNotNull() & t.deletedAt.isNull(),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.archivedAt)]))
+            .get();
     return rows.map(_goalFromRow).toList();
   }
 
   @override
   Future<bool> hasAnyGoals() async {
-    final result = await _db.customSelect(
-      'SELECT 1 FROM water_goals LIMIT 1',
-    ).getSingleOrNull();
+    final result = await _db
+        .customSelect(
+          'SELECT 1 FROM water_goals LIMIT 1',
+        )
+        .getSingleOrNull();
     return result != null;
   }
 

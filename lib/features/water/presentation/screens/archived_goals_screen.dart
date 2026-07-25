@@ -114,9 +114,7 @@ class _ArchivedGoalsScreenState extends ConsumerState<ArchivedGoalsScreen> {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(waterRepositoryProvider)
-        .reviveGoal(goal.id);
+    final result = await ref.read(waterRepositoryProvider).reviveGoal(goal.id);
     switch (result) {
       case Success():
         if (context.mounted) {

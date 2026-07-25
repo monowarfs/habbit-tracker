@@ -59,14 +59,15 @@ class AchievementEngine {
         target: definition.target,
         now: now,
       );
-      final justUnlocked =
-          !wasAlreadyUnlocked && progress >= definition.target;
+      final justUnlocked = !wasAlreadyUnlocked && progress >= definition.target;
       if (justUnlocked) {
-        _eventController.add(AchievementEvent(
-          moduleId: moduleId,
-          key: definition.key,
-          justUnlocked: true,
-        ));
+        _eventController.add(
+          AchievementEvent(
+            moduleId: moduleId,
+            key: definition.key,
+            justUnlocked: true,
+          ),
+        );
       }
     }
   }

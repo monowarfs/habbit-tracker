@@ -172,7 +172,8 @@ class PrayerModule implements HabitModule {
         date: record.prayerDate,
         observesJumuah: settings.observesJumuah,
       );
-      final ramadanActive = !isJumuah &&
+      final ramadanActive =
+          !isJumuah &&
           appSettings != null &&
           resolveRamadanModeActive(
             manualOverride: appSettings.ramadanModeManualOverride,
@@ -345,7 +346,8 @@ class PrayerModule implements HabitModule {
     }
     if (next == null) return null;
     final appSettings = ref.watch(appSettingsProvider).value;
-    final ramadanActive = !next.showAsJumuah &&
+    final ramadanActive =
+        !next.showAsJumuah &&
         appSettings != null &&
         resolveRamadanModeActive(
           manualOverride: appSettings.ramadanModeManualOverride,
@@ -360,15 +362,18 @@ class PrayerModule implements HabitModule {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         final label = switch (framing) {
-          null => next!.showAsJumuah
-              ? "Jumu'ah"
-              : _titleCase(next.record.prayerName.name),
-          RamadanPrayerFraming.sehri => remaining.isNegative
-              ? l10n.sehriEndsLabel
-              : l10n.sehriEndsCountdown(formatCountdown(remaining)),
-          RamadanPrayerFraming.iftar => remaining.isNegative
-              ? l10n.iftarLabel
-              : l10n.iftarCountdown(formatCountdown(remaining)),
+          null =>
+            next!.showAsJumuah
+                ? "Jumu'ah"
+                : _titleCase(next.record.prayerName.name),
+          RamadanPrayerFraming.sehri =>
+            remaining.isNegative
+                ? l10n.sehriEndsLabel
+                : l10n.sehriEndsCountdown(formatCountdown(remaining)),
+          RamadanPrayerFraming.iftar =>
+            remaining.isNegative
+                ? l10n.iftarLabel
+                : l10n.iftarCountdown(formatCountdown(remaining)),
         };
         return Chip(
           avatar: const Icon(Icons.mosque, size: 16),
@@ -673,8 +678,9 @@ class PrayerModule implements HabitModule {
       }
     }
 
-    final onTimePercent =
-        prayersCompleted > 0 ? onTimeCount / prayersCompleted * 100 : 0.0;
+    final onTimePercent = prayersCompleted > 0
+        ? onTimeCount / prayersCompleted * 100
+        : 0.0;
 
     // Use the streak calculator for longest streak.
     final streakResult = const CalculatePrayerStreakUseCase().execute(

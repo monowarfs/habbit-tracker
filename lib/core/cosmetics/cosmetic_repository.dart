@@ -17,10 +17,11 @@ class CosmeticRepository {
 
   /// Whether [cosmeticKey] is unlocked.
   Future<bool> isUnlocked(String cosmeticKey) async {
-    final row = await (_db.select(_db.cosmeticUnlocksTable)
-          ..where((t) => t.cosmeticKey.equals(cosmeticKey))
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.cosmeticUnlocksTable)
+              ..where((t) => t.cosmeticKey.equals(cosmeticKey))
+              ..limit(1))
+            .getSingleOrNull();
     return row != null;
   }
 
@@ -30,20 +31,23 @@ class CosmeticRepository {
     required String cosmeticKey,
   }) async {
     // Check if already unlocked.
-    final existing = await (_db.select(_db.cosmeticUnlocksTable)
-          ..where((t) => t.cosmeticKey.equals(cosmeticKey))
-          ..limit(1))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.cosmeticUnlocksTable)
+              ..where((t) => t.cosmeticKey.equals(cosmeticKey))
+              ..limit(1))
+            .getSingleOrNull();
     if (existing != null) return;
 
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await _db.into(_db.cosmeticUnlocksTable).insert(
-      CosmeticUnlocksTableCompanion.insert(
-        id: const Uuid().v4(),
-        achievementKey: achievementKey,
-        cosmeticKey: cosmeticKey,
-        unlockedAt: now,
-      ),
-    );
+    await _db
+        .into(_db.cosmeticUnlocksTable)
+        .insert(
+          CosmeticUnlocksTableCompanion.insert(
+            id: const Uuid().v4(),
+            achievementKey: achievementKey,
+            cosmeticKey: cosmeticKey,
+            unlockedAt: now,
+          ),
+        );
   }
 }

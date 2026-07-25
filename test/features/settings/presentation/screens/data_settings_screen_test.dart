@@ -5,8 +5,9 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 
 void main() {
-  testWidgets('renders the three list tiles with correct labels',
-      (tester) async {
+  testWidgets('renders the three list tiles with correct labels', (
+    tester,
+  ) async {
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
     await tester.pumpWidget(

@@ -138,11 +138,11 @@ AppSettings _appSettings({
   pinLockTimeoutSeconds: 0,
   biometricEnabled: true,
   screenPrivacyEnabled: false,
-      soundEnabled: false,
+  soundEnabled: false,
   quietHoursEnabled: false,
   quietHoursStart: const LocalTime(22, 0),
   quietHoursEnd: const LocalTime(7, 0),
-      seasonalAccentsEnabled: true,
+  seasonalAccentsEnabled: true,
   ramadanModeManualOverride: ramadanModeManualOverride,
   ramadanAutoDetectEnabled: ramadanAutoDetectEnabled,
 );
@@ -352,7 +352,8 @@ void main() {
           expect(
             beforeFajr || afterMaghrib,
             isTrue,
-            reason: 'slot at ${n.scheduledAt} falls inside the fast on $day '
+            reason:
+                'slot at ${n.scheduledAt} falls inside the fast on $day '
                 '(Fajr $fajrOnDay, Maghrib $maghribOnDay)',
           );
         }

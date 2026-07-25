@@ -14,10 +14,11 @@ Future<void> checkAndShowYearlyRecap(WidgetRef ref) async {
 
   // Read lastRecapYear directly from the DB row (implementation detail,
   // not exposed in the AppSettings domain entity).
-  final row = await (db.select(db.appSettingsTable)
-        ..where((t) => t.id.equals('singleton'))
-        ..limit(1))
-      .getSingleOrNull();
+  final row =
+      await (db.select(db.appSettingsTable)
+            ..where((t) => t.id.equals('singleton'))
+            ..limit(1))
+          .getSingleOrNull();
   final lastRecapYear = row?.lastRecapYear ?? 0;
 
   final triggerResult = checkYearlyRecapTrigger(

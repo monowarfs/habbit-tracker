@@ -4,8 +4,9 @@ import 'package:habit_tracker/core/recalibration/recalibration_repository.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_service.dart';
 
 /// Provides the [RecalibrationRepository].
-final recalibrationRepositoryProvider =
-    Provider<RecalibrationRepository>((ref) {
+final recalibrationRepositoryProvider = Provider<RecalibrationRepository>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   return RecalibrationRepository(db);
 });
@@ -13,8 +14,8 @@ final recalibrationRepositoryProvider =
 /// Provides the [RecalibrationSessionTracker] (singleton per app session).
 final recalibrationSessionTrackerProvider =
     Provider<RecalibrationSessionTracker>((ref) {
-  return RecalibrationSessionTracker();
-});
+      return RecalibrationSessionTracker();
+    });
 
 /// Provides the [RecalibrationService].
 final recalibrationServiceProvider = Provider<RecalibrationService>((ref) {

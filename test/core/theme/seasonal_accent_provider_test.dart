@@ -8,21 +8,20 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
-AppSettings _makeSettings({bool seasonalAccentsEnabled = true}) =>
-    AppSettings(
-      locale: AppLocale.en,
-      themeMode: AppThemeMode.system,
-      waterUnit: WaterUnit.ml,
-      pinEnabled: false,
-      pinLockTimeoutSeconds: 0,
-      biometricEnabled: true,
-      screenPrivacyEnabled: false,
-      soundEnabled: false,
-      quietHoursEnabled: false,
-      quietHoursStart: const LocalTime(22, 0),
-      quietHoursEnd: const LocalTime(7, 0),
-      seasonalAccentsEnabled: seasonalAccentsEnabled,
-    );
+AppSettings _makeSettings({bool seasonalAccentsEnabled = true}) => AppSettings(
+  locale: AppLocale.en,
+  themeMode: AppThemeMode.system,
+  waterUnit: WaterUnit.ml,
+  pinEnabled: false,
+  pinLockTimeoutSeconds: 0,
+  biometricEnabled: true,
+  screenPrivacyEnabled: false,
+  soundEnabled: false,
+  quietHoursEnabled: false,
+  quietHoursStart: const LocalTime(22, 0),
+  quietHoursEnd: const LocalTime(7, 0),
+  seasonalAccentsEnabled: seasonalAccentsEnabled,
+);
 
 void main() {
   test(

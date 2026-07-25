@@ -31,8 +31,8 @@ class RecapRepository {
 
   /// Marks a recap as dismissed.
   Future<void> dismiss(String id) async {
-    await (_db.update(_db.recapsTable)
-          ..where((t) => t.id.equals(id)))
-        .write(const RecapsTableCompanion(dismissed: Value(true)));
+    await (_db.update(_db.recapsTable)..where((t) => t.id.equals(id))).write(
+      const RecapsTableCompanion(dismissed: Value(true)),
+    );
   }
 }

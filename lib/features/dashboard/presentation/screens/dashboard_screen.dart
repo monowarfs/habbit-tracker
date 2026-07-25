@@ -18,7 +18,6 @@ import 'package:habit_tracker/features/dashboard/presentation/search/app_search_
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
-
 /// The dashboard tab. Shows an empty state until a module is enabled;
 /// otherwise every enabled module's summary card, a day-completion
 /// indicator, an upcoming-items strip, and a quick-actions row (FR-C-11).

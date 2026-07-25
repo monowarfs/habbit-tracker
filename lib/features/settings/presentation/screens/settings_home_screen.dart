@@ -198,7 +198,11 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           const Divider(),
           _SectionHeader(l10n.settingsModules),
-          _ModuleToggleTile(moduleId: 'water', label: l10n.navWater, locked: true),
+          _ModuleToggleTile(
+            moduleId: 'water',
+            label: l10n.navWater,
+            locked: true,
+          ),
           _ModuleToggleTile(moduleId: 'medicine', label: l10n.navMedicine),
           _ModuleToggleTile(moduleId: 'prayer', label: l10n.navPrayer),
           const Divider(),
@@ -247,8 +251,7 @@ class _ModuleToggleTile extends ConsumerStatefulWidget {
   final bool locked;
 
   @override
-  ConsumerState<_ModuleToggleTile> createState() =>
-      _ModuleToggleTileState();
+  ConsumerState<_ModuleToggleTile> createState() => _ModuleToggleTileState();
 }
 
 class _ModuleToggleTileState extends ConsumerState<_ModuleToggleTile> {

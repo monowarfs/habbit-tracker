@@ -23,7 +23,8 @@ class PauseRepository {
     return (_db.select(_db.pauseRangesTable)
           ..where(
             (t) =>
-                t.moduleId.equals(moduleId) & t.endDate.isBiggerOrEqualValue(today),
+                t.moduleId.equals(moduleId) &
+                t.endDate.isBiggerOrEqualValue(today),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.startDate)]))
         .get();
@@ -38,16 +39,15 @@ class PauseRepository {
   }) async {
     final startIso = start.toIso();
     final endIso = end.toIso();
-    return (_db.select(_db.pauseRangesTable)
-          ..where(
-            (t) =>
-                t.moduleId.equals(moduleId) &
-                t.startDate.isSmallerOrEqualValue(endIso) &
-                t.endDate.isBiggerOrEqualValue(startIso) &
-                (excludeId != null
-                    ? t.id.isNotValue(excludeId)
-                    : const Constant(true)),
-          ))
+    return (_db.select(_db.pauseRangesTable)..where(
+          (t) =>
+              t.moduleId.equals(moduleId) &
+              t.startDate.isSmallerOrEqualValue(endIso) &
+              t.endDate.isBiggerOrEqualValue(startIso) &
+              (excludeId != null
+                  ? t.id.isNotValue(excludeId)
+                  : const Constant(true)),
+        ))
         .get();
   }
 
@@ -58,15 +58,15 @@ class PauseRepository {
 
   /// Cancels/deletes a pause by id.
   Future<void> cancel(String id) async {
-    await (_db.delete(_db.pauseRangesTable)
-          ..where((t) => t.id.equals(id)))
-        .go();
+    await (_db.delete(
+      _db.pauseRangesTable,
+    )..where((t) => t.id.equals(id))).go();
   }
 
   /// All pauses across all modules.
   Future<List<PauseRangeRow>> all() async {
-    return (_db.select(_db.pauseRangesTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.startDate)]))
-        .get();
+    return (_db.select(
+      _db.pauseRangesTable,
+    )..orderBy([(t) => OrderingTerm.desc(t.startDate)])).get();
   }
 }

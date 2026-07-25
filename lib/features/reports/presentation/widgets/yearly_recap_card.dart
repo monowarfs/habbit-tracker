@@ -107,48 +107,60 @@ class YearlyRecapCard extends StatelessWidget {
     final stats = <Widget>[];
 
     if (moduleStats.averageDailyMl != null) {
-      stats.add(_StatRow(
-        label: l10n.recapAverageDailyLabel,
-        value: '${moduleStats.averageDailyMl!.toStringAsFixed(0)} ml',
-      ));
+      stats.add(
+        _StatRow(
+          label: l10n.recapAverageDailyLabel,
+          value: '${moduleStats.averageDailyMl!.toStringAsFixed(0)} ml',
+        ),
+      );
     }
     if (moduleStats.daysGoalMet != null) {
-      stats.add(_StatRow(
-        label: l10n.recapDaysGoalMetLabel,
-        value: l10n.recapDaysGoalMet(moduleStats.daysGoalMet!),
-      ));
+      stats.add(
+        _StatRow(
+          label: l10n.recapDaysGoalMetLabel,
+          value: l10n.recapDaysGoalMet(moduleStats.daysGoalMet!),
+        ),
+      );
     }
     if (moduleStats.adherencePercent != null) {
-      stats.add(_StatRow(
-        label: l10n.recapAdherenceLabel,
-        value: l10n.recapAdherencePercent(
-          moduleStats.adherencePercent!.round(),
+      stats.add(
+        _StatRow(
+          label: l10n.recapAdherenceLabel,
+          value: l10n.recapAdherencePercent(
+            moduleStats.adherencePercent!.round(),
+          ),
         ),
-      ));
+      );
     }
     if (moduleStats.onTimePercent != null) {
-      stats.add(_StatRow(
-        label: l10n.recapOnTimeLabel,
-        value: l10n.recapOnTimePercent(
-          moduleStats.onTimePercent!.round(),
+      stats.add(
+        _StatRow(
+          label: l10n.recapOnTimeLabel,
+          value: l10n.recapOnTimePercent(
+            moduleStats.onTimePercent!.round(),
+          ),
         ),
-      ));
+      );
     }
     if (moduleStats.longestStreakAll != null &&
         moduleStats.longestStreakAll! > 0) {
-      stats.add(_StatRow(
-        label: l10n.recapLongestStreakLabel,
-        value: l10n.recapLongestStreak(moduleStats.longestStreakAll!),
-      ));
+      stats.add(
+        _StatRow(
+          label: l10n.recapLongestStreakLabel,
+          value: l10n.recapLongestStreak(moduleStats.longestStreakAll!),
+        ),
+      );
     }
     if (moduleStats.monthsActive != null && moduleStats.monthsTotal != null) {
-      stats.add(_StatRow(
-        label: l10n.recapMonthsActiveLabel,
-        value: l10n.recapMonthsActive(
-          moduleStats.monthsActive!,
-          moduleStats.monthsTotal!,
+      stats.add(
+        _StatRow(
+          label: l10n.recapMonthsActiveLabel,
+          value: l10n.recapMonthsActive(
+            moduleStats.monthsActive!,
+            moduleStats.monthsTotal!,
+          ),
         ),
-      ));
+      );
     }
 
     return stats;

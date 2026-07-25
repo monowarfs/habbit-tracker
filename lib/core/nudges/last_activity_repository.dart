@@ -11,22 +11,28 @@ class LastActivityRepository {
   /// Returns the most recent write timestamp across water_logs,
   /// medicine_doses, and prayer_records, or null if all tables are empty.
   Future<DateTime?> mostRecentActivity() async {
-    final waterResult = await _db.customSelect(
-      'SELECT MAX(created_at) AS latest FROM water_logs '
-      'WHERE created_at IS NOT NULL',
-    ).getSingleOrNull();
+    final waterResult = await _db
+        .customSelect(
+          'SELECT MAX(created_at) AS latest FROM water_logs '
+          'WHERE created_at IS NOT NULL',
+        )
+        .getSingleOrNull();
     final waterLatest = waterResult?.data['latest'] as int?;
 
-    final medicineResult = await _db.customSelect(
-      'SELECT MAX(created_at) AS latest FROM medicine_doses '
-      'WHERE created_at IS NOT NULL',
-    ).getSingleOrNull();
+    final medicineResult = await _db
+        .customSelect(
+          'SELECT MAX(created_at) AS latest FROM medicine_doses '
+          'WHERE created_at IS NOT NULL',
+        )
+        .getSingleOrNull();
     final medicineLatest = medicineResult?.data['latest'] as int?;
 
-    final prayerResult = await _db.customSelect(
-      'SELECT MAX(created_at) AS latest FROM prayer_records '
-      'WHERE created_at IS NOT NULL',
-    ).getSingleOrNull();
+    final prayerResult = await _db
+        .customSelect(
+          'SELECT MAX(created_at) AS latest FROM prayer_records '
+          'WHERE created_at IS NOT NULL',
+        )
+        .getSingleOrNull();
     final prayerLatest = prayerResult?.data['latest'] as int?;
 
     final candidates = <int>[

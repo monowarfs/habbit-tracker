@@ -679,9 +679,11 @@ class MedicineModule implements HabitModule {
     while (day.compareTo(yearRange.end) <= 0) {
       final dayDoses = dosesByDay[day] ?? const [];
       if (dayDoses.isNotEmpty &&
-          dayDoses.every((d) =>
-              d.storedStatus == MedicineDoseStatus.done ||
-              d.storedStatus == MedicineDoseStatus.skipped)) {
+          dayDoses.every(
+            (d) =>
+                d.storedStatus == MedicineDoseStatus.done ||
+                d.storedStatus == MedicineDoseStatus.skipped,
+          )) {
         running++;
         if (running > longest) longest = running;
       } else {

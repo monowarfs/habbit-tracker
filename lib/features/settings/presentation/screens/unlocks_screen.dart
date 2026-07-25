@@ -58,9 +58,7 @@ class UnlocksScreen extends ConsumerWidget {
               return Card(
                 child: ListTile(
                   leading: Icon(
-                    isUnlocked
-                        ? Icons.check_circle
-                        : Icons.lock_outline,
+                    isUnlocked ? Icons.check_circle : Icons.lock_outline,
                     color: isUnlocked
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.outline,
@@ -81,7 +79,7 @@ class UnlocksScreen extends ConsumerWidget {
                   trailing: isUnlocked
                       ? FilledButton.tonal(
                           onPressed: () {
-                            // TODO: Apply accent
+                            // TODO(nick): Apply accent color to theme
                           },
                           child: Text(l10n.unlockApply),
                         )

@@ -12,14 +12,14 @@ class ScreenPrivacyService {
     Future<void> Function()? protectDataLeakageOn,
     Future<void> Function()? preventScreenshotOff,
     Future<void> Function()? protectDataLeakageOff,
-  })  : _preventScreenshotOn =
-            preventScreenshotOn ?? ScreenProtector.preventScreenshotOn,
-        _protectDataLeakageOn =
-            protectDataLeakageOn ?? ScreenProtector.protectDataLeakageOn,
-        _preventScreenshotOff =
-            preventScreenshotOff ?? ScreenProtector.preventScreenshotOff,
-        _protectDataLeakageOff =
-            protectDataLeakageOff ?? ScreenProtector.protectDataLeakageOff;
+  }) : _preventScreenshotOn =
+           preventScreenshotOn ?? ScreenProtector.preventScreenshotOn,
+       _protectDataLeakageOn =
+           protectDataLeakageOn ?? ScreenProtector.protectDataLeakageOn,
+       _preventScreenshotOff =
+           preventScreenshotOff ?? ScreenProtector.preventScreenshotOff,
+       _protectDataLeakageOff =
+           protectDataLeakageOff ?? ScreenProtector.protectDataLeakageOff;
 
   final Future<void> Function() _preventScreenshotOn;
   final Future<void> Function() _protectDataLeakageOn;

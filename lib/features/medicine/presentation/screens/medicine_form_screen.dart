@@ -306,9 +306,7 @@ class _ScheduleStep extends StatelessWidget {
 
   Future<void> _pickTime(BuildContext context) async {
     final current = _currentTimes();
-    final initial = current.isNotEmpty
-        ? current.first
-        : const LocalTime(20, 0);
+    final initial = current.isNotEmpty ? current.first : const LocalTime(20, 0);
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(
@@ -324,16 +322,14 @@ class _ScheduleStep extends StatelessWidget {
 
   RepeatRule _ruleWithTimes(List<LocalTime> times) => switch (rule) {
     FixedDailyRule() => RepeatRule.fixedDaily(timesOfDay: times),
-    EveryNDaysRule(:final intervalDays) =>
-      RepeatRule.everyNDays(
-        intervalDays: intervalDays,
-        timesOfDay: times,
-      ),
-    WeekdaySetRule(:final weekdaysMask) =>
-      RepeatRule.weekdaySet(
-        weekdaysMask: weekdaysMask,
-        timesOfDay: times,
-      ),
+    EveryNDaysRule(:final intervalDays) => RepeatRule.everyNDays(
+      intervalDays: intervalDays,
+      timesOfDay: times,
+    ),
+    WeekdaySetRule(:final weekdaysMask) => RepeatRule.weekdaySet(
+      weekdaysMask: weekdaysMask,
+      timesOfDay: times,
+    ),
     PrnRule() => rule,
   };
 
@@ -349,12 +345,12 @@ class _ScheduleStep extends StatelessWidget {
     };
     final timeLabel = times.isNotEmpty
         ? times
-            .map(
-              (t) =>
-                  '${t.hour.toString().padLeft(2, '0')}:'
-                  '${t.minute.toString().padLeft(2, '0')}',
-            )
-            .join(', ')
+              .map(
+                (t) =>
+                    '${t.hour.toString().padLeft(2, '0')}:'
+                    '${t.minute.toString().padLeft(2, '0')}',
+              )
+              .join(', ')
         : '—';
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -452,7 +448,8 @@ class _ScheduleStep extends StatelessWidget {
               ),
               _DurationChip(
                 label: l10n.medicineFormDurationCustom,
-                selected: durationDays != null &&
+                selected:
+                    durationDays != null &&
                     ![7, 15, 30, 90].contains(durationDays),
                 onTap: () => _pickEndDate(context),
               ),

@@ -133,8 +133,7 @@ GoRouter buildAppRouter(
           ),
           GoRoute(
             path: 'complete',
-            builder: (context, state) =>
-                const OnboardingCompleteScreen(),
+            builder: (context, state) => const OnboardingCompleteScreen(),
           ),
         ],
       ),

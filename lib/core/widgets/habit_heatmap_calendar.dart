@@ -178,8 +178,9 @@ class HabitHeatmapCalendar extends StatelessWidget {
                     shape: useSquareCells
                         ? BoxShape.rectangle
                         : BoxShape.circle,
-                    borderRadius:
-                        useSquareCells ? BorderRadius.circular(3) : null,
+                    borderRadius: useSquareCells
+                        ? BorderRadius.circular(3)
+                        : null,
                     border: isToday
                         ? Border.all(
                             color: Theme.of(context).colorScheme.primary,

@@ -161,11 +161,13 @@ class _CreatePauseScreenState extends ConsumerState<CreatePauseScreen> {
       return;
     }
 
-    await ref.read(pauseServiceProvider).createPause(
-      moduleId: widget.moduleId,
-      startDate: _startDate,
-      endDate: _endDate,
-    );
+    await ref
+        .read(pauseServiceProvider)
+        .createPause(
+          moduleId: widget.moduleId,
+          startDate: _startDate,
+          endDate: _endDate,
+        );
     if (context.mounted) Navigator.of(context).pop();
   }
 }

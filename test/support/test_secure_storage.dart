@@ -1,6 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:habit_tracker/core/security/pin_lock_controller.dart' show PinLockController;
-import 'package:habit_tracker/core/security/pin_lock_service.dart' show PinLockService;
+import 'package:habit_tracker/core/security/pin_lock_controller.dart'
+    show PinLockController;
+import 'package:habit_tracker/core/security/pin_lock_service.dart'
+    show PinLockService;
 
 /// A trivial in-memory [FlutterSecureStorage] fake — avoids the real
 /// platform channel entirely, shared by every test that needs a real

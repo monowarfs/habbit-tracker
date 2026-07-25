@@ -117,8 +117,7 @@ class AppSettingsTable extends Table {
   IntColumn get lastRecapYear => integer().withDefault(const Constant(0))();
 
   /// Whether the yearly recap feature is enabled. Default `true`.
-  BoolColumn get recapEnabled =>
-      boolean().withDefault(const Constant(true))();
+  BoolColumn get recapEnabled => boolean().withDefault(const Constant(true))();
 
   /// UTC epoch millis of the user's most recent module write activity
   /// (any module, any action). Used by the re-engagement nudge to detect

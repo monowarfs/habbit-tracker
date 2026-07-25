@@ -26,7 +26,8 @@ void main() {
       final bytes =
           await tester.runAsync(
             () => RecapCardCapture.capturePng(pixelRatio: 1),
-          ) ?? Uint8List(0);
+          ) ??
+          Uint8List(0);
 
       expect(bytes, isNotEmpty);
       // The 8-byte PNG file signature — proves this is real,

@@ -84,10 +84,12 @@ class PauseService {
       final pauseStart = LocalDate.parse(pause.startDate);
       final pauseEnd = LocalDate.parse(pause.endDate);
       // Clamp to the requested range.
-      final effectiveStart =
-          pauseStart.compareTo(range.start) < 0 ? range.start : pauseStart;
-      final effectiveEnd =
-          pauseEnd.compareTo(range.end) > 0 ? range.end : pauseEnd;
+      final effectiveStart = pauseStart.compareTo(range.start) < 0
+          ? range.start
+          : pauseStart;
+      final effectiveEnd = pauseEnd.compareTo(range.end) > 0
+          ? range.end
+          : pauseEnd;
       var day = effectiveStart;
       while (day.compareTo(effectiveEnd) <= 0) {
         pausedDays.add(day);

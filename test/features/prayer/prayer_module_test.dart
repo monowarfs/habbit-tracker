@@ -164,7 +164,7 @@ void main() {
             pinLockTimeoutSeconds: 0,
             biometricEnabled: true,
             screenPrivacyEnabled: false,
-      soundEnabled: false,
+            soundEnabled: false,
             quietHoursEnabled: false,
             quietHoursStart: LocalTime(22, 0),
             quietHoursEnd: LocalTime(7, 0),
@@ -178,12 +178,15 @@ void main() {
         settingsRepository: settingsRepo,
       );
 
-      when(() => repo.watchSettings())
-          .thenAnswer((_) => Stream.value(settings));
-      when(() => repo.sweepMissedPrayers(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.materializeRecords(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => repo.watchSettings(),
+      ).thenAnswer((_) => Stream.value(settings));
+      when(
+        () => repo.sweepMissedPrayers(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.materializeRecords(any(), any()),
+      ).thenAnswer((_) async {});
       when(
         () => repo.recordsInRange(any(), any()),
       ).thenAnswer((_) async => [fajr, maghrib]);
@@ -431,14 +434,18 @@ void main() {
         scheduledFor: DateTime.utc(2026, 6, 1, 8),
         storedStatus: PrayerStatus.upcoming,
       );
-      when(() => repo.watchSettings())
-          .thenAnswer((_) => Stream.value(settings));
-      when(() => repo.sweepMissedPrayers(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.materializeRecords(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.recordsInRange(any(), any()))
-          .thenAnswer((_) async => [record]);
+      when(
+        () => repo.watchSettings(),
+      ).thenAnswer((_) => Stream.value(settings));
+      when(
+        () => repo.sweepMissedPrayers(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.materializeRecords(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.recordsInRange(any(), any()),
+      ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {
         final summary = await module.widgetSummary();
@@ -448,45 +455,53 @@ void main() {
       });
     });
 
-    test('after Isha, returns tomorrow Fajr scheduledFor (midnight rollover)',
-        () async {
-      final now = DateTime.utc(2026, 6, 1, 22); // after Isha
-      final todayRecord = PrayerRecord(
-        id: 'r-today',
-        prayerDate: const LocalDate(2026, 6, 1),
-        prayerName: PrayerName.isha,
-        scheduledFor: DateTime.utc(2026, 6, 1, 20),
-        storedStatus: PrayerStatus.prayed,
-      );
-      final tomorrowRecord = PrayerRecord(
-        id: 'r-tomorrow',
-        prayerDate: const LocalDate(2026, 6, 2),
-        prayerName: PrayerName.fajr,
-        scheduledFor: DateTime.utc(2026, 6, 2, 5),
-        storedStatus: PrayerStatus.upcoming,
-      );
-      when(() => repo.watchSettings())
-          .thenAnswer((_) => Stream.value(settings));
-      when(() => repo.sweepMissedPrayers(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.materializeRecords(any(), any()))
-          .thenAnswer((_) async {});
-      // First call (today only) returns only Isha (prayed)
-      // Second call (today+tomorrow) returns both records.
-      var callCount = 0;
-      when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async {
-        callCount++;
-        if (callCount == 1) return [todayRecord];
-        return [todayRecord, tomorrowRecord];
-      });
+    test(
+      'after Isha, returns tomorrow Fajr scheduledFor (midnight rollover)',
+      () async {
+        final now = DateTime.utc(2026, 6, 1, 22); // after Isha
+        final todayRecord = PrayerRecord(
+          id: 'r-today',
+          prayerDate: const LocalDate(2026, 6, 1),
+          prayerName: PrayerName.isha,
+          scheduledFor: DateTime.utc(2026, 6, 1, 20),
+          storedStatus: PrayerStatus.prayed,
+        );
+        final tomorrowRecord = PrayerRecord(
+          id: 'r-tomorrow',
+          prayerDate: const LocalDate(2026, 6, 2),
+          prayerName: PrayerName.fajr,
+          scheduledFor: DateTime.utc(2026, 6, 2, 5),
+          storedStatus: PrayerStatus.upcoming,
+        );
+        when(
+          () => repo.watchSettings(),
+        ).thenAnswer((_) => Stream.value(settings));
+        when(
+          () => repo.sweepMissedPrayers(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => repo.materializeRecords(any(), any()),
+        ).thenAnswer((_) async {});
+        // First call (today only) returns only Isha (prayed)
+        // Second call (today+tomorrow) returns both records.
+        var callCount = 0;
+        when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) return [todayRecord];
+          return [todayRecord, tomorrowRecord];
+        });
 
-      await withClock(Clock.fixed(now), () async {
-        final summary = await module.widgetSummary();
-        expect(summary, isNotNull);
-        expect(summary!.countdownTargetAt, equals(tomorrowRecord.scheduledFor));
-        expect(summary.headline, contains('Fajr'));
-      });
-    });
+        await withClock(Clock.fixed(now), () async {
+          final summary = await module.widgetSummary();
+          expect(summary, isNotNull);
+          expect(
+            summary!.countdownTargetAt,
+            equals(tomorrowRecord.scheduledFor),
+          );
+          expect(summary.headline, contains('Fajr'));
+        });
+      },
+    );
 
     test('returns null when all prayers done', () async {
       final now = DateTime.utc(2026, 6, 1, 7);
@@ -497,14 +512,18 @@ void main() {
         scheduledFor: DateTime.utc(2026, 6, 1, 5),
         storedStatus: PrayerStatus.prayed,
       );
-      when(() => repo.watchSettings())
-          .thenAnswer((_) => Stream.value(settings));
-      when(() => repo.sweepMissedPrayers(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.materializeRecords(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => repo.recordsInRange(any(), any()))
-          .thenAnswer((_) async => [record]);
+      when(
+        () => repo.watchSettings(),
+      ).thenAnswer((_) => Stream.value(settings));
+      when(
+        () => repo.sweepMissedPrayers(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.materializeRecords(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.recordsInRange(any(), any()),
+      ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {
         final summary = await module.widgetSummary();

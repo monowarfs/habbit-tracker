@@ -116,6 +116,19 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - Progress evaluated from each module's own data
 - Achievement gallery screen
 - **Streak celebration overlay** — brief confetti animation on streak milestones (7/30/100-day), respects reduced motion
+- **Anniversary badges** — 1-year and 2-year tenure milestones (auto-evaluated on app resume)
+
+### Retention & Long-Term Engagement
+
+- **Yearly "Wrapped" Recap** — end-of-year story cards showing per-module stats (Water total, Medicine adherence, Prayer on-time %, longest streaks), triggered on 365-day install anniversary
+- **Re-engagement Nudge** — gentle notification after 7 days of inactivity, dashboard banner fallback when notifications are disabled
+- **Archive/Revive** — archive Water goals and Medicine schedules you're not actively tracking, revive them later
+- **Life-Event Pause** — pause a module for a date range (travel, illness) — paused days excluded from streaks and dayStatus
+- **Quarterly Goal Recalibration** — periodic prompt asking "Is your goal still right?" with fatigue backoff
+- **Progressive Onboarding** — new users choose which modules to enable, with Water as the recommended default
+- **Data Privacy Reassurance** — card in Data settings confirming data stays on-device
+- **Data Longevity Guarantee** — card confirming data is never pruned, with notification ledger 90-day FIFO cleanup
+- **Cosmetic Rewards** — "Midnight" theme accent unlocked after 2 years of use
 
 ### Responsive Layout
 
@@ -135,15 +148,21 @@ Feature-first, Clean Architecture (`domain` / `data` / `presentation`) per modul
 ```
 lib/
 ├── core/                        # Shared infrastructure
-│   ├── achievements/            # Achievement engine + repository
+│   ├── achievements/            # Achievement engine + repository + tenure evaluator
 │   ├── audio/                   # ChimePlayer (dose-done sound)
+│   ├── backup/                  # Export/import orchestrator
 │   ├── changelog/               # What's New data + presentation
-│   ├── database/                # Drift database, tables, migrations
+│   ├── cosmetics/               # Cosmetic unlock engine + repository
+│   ├── database/                # Drift database, tables, migrations (v17)
 │   ├── error/                   # AppException / Result<T> taxonomy
 │   ├── l10n/                    # ARB files (en/bn), generated localizations
 │   ├── logging/                 # Rotating-file logger
-│   ├── modules/                 # HabitModule contract + registry
+│   ├── modules/                 # HabitModule contract + registry + module settings
 │   ├── notifications/           # Reminder engine, planner, ledger, actions
+│   ├── nudges/                  # Re-engagement nudge (trigger, builder, lifecycle)
+│   ├── pauses/                  # Life-event pause (repository, service, UI)
+│   ├── recalibration/           # Quarterly goal recalibration (trigger, service, card)
+│   ├── recaps/                  # Yearly wrapped recap (generator, trigger, providers)
 │   ├── reports/                 # Aggregate reports + streaks
 │   ├── router/                  # GoRouter config + route constants
 │   ├── security/                # PIN lock, biometrics, screen privacy
@@ -156,8 +175,9 @@ lib/
 ├── features/
 │   ├── dashboard/               # Dashboard screen + greeting + stacking suggestions
 │   ├── medicine/                # Medicine module (domain/data/presentation)
+│   ├── onboarding/              # Progressive module unlock onboarding flow
 │   ├── prayer/                  # Prayer module + Ramadan framing
-│   ├── reports/                 # Reports screen + shareable recap card
+│   ├── reports/                 # Reports screen + yearly recap + shareable card
 │   ├── settings/                # Settings (domain/data/presentation)
 │   └── water/                   # Water module + weather client
 └── main.dart                    # Entry point, ProviderContainer, lifecycle hooks

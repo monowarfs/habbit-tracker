@@ -242,8 +242,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           adaptiveReminderEnabled: Value(settings.adaptiveReminderEnabled),
           recapEnabled: Value(settings.recapEnabled),
           reengagementNudgeEnabled: Value(settings.reengagementNudgeEnabled),
-          recalibrationPromptsEnabled:
-              Value(settings.recalibrationPromptsEnabled),
+          recalibrationPromptsEnabled: Value(
+            settings.recalibrationPromptsEnabled,
+          ),
 
           updatedAt: Value(now),
         ),

@@ -72,40 +72,49 @@ class YearRecapGeneratorUseCase {
       'yearNumber': summary.yearNumber,
       'installDate': summary.installDate.toIso(),
       'activeDays': summary.activeDays,
-      'modules': summary.modules.map((m) => {
-        'moduleId': m.moduleId,
-        'displayName': m.displayName,
-        'accentColorValue': m.accentColorValue,
-        if (m.totalMl != null) 'totalMl': m.totalMl,
-        if (m.averageDailyMl != null) 'averageDailyMl': m.averageDailyMl,
-        if (m.daysGoalMet != null) 'daysGoalMet': m.daysGoalMet,
-        if (m.totalDoses != null) 'totalDoses': m.totalDoses,
-        if (m.dosesTaken != null) 'dosesTaken': m.dosesTaken,
-        if (m.adherencePercent != null) 'adherencePercent': m.adherencePercent,
-        if (m.longestConsecutiveStreak != null)
-          'longestConsecutiveStreak': m.longestConsecutiveStreak,
-        if (m.totalPrayers != null) 'totalPrayers': m.totalPrayers,
-        if (m.prayersCompleted != null) 'prayersCompleted': m.prayersCompleted,
-        if (m.onTimePercent != null) 'onTimePercent': m.onTimePercent,
-        if (m.longestStreak != null) 'longestStreak': m.longestStreak,
-        if (m.longestStreakAll != null) 'longestStreakAll': m.longestStreakAll,
-        if (m.bestDayValue != null) 'bestDayValue': m.bestDayValue,
-        if (m.monthsActive != null) 'monthsActive': m.monthsActive,
-        if (m.monthsTotal != null) 'monthsTotal': m.monthsTotal,
-      }).toList(),
+      'modules': summary.modules
+          .map(
+            (m) => {
+              'moduleId': m.moduleId,
+              'displayName': m.displayName,
+              'accentColorValue': m.accentColorValue,
+              if (m.totalMl != null) 'totalMl': m.totalMl,
+              if (m.averageDailyMl != null) 'averageDailyMl': m.averageDailyMl,
+              if (m.daysGoalMet != null) 'daysGoalMet': m.daysGoalMet,
+              if (m.totalDoses != null) 'totalDoses': m.totalDoses,
+              if (m.dosesTaken != null) 'dosesTaken': m.dosesTaken,
+              if (m.adherencePercent != null)
+                'adherencePercent': m.adherencePercent,
+              if (m.longestConsecutiveStreak != null)
+                'longestConsecutiveStreak': m.longestConsecutiveStreak,
+              if (m.totalPrayers != null) 'totalPrayers': m.totalPrayers,
+              if (m.prayersCompleted != null)
+                'prayersCompleted': m.prayersCompleted,
+              if (m.onTimePercent != null) 'onTimePercent': m.onTimePercent,
+              if (m.longestStreak != null) 'longestStreak': m.longestStreak,
+              if (m.longestStreakAll != null)
+                'longestStreakAll': m.longestStreakAll,
+              if (m.bestDayValue != null) 'bestDayValue': m.bestDayValue,
+              if (m.monthsActive != null) 'monthsActive': m.monthsActive,
+              if (m.monthsTotal != null) 'monthsTotal': m.monthsTotal,
+            },
+          )
+          .toList(),
     });
 
     // Store the recap.
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await db.into(db.recapsTable).insertOnConflictUpdate(
-      RecapsTableCompanion.insert(
-        id: 'year_$yearNumber',
-        yearNumber: yearNumber,
-        installYear: installLocal.year,
-        generatedAt: now,
-        summaryJson: summaryJson,
-      ),
-    );
+    await db
+        .into(db.recapsTable)
+        .insertOnConflictUpdate(
+          RecapsTableCompanion.insert(
+            id: 'year_$yearNumber',
+            yearNumber: yearNumber,
+            installYear: installLocal.year,
+            generatedAt: now,
+            summaryJson: summaryJson,
+          ),
+        );
 
     // Update lastRecapYear in settings.
     await settingsRepository.updateLastRecapYear(yearNumber);

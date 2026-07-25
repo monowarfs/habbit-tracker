@@ -88,7 +88,6 @@ class _FakeSettingsRepo implements SettingsRepository {
     required bool enabled,
   }) => Future.value(const Result.success(null));
 
-
   @override
   Future<Result<void>> updateDisplayName(String? name) =>
       Future.value(const Result.success(null));
@@ -151,7 +150,7 @@ const _initial = AppSettings(
   pinLockTimeoutSeconds: 0,
   biometricEnabled: true,
   screenPrivacyEnabled: false,
-      soundEnabled: false,
+  soundEnabled: false,
   quietHoursEnabled: false,
   quietHoursStart: LocalTime(22, 0),
   quietHoursEnd: LocalTime(7, 0),

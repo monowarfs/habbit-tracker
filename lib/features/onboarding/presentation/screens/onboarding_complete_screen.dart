@@ -48,12 +48,14 @@ class OnboardingCompleteScreen extends ConsumerWidget {
                   // Mark onboarding as completed.
                   final db = ref.read(databaseProvider);
                   final now = DateTime.now().toUtc().millisecondsSinceEpoch;
-                  await (db.update(db.onboardingProgressTable)
-                        ..where((t) => t.id.equals('singleton')))
-                      .write(OnboardingProgressTableCompanion(
-                    completed: Value(true),
-                    completedAt: Value(now),
-                  ));
+                  await (db.update(
+                    db.onboardingProgressTable,
+                  )..where((t) => t.id.equals('singleton'))).write(
+                    OnboardingProgressTableCompanion(
+                      completed: Value(true),
+                      completedAt: Value(now),
+                    ),
+                  );
                   if (context.mounted) {
                     context.go('/');
                   }

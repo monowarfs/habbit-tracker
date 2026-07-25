@@ -18,16 +18,17 @@ void main() {
     test(
       'disable calls preventScreenshotOff and protectDataLeakageOff',
       () async {
-      final calls = <String>[];
-      final service = ScreenPrivacyService(
-        preventScreenshotOff: () async => calls.add('screenshotOff'),
-        protectDataLeakageOff: () async => calls.add('leakageOff'),
-      );
+        final calls = <String>[];
+        final service = ScreenPrivacyService(
+          preventScreenshotOff: () async => calls.add('screenshotOff'),
+          protectDataLeakageOff: () async => calls.add('leakageOff'),
+        );
 
-      await service.disable();
+        await service.disable();
 
-      expect(calls, ['screenshotOff', 'leakageOff']);
-    });
+        expect(calls, ['screenshotOff', 'leakageOff']);
+      },
+    );
 
     test('enable and disable are independent', () async {
       final calls = <String>[];

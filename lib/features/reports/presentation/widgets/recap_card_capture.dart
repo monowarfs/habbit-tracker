@@ -25,8 +25,9 @@ class RecapCardCapture extends StatelessWidget {
   /// .addPostFrameCallback`, or from a button's `onPressed`, which
   /// always runs after layout).
   static Future<Uint8List> capturePng({double pixelRatio = 3}) async {
-    final boundary = _boundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary =
+        _boundaryKey.currentContext!.findRenderObject()!
+            as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: pixelRatio);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     return bytes!.buffer.asUint8List();
