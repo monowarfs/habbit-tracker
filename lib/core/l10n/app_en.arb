@@ -658,6 +658,29 @@
   "@notificationReliabilityExactAlarmBanner": {
     "description": "Banner shown when exact-alarm permission isn't granted."
   },
+  "notificationEffectivenessTitle": "Reminder Effectiveness",
+  "@notificationEffectivenessTitle": {
+    "description": "Section header for the per-module reminder-effectiveness stats on the notification settings screen."
+  },
+  "notificationEffectivenessRate": "{percent}% effective",
+  "@notificationEffectivenessRate": {
+    "description": "A module's reminder effectiveness rate as a percentage.",
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "notificationEffectivenessDescription": "Reminders led to action {acted} out of {total} times in the last 90 days.",
+  "@notificationEffectivenessDescription": {
+    "description": "Explains the acted/total counts behind a module's effectiveness rate.",
+    "placeholders": {
+      "acted": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "notificationEffectivenessEmpty": "No reminder data yet",
+  "@notificationEffectivenessEmpty": {
+    "description": "Shown for a module with no fired reminders in the last 90 days."
+  },
   "prayerHomeTitle": "Prayer",
   "@prayerHomeTitle": {"description": "Title of the prayer checklist screen."},
   "prayerHomeHistoryButton": "History",
