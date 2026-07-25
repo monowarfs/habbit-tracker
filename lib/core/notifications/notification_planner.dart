@@ -211,4 +211,7 @@ Future<void> planAndApplyNotifications({
       snoozeCount: 0,
     );
   }
+
+  // Bound notification_ledger growth: evict entries older than 90 days.
+  await ledger.cleanupOlderThan(const Duration(days: 90));
 }

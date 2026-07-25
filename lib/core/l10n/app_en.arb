@@ -1648,6 +1648,18 @@
   "@dataPrivacyReassuranceBody": {
     "description": "Body text of the data privacy reassurance card."
   },
+  "dataLongevityGuaranteeTitle": "Your data is never pruned",
+  "@dataLongevityGuaranteeTitle": {
+    "description": "Title of the data longevity guarantee card."
+  },
+  "dataLongevityGuaranteeBody": "Your habit history, logs, and settings are permanently stored on your device. App updates never delete or cap your data.",
+  "@dataLongevityGuaranteeBody": {
+    "description": "Body text of the data longevity guarantee card."
+  },
+  "dataLongevityGuaranteeMedicineCaveat": "Your dose history is always saved. Short-term forecasts of upcoming doses are regenerated as needed — these are not your history.",
+  "@dataLongevityGuaranteeMedicineCaveat": {
+    "description": "Medicine caveat on the data longevity guarantee card."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 
