@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -188,6 +188,12 @@ class AppDatabase extends _$AppDatabase {
         await customUpdate(
           'UPDATE app_settings SET install_date = created_at '
           'WHERE install_date IS NULL',
+        );
+      }
+      if (from < 11) {
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.reengagementNudgeEnabled,
         );
       }
       // Seam: when schemaVersion increments further, add

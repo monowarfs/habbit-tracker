@@ -107,6 +107,23 @@ class SettingsHomeScreen extends ConsumerWidget {
                   .updateAdaptiveReminderEnabled(enabled: value),
             ),
           ),
+          Semantics(
+            label: l10n.reengagementSettingsLabel,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.waving_hand_outlined),
+              title: Text(l10n.reengagementSettingsLabel),
+              subtitle: Text(l10n.reengagementSettingsDescription),
+              value:
+                  ref
+                      .watch(appSettingsProvider)
+                      .value
+                      ?.reengagementNudgeEnabled ??
+                  true,
+              onChanged: (value) => ref
+                  .read(settingsRepositoryProvider)
+                  .updateReengagementNudgeEnabled(enabled: value),
+            ),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsSound),
           SwitchListTile(

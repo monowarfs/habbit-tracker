@@ -201,6 +201,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateReengagementNudgeEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(reengagementNudgeEnabled: Value(enabled)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -227,6 +234,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ramadanAutoDetectEnabled: Value(settings.ramadanAutoDetectEnabled),
           adaptiveReminderEnabled: Value(settings.adaptiveReminderEnabled),
           recapEnabled: Value(settings.recapEnabled),
+          reengagementNudgeEnabled: Value(settings.reengagementNudgeEnabled),
 
           updatedAt: Value(now),
         ),
@@ -297,6 +305,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
             isUtc: true,
           ),
     recapEnabled: row.recapEnabled,
+    reengagementNudgeEnabled: row.reengagementNudgeEnabled,
   );
 }
 

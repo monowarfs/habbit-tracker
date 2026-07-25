@@ -438,6 +438,13 @@
   "recapMonthsActiveLabel": "সক্রিয়",
   "recapDayStreak": "দিনের ধারাবাহিকতা",
   "recapModulesActive": "{count} মডিউল সক্রিয়",
-  "recapEncouragement": "ভালো কাজ চালিয়ে যান!"
+  "recapEncouragement": "ভালো কাজ চালিয়ে যান!",
+  "reengagementNudgeTitle": "আমরা আপনাকে মিস করেছি!",
+  "reengagementNudgeBody": "যেখানে ছেড়ে গেছেন সেখান থেকে শুরু করুন?",
+  "reengagementBannerTitle": "স্বাগতম!",
+  "reengagementBannerBody": "অনেক দিন হয়ে গেছে। শুরু করতে ট্যাপ করুন।",
+  "reengagementBannerDismiss": "বাতিল",
+  "reengagementSettingsLabel": "পুনঃসংযোগ রিমাইন্ডার",
+  "reengagementSettingsDescription": "এক সপ্তাহের নিষ্ক্রিয়তার পর একটি কোমল রিমাইন্ডার পান"
 
 }

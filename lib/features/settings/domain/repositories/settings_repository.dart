@@ -90,6 +90,9 @@ abstract class SettingsRepository {
   /// Records when a re-engagement nudge was last sent.
   Future<Result<void>> updateNudgeSentAfter(DateTime date);
 
+  /// Enables or disables the re-engagement nudge feature.
+  Future<Result<void>> updateReengagementNudgeEnabled({required bool enabled});
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB
