@@ -67,13 +67,15 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Stream<WaterGoal> watchCurrentGoal() {
+  Stream<WaterGoal?> watchCurrentGoal() {
     return Stream.fromFuture(_ensureGoalSeeded()).asyncExpand((_) {
       final query = _db.select(_db.waterGoalsTable)
         ..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull())
         ..orderBy([(t) => OrderingTerm.desc(t.effectiveFrom)])
         ..limit(1);
-      return query.watchSingle().map(_goalFromRow);
+      return query.watchSingleOrNull().map(
+        (row) => row == null ? null : _goalFromRow(row),
+      );
     });
   }
 

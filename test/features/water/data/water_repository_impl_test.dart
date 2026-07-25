@@ -20,7 +20,7 @@ void main() {
 
   test('seeds a 2000ml default goal on first read (FR-W-01)', () async {
     final goal = await repo.watchCurrentGoal().first;
-    expect(goal.goalMl, 2000);
+    expect(goal?.goalMl, 2000);
   });
 
   test('seeds default 250/500/750 quick-add presets on first read '
@@ -88,7 +88,7 @@ void main() {
 
     final all = await repo.allGoals();
     expect(all, hasLength(2)); // seeded default + the new one
-    expect((await repo.watchCurrentGoal().first).goalMl, 2500);
+    expect((await repo.watchCurrentGoal().first)?.goalMl, 2500);
   });
 
   test('updateQuickAddAmounts round-trips through watchSettings', () async {

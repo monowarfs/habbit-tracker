@@ -24,7 +24,7 @@ abstract class WaterRepository {
   Future<WaterEntry?> entryById(String id);
 
   /// Streams the current (latest) goal.
-  Stream<WaterGoal> watchCurrentGoal();
+  Stream<WaterGoal?> watchCurrentGoal();
 
   /// All goal-history rows, oldest first — the raw material
   /// `ResolveGoalForDateUseCase`/`CalculateWaterStreakUseCase` resolve

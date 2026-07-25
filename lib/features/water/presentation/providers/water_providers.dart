@@ -57,7 +57,7 @@ Stream<List<WaterEntry>> waterEntriesInRange(Ref ref, WaterDateRange range) {
 
 /// The current (latest) goal.
 @riverpod
-Stream<WaterGoal> currentWaterGoal(Ref ref) {
+Stream<WaterGoal?> currentWaterGoal(Ref ref) {
   return ref.watch(waterRepositoryProvider).watchCurrentGoal();
 }
 
