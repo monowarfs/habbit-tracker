@@ -1738,6 +1738,18 @@
   "@settingsModules": {
     "description": "Settings section header for module toggles."
   },
+  "settingsCommunity": "Community",
+  "@settingsCommunity": {
+    "description": "Settings section header for community features."
+  },
+  "communityJoinTitle": "Join Our Community",
+  "@communityJoinTitle": {
+    "description": "Title for the community join entry in Settings."
+  },
+  "communityJoinDescription": "Connect with other users",
+  "@communityJoinDescription": {
+    "description": "Description for the community join entry in Settings."
+  },
   "unlocksTitle": "Unlocks",
   "@unlocksTitle": {
     "description": "Title of the unlocks screen."
