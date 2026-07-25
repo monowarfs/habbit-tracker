@@ -9,13 +9,12 @@ import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
+import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
-import 'package:habit_tracker/features/settings/presentation/screens/unlocks_screen.dart';
-import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
-import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
-import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
@@ -25,6 +24,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/quiet_hours
 import 'package:habit_tracker/features/settings/presentation/screens/ramadan_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/unlocks_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_router.g.dart';

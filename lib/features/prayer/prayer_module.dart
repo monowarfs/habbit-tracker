@@ -592,8 +592,8 @@ class PrayerModule implements HabitModule {
     // Midnight rollover: if no pending today, widen to tomorrow.
     if (firstPending == null) {
       final tomorrow = today.addDays(1);
-      records = await _repository.recordsInRange(today, tomorrow);
-      records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+      records = await _repository.recordsInRange(today, tomorrow)
+        ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
       for (final record in records) {
         final cutoff = cutoffForPrayer(
           record: record,

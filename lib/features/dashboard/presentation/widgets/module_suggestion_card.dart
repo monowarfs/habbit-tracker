@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
@@ -20,7 +22,7 @@ class _ModuleSuggestionCardState extends ConsumerState<ModuleSuggestionCard> {
   @override
   void initState() {
     super.initState();
-    _checkSuggestion();
+    unawaited(_checkSuggestion());
   }
 
   Future<void> _checkSuggestion() async {
@@ -75,12 +77,12 @@ class _ModuleSuggestionCardState extends ConsumerState<ModuleSuggestionCard> {
             Row(
               children: [
                 FilledButton.tonal(
-                  onPressed: () => _enableModule(),
+                  onPressed: _enableModule,
                   child: Text(l10n.moduleSuggestionEnable(moduleLabel)),
                 ),
                 const SizedBox(width: 8),
                 TextButton(
-                  onPressed: () => _dismiss(),
+                  onPressed: _dismiss,
                   child: Text(l10n.moduleSuggestionDismiss),
                 ),
               ],

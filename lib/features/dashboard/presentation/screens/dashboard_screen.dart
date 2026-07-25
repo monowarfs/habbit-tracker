@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
-import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -16,6 +15,7 @@ import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;

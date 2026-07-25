@@ -21,7 +21,7 @@ void main() {
         monthAnchor: const LocalDate(2026, 7, 15),
         capturePng: ({pixelRatio = 3}) async => Uint8List.fromList([1, 2, 3]),
         getTemporaryDirectory: () async {
-          tempDir = await Directory.systemTemp.createTemp(
+          tempDir = Directory.systemTemp.createTempSync(
             'recap_share_test_',
           );
           return tempDir!;
@@ -31,7 +31,7 @@ void main() {
 
       expect(capturedParams, isNotNull);
       final file = File(capturedParams!.files!.single.path);
-      expect(await file.exists(), isTrue);
+      expect(file.existsSync(), isTrue);
       expect(await file.readAsBytes(), [1, 2, 3]);
       expect(p.basename(file.path), 'habit_tracker_recap_2026_07.png');
 

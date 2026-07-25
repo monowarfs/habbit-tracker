@@ -168,7 +168,8 @@ class _CreatePauseScreenState extends ConsumerState<CreatePauseScreen> {
           startDate: _startDate,
           endDate: _endDate,
         );
-    if (context.mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 }
 

@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_repository.dart';
-import 'package:habit_tracker/core/database/database_provider.dart';
 
 /// Module selection screen for the onboarding flow.
 class OnboardingModuleSelectionScreen extends ConsumerStatefulWidget {
@@ -100,11 +102,11 @@ class _OnboardingModuleSelectionScreenState
     for (final (id, enabled) in modules) {
       await repo.setEnabled(id, enabled: enabled);
     }
-    if (mounted) context.push('/onboarding/complete');
+    if (mounted) unawaited(context.push('/onboarding/complete'));
   }
 
   void _skip() {
-    context.push('/onboarding/complete');
+    unawaited(context.push('/onboarding/complete'));
   }
 }
 

@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/features/settings/presentation/widgets/data_longevity_guarantee_card.dart';
-import 'package:habit_tracker/features/settings/presentation/widgets/data_privacy_reassurance_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/backup/export_orchestrator.dart';
@@ -15,6 +13,8 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
+import 'package:habit_tracker/features/settings/presentation/widgets/data_longevity_guarantee_card.dart';
+import 'package:habit_tracker/features/settings/presentation/widgets/data_privacy_reassurance_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';

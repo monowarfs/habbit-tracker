@@ -52,7 +52,7 @@ class OnboardingCompleteScreen extends ConsumerWidget {
                     db.onboardingProgressTable,
                   )..where((t) => t.id.equals('singleton'))).write(
                     OnboardingProgressTableCompanion(
-                      completed: Value(true),
+                      completed: const Value(true),
                       completedAt: Value(now),
                     ),
                   );

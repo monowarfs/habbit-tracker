@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/pauses/pause_service.dart';
+import 'package:habit_tracker/core/pauses/presentation/create_pause_screen.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -28,9 +29,8 @@ import 'package:habit_tracker/features/water/domain/usecases/calculate_water_str
 import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_date.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
-import 'package:habit_tracker/features/water/presentation/screens/water_add_entry_screen.dart';
-import 'package:habit_tracker/core/pauses/presentation/create_pause_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/archived_goals_screen.dart';
+import 'package:habit_tracker/features/water/presentation/screens/water_add_entry_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';

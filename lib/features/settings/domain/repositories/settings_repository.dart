@@ -63,6 +63,7 @@ abstract class SettingsRepository {
 
   /// Manual Ramadan-mode override: `true`/`false` pins it, `null` clears
   /// the override back to auto-detection.
+  // ignore: avoid_positional_boolean_parameters
   Future<Result<void>> updateRamadanModeManualOverride(bool? override);
 
   /// Enables or disables Hijri-calendar Ramadan auto-detection.

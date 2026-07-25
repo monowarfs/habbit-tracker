@@ -20,7 +20,8 @@ class TenureMilestone {
 }
 
 /// Evaluates tenure milestones against [installDate].
-/// Awards any un-awarded milestones where (now - installDate) >= milestone.days.
+/// Awards any un-awarded milestones where
+/// (now - installDate) >= milestone.days.
 /// Cross-module: moduleId = 'core'.
 Future<void> evaluateTenureMilestones({
   required DateTime installDate,

@@ -74,6 +74,6 @@ class AchievementEngine {
 
   /// Disposes the event controller.
   void dispose() {
-    _eventController.close();
+    unawaited(_eventController.close());
   }
 }

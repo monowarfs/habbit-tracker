@@ -117,7 +117,7 @@ class _ArchivedGoalsScreenState extends ConsumerState<ArchivedGoalsScreen> {
     final result = await ref.read(waterRepositoryProvider).reviveGoal(goal.id);
     switch (result) {
       case Success():
-        if (context.mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.reviveSnackSuccess('${goal.goalMl} ml')),
@@ -126,7 +126,7 @@ class _ArchivedGoalsScreenState extends ConsumerState<ArchivedGoalsScreen> {
           _refresh();
         }
       case Failure(:final error):
-        if (context.mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error.toString())),
           );
