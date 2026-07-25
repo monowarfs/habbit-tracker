@@ -1,7 +1,7 @@
 # Extended Stats Range / Multi-Year Trends
 
 **Category:** Premium · **Atlas complexity:** S · **Retention impact:** Low
-**Date:** 2026-07-23
+**Date:** 2026-07-23 · **Revised:** 2026-07-25
 **Status:** Draft — high-level planning (not implementation-ready; re-scope against actual codebase state when scheduled)
 
 ## Problem / opportunity
@@ -43,7 +43,8 @@ history to make them meaningful.
 
 ## Proposed approach (high-level)
 Extend the Reports module's existing date-range selection (which already
-supports week/month/year) with an additional "all-time"/custom-range
+supports week/month/year via `ReportPeriod` enum in `core/reports/
+aggregate_report_usecase.dart`) with an additional "all-time"/custom-range
 option, gated by a purchase check at the point the user selects a range
 beyond the free window. The underlying aggregate calculations (day-
 status-streaks, aggregate-report use case) should already be generic
@@ -52,23 +53,131 @@ range-picker addition plus a paywall gate, not new domain logic, assuming
 the Reports module's use cases don't hardcode their range handling to the
 three current presets.
 
+### Current Reports module analysis
+
+The `AggregateReportUseCase` in `core/reports/aggregate_report_usecase.dart`
+already accepts an arbitrary `DateRange` internally — the `_rangeForPeriod`
+method computes the range from a `ReportPeriod` enum, but the actual
+aggregation in `execute()` uses the computed `DateRange` directly. This
+means the underlying logic IS range-generic — only the UI picker and
+the period enum need extending.
+
+The `_bucketPoints` method handles two cases:
+- **Week/month:** one bar per day.
+- **Year:** one bar per month (12 bars).
+
+For multi-year ranges, the bucketing strategy needs extending:
+- **Multi-year (2-5 years):** one bar per quarter (4 bars per year).
+- **All-time (>5 years):** one bar per year.
+
+### Extended ReportPeriod enum
+
+```dart
+enum ReportPeriod {
+  week,
+  month,
+  year,
+  // New premium periods:
+  custom,    // user-selected date range
+  allTime,   // from first log to now
+}
+```
+
+### UI changes to Reports screen
+
+The existing period selector (week/month/year chips or tabs) gains:
+1. An "All Time" option, gated behind a premium check.
+2. A "Custom Range" option (date range picker), gated behind premium.
+3. A subtle lock icon on premium options for non-premium users.
+
+```
+┌─────────────────────────────────────────┐
+│  Reports                    [Export →]  │
+├─────────────────────────────────────────┤
+│  [Week] [Month] [Year] [All Time 🔒]   │
+│                            [Custom 🔒]  │
+├─────────────────────────────────────────┤
+│  Chart area (adjusted for selected      │
+│  range's bucketing strategy)            │
+├─────────────────────────────────────────┤
+│  Summary stats for selected range       │
+└─────────────────────────────────────────┘
+```
+
+### Performance considerations for large ranges
+
+Multi-year data aggregation on budget devices (this app's persona set)
+needs care:
+
+1. **Day-level granularity for long ranges is impractical.** A 5-year
+   range at daily granularity = 1,825 data points — too many for a bar
+   chart. Bucket by quarter or year instead.
+2. **SQLite can handle multi-year scans efficiently** since the data is
+   already indexed by `logged_at`/`scheduled_for` columns. The main
+   cost is Dart-side iteration, not DB queries.
+3. **No pre-aggregation cache needed** for v1 — the existing
+   `dayStatus()` method returns a `Map<LocalDate, ModuleDayStatus>` and
+   the aggregation is O(n) over the map entries. For 5 years of daily
+   data, that's ~1,800 entries — trivial.
+
+### Free window definition
+
+The free window is **1 year of data** — the existing `ReportPeriod.year`
+view covers this. "All Time" and "Custom Range" beyond 1 year are
+premium. This means:
+- A user with <1 year of data sees no difference between free and
+  premium (all their data fits in the free year view).
+- A user with exactly 1 year of data sees no difference.
+- A user with >1 year of data gets value from the premium range options.
+
+## Database changes
+- No new tables — this feature is purely a UI/gating addition to the
+  existing Reports module.
+
 ## Dependencies & prerequisites
 - The Reports module's existing aggregate use cases and date-range
   handling — this is additive to that, not a rebuild.
-- IAP/purchase-gating plumbing shared with other premium features.
+- Entitlement/IAP infrastructure (spec 07) for premium gating.
+- The `AggregateReportUseCase._rangeForPeriod` method must be confirmed
+  to accept arbitrary `DateRange` inputs (it currently does — verified
+  by reading the source).
+
+## Localization
+- "All Time" and "Custom Range" labels need en/bn ARB keys.
+- Date range picker labels need localization.
+- Premium upsell text ("Upgrade to view all-time trends") needs
+  localization.
+
+## Edge cases & error handling
+- **No data in range:** show "No data available for this range" instead
+  of an empty chart. This is already handled by the existing Reports
+  module (it skips modules with no data).
+- **User with <1 year of data taps "All Time":** show their data as-is
+  (it's all within the free window anyway). No need to gate this — the
+  user gets value from seeing "all my data" even if it's less than a
+  year.
+- **Custom range spanning into the future:** clamp to today's date.
+- **Very large data set (10+ years):** bucket by year (max 10-12 bars).
+  The chart already handles year-level bucketing via `_bucketPoints`.
 
 ## Open questions for the implementation round
 - Do the Reports module's aggregate use cases already accept an arbitrary
   date range internally, or are they currently hardcoded to
   week/month/year presets — this determines whether the underlying logic
   needs any change at all versus purely a UI/gating addition.
+  (Answered above: they DO accept arbitrary ranges — confirmed.)
 - What exactly counts as "generous" for the free window — a fixed 1 year,
   or something tied to how long the user has had the app installed?
+  (Recommendation: fixed 1 year for simplicity.)
 - Are there performance implications for aggregating multi-year data on
   lower-end devices (this app's persona set skews toward budget devices)
   that need caching or pre-aggregation consideration?
+  (Answered above: not needed for v1 — O(n) over ~1,800 entries is
+  trivial.)
 - Does this interact with item #5 (PDF/CSV export) — should exported
   reports also respect the same free/premium range split?
+  (Recommendation: yes — exported reports use the same date range the
+  user selects in the Reports screen.)
 
 ## Effort & sequencing notes
 S complexity — assuming the Reports module's aggregation logic is

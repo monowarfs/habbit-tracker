@@ -1,7 +1,7 @@
 # Advanced Widget Layouts
 
 **Category:** Premium · **Atlas complexity:** M · **Retention impact:** Low
-**Date:** 2026-07-23
+**Date:** 2026-07-23 · **Revised:** 2026-07-25
 **Status:** Draft — high-level planning (not implementation-ready; re-scope against actual codebase state when scheduled)
 
 ## Problem / opportunity
@@ -28,9 +28,10 @@ multiple-layout-size variants of it.
   once, for users who want an at-a-glance cross-module view.
 - Support multiple widget sizes/layouts (small/medium/large, matching
   platform widget-size conventions) for the combined widget.
-- Reuse each module's existing `dashboardSummary()`-equivalent data (the
-  same status data already feeding the in-app dashboard) as the combined
-  widget's data source — no new per-module summary logic.
+- Reuse each module's existing `widgetSummary()`-equivalent data (the
+  same status data already feeding the in-app dashboard and stored via
+  `core/widgets/widget_refresh_helper.dart`) as the combined widget's
+  data source — no new per-module summary logic.
 
 ## Non-goals / out of scope
 - Not changing or removing the existing free per-module widgets — those
@@ -53,6 +54,117 @@ supported size, gated behind the same purchase-state check other premium
 features use, likely surfaced as a widget-configuration option the user
 picks when adding the widget to their home screen.
 
+### Current widget infrastructure analysis
+
+The existing widget setup uses:
+- `home_widget` package (imported in `main.dart`)
+- `core/widgets/widget_refresh_helper.dart` — saves each module's
+  `WidgetSummaryData` to `home_widget`'s shared storage as
+  `widget_summary_$moduleId` JSON.
+- Each module implements `widgetSummary()` returning a
+  `WidgetSummaryData?`.
+
+The combined widget reads from the same `home_widget` shared storage —
+no new data pipeline needed. It simply reads multiple module summaries
+instead of one.
+
+### Combined widget data format
+
+The combined widget reads these keys from `home_widget` shared storage:
+- `widget_summary_water` — Water module summary (already exists)
+- `widget_summary_medicine` — Medicine module summary (already exists)
+- `widget_summary_prayer` — Prayer module summary (already exists)
+
+If the additional modules pack (item #4) is installed, also:
+- `widget_summary_sleep`
+- `widget_summary_blood_pressure`
+- `widget_summary_mood`
+- `widget_summary_exercise`
+
+### Widget size variants
+
+| Size | Modules shown | Layout |
+|---|---|---|
+| Small (2×2) | 1 module (user's choice) | Single module summary with accent color |
+| Medium (4×2) | 2-3 modules | Side-by-side or stacked summaries |
+| Large (4×4) | All enabled modules | Grid of module summaries with status indicators |
+
+### Widget layout designs
+
+**Small widget (2×2):**
+```
+┌──────────────┐
+│ 💧 Water     │
+│ 1.5L / 2.0L │
+│ ████░░ 75%  │
+└──────────────┘
+```
+
+**Medium widget (4×2):**
+```
+┌──────────────────────────────────────┐
+│ 💧 Water    │ 💊 Medicine │ 🤲 Prayer│
+│ 1.5L/2.0L  │ 2/3 done   │ 4/5 done │
+│ ████░░ 75% │ ██████ 67%  │ ████ 80% │
+└──────────────────────────────────────┘
+```
+
+**Large widget (4×4):**
+```
+┌──────────────────────────────────────┐
+│  Habit Tracker          [⚙️]        │
+├──────────────────────────────────────┤
+│  💧 Water                            │
+│  1.5L / 2.0L  ████░░ 75%           │
+├──────────────────────────────────────┤
+│  💊 Medicine                         │
+│  2/3 doses done today               │
+│  Next: Metformin at 20:00           │
+├──────────────────────────────────────┤
+│  🤲 Prayer                           │
+│  4/5 prayed · On-time: 85%          │
+│  Next: Isha at 21:30                │
+└──────────────────────────────────────┘
+```
+
+### Platform-specific implementation
+
+**Android:**
+- Use Jetpack Glance (or the existing App Widget approach if that's what
+  the current widgets use) for the combined widget layouts.
+- Glance supports `GlanceAppWidget` with `SizeMode` for responsive
+  layouts — one widget class handles all sizes.
+- Widget refresh: same triggers as current widgets (app-resume,
+  WorkManager periodic, manual refresh via `HomeWidget.updateWidget()`).
+
+**iOS:**
+- Use WidgetKit with `TimelineProvider` for the combined widget.
+- Support `systemSmall`, `systemMedium`, and `systemLarge` families.
+- Widget refresh: same as current — `HomeWidget.updateWidget()` triggers
+  a timeline reload.
+
+### Premium gating at widget level
+
+The combined widget is offered as a widget option when the user long-
+presses the home screen and selects "Habit Tracker" widgets. The gating
+approach:
+
+1. **Widget list filtering:** the combined widget's
+   `AppWidgetProviderInfo` metadata is conditionally included in the
+   widget manifest based on purchase state. On Android, this means
+   registering/unregistering the widget provider dynamically. On iOS,
+   the widget intent configuration can include a premium check.
+
+2. **Fallback for ungated access:** if a user somehow adds the widget
+   without purchasing (e.g. they purchased, added the widget, then
+   subscription lapsed), the widget shows a "Premium required" message
+   with a CTA to open the app and resubscribe.
+
+## Database changes
+- No new tables — the combined widget reads from `home_widget` shared
+  storage, which is populated by the existing `widget_refresh_helper`
+  infrastructure.
+
 ## Dependencies & prerequisites
 - The existing `home_widget` package integration and the per-module
   widget data pipeline already built for the current simple widgets.
@@ -61,7 +173,28 @@ picks when adding the widget to their home screen.
 - Platform-specific advanced widget APIs: Android Glance (or the existing
   App Widget approach, whichever the current simple widgets use) for
   resizable layouts, iOS WidgetKit for equivalent family-size support.
-- IAP/purchase-gating plumbing shared with other premium features.
+- Entitlement/IAP infrastructure (spec 07) for premium gating.
+
+## Localization
+- Widget text (module names, status labels) needs en/bn support.
+- Widget content is generated natively (not from Flutter's localization
+  system), so en/bn strings must be passed through `home_widget` shared
+  storage or generated natively on each platform.
+- Widget configuration labels ("Choose modules to display") need
+  localization.
+
+## Edge cases & error handling
+- **No modules have data:** the combined widget shows a "Set up your
+  habits" message with a CTA to open the app — same as individual
+  widgets today.
+- **Only 1 module enabled:** the medium/large widget gracefully
+  collapses to show only the enabled module(s), leaving empty space
+  rather than showing error states.
+- **Widget refresh delay:** `home_widget` has inherent latency (it
+  communicates between Flutter and native). The widget should show
+  "Last updated: X minutes ago" to set expectations.
+- **Premium lapse:** as described above — show "Premium required" in the
+  widget rather than crashing or showing stale data.
 
 ## Open questions for the implementation round
 - What widget infrastructure do the existing simple widgets already use
@@ -71,9 +204,6 @@ picks when adding the widget to their home screen.
 - Does the combined widget need live/frequent updates, and if so, does
   that change the existing widget-refresh triggers (app-resume,
   WorkManager) already wired for per-module widgets?
-- How is premium-gating enforced at the OS widget level — can a widget
-  itself check purchase state, or does the paywall only gate whether the
-  combined widget is offered as an option to add?
 - Which module combinations are supported — a fixed 3-module layout
   matching today's Water/Medicine/Prayer set, or does this need to
   anticipate the additional-modules pack (item #4) being installed too?
