@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/analytics/goal_attainment_use_case.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/providers/module_day_status_provider.dart';
@@ -9,6 +10,7 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
+import 'package:habit_tracker/core/widgets/goal_attainment_display.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/core/widgets/trend_arrow.dart';
@@ -90,6 +92,14 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
     );
     final goal = ref.watch(currentWaterGoalProvider).value;
     final streak = ref.watch(waterStreakProvider);
+    final dayStatus = ref
+        .watch(
+          moduleDayStatusProvider('water', DateRange(start: start, end: today)),
+        )
+        .value;
+    final attainment = dayStatus == null
+        ? null
+        : const GoalAttainmentUseCase().calculate(dayStatus: dayStatus);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -144,6 +154,14 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
           ),
         const SizedBox(height: 16),
         if (streak != null) StreakCard(streak: streak),
+        if (attainment != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: GoalAttainmentDisplay(
+              result: attainment,
+              goalLabel: l10n.goalAttainmentWater,
+            ),
+          ),
       ],
     );
   }
