@@ -75,3 +75,44 @@ Atlas complexity: S. A pure aggregation/grouping function reusing existing
 day-status data plus a small new UI strip — low effort. Pairs naturally
 with personal-record tracking and trend arrows since all three are small,
 independent additions to the same stats screens.
+
+## Database schema
+
+No new tables. The breakdown is computed at read time from the existing
+`dayStatus(DateRange)` data, grouped by weekday.
+
+## Localization
+
+New ARB keys (en/bn):
+- `dayOfWeekBest` — "Best day: {day}"
+- `dayOfWeekWorst` — "Worst day: {day}"
+- `dayOfWeekLabel` — "{day}: {percent}%"
+- `dayOfWeekMon` through `dayOfWeekSun` — abbreviated day names.
+- `dayOfWeekInsufficientData` — "Not enough data yet"
+
+## Edge cases & error handling
+
+- **Minimum sample size:** require at least 4 weeks (28 days) of data
+  before showing best/worst day. Below that, show "Not enough data yet."
+- **Medicine partial adherence:** use adherence rate (percentage of doses
+  taken) per weekday, not a boolean. A day with 80% adherence scores
+  higher than 50%.
+- **Period selection:** default to last 90 days. Allow user to switch
+  between 30/90/all-time via a segmented control.
+- **Equal scores:** if multiple days tie for best/worst, show all tied
+  days (e.g. "Best days: Mon, Wed, Fri").
+
+## Cross-references
+
+- Aggregate report: `lib/core/reports/aggregate_report_usecase.dart`.
+- Related: Spec 08-analytics/04 (trend arrows) — same stats screen.
+- Related: Spec 08-analytics/05 (consistency score) — related metric.
+- Related: Spec 08-analytics/08 (adherence by medicine) — Medicine's
+  partial adherence granularity.
+
+## Test strategy
+
+- Unit test: weekday grouping and percentage calculation.
+- Unit test: minimum sample size enforcement.
+- Widget test: day-of-week breakdown display.
+- Widget test: insufficient data state.

@@ -72,3 +72,53 @@ Small — purely additive metadata plus a gallery rendering change, no new
 subsystem. Can ship independently of everything else in this batch;
 pairs naturally with the "almost there" progress-bar feature since both
 touch the same gallery screen.
+
+## Database schema
+
+No DB migration needed. Rarity is a code-level attribute on
+`AchievementDefinition` (in `habit_module.dart`), not a database column.
+Add a `rarity` field to the `AchievementDefinition` class:
+
+```dart
+enum BadgeRarity { common, rare, legendary }
+
+class AchievementDefinition {
+  // ... existing fields ...
+  final BadgeRarity rarity; // new field, default: common
+}
+```
+
+Each module's `achievementDefinitions` getter supplies the rarity value
+per achievement. The gallery reads it from the definition, not from DB.
+
+## Localization
+
+New ARB keys (en/bn):
+- `badgeRarityCommon` — "Common"
+- `badgeRarityRare` — "Rare"
+- `badgeRarityLegendary` — "Legendary"
+- `badgeRarityLabel` — "Rarity: {tier}" (for screen readers)
+
+## Edge cases & error handling
+
+- **Backward compatibility:** existing achievements default to `common`
+  rarity. No migration needed — the enum has a default value.
+- **Visual treatment:** common = default badge style, rare = silver
+  border/glow, legendary = gold border/glow + particle effect.
+- **Screen reader:** rarity tier is announced as part of the badge's
+  semantic label (e.g. "Water 30-day streak, Rare badge").
+
+## Cross-references
+
+- Achievement definitions: `lib/core/achievements/achievement_definitions.dart`
+  and each module's `achievementDefinitions` getter.
+- Badge gallery: `lib/features/achievements/presentation/`.
+- Related: Spec 06-gamification/11 (progress bars) — same gallery card.
+- Related: Spec 04-premium/11 (cosmetic badge skins) — skins layer on
+  top of rarity visual treatment.
+
+## Test strategy
+
+- Unit test: rarity enum default value.
+- Widget test: badge gallery renders rarity visual treatment.
+- Widget test: screen reader announces rarity label.

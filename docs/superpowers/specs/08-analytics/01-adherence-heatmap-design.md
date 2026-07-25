@@ -86,3 +86,50 @@ its data-shaping, not new domain logic. No hard dependency on other items
 in this batch — reasonable to schedule independently, though it pairs
 naturally with the "personal record" and "goal-attainment" items since all
 three consume the same underlying day-status/streak data.
+
+## Database schema
+
+No new tables. The heatmap reads from each module's `dayStatus(DateRange)`
+method, which already returns `Map<LocalDate, ModuleDayStatus>`. For a
+full-year view, pass `DateRange(start: LocalDate(year, 1, 1), end:
+LocalDate(year, 12, 31))`.
+
+## Localization
+
+New ARB keys (en/bn):
+- `heatmapTitle` — "Year at a Glance"
+- `heatmapTooltipDone` — "Completed"
+- `heatmapTooltipPartial` — "Partially completed"
+- `heatmapTooltipMissed` — "Missed"
+- `heatmapTooltipNone` — "No data"
+- `heatmapMonthLabels` — abbreviated month names (J, F, M, ...)
+- `heatmapDayLabels` — abbreviated day names (M, T, W, ...)
+
+## Edge cases & error handling
+
+- **Performance for 365-day range:** the existing `dayStatus()` method
+  returns a map — 364 entries is trivial. No virtualization needed for
+  v1. If multi-year is added later (Spec 04-premium/08), consider
+  paginated rendering.
+- **Empty data:** show "No data for this year" with a prompt to start
+  tracking.
+- **Partial year:** if the user started mid-year, show only months with
+  data. Gray out future months.
+- **Cross-module aggregate view:** for v1, show per-module heatmaps
+  separately. Cross-module scoring is deferred to Spec 08-analytics/05
+  (consistency score).
+
+## Cross-references
+
+- Day-status data: `lib/core/reports/day_status_streaks.dart`.
+- Existing heatmap widget: `HabitHeatmapCalendar` in Medicine stats.
+- Related: Spec 08-analytics/02 (personal record) — same data source.
+- Related: Spec 08-analytics/05 (consistency score) — aggregate view.
+- Related: Spec 04-premium/08 (extended stats) — multi-year heatmap.
+
+## Test strategy
+
+- Unit test: heatmap data shaping from day-status map.
+- Widget test: heatmap rendering with mock data.
+- Widget test: empty state and partial-year display.
+- Golden test: heatmap visual output for regression.

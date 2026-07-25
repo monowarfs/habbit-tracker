@@ -71,3 +71,62 @@ shape to the virtual-companion feature. No hard dependency on the XP
 system since it can trigger directly off existing streak-length
 achievement events, though pairing with XP/levels for a unified
 progression story is a reasonable later refinement.
+
+## Database schema
+
+New `avatar_unlocks` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| piece_id | TEXT | avatar piece identifier |
+| slot | TEXT | `'head'` \| `'body'` \| `'background'` \| `'frame'` |
+| unlocked_at | INTEGER | UTC |
+| created_at | INTEGER | |
+
+New `avatar_equipped` singleton table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | always `'singleton'` |
+| head_piece_id | TEXT NULL | currently equipped head piece |
+| body_piece_id | TEXT NULL | currently equipped body piece |
+| background_piece_id | TEXT NULL | |
+| frame_piece_id | TEXT NULL | |
+| created_at, updated_at | INTEGER | |
+
+## Localization
+
+New ARB keys (en/bn):
+- `avatarCustomizeTitle` — "Customize Avatar"
+- `avatarUnlockToast` — "New piece unlocked: {name}!"
+- `avatarSlotHead` / `avatarSlotBody` / `avatarSlotBackground` /
+  `avatarSlotFrame` — slot labels.
+- Per-piece name keys.
+
+## Edge cases & error handling
+
+- **Overlap with Spec 06-gamification/03 (companion):** the avatar is
+  a user-customized self-portrait; the companion is an autonomous
+  character. Both can coexist on the dashboard — the avatar is a
+  static display, the companion is animated.
+- **Unlock detection:** hooks into the achievements engine's event
+  stream. When a streak milestone achievement unlocks, check if it
+  maps to an avatar piece unlock.
+- **Default avatar:** every user starts with a base avatar (no pieces
+  equipped). The base is always available.
+
+## Cross-references
+
+- Achievements engine: `lib/core/achievements/achievement_engine.dart`.
+- Dashboard: `lib/features/dashboard/presentation/`.
+- Related: Spec 06-gamification/03 (companion) — coexists on dashboard.
+- Related: Spec 06-gamification/05 (rarity) — avatar unlocks could have
+  rarity tiers.
+
+## Test strategy
+
+- Unit test: unlock detection from achievement events.
+- Unit test: equip/unequip logic.
+- Widget test: avatar display with equipped pieces.
+- Widget test: customize screen with slot selection.

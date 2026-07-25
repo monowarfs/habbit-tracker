@@ -73,3 +73,64 @@ Medium complexity — mechanically it's an additive listener on an event
 stream that already exists, plus one new dashboard element and a level
 curve. Sequence this before the point-shop and boss-challenge features,
 both of which explicitly depend on XP as their currency/pacing input.
+
+## Database schema
+
+New `xp_ledger` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| module_id | TEXT | which module earned the XP |
+| event_type | TEXT | `'action'` \| `'day_complete'` \| `'streak_milestone'` |
+| xp_amount | INTEGER | positive value earned |
+| source_id | TEXT NULL | e.g. dose_id, prayer_record_id for audit |
+| created_at | INTEGER | UTC |
+
+New `xp_balance` singleton table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | always `'singleton'` |
+| total_xp | INTEGER | cumulative XP earned (never decreases) |
+| current_level | INTEGER | derived from `total_xp` via level curve |
+| created_at, updated_at | INTEGER | |
+
+Level is computed from `total_xp` at read time using the curve formula,
+not persisted — this avoids level-rollback edge cases.
+
+## Localization
+
+New ARB keys (en/bn):
+- `xpGainToast` — "+{amount} XP" toast on action.
+- `levelUpTitle` / `levelUpBody` — celebration on level-up.
+- `levelDisplay` — "Level {level}" dashboard label.
+- `xpProgress` — "{current}/{next} XP to next level" progress text.
+
+## Edge cases & error handling
+
+- **XP normalization across modules:** Medicine earns less per-dose XP
+  than Water per-log XP since Medicine has more daily actions. Calibrate
+  so all three modules contribute roughly equally over a typical week.
+- **Retroactivity:** XP starts from zero at feature launch. Historical
+  data is NOT backfilled — this avoids a jarring "you're already level
+  47" moment and keeps the system feel fresh.
+- **Negative XP:** not supported. Missed days simply don't earn XP
+  (zero, not negative). This keeps the system encouraging, not punitive.
+- **Overflow:** `total_xp` is a 64-bit integer — no practical overflow
+  risk.
+
+## Cross-references
+
+- Achievements engine event stream: `lib/core/achievements/achievement_engine.dart`
+  (`AchievementEvent` broadcast stream).
+- Dashboard display: `lib/features/dashboard/presentation/`.
+- Related: Spec 06-gamification/08 (point shop) and Spec 06-gamification/09
+  (boss challenge) both consume XP as currency.
+
+## Test strategy
+
+- Unit test: XP accumulation from mock events.
+- Unit test: level curve formula (boundary values, level transitions).
+- Unit test: XP normalization across modules.
+- Widget test: dashboard level/XP display.

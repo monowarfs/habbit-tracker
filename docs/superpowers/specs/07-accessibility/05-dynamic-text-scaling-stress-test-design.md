@@ -39,3 +39,39 @@ Set the OS (or simulator/emulator) accessibility text size to its maximum, then 
 ## Effort & sequencing notes
 
 Complexity M — broad (every screen, both locales, both themes) but mechanically simple fixes once found. Can run independently of the other items in this category, though pairing it with item #1's walkthrough is efficient since both require visiting every screen once.
+
+## Localization
+
+- No new ARB keys are needed — this audit fixes layout breakage from existing strings at large scales, not new strings.
+- The existing Bangla line-height adjustment in `lib/core/theme/app_theme.dart` is the precedent for centralized typography fixes; any new scaling fixes should follow the same pattern.
+- Verify that Bangla strings (which are typically 20-40% longer than English equivalents) do not cause additional overflow at 200% scale beyond what English strings cause; if they do, the fix should be language-agnostic (wrapping/flexible layout) not per-locale.
+- The `textScaleFactor` is read from `MediaQuery.of(context).textScaler` — no locale-specific override is needed; the fix must work for both en and bn simultaneously.
+
+## Edge cases & error handling
+
+1. **Fixed-height `Row` widgets with text children** — the most common breakage pattern; a `Row` containing a label and an icon with no `Flexible`/`Expanded` wrapper will overflow when text wraps at 200%. Fix by wrapping text children in `Flexible` with `overflow: TextOverflow.visible` or by switching to a `Column` layout.
+2. **Buttons with hardcoded `minWidth` or `height`** — action buttons (quick-add chips, dose-done buttons, prayer toggle) may have fixed dimensions that don't accommodate scaled text. Allow these to grow vertically using `IntrinsicHeight` or by removing fixed constraints.
+3. **Snackbar text overflow** — confirmation snackbar messages may be too long for the screen width at 200% scale in Bangla; ensure snackbars use `SnackBarBehavior.floating` with adequate width constraints or allow multi-line content.
+4. **Chart axis labels and legends** — `period_bar_chart.dart`'s axis labels and legend text are rendered by `fl_chart` and may not respect `MediaQuery` text scale automatically; verify these render correctly and, if not, set explicit text styles that scale with the system.
+5. **Bottom navigation labels** — the `StatefulShellRoute` bottom-nav labels must not truncate at 200% scale; if they do, consider using `BottomNavigationBarItem` with `label` set to allow wrapping, or increase the bottom-nav height dynamically.
+
+## Cross-references
+
+- `docs/superpowers/specs/07-accessibility/01-talkback-voiceover-navigation-audit-design.md` — shares the same screen walkthrough; schedule back-to-back for efficiency.
+- `docs/superpowers/specs/07-accessibility/06-simple-mode-large-button-layout-design.md` — Simple Mode should build on layouts already verified at scale.
+- `lib/core/theme/app_theme.dart` — the bn line-height `TextTheme` adjustment is the precedent for centralized typography fixes.
+- `lib/core/widgets/charts/period_bar_chart.dart` — chart widget where axis labels may not scale.
+- `lib/core/router/app_router.dart` — `StatefulShellRoute` bottom-nav labels.
+- `lib/core/l10n/app_bn.arb` — Bangla strings that may be longer and cause additional overflow.
+
+## Test strategy
+
+- **Widget tests**: Create `test/accessibility/text_scaling_stress_test.dart` that uses `MediaQuery(textScaleFactor: 2.0)` (or the newer `TextScaler.linear(2.0)`) to wrap each screen's widget tree and assert no `OverflowError` or `RenderFlex` overflow is thrown. Test at 1.5x and 2.0x:
+  - `test/features/dashboard/presentation/dashboard_text_scale_test.dart`
+  - `test/features/water/presentation/water_text_scale_test.dart`
+  - `test/features/medicine/presentation/medicine_text_scale_test.dart`
+  - `test/features/prayer/presentation/prayer_text_scale_test.dart`
+  - `test/features/settings/presentation/settings_text_scale_test.dart`
+- **Regression-prevention strategy**: Add a shared test helper `test/accessibility/text_scale_test_helper.dart` that takes a `Widget` and pumps it at multiple text scale factors, asserting no overflow. New screens added in future runs should be added to this test suite as a checklist item.
+- **Golden tests**: Consider golden tests at 2.0x text scale for the most text-dense screens (dose timeline, prayer checklist) to catch visual regressions in wrapping behavior.
+- **Manual audit**: Document findings in `docs/superpowers/specs/07-accessibility/05-text-scaling-results.md` with screenshots at 200% for both en and bn locales, both light and dark themes.

@@ -85,3 +85,53 @@ Atlas complexity: S. Purely a read-side aggregation over an existing,
 already-populated table — no new write paths, no new domain logic beyond
 a grouping/percentage calculation. Low-risk, independent of every other
 item in this batch.
+
+## Database schema
+
+No new tables. Reads from the existing `notification_ledger` table
+(confirmed schema: `action` column is `'done'` | `'snooze'` | `'skip'`
+| null; `module_id` column identifies the module; `fired_at` is the
+notification timestamp).
+
+**Important:** the notification ledger has a 90-day eviction policy
+(mentioned in `notification_planner.dart`). Effectiveness can only be
+computed over a 90-day window. Display "Last 90 days" as the data
+window.
+
+## Localization
+
+New ARB keys (en/bn):
+- `notificationEffectivenessTitle` — "Reminder Effectiveness"
+- `notificationEffectivenessRate` — "{percent}% effective"
+- `notificationEffectivenessDescription` — "Reminders led to action
+  {acted} out of {total} times in the last 90 days."
+- `notificationEffectivenessByModule` — per-module breakdown.
+- `notificationEffectivenessEmpty` — "No reminder data yet"
+
+## Edge cases & error handling
+
+- **Time window for "led to an action":** credit an action only if it
+  occurs within 4 hours of the notification firing. This prevents
+  crediting an unrelated later action.
+- **Snooze classification:** count snooze as "partial positive" — the
+  user engaged but deferred. Show two metrics: "acted" (done + snooze)
+  and "completed" (done only).
+- **No data:** show "No reminder data yet" for fresh installs.
+- **Presentation location:** show in Settings notification reliability
+  screen (existing) as a new section. Optionally show a summary
+  (per-module percentage) on each module's stats screen.
+
+## Cross-references
+
+- Notification ledger: `lib/core/notifications/notification_ledger_repository.dart`.
+- Notification planner: `lib/core/notifications/notification_planner.dart`.
+- Settings reliability screen: `lib/features/settings/presentation/screens/`.
+- Related: Spec 07-accessibility/08 (audio cues) — notification action
+  confirmation.
+
+## Test strategy
+
+- Unit test: effectiveness percentage calculation.
+- Unit test: time-window scoping (4-hour cutoff).
+- Unit test: snooze classification.
+- Widget test: effectiveness display on settings screen.

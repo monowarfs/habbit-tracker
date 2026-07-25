@@ -40,3 +40,60 @@ Contingent on the backend decision: when a user opts to share caregiver access (
 
 ## Effort & sequencing notes
 Large (L) complexity and, alongside item 06, one of the two highest-risk items in this category because both require crossing the no-account/no-backend line. Unlike item 06, this one can plausibly use a smaller, token-only relay rather than full persistent accounts, which may make it a cheaper way to test whether *any* backend investment is worth making — but the backend/security decision still needs to be made explicitly and separately before this is estimated as ordinary feature work, not folded into a sprint by default.
+
+## Database schema
+
+No local database changes. The token/relay is entirely server-side.
+Locally, the app may store a list of issued tokens (for revocation UI)
+in a new `caregiver_links` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| token_id | TEXT | the token issued by the relay |
+| modules_in_scope | TEXT | JSON array of module IDs |
+| expires_at | INTEGER | UTC |
+| revoked_at | INTEGER NULL | UTC; null = active |
+| created_at, updated_at | INTEGER | |
+
+## Localization
+
+New ARB keys (en/bn):
+- `caregiverLinkTitle` — "Caregiver Access"
+- `caregiverLinkGenerate` — "Generate Link"
+- `caregiverLinkRevoke` — "Revoke Access"
+- `caregiverLinkShare` — "Share with Caregiver"
+- `caregiverLinkExpired` — "This link has expired"
+- `caregiverLinkRevoked` — "Access has been revoked"
+- `caregiverLinkExpiry` — "Expires in {days} days"
+
+## Edge cases & error handling
+
+- **Token leaked/forwarded:** the relay cannot prevent forwarding. The
+  revocation feature is the mitigation — the dependent can revoke at
+  any time. The UI should warn "Anyone with this link can view the
+  data."
+- **Dependent's device offline:** if the relay proxies live data, the
+  caregiver sees "Data unavailable — dependent's device is offline."
+  If the relay stores data, this is not an issue.
+- **Revocation propagation delay:** revocation should propagate within
+  5 minutes (relay-side TTL check). The UI shows "Revoking..."
+  immediately and confirms when complete.
+- **Coercive use:** the dependent must always be the one to generate
+  and share the link. The app should never allow a caregiver to
+  request or pull access unprompted.
+
+## Cross-references
+
+- Related: Spec 05-community/06 (accountability groups) — both require
+  backends and cross the "nothing leaves the device" line.
+- Related: Spec 04-premium/03 (multi-profile) — cross-device caregiving.
+- Medicine adherence: `lib/features/medicine/domain/usecases/calculate_adherence.dart`.
+- share_plus: shared with specs 01/02.
+
+## Test strategy
+
+- Unit test: token generation and expiry logic.
+- Unit test: revocation flow.
+- Widget test: caregiver link management screen.
+- Integration test: end-to-end relay communication (mocked).

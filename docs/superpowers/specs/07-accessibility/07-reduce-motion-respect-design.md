@@ -39,3 +39,37 @@ Treat this as a lightweight convention rather than a feature: wherever a new ani
 ## Effort & sequencing notes
 
 Complexity S — a small, mechanical check applied per-animation, not a standalone body of work. Sequence this as a standing convention to apply whenever Delightful/Gamification's animation features are implemented, rather than a one-time task with a fixed start date; revisit as a real audit once those animations exist.
+
+## Localization
+
+- No new ARB keys are needed for the reduce-motion convention itself — the non-animated fallback is the same state shown after an animation completes, just without the transition.
+- If a future settings toggle for in-app reduce-motion is added (beyond the OS-level setting), it would need:
+  - `settings_reduce_motion_label` — "Reduce Motion" / "মোশন কমান"
+  - `settings_reduce_motion_description` — explanatory text.
+- For the current scope (respecting `MediaQuery.disableAnimations`), no user-facing strings change.
+
+## Edge cases & error handling
+
+1. **Existing route transitions** — Flutter's default route transitions (slide, fade) are animations that should respect reduce-motion; if the app uses `MaterialPageRoute` or `GoRouter` transitions, verify these honor `disableAnimations` or replace them with instant transitions when the setting is active.
+2. **`AnimatedContainer` / `AnimatedOpacity` in existing widgets** — scan for any existing uses of implicit animation widgets in the codebase (stats screen number counters, streak animations, progress indicators) and wrap them in the `disableAnimations` check.
+3. **Lottie/Rive animations (if added later)** — if future gamification features use Lottie or Rive for complex animations, the convention must extend to those libraries' play/pause APIs, not just Flutter's built-in animation widgets.
+4. **Partial animation reduction** — some users may want to reduce but not eliminate motion (e.g. shorter duration vs. instant); the initial scope should keep it binary (animate or instant) per the OS setting, with duration reduction as a potential future enhancement.
+5. **Transition from animated to non-animated state** — when reduce-motion is active, the app must still convey the same end-state information (streak saved, action confirmed) — the non-animated path must reach the identical final state, just without the transition.
+
+## Cross-references
+
+- `docs/superpowers/specs/07-accessibility/04-haptic-feedback-on-log-complete-design.md` — haptics provide non-visual confirmation independent of motion; complementary to reduce-motion.
+- `docs/superpowers/specs/07-accessibility/08-audio-cue-alternative-notification-actions-design.md` — audio earcons are another non-motion confirmation channel.
+- `lib/core/theme/app_theme.dart` — if any theme-level transitions exist, they must respect `disableAnimations`.
+- `lib/core/router/app_router.dart` — route transitions are the most likely existing animation to check.
+- Delightful/Gamification spec files (future) — any streak-save or companion animation must include reduce-motion as a first-class requirement.
+
+## Test strategy
+
+- **Widget tests**: Create `test/accessibility/reduce_motion_test.dart` that:
+  - Pumps a widget with `MediaQuery(disableAnimations: true)` and verifies no `AnimationController` is running (or that the non-animated fallback state is rendered).
+  - Pumps the same widget with `disableAnimations: false` and verifies the animation plays.
+- **Unit tests**: Once Delightful/Gamification animations exist, unit test the animation helper/wrapper to confirm it checks `disableAnimations` and branches to the non-animated path correctly.
+- **Regression-prevention strategy**: Add a lint rule or code-review checklist item: "Any new `AnimationController`, `Tween`, `AnimatedContainer`, `AnimatedOpacity`, `Lottie`, or `Rive` usage must include a `disableAnimations` check." Document this in `docs/engineering/coding-standards.md`.
+- **Manual verification**: When animations are added, manually test with the OS reduce-motion toggle enabled on both iOS and Android to confirm the non-animated fallback is visually correct.
+- **No golden tests** — reduce-motion is a behavioral check (does the animation play or not), not a visual snapshot.

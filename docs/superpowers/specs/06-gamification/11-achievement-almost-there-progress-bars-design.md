@@ -73,3 +73,43 @@ Small — this is primarily a gallery UI addition surfacing data the
 achievements engine already computes internally for its own unlock
 decisions. No dependency on other features in this batch, though it
 naturally shares a gallery-card redesign with badge rarity tiers.
+
+## Database schema
+
+No new tables. The progress data comes from the existing `achievements`
+table's `progress_current` and `progress_target` columns, plus the
+`currentProgress` closure on each `AchievementDefinition`.
+
+## Localization
+
+New ARB keys (en/bn):
+- `achievementProgress` — "{current}/{target}" progress label.
+- `achievementAlmostThere` — "Almost there!" label for near-completion.
+- `achievementProgressPercent` — "{percent}%" for screen readers.
+
+## Edge cases & error handling
+
+- **Binary achievements:** some achievements have no meaningful progress
+  (e.g. "Log your first entry" — it's 0 or 1). Show the progress bar
+  only when `target > 1`. For binary achievements, show nothing or a
+  simple "Not yet / Unlocked" indicator.
+- **Progress accuracy:** the `currentProgress` closure is called on
+  every gallery render. Cache the result for 60 seconds to avoid
+  repeated DB queries during scrolling.
+- **Sorting:** default-sort unearned achievements by proximity to
+  unlocking (closest first). Earned achievements stay in their
+  original order at the bottom.
+
+## Cross-references
+
+- Achievements engine: `lib/core/achievements/achievement_engine.dart`.
+- Achievement definitions: `lib/core/achievements/achievement_definitions.dart`.
+- Badge gallery: `lib/features/achievements/presentation/`.
+- Related: Spec 06-gamification/05 (rarity) — same gallery card.
+
+## Test strategy
+
+- Unit test: progress calculation from achievement definitions.
+- Widget test: progress bar rendering for various progress values.
+- Widget test: binary achievement shows no progress bar.
+- Widget test: sorting by proximity to unlocking.

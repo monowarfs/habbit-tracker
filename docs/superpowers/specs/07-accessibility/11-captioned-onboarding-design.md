@@ -39,3 +39,37 @@ Treat this as a requirement to attach to the backlog item that eventually builds
 ## Effort & sequencing notes
 
 Complexity S, but effectively zero-effort today since there is no onboarding animation yet. Sequence: this is a requirement to carry forward and attach to whichever future spec adds an onboarding animation/video — it isn't schedulable as independent work right now.
+
+## Database schema
+
+No database changes. This is a preventive requirement for a future
+feature.
+
+## Localization
+
+When the onboarding animation is built, captions must be provided in
+both en and bn. The caption file format should be WebVTT (`.vtt`) for
+cross-platform compatibility. The text-only alternative must also be
+localized.
+
+## Edge cases & error handling
+
+- **No animation exists yet:** this spec is a placeholder requirement.
+  Attach it to whichever future spec builds the onboarding animation.
+- **Auto-play:** if the animation auto-plays, WCAG requires a
+  mechanism to pause/stop/hide it. Include this in the requirement.
+- **Caption file format:** use WebVTT for screen-reader compatibility
+  and searchability.
+
+## Cross-references
+
+- Onboarding: currently a placeholder (per CLAUDE.md). This requirement
+  attaches to whichever future spec builds it.
+- Related: Spec 07-accessibility/12 (screen-reader onboarding) — both
+  concern onboarding accessibility.
+
+## Test strategy
+
+- When the animation is built: verify captions are synchronized,
+  localized in en/bn, and the text-only alternative is accessible.
+- Widget test: verify pause/stop/hide controls work.

@@ -78,3 +78,54 @@ data the Reports module already produces — low risk, low effort. Natural
 first candidate in this batch since several other items (heatmap,
 day-of-week breakdown) share the same underlying data source and could be
 sequenced together.
+
+## Database schema
+
+New `personal_records` table to persist all-time records:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| module_id | TEXT | `'water'` \| `'medicine'` \| `'prayer'` |
+| record_type | TEXT | `'longest_streak'` \| `'best_adherence'` |
+| record_value | INTEGER | the record number |
+| achieved_at | INTEGER | UTC when the record was set |
+| created_at, updated_at | INTEGER | |
+
+This table is the source of truth for "all-time record" — `longestStreak()`
+from `day_status_streaks.dart` computes over a date range, but the true
+all-time record requires scanning all history. Persisting it avoids this
+scan on every stats screen load.
+
+## Localization
+
+New ARB keys (en/bn):
+- `personalRecordTitle` — "Personal Record"
+- `personalRecordLongestStreak` — "Longest Streak: {count} days"
+- `personalRecordNewRecord` — "New Record!"
+- `personalRecordPrevious` — "Previous: {count} days"
+
+## Edge cases & error handling
+
+- **Record detection:** after each streak computation, compare against
+  the persisted record. If the new streak exceeds it, update the
+  record and fire a celebration event.
+- **Achievement coordination:** the "new record" event should NOT
+  duplicate as an achievement. The record celebration is a presentation
+  concern, not an achievement unlock.
+- **Backfill on first launch:** compute the all-time record from
+  historical data on feature first launch, then persist it.
+
+## Cross-references
+
+- Day-status streaks: `lib/core/reports/day_status_streaks.dart`.
+- Aggregate report: `lib/core/reports/aggregate_report_usecase.dart`.
+- Related: Spec 08-analytics/01 (heatmap) — same data source.
+- Related: Spec 08-analytics/05 (consistency score) — related metric.
+
+## Test strategy
+
+- Unit test: record detection and persistence.
+- Unit test: backfill from historical data.
+- Widget test: record display on stats screens.
+- Widget test: "New Record!" celebration toast.

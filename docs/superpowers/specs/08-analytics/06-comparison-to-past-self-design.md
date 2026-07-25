@@ -78,3 +78,45 @@ Atlas complexity: M. The chart-widget extension and cross-year data
 fetching are moderate but well-bounded work; the low retention impact and
 hard one-year data prerequisite make this a reasonable candidate to
 schedule last among the personal-analytics items in this batch.
+
+## Database schema
+
+No new tables. Data comes from calling `dayStatus(DateRange)` twice:
+once for the current period, once for the same period one year prior.
+
+## Localization
+
+New ARB keys (en/bn):
+- `comparisonTitle` — "vs. Last Year"
+- `comparisonCurrentLabel` — "This {period}"
+- `comparisonPastLabel` — "Last year"
+- `comparisonEmptyState` — "Not enough history yet (need 1 year)"
+- `comparisonImprovement` — "{percent}% better than last year"
+
+## Edge cases & error handling
+
+- **Leap year / month-length mismatch:** when "this month" has 31 days
+  but "last year this month" had 28, clip the current month to 28 days
+  for a fair comparison.
+- **No previous data:** show "Not enough history yet" with a progress
+  indicator showing how close the user is to the 1-year threshold.
+- **Partial overlap:** if data exists for only some days of the previous
+  period, compare only the overlapping days.
+- **Chart overlay:** extend `period_bar_chart.dart` to accept a second
+  `List<BarChartPoint>` series rendered in a lighter/transparent color.
+  Place the overlay bar BEHIND the current bar for visual hierarchy.
+
+## Cross-references
+
+- Period bar chart: `lib/core/widgets/charts/period_bar_chart.dart`.
+- Aggregate report: `lib/core/reports/aggregate_report_usecase.dart`.
+- Related: Spec 08-analytics/04 (trend arrows) — year-over-year is the
+  ultimate "trend arrow."
+- Related: Spec 04-premium/08 (extended stats) — multi-year ranges.
+
+## Test strategy
+
+- Unit test: date-range alignment with leap year edge cases.
+- Unit test: partial-overlap comparison logic.
+- Widget test: chart overlay rendering.
+- Widget test: empty state for users with < 1 year of data.

@@ -40,3 +40,46 @@ Treat this as a per-module checklist run against each of the 5 modules' full scr
 ## Effort & sequencing notes
 
 Complexity M — broad in surface area (every screen, two platforms) but shallow in depth (mostly label additions, not redesign). Do this audit first, before #2 (chart fallback), #6 (Simple Mode), and #12 (onboarding screen-reader check) — all three depend on the labeling conventions and gaps this audit surfaces.
+
+## Localization
+
+- All new `Semantics` labels and hints are user-facing strings that need en/bn ARB keys.
+- New keys should follow the existing naming convention in `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb` (snake_case with a `semantic_` or `accessibility_` prefix for discoverability).
+- Examples of expected new strings per module:
+  - **Dashboard**: `semantic_day_completion_indicator`, `semantic_upcoming_strip`, `semantic_quick_actions_section`, `semantic_global_calendar_button`.
+  - **Water**: `semantic_water_quick_add_button`, `semantic_water_custom_log_button`, `semantic_water_stats_chart`, `semantic_water_streak_indicator`.
+  - **Medicine**: `semantic_medicine_dose_timeline`, `semantic_medicine_dose_done_button`, `semantic_medicine_stock_indicator`, `semantic_medicine_stats_chart`.
+  - **Prayer**: `semantic_prayer_checklist_toggle`, `semantic_prayer_qadha_counter`, `semantic_prayer_stats_chart`, `semantic_prayer_settings_section`.
+  - **Settings**: `semantic_theme_toggle`, `semantic_locale_toggle`, `semantic_simple_mode_toggle` (if already present).
+- All chart summary labels (Water/Medicine/Prayer stats) and calendar day-cell labels must also be localized since they're read aloud by screen readers.
+- Use `AppLocalizations.of(context)` for all new semantic labels — never hardcode English strings in `Semantics` widgets.
+
+## Edge cases & error handling
+
+1. **Icon-only buttons without visible text** — any `IconButton` or `Icon`-based tappable must have a `Semantics` label or `tooltip`; the audit should flag every instance and each must be fixed individually.
+2. **fl_chart custom painters have no semantic tree** — the chart widgets rendered by `PeriodBarChart` (in `lib/core/widgets/charts/period_bar_chart.dart`) and per-module chart variants will return empty accessibility trees by default; each chart instance needs a summary label wrapping the entire widget.
+3. **Calendar day cells in history screens** — per-module history calendars and the dashboard's global month calendar use custom cell renderers that don't inherit default semantics; each cell needs explicit `Semantics` annotation for its date and status.
+4. **Live-region announcements not firing** — snackbar confirmations (e.g. "goal met", "dose marked done") must use `SemanticsService.announce()` to push updates to the screen reader; the audit should verify each confirmation path actually triggers an announcement.
+5. **Swipe/gesture-only controls** — any gesture-driven interaction (e.g. swipe-to-delete on a dose entry) needs an alternative reachable action or an explicit `Semantics` hint describing the gesture.
+
+## Cross-references
+
+- `docs/superpowers/specs/07-accessibility/02-chart-data-table-fallback-design.md` — builds on this audit's chart labeling results.
+- `docs/superpowers/specs/07-accessibility/06-simple-mode-large-button-layout-design.md` — depends on established labeling conventions.
+- `docs/superpowers/specs/07-accessibility/10-focus-order-keyboard-navigation-pass-design.md` — complementary audit (physical focus order vs. screen-reader semantics).
+- `docs/superpowers/specs/07-accessibility/12-screen-reader-friendly-onboarding-order-design.md` — reuses labeling conventions from this audit.
+- `lib/core/widgets/charts/period_bar_chart.dart` — primary chart widget needing semantic labels.
+- `lib/core/theme/app_theme.dart` — `AppSemanticColors` extension referenced for status-based labeling.
+- `lib/core/l10n/app_en.arb` / `lib/core/l10n/app_bn.arb` — localization source of truth for all new strings.
+
+## Test strategy
+
+- **Widget tests**: For each screen, write a widget test that pumps the screen with `SemanticsBinding.instance.ensureSemantics()` enabled and asserts that all expected semantic labels are present and non-empty. Target files:
+  - `test/features/dashboard/presentation/dashboard_semantics_test.dart`
+  - `test/features/water/presentation/water_semantics_test.dart`
+  - `test/features/medicine/presentation/medicine_semantics_test.dart`
+  - `test/features/prayer/presentation/prayer_semantics_test.dart`
+  - `test/features/settings/presentation/settings_semantics_test.dart`
+- **Regression-prevention strategy**: Add a `test/Accessibility/semantics_coverage_test.dart` that enumerates all routes in `AppRoutes` and verifies each route's top-level widget has at least one `Semantics` node with a non-empty label. Run this in CI on every PR to catch new screens added without accessibility labels.
+- **Manual audit checklist**: Create a `docs/superpowers/specs/07-accessibility/01-audit-checklist.md` with a table of every screen × TalkBack/VoiceOver × label present/fixed status, checked into the repo for traceability.
+- **Golden tests**: Not applicable for semantic labels (golden tests verify visual rendering, not the accessibility tree).

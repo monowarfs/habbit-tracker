@@ -75,3 +75,55 @@ Medium — the shop mechanism itself is simple (catalog, balance, unlock
 flag) but is entirely blocked on the XP system existing first, and its
 real cost is producing the cosmetic asset pack rather than the code.
 Sequence strictly after the cross-module XP/level system.
+
+## Database schema
+
+New `shop_unlocks` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| item_id | TEXT | shop catalog item identifier |
+| item_type | TEXT | `'palette'` \| `'icon'` \| `'theme'` |
+| unlocked_at | INTEGER | UTC |
+| created_at | INTEGER | |
+
+XP balance is tracked in Spec 06-gamification/02's `xp_balance` table.
+The shop deducts from `total_xp` on purchase — this means spending
+reduces the displayed level (level is derived from `total_xp`).
+
+## Localization
+
+New ARB keys (en/bn):
+- `shopTitle` — "Point Shop"
+- `shopBuyButton` — "Buy for {cost} XP"
+- `shopOwnedLabel` — "Owned"
+- `shopInsufficientXp` — "Not enough XP ({current}/{needed})"
+- Per-item name keys (e.g. `shopItemOceanPalette`).
+
+## Edge cases & error handling
+
+- **Insufficient XP:** show "Not enough XP" with current balance and
+  cost displayed. The buy button is disabled, not hidden.
+- **Reinstall data loss:** unlocks are device-local (no cloud sync in
+  v1). After reinstall, the user must re-purchase with their XP. This
+  is consistent with the app's offline-first model.
+- **Duplicate purchase:** the `shop_unlocks` table uses `item_id` as a
+  unique constraint. Attempting to buy again shows "Already owned."
+- **XP goes negative:** not possible — purchase is only allowed when
+  `total_xp >= cost`.
+
+## Cross-references
+
+- XP system: Spec 06-gamification/02 (hard dependency).
+- Theme system: `lib/core/theme/app_theme.dart`.
+- Icon switching: `lib/core/theme/icon_switcher.dart` (if exists).
+- Related: Spec 04-premium/06 (icon packs) — the IAP version of
+  cosmetic unlocks. The point shop is the free/earned alternative.
+
+## Test strategy
+
+- Unit test: purchase deduction logic.
+- Unit test: duplicate purchase prevention.
+- Unit test: insufficient XP blocking.
+- Widget test: shop catalog display with owned/buyable states.

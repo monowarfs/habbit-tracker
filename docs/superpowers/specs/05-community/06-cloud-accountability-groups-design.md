@@ -39,3 +39,51 @@ Contingent on the account/backend decision being made affirmatively and separate
 
 ## Effort & sequencing notes
 Large (L) complexity, and the single highest-risk item in the Community category precisely because it's the one that breaks the app's current architectural promise. Should not be estimated or scheduled as ordinary feature work — the account/backend decision needs to happen first, on its own timeline, separately from any sprint planning for the feature's UI/UX. If approved, this also becomes a prerequisite for item 09 and lowers the bar for item 07 and item 11, since all three assume some form of backend already exists.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `groupsTitle` — "Accountability Groups" / "জবাবদিহিতা গ্রুপ"
+- `groupsCreateAction` — "Create Group" / "গ্রুপ তৈরি করুন"
+- `groupsJoinAction` — "Join Group" / "গ্রুপে যোগ দিন"
+- `groupsLeaveAction` — "Leave Group" / "গ্রুপ ছাড়ুন"
+- `groupsLeaveConfirm` — "Are you sure? Your shared data will stop being visible." / "আপনি নিশ্চিত? আপনার শেয়ার করা তথ্য আর দৃশ্যমান হবে না।"
+- `groupsMemberCompleted` — "{name} completed today" / "{name} আজ সম্পন্ন করেছে"
+- `groupsMemberStreak` — "{name}: {count}-day streak" / "{name}: {count}-দিনের স্ট্রিক"
+- `groupsInviteCode` — "Share this code with friends" / "বন্ধুদের সাথে এই কোড শেয়ার করুন"
+- `groupsEmpty` — "No groups yet. Create one to get started!" / "এখনো কোনো গ্রুপ নেই। শুরু করতে একটি তৈরি করুন!"
+- `groupsSyncError` — "Could not sync group data. Will retry." / "গ্রুপ তথ্য সিঙ্ক করা যায়নি। পুনরায় চেষ্টা করা হবে।"
+- `groupsPrivacyNotice` — "Only your completion status is shared, never raw data." / "শুধুমাত্র আপনার সমাপ্তির অবস্থা শেয়ার করা হয়, কখনো কাঁচা তথ্য নয়।"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`.
+
+## Edge cases & error handling
+
+1. **Network unavailable during sync** — The app is offline-first; queue group sync operations and retry on next connectivity. Use a background sync pattern. Surface a non-intrusive "Sync pending" indicator, not a blocking error. Reference `AppException.storage` for DB failures.
+2. **Token expired / account lost** — If the device token expires or is invalidated, the user must re-authenticate. Surface a clear "Session expired, please sign in again" message using `AppException.notFound`.
+3. **Group member leaves but their history is still visible** — Design the data model so leaving a group immediately removes the leaver's future shared signals. Past shared data already received by other members may persist locally — clarify the deletion story in the privacy review.
+4. **Invite code intercepted by wrong person** — If an invite code is shared publicly or intercepted, the group becomes compromised. Mitigate with time-limited codes and a maximum group size cap (2-10 members). Use `AppException.validation` for expired/invalid codes.
+5. **Concurrent modifications** — Two members changing group settings simultaneously could cause conflicts. Use last-write-wins for non-critical fields (group name) and reject conflicting critical changes (removing a member) with `AppException.validation`.
+
+## Cross-references
+
+- `docs/superpowers/specs/05-community/09-ramadan-community-challenge-design.md` — depends on this feature's group infrastructure.
+- `docs/superpowers/specs/05-community/07-global-city-prayer-participation-stat-design.md` — shares the backend/consent decision.
+- `docs/superpowers/specs/05-community/11-caregiver-read-only-view-link-design.md` — shares the backend/consent architecture decision.
+- `docs/strategies/analytics-future.md` — consent checklist this feature must follow.
+- `lib/core/reports/day_status_streaks.dart` — source of the coarse completion signals shared.
+- `lib/core/reports/aggregate_report_usecase.dart` — aggregation for shared metrics.
+- `lib/core/error/app_exception.dart` — error taxonomy (validation, notFound, storage).
+- `lib/core/error/result.dart` — Result<T> for all repository returns.
+
+## Test strategy
+
+- **Unit tests**: Group creation/join/leave business logic. Invite code generation and validation. Coarse-signal extraction from day-status data (never raw entries). Token lifecycle (create, validate, expire, revoke).
+- **Widget tests**: Group list screen renders with mock members. Create/join group flows. Leave-group confirmation dialog. Empty state for new users.
+- **Integration tests**: Full sync cycle: create group → share code → join → member completes → other sees completion. Leave group → data disappears from other members' views.
+- **Test files to create**:
+  - `test/features/community/accountability_group_test.dart`
+  - `test/features/community/group_sync_test.dart`
+  - `test/core/group/invite_code_test.dart`
+  - `test/core/group/coarse_signal_extraction_test.dart`

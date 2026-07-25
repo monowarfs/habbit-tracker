@@ -37,3 +37,47 @@ Add a share entry point on the relevant stats/achievement surfaces (e.g. Water/M
 
 ## Effort & sequencing notes
 Small (S). No dependency on any other Community-category feature — this can be scheduled first or independently at any point. The only soft prerequisite is deciding whether a shared recap-card renderer exists or needs to be built once, since item 09 (Ramadan challenge) and general achievement UI could also reuse it.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `shareStreakTitle` — "Share Your Streak" / "আপনার স্ট্রিক শেয়ার করুন"
+- `shareStreakSubtitle` — "Create a shareable image" / "শেয়ারযোগ্য ছবি তৈরি করুন"
+- `shareStreakWaterLabel` — "Water Streak" / "পানির স্ট্রিক"
+- `shareStreakMedicineLabel` — "Medicine Streak" / "ওষুধের স্ট্রিক"
+- `shareStreakPrayerLabel` — "Prayer Streak" / "নামাজের স্ট্রিক"
+- `shareStreakOverallLabel` — "Overall Streak" / "সামগ্রিক স্ট্রিক"
+- `shareStreakDays` — "{count} days" / "{count} দিন"
+- `shareStreakShareAction` — "Share" / "শেয়ার করুন"
+- `shareStreakSavedToGallery` — "Saved to gallery" / "গ্যালারিতে সংরক্ষিত"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`. The rendered image text must respect the user's locale — RTL for bn, appropriate line-height adjustments per `lib/core/theme/app_theme.dart`'s bn text theme override.
+
+## Edge cases & error handling
+
+1. **Share sheet cancelled by user** — No action needed; treat as a normal dismissal. No error state to surface.
+2. **Widget-to-image capture fails** — `RenderRepaintBoundary.toImage()` can throw on low-memory or if the widget is not yet laid out. Catch and surface via a SnackBar using `AppException.unexpected`, logging the cause with `app_logger.dart`'s rotating logger.
+3. **No share-capable app installed** — On some stripped-down Android builds, `share_plus` may find no target. Show a fallback "No sharing app available" message (use `AppException.unexpected`).
+4. **Streak data is zero or unavailable** — Guard against sharing a card when the user has no meaningful streak to show. Either hide the share entry point or show a friendly empty state with `AppException.validation`.
+5. **Image file temp storage full** — Extremely unlikely but possible. `share_plus` will fail; treat as `AppException.unexpected` and show a SnackBar.
+
+## Cross-references
+
+- `docs/superpowers/specs/02-delightful/05-shareable-monthly-recap-card-design.md` — related monthly recap card feature; potential renderer overlap.
+- `docs/superpowers/specs/06-gamification/07-milestone-certificate-image-design.md` — milestone certificate shares the widget-to-image pattern.
+- `docs/superpowers/specs/05-community/02-invite-a-friend-deep-link-design.md` — shares the `share_plus` dependency.
+- `docs/superpowers/specs/05-community/09-ramadan-community-challenge-design.md` — may reuse the card renderer.
+- `lib/core/achievements/` — achievement definitions provide unlock data for the card.
+- `lib/core/reports/` — `day_status_streaks.dart` and `aggregate_report_usecase.dart` provide source data.
+- `lib/core/widgets/charts/period_bar_chart.dart` — reusable chart widget that could be embedded in the card.
+
+## Test strategy
+
+- **Unit tests**: Widget-to-image capture utility (pure mapping from streak data to card content). Mock `share_plus` to verify share invocation with correct file path. Verify locale-aware text rendering (en vs bn).
+- **Widget tests**: The shareable card widget renders correctly with mock streak data. Verify module-specific accent colors appear. Test visibility of share button based on streak availability.
+- **Golden tests**: Golden images for the rendered card across Water/Medicine/Prayer/Overall variants to catch layout regressions.
+- **Test files to create**:
+  - `test/features/community/share_streak_image_test.dart`
+  - `test/widgets/shareable_card_widget_test.dart`
+  - `test/goldens/shareable_card_water_golden.png` (and per-module variants)

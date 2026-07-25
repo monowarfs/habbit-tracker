@@ -82,3 +82,69 @@ if the underlying status distinction already exists in
 `effectivePrayerStatus` and just needs surfacing — largely a Prayer stats
 screen presentation change. Independent of every other item in this
 batch; Prayer-specific so no cross-module coordination needed.
+
+## Database schema
+
+**Important finding:** the current `PrayerStatus` enum only has
+`upcoming`, `due`, `missed`, and `prayed` — there is NO "late but
+completed" status. The `effectivePrayerStatus` function marks a prayer
+as `prayed` regardless of when it was completed relative to the
+scheduled time.
+
+To implement this spec, a new `PrayerStatus` value is needed:
+
+```dart
+enum PrayerStatus {
+  upcoming, due, prayed, prayedLate, missed
+}
+```
+
+This requires:
+1. Adding `prayedLate` to the `PrayerStatus` enum.
+2. Modifying `effectivePrayerStatus` to check if `status_changed_at >
+   scheduled_for + grace_window` and assign `prayedLate` instead of
+   `prayed`.
+3. Updating `calculateAdherence` to handle the new status.
+4. Updating `notification_action_handler` to mark prayers as `prayed`
+   (not `prayedLate`) when actioned via notification — on-time via
+   notification is always considered "on time."
+
+## Localization
+
+New ARB keys (en/bn):
+- `prayerOnTimeLabel` — "On Time: {count} ({percent}%)"
+- `prayerLateLabel` — "Late but Completed: {count} ({percent}%)"
+- `prayerMissedLabel` — "Missed: {count} ({percent}%)"
+- `prayerOnTimeRate` — "On-time rate: {percent}%"
+- `prayerFajrOnTime` — per-prayer-name breakdown labels.
+
+## Edge cases & error handling
+
+- **Grace window interaction:** the prayer module already has a
+  `grace_window_minutes` concept (for Qadha cutoff). Use the same
+  grace window to determine "on time" vs. "late" — if completed within
+  the grace window after `scheduled_for`, it's "on time."
+- **Notification action:** prayers actioned via notification's Done
+  button are always marked `prayed` (on time), not `prayedLate`, since
+  the notification fired at the scheduled time.
+- **Backward compatibility:** existing `prayed` records in the DB are
+  treated as "on time" by default. The `prayedLate` status is only
+  assigned to new records after the schema change.
+
+## Cross-references
+
+- Effective prayer status: `lib/features/prayer/domain/usecases/effective_prayer_status.dart`.
+- Prayer stats screen: `lib/features/prayer/presentation/screens/prayer_stats_screen.dart`.
+- Prayer records: `lib/core/database/app_database.dart` (prayer_records table).
+- Related: Spec 08-analytics/08 (adherence by medicine) — analogous
+  on-time/late split.
+- Related: Spec 08-analytics/07 (notification effectiveness) — prayer
+  notification action mapping.
+
+## Test strategy
+
+- Unit test: `effectivePrayerStatus` with new `prayedLate` status.
+- Unit test: grace window boundary conditions.
+- Unit test: notification action always marks as `prayed` (on time).
+- Widget test: prayer stats screen with three-way split display.
+- Migration test: existing `prayed` records handled correctly.

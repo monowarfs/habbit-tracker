@@ -39,3 +39,41 @@ Force the app into a pseudo-RTL test locale (a standard Flutter debug capability
 ## Effort & sequencing notes
 
 Complexity S — a structural sweep over existing screens, fixes are typically one-line property swaps. Low urgency (no RTL locale ships today) but cheap to do now; worth doing before item #6 (Simple Mode) adds new layouts that would also need to be RTL-checked separately if this audit is deferred.
+
+## Database schema
+
+No database changes. This is a code-level audit of layout properties.
+
+## Localization
+
+No new ARB keys needed. The audit verifies that EXISTING layout code
+uses directional-agnostic properties (`start`/`end` instead of
+`left`/`right`). The localization framework (`gen_l10n`) already handles
+RTL text direction automatically.
+
+## Edge cases & error handling
+
+- **Pseudo-RTL testing:** force RTL by setting `locale: Locale('ar')` in
+  `MaterialApp` during testing. No real Arabic translation needed — the
+  layout mirroring is what's being tested.
+- **Icons that shouldn't mirror:** play buttons, checkmarks, arrows
+  pointing in a meaningful direction — these need `Directionality`
+  override or a separate RTL variant.
+- **fl_chart RTL:** the chart library handles RTL internally; verify
+  but don't modify its internals.
+
+## Cross-references
+
+- Theme system: `lib/core/theme/app_theme.dart`.
+- Related: Spec 07-accessibility/06 (Simple Mode) — new layouts must
+  also be RTL-ready.
+- Related: Spec 07-accessibility/01 (TalkBack audit) — both are
+  structural audits of all screens.
+
+## Test strategy
+
+- Widget tests: verify key screens render correctly under RTL
+  `Directionality` widget.
+- Manual audit: walk every screen under pseudo-RTL locale.
+- Regression: add a CI check that runs key widget tests with RTL
+  directionality enabled.

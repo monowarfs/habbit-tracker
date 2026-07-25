@@ -74,3 +74,59 @@ new "resets weekly" concept the current one-time-unlock model doesn't
 have. No hard dependency on the XP system, though pairing the reward with
 XP (once it exists) would be a natural follow-up rather than a
 prerequisite.
+
+## Database schema
+
+New `weekly_quests` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| quest_key | TEXT | e.g. `'water_goal_5_of_7'` |
+| module_id | TEXT | which module this quest belongs to |
+| week_key | TEXT | `'YYYY-Www'` ISO week format |
+| progress_current | INTEGER | current progress toward target |
+| progress_target | INTEGER | goal (e.g. 5) |
+| completed_at | INTEGER NULL | UTC; null = not yet completed |
+| reward_claimed | INTEGER (bool) | whether XP/reward has been claimed |
+| created_at, updated_at | INTEGER | |
+
+Week boundaries use ISO 8601 week numbering (Monday start). The
+`week_key` is computed from `localDayKey()` to maintain DST safety.
+
+## Localization
+
+New ARB keys (en/bn):
+- `weeklyQuestTitle` — "This Week's Quests" section header.
+- `weeklyQuestProgress` — "{current}/{target} days" progress label.
+- `weeklyQuestComplete` — "Quest complete! Claim your reward."
+- `weeklyQuestReset` — "New quests available every Monday."
+- Per-quest description keys (e.g. `questWater5of7`).
+
+## Edge cases & error handling
+
+- **Week boundary DST:** ISO 8601 weeks are timezone-agnostic (Monday
+  00:00 UTC). Use `localDayKey()` to determine the user's local
+  Monday, then convert to UTC for the `week_key`.
+- **Quest completion timing:** if the user completes the last required
+  action on Sunday at 23:59, the quest is marked complete. If they
+  complete it on Monday after midnight, it counts toward the new week.
+- **Missed week:** if the user doesn't open the app all week, the quests
+  simply expire — no penalty, no carryover.
+- **Multiple modules:** each module gets 1-2 quests per week. Cross-module
+  quests (e.g. "complete all modules 3 days") are deferred to Spec
+  06-gamification/06 (combo bonus).
+
+## Cross-references
+
+- Achievements engine: `lib/core/achievements/achievement_engine.dart`.
+- Related: Spec 06-gamification/02 (XP) — quests award XP.
+- Related: Spec 06-gamification/09 (boss challenge) — harder variant.
+- Related: Spec 06-gamification/06 (combo bonus) — cross-module variant.
+
+## Test strategy
+
+- Unit test: quest generation for each module.
+- Unit test: week boundary computation (DST edge cases).
+- Unit test: progress tracking and completion detection.
+- Widget test: quest list UI with progress bars.

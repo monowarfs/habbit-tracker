@@ -72,3 +72,44 @@ Small — the completion data already exists; this is a rule and a reward
 hookup, not new tracking infrastructure. Works best once the XP system
 exists to give the bonus a tangible reward, but the detection logic itself
 has no hard technical dependency on it.
+
+## Database schema
+
+No new tables if combo is purely event-driven. If a "combo streak"
+achievement is added later, a `combo_days` column on the achievements
+table or a new `combo_log` table would track combo-day history. For v1,
+the combo detection runs at read time from existing `dayStatus()` data.
+
+## Localization
+
+New ARB keys (en/bn):
+- `comboCelebrationTitle` — "Combo Complete!"
+- `comboCelebrationBody` — "All modules done today!"
+- `comboXpBonus` — "+{amount} XP combo bonus" (when XP exists).
+
+## Edge cases & error handling
+
+- **Single-module users:** combo is hidden for users with only one
+  module enabled. The feature requires 2+ active modules.
+- **Timing:** combo fires at end-of-day (23:59 local), not the moment
+  the last module completes. This avoids premature celebration if the
+  user logs something early but misses another module later.
+- **"Active modules" definition:** uses the `modules` table's `enabled`
+  column (existing in `module_registry.dart`). Only enabled modules
+  count toward combo completion.
+- **Partial day:** if a module has partial completion (e.g. 3/5 prayers),
+  it does NOT count as "complete" for combo purposes.
+
+## Cross-references
+
+- Dashboard completion: `lib/features/dashboard/presentation/`.
+- Module enable/disable: `lib/core/modules/module_registry.dart`.
+- Related: Spec 06-gamification/02 (XP) — combo awards bonus XP.
+- Related: Spec 06-gamification/04 (weekly quests) — weekly variant.
+- Related: Spec 06-gamification/12 (leaderboard) — combo could rank.
+
+## Test strategy
+
+- Unit test: combo detection with various module combinations.
+- Unit test: single-module user sees no combo.
+- Widget test: combo celebration animation.

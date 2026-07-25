@@ -77,3 +77,47 @@ calculation that already exists per-medicine under the hood — low
 implementation risk if that's confirmed true; slightly higher if the
 existing calculation needs restructuring to expose that granularity.
 Independent of every other item in this batch.
+
+## Database schema
+
+No new tables. The per-medicine breakdown is computed by grouping
+`medicine_doses` by `medicine_id` and calling `calculateAdherence` per
+group. The current `calculateAdherence` use case in
+`lib/features/medicine/domain/usecases/calculate_adherence.dart` takes
+a flat `List<MedicineDose>` — the caller must group by `medicine_id`
+before passing.
+
+## Localization
+
+New ARB keys (en/bn):
+- `adherenceByMedicineTitle` — "Adherence by Medicine"
+- `adherenceByMedicineRate` — "{name}: {percent}%"
+- `adherenceByMedicineSorted` — "Sorted by adherence (lowest first)"
+- `adherenceByMedicineInsufficientData` — "Not enough doses yet for {name}"
+
+## Edge cases & error handling
+
+- **PRN medicines:** PRN (as-needed) medicines don't have a scheduled
+  adherence concept. Show them separately with "As-needed" framing
+  rather than a percentage.
+- **Short courses:** if a medicine has fewer than 7 scheduled doses,
+  show "Not enough data" instead of a potentially misleading percentage.
+- **Sorted by ascending adherence:** the worst-performing medicine is
+  at the top, making it immediately visible.
+- **Single medicine:** if only one medicine exists, the breakdown is
+  redundant with the overall stats. Show it anyway for consistency.
+
+## Cross-references
+
+- Calculate adherence: `lib/features/medicine/domain/usecases/calculate_adherence.dart`.
+- Medicine stats screen: `lib/features/medicine/presentation/screens/medicine_stats_screen.dart`.
+- Medicine data model: `lib/features/medicine/domain/entities/`.
+- Related: Spec 08-analytics/03 (day-of-week) — Medicine's partial
+  adherence granularity.
+
+## Test strategy
+
+- Unit test: per-medicine grouping and adherence calculation.
+- Unit test: PRN medicine handling.
+- Unit test: short-course minimum sample enforcement.
+- Widget test: per-medicine breakdown list sorted by adherence.

@@ -33,3 +33,36 @@ Add a single item to the existing Settings screen that opens the community URL v
 
 ## Effort & sequencing notes
 Small (S), trivially independent of every other Community-category item — this can ship any time, with no dependency ordering. The only real gate is having an actual community channel to link to.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `communityJoinTitle` — "Join Our Community" / "আমাদের কমিউনিটিতে যোগ দিন"
+- `communityJoinDescription` — "Connect with other users" / "অন্যান্য ব্যবহারকারীদের সাথে সংযুক্ত হন"
+- `communityJoinAction` — "Open" / "খুলুন"
+- `communityLeaveAppWarning` — "You're leaving the app" / "আপনি অ্যাপটি ছাড়ছেন"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`.
+
+## Edge cases & error handling
+
+1. **External URL fails to open** — If `url_launcher` cannot handle the URL (no browser, no Telegram/Discord installed), surface a SnackBar with the raw URL so the user can copy it. Use `AppException.unexpected` internally.
+2. **Community channel URL becomes stale** — The hardcoded URL may change over time. Consider making it a remote-configurable value (or at least easily updatable via a new app release). For v1, a hardcoded constant is acceptable.
+3. **Confirmation dialog dismissed** — If a "leaving the app" confirmation is added, a dismiss should simply return to Settings with no action. No error state needed.
+4. **Deep-link opens the community platform app instead of browser** — This is expected behavior (Telegram app opens the channel directly). No special handling needed.
+5. **Accessibility: link not announced** — Ensure the Settings row has a proper `Semantics` label so screen readers announce it as a link. Reference `docs/superpowers/specs/07-accessibility/01-talkback-voiceover-navigation-audit-design.md`.
+
+## Cross-references
+
+- `docs/superpowers/specs/05-community/10-in-app-feedback-feature-request-board-design.md` — similar external-link Settings entry pattern.
+- `docs/superpowers/specs/07-accessibility/01-talkback-voiceover-navigation-audit-design.md` — screen reader considerations for Settings links.
+- `lib/features/settings/` — existing Settings presentation layer where this row is added.
+- `lib/core/l10n/app_en.arb` / `app_bn.arb` — localization source files.
+
+## Test strategy
+
+- **Unit tests**: Verify the community URL constant is valid (non-empty, well-formed).
+- **Widget tests**: Settings row renders with correct label and opens the URL on tap. Verify the row appears in the Settings screen at the expected position.
+- **Test files to create**:
+  - `test/features/settings/community_link_test.dart`
