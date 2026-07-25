@@ -142,4 +142,13 @@ class NotificationLedgerRepository {
       ),
     );
   }
+
+  /// Evicts ledger entries older than [age]. Called periodically to bound
+  /// notification_ledger growth. User-facing data is unaffected.
+  Future<int> cleanupOlderThan(Duration age) async {
+    final cutoff = clock.now().subtract(age).toUtc().millisecondsSinceEpoch;
+    return (_db.delete(_db.notificationLedgerTable)
+          ..where((t) => t.createdAt.isSmallerThanValue(cutoff)))
+        .go();
+  }
 }

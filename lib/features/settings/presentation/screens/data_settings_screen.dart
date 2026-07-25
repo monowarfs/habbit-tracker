@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/features/settings/presentation/widgets/data_longevity_guarantee_card.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/data_privacy_reassurance_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
@@ -179,6 +180,8 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
                 ),
                 const SizedBox(height: 16),
                 const DataPrivacyReassuranceCard(),
+                const SizedBox(height: 16),
+                const DataLongevityGuaranteeCard(),
               ],
             ),
     );
