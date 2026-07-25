@@ -24,7 +24,7 @@ abstract class WaterRepository {
   Future<WaterEntry?> entryById(String id);
 
   /// Streams the current (latest) goal.
-  Stream<WaterGoal> watchCurrentGoal();
+  Stream<WaterGoal?> watchCurrentGoal();
 
   /// All goal-history rows, oldest first — the raw material
   /// `ResolveGoalForDateUseCase`/`CalculateWaterStreakUseCase` resolve
@@ -92,4 +92,16 @@ abstract class WaterRepository {
     required double temperatureCelsius,
     required DateTime fetchedAt,
   });
+
+  /// Archives a water goal, hiding it from active views.
+  Future<Result<void>> archiveGoal(String goalId);
+
+  /// Revives an archived water goal, making it active again.
+  Future<Result<void>> reviveGoal(String goalId);
+
+  /// Returns all archived water goals.
+  Future<List<WaterGoal>> archivedGoals();
+
+  /// Whether the user has ever set any goal (active or archived).
+  Future<bool> hasAnyGoals();
 }

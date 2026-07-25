@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_permission_explainer_screen.dart';
@@ -208,6 +209,13 @@ class WaterSettingsScreen extends ConsumerWidget {
                 controller.updateWeatherNudgeEnabled(enabled: enabled),
               );
             },
+          ),
+          const Divider(height: 32),
+          ListTile(
+            leading: const Icon(Icons.archive_outlined),
+            title: Text(l10n.archivedGoalsTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/water/archived'),
           ),
         ],
       ),

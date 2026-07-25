@@ -1458,6 +1458,66 @@
   "@recapEncouragement": {
     "description": "Encouraging message at the bottom of the hero card."
   },
+  "archiveAction": "Archive",
+  "@archiveAction": {
+    "description": "Menu item to archive an item."
+  },
+  "archiveConfirmTitle": "Archive {name}?",
+  "@archiveConfirmTitle": {
+    "description": "Title of the archive confirmation dialog.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "archiveConfirmBody": "You can revive it later.",
+  "@archiveConfirmBody": {
+    "description": "Body of the archive confirmation dialog."
+  },
+  "archiveConfirmButton": "Archive",
+  "@archiveConfirmButton": {
+    "description": "Confirm button for archiving."
+  },
+  "archiveSnackSuccess": "{name} archived",
+  "@archiveSnackSuccess": {
+    "description": "Snackbar shown after archiving an item.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "reviveAction": "Revive",
+  "@reviveAction": {
+    "description": "Button to revive an archived item."
+  },
+  "archivedGoalsTitle": "Archived Goals",
+  "@archivedGoalsTitle": {
+    "description": "Title for the archived water goals screen."
+  },
+  "archivedEmptyState": "No archived items yet.",
+  "@archivedEmptyState": {
+    "description": "Empty state when no items are archived."
+  },
+  "reviveConfirmTitle": "Revive {name}?",
+  "@reviveConfirmTitle": {
+    "description": "Title of the revive confirmation dialog.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "reviveConfirmBody": "This will restore your previous settings.",
+  "@reviveConfirmBody": {
+    "description": "Body of the revive confirmation dialog."
+  },
+  "reviveConfirmButton": "Revive",
+  "@reviveConfirmButton": {
+    "description": "Confirm button for reviving."
+  },
+  "reviveSnackSuccess": "{name} revived",
+  "@reviveSnackSuccess": {
+    "description": "Snackbar shown after reviving an item.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "reengagementNudgeTitle": "We missed you!",
   "@reengagementNudgeTitle": {
     "description": "Title of the re-engagement notification."

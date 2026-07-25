@@ -67,13 +67,15 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Stream<WaterGoal> watchCurrentGoal() {
+  Stream<WaterGoal?> watchCurrentGoal() {
     return Stream.fromFuture(_ensureGoalSeeded()).asyncExpand((_) {
       final query = _db.select(_db.waterGoalsTable)
-        ..where((t) => t.deletedAt.isNull())
+        ..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull())
         ..orderBy([(t) => OrderingTerm.desc(t.effectiveFrom)])
         ..limit(1);
-      return query.watchSingle().map(_goalFromRow);
+      return query.watchSingleOrNull().map(
+        (row) => row == null ? null : _goalFromRow(row),
+      );
     });
   }
 
@@ -82,7 +84,8 @@ class WaterRepositoryImpl implements WaterRepository {
     await _ensureGoalSeeded();
     final rows = await (_db.select(
       _db.waterGoalsTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+    )..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull()))
+        .get();
     return rows.map(_goalFromRow).toList(growable: false);
   }
 
@@ -378,6 +381,61 @@ class WaterRepositoryImpl implements WaterRepository {
     }
   }
 
+  @override
+  Future<Result<void>> archiveGoal(String goalId) async {
+    try {
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.waterGoalsTable,
+      )..where((t) => t.id.equals(goalId))).write(
+        WaterGoalsTableCompanion(
+          archivedAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('archive_goal', e));
+    }
+  }
+
+  @override
+  Future<Result<void>> reviveGoal(String goalId) async {
+    try {
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.waterGoalsTable,
+      )..where((t) => t.id.equals(goalId))).write(
+        WaterGoalsTableCompanion(
+          archivedAt: const Value(null),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('revive_goal', e));
+    }
+  }
+
+  @override
+  Future<List<WaterGoal>> archivedGoals() async {
+    final rows = await (_db.select(_db.waterGoalsTable)
+          ..where(
+            (t) => t.archivedAt.isNotNull() & t.deletedAt.isNull(),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.archivedAt)]))
+        .get();
+    return rows.map(_goalFromRow).toList();
+  }
+
+  @override
+  Future<bool> hasAnyGoals() async {
+    final result = await _db.customSelect(
+      'SELECT 1 FROM water_goals LIMIT 1',
+    ).getSingleOrNull();
+    return result != null;
+  }
+
   WaterEntry _entryFromRow(WaterLogRow row) => WaterEntry(
     id: row.id,
     amountMl: row.amountMl,
@@ -393,6 +451,9 @@ class WaterRepositoryImpl implements WaterRepository {
       row.effectiveFrom,
       isUtc: true,
     ),
+    archivedAt: row.archivedAt == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(row.archivedAt!, isUtc: true),
   );
 
   WaterSettings _settingsFromRow(WaterSettingsRow row) => WaterSettings(
