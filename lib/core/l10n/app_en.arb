@@ -1458,6 +1458,34 @@
   "@recapEncouragement": {
     "description": "Encouraging message at the bottom of the hero card."
   },
+  "reengagementNudgeTitle": "We missed you!",
+  "@reengagementNudgeTitle": {
+    "description": "Title of the re-engagement notification."
+  },
+  "reengagementNudgeBody": "Pick back up where you left off?",
+  "@reengagementNudgeBody": {
+    "description": "Body of the re-engagement notification."
+  },
+  "reengagementBannerTitle": "Welcome back!",
+  "@reengagementBannerTitle": {
+    "description": "Title of the re-engagement dashboard banner."
+  },
+  "reengagementBannerBody": "It's been a while. Tap to get started.",
+  "@reengagementBannerBody": {
+    "description": "Body of the re-engagement dashboard banner."
+  },
+  "reengagementBannerDismiss": "Dismiss",
+  "@reengagementBannerDismiss": {
+    "description": "Dismiss button for the re-engagement dashboard banner."
+  },
+  "reengagementSettingsLabel": "Re-engagement reminders",
+  "@reengagementSettingsLabel": {
+    "description": "Toggle label for the re-engagement nudge feature."
+  },
+  "reengagementSettingsDescription": "Get a gentle reminder after a week of inactivity",
+  "@reengagementSettingsDescription": {
+    "description": "Description for the re-engagement nudge toggle."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

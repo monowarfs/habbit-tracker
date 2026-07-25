@@ -129,6 +129,10 @@ class AppSettingsTable extends Table {
   /// Prevents re-nudging within the cooldown window.
   IntColumn get nudgeSentAfter => integer().nullable()();
 
+  /// Whether the re-engagement nudge feature is enabled. Default `true`.
+  BoolColumn get reengagementNudgeEnabled =>
+      boolean().withDefault(const Constant(true))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

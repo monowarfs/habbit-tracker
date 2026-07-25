@@ -36,6 +36,11 @@ const Map<String, AndroidNotificationChannel> notificationChannels = {
     'Prayer reminders',
     description: 'Prayer-time notifications and pre-prayer reminders',
   ),
+  'system': AndroidNotificationChannel(
+    'system_notifications',
+    'System notifications',
+    description: 'Re-engagement nudges and system-level messages',
+  ),
 };
 
 /// FNV-1a 32-bit hash: `flutter_local_notifications` notification ids are
