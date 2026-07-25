@@ -1640,6 +1640,14 @@
   "@achievementTenure2YearDescription": {
     "description": "Description for the 2-year tenure achievement."
   },
+  "dataPrivacyReassuranceTitle": "Your data stays on this device",
+  "@dataPrivacyReassuranceTitle": {
+    "description": "Title of the data privacy reassurance card."
+  },
+  "dataPrivacyReassuranceBody": "All your habits, logs, and history are stored locally on your device. Nothing is uploaded to the cloud, and no account is required.",
+  "@dataPrivacyReassuranceBody": {
+    "description": "Body text of the data privacy reassurance card."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 
