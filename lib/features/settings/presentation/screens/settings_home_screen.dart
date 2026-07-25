@@ -237,6 +237,34 @@ class SettingsHomeScreen extends ConsumerWidget {
               }
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.feedback_outlined),
+            title: Text(l10n.feedbackTitle),
+            subtitle: Text(l10n.feedbackDescription),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final uri = Uri.parse(CommunityLinks.feedbackUrl);
+              try {
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(CommunityLinks.feedbackUrlDisplay),
+                    ),
+                  );
+                }
+              } on Object {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(CommunityLinks.feedbackUrlDisplay),
+                    ),
+                  );
+                }
+              }
+            },
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsAbout),
           ListTile(

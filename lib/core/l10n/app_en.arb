@@ -1750,6 +1750,14 @@
   "@communityJoinDescription": {
     "description": "Description for the community join entry in Settings."
   },
+  "feedbackTitle": "Feedback & Feature Requests",
+  "@feedbackTitle": {
+    "description": "Title for the feedback entry in Settings."
+  },
+  "feedbackDescription": "Tell us what you'd like to see next",
+  "@feedbackDescription": {
+    "description": "Description for the feedback entry in Settings."
+  },
   "unlocksTitle": "Unlocks",
   "@unlocksTitle": {
     "description": "Title of the unlocks screen."
