@@ -428,6 +428,7 @@ class MedicineModule implements HabitModule {
       descriptionKey: 'achievementMedicineAdherenceStreak30Description',
       target: 30,
       currentProgress: _currentAdherenceStreak,
+      rarity: BadgeRarity.rare,
     ),
   ];
 

@@ -440,6 +440,7 @@ class PrayerModule implements HabitModule {
       descriptionKey: 'achievementPrayerStreak30Description',
       target: 30,
       currentProgress: _currentPrayerStreak,
+      rarity: BadgeRarity.rare,
     ),
     AchievementDefinition(
       key: 'prayer_streak_100',
@@ -448,6 +449,7 @@ class PrayerModule implements HabitModule {
       descriptionKey: 'achievementPrayerStreak100Description',
       target: 100,
       currentProgress: _currentPrayerStreak,
+      rarity: BadgeRarity.legendary,
     ),
     AchievementDefinition(
       key: 'prayer_perfect_week',
@@ -456,6 +458,7 @@ class PrayerModule implements HabitModule {
       descriptionKey: 'achievementPrayerPerfectWeekDescription',
       target: 1,
       currentProgress: _perfectPrayerWeek,
+      rarity: BadgeRarity.rare,
     ),
   ];
 

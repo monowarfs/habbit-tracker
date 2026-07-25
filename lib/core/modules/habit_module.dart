@@ -155,6 +155,18 @@ class SearchResult {
   final String deepLinkRoute;
 }
 
+/// Badge rarity tier for achievements.
+enum BadgeRarity {
+  /// Common achievements (easy to unlock).
+  common,
+
+  /// Rare achievements (moderate difficulty).
+  rare,
+
+  /// Legendary achievements (very hard to unlock).
+  legendary,
+}
+
 /// One achievement a module contributes to the shared engine
 /// (`core/achievements/achievement_engine.dart`, D-16). [currentProgress]
 /// is a closure over the module's own repository/use cases — the engine
@@ -169,6 +181,7 @@ class AchievementDefinition {
     required this.descriptionKey,
     required this.target,
     required this.currentProgress,
+    this.rarity = BadgeRarity.common,
   });
 
   /// Stable key (e.g. `'water_7_day_streak'`), the `achievements.key`
@@ -189,6 +202,9 @@ class AchievementDefinition {
 
   /// Computes current progress toward [target] from live data.
   final Future<int> Function() currentProgress;
+
+  /// Badge rarity tier for visual treatment.
+  final BadgeRarity rarity;
 }
 
 /// The plugin contract every habit module (Water, Medicine, Prayer, and any
