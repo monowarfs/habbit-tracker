@@ -6,11 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
-import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/illustrations/water_drop_painter.dart';
 import 'package:habit_tracker/core/widgets/module_empty_state.dart';
 import 'package:habit_tracker/core/widgets/streak_celebration_overlay.dart';
@@ -46,7 +47,7 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _checkRecalibration();
+    unawaited(_checkRecalibration());
   }
 
   Future<void> _checkRecalibration() async {
@@ -221,6 +222,7 @@ Future<void> _logQuickAddAndCelebrate(
       .toSet();
 
   await ref.read(waterControllerProvider.notifier).logQuickAdd(amountMl);
+  await HapticFeedbackHelper.lightImpact();
 
   final after = await repository.watchByModule('water').first;
   final newlyUnlocked = after.where(
