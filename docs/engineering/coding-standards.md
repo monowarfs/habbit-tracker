@@ -118,3 +118,32 @@ They regenerate deterministically from source via `build_runner`, which
 CI runs before every check (`cicd.md`) — committing them would create
 merge-conflict noise on every model/schema change and a real risk of a
 committed generated file silently drifting from its source.
+
+## Accessibility: reduce-motion rule
+
+All animations in the app must respect the OS reduce-motion setting
+(`docs/superpowers/specs/07-accessibility/07-reduce-motion-respect-
+design.md`). The standing rule:
+
+1. **Check `MediaQuery.of(context).disableAnimations`** before starting
+   any animation.
+2. **When true, show instant state changes** instead of animated
+   transitions.
+3. **Use `ReduceMotionHelper`** from `lib/core/widgets/
+   reduce_motion_helper.dart` for convenience:
+   ```dart
+   final reduceMotion = ReduceMotionHelper.shouldReduceMotion(context);
+   final duration = ReduceMotionHelper.animationDuration(
+     context,
+     duration: const Duration(milliseconds: 300),
+   );
+   ```
+
+Flutter's built-in animated widgets (`AnimatedContainer`,
+`AnimatedOpacity`, `TweenAnimationBuilder`, etc.) automatically respect
+`disableAnimations` — no explicit check needed for those. The check is
+only needed for custom `AnimationController`-based animations.
+
+Existing animations that already follow this rule:
+- `streak_celebration_overlay.dart` — checks `disableAnimations` and
+  skips to static display when reduce-motion is enabled.
