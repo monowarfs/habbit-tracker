@@ -450,6 +450,13 @@
   "reviveConfirmTitle": "{name} পুনরুদ্ধার করবেন?",
   "reviveConfirmBody": "এটি আপনার পূর্ববর্তী সেটিংস পুনরুদ্ধার করবে।",
   "reviveConfirmButton": "পুনরুদ্ধার",
-  "reviveSnackSuccess": "{name} পুনরুদ্ধার হয়েছে"
+  "reviveSnackSuccess": "{name} পুনরুদ্ধার হয়েছে",
+  "reengagementNudgeTitle": "আমরা আপনাকে মিস করেছি!",
+  "reengagementNudgeBody": "যেখানে ছেড়ে গেছেন সেখান থেকে শুরু করুন?",
+  "reengagementBannerTitle": "স্বাগতম!",
+  "reengagementBannerBody": "অনেক দিন হয়ে গেছে। শুরু করতে ট্যাপ করুন।",
+  "reengagementBannerDismiss": "বাতিল",
+  "reengagementSettingsLabel": "পুনঃসংযোগ রিমাইন্ডার",
+  "reengagementSettingsDescription": "এক সপ্তাহের নিষ্ক্রিয়তার পর একটি কোমল রিমাইন্ডার পান"
 
 }
