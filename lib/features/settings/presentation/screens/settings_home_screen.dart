@@ -209,33 +209,19 @@ class SettingsHomeScreen extends ConsumerWidget {
           _ModuleToggleTile(moduleId: 'prayer', label: l10n.navPrayer),
           const Divider(),
           _SectionHeader(l10n.settingsCommunity),
-          ListTile(
-            leading: const Icon(Icons.forum_outlined),
-            title: Text(l10n.communityJoinTitle),
-            subtitle: Text(l10n.communityJoinDescription),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              final uri = Uri.parse(CommunityLinks.communityUrl);
-              try {
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                } else if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(CommunityLinks.communityUrlDisplay),
-                    ),
-                  );
-                }
-              } on Object {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(CommunityLinks.communityUrlDisplay),
-                    ),
-                  );
-                }
-              }
-            },
+          _ExternalLinkTile(
+            icon: Icons.forum_outlined,
+            title: l10n.communityJoinTitle,
+            subtitle: l10n.communityJoinDescription,
+            url: CommunityLinks.communityUrl,
+            displayUrl: CommunityLinks.communityUrlDisplay,
+          ),
+          _ExternalLinkTile(
+            icon: Icons.feedback_outlined,
+            title: l10n.feedbackTitle,
+            subtitle: l10n.feedbackDescription,
+            url: CommunityLinks.feedbackUrl,
+            displayUrl: CommunityLinks.feedbackUrlDisplay,
           ),
           const Divider(),
           _SectionHeader(l10n.settingsAbout),
@@ -269,6 +255,51 @@ class _SectionHeader extends StatelessWidget {
           ),
     ),
   );
+}
+
+/// A ListTile that opens an external URL via url_launcher.
+class _ExternalLinkTile extends StatelessWidget {
+  const _ExternalLinkTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.url,
+    required this.displayUrl,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String url;
+  final String displayUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final uri = Uri.parse(url);
+        try {
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(displayUrl)),
+            );
+          }
+        } on Object {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(displayUrl)),
+            );
+          }
+        }
+      },
+    );
+  }
 }
 
 class _ModuleToggleTile extends ConsumerStatefulWidget {
