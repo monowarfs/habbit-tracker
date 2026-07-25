@@ -33,6 +33,10 @@ class AchievementsTable extends Table {
   /// UTC epoch millis, bumped on every write.
   IntColumn get updatedAt => integer()();
 
+  /// For tenure-based achievements: the number of days for the milestone
+  /// (365, 730, etc.). Null for streak-based achievements.
+  IntColumn get milestoneValue => integer().nullable()();
+
   /// Soft-delete marker; null = not deleted.
   IntColumn get deletedAt => integer().nullable()();
 

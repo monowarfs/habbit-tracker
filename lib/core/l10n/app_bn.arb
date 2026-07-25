@@ -474,6 +474,10 @@
   "recalibrationConfirm": "এখনো সঠিক",
   "recalibrationDefer": "পরে মনে করিয়ে দিন",
   "recalibrationSettingsLabel": "লক্ষ্য পুনর্মূল্যায়ন প্রম্পট",
-  "recalibrationSettingsDescription": "সময়ে সময়ে চেক করুন আপনার লক্ষ্যগুলো এখনো উপযুক্ত কিনা"
+  "recalibrationSettingsDescription": "সময়ে সময়ে চেক করুন আপনার লক্ষ্যগুলো এখনো উপযুক্ত কিনা",
+  "achievementTenure1YearTitle": "১ বছর একসাথে",
+  "achievementTenure1YearDescription": "আপনি অ্যাপটির সাথে একটি পূর্ণ বছর কাটিয়েছেন। থাকার জন্য ধন্যবাদ।",
+  "achievementTenure2YearTitle": "২ বছর একসাথে",
+  "achievementTenure2YearDescription": "দুই বছরের ট্র্যাকিং। আপনার ধারাবাহিকতা উল্লেখযোগ্য।"
 
 }

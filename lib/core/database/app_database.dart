@@ -59,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -214,6 +214,12 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           appSettingsTable,
           appSettingsTable.recalibrationPromptsEnabled,
+        );
+      }
+      if (from < 15) {
+        await m.addColumn(
+          achievementsTable,
+          achievementsTable.milestoneValue,
         );
       }
       // Seam: when schemaVersion increments further, add
