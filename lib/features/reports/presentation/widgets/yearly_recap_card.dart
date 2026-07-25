@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 
 /// Per-module card widget for the yearly recap story view.
@@ -18,6 +19,7 @@ class YearlyRecapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final accentColor = Color(moduleStats.accentColorValue);
 
@@ -39,7 +41,6 @@ class YearlyRecapCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(),
-              // Module name.
               Text(
                 moduleStats.displayName,
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -48,11 +49,9 @@ class YearlyRecapCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              // Hero stat.
-              _buildHeroStat(context),
+              _buildHeroStat(context, l10n),
               const SizedBox(height: 24),
-              // Supporting stats.
-              ..._buildSupportingStats(context),
+              ..._buildSupportingStats(context, l10n),
               const Spacer(),
             ],
           ),
@@ -61,7 +60,7 @@ class YearlyRecapCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroStat(BuildContext context) {
+  Widget _buildHeroStat(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     String heroValue;
     String heroLabel;
@@ -69,13 +68,13 @@ class YearlyRecapCard extends StatelessWidget {
     if (moduleStats.totalMl != null) {
       final liters = (moduleStats.totalMl! / 1000).toStringAsFixed(1);
       heroValue = '$liters L';
-      heroLabel = 'Water consumed';
+      heroLabel = l10n.recapWaterHero;
     } else if (moduleStats.totalDoses != null) {
       heroValue = '${moduleStats.dosesTaken ?? 0}';
-      heroLabel = 'Doses taken';
+      heroLabel = l10n.recapDosesTakenHero;
     } else if (moduleStats.totalPrayers != null) {
       heroValue = '${moduleStats.prayersCompleted ?? 0}';
-      heroLabel = 'Prayers completed';
+      heroLabel = l10n.recapPrayersCompletedHero;
     } else {
       heroValue = '-';
       heroLabel = moduleStats.displayName;
@@ -101,45 +100,54 @@ class YearlyRecapCard extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildSupportingStats(BuildContext context) {
+  List<Widget> _buildSupportingStats(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     final stats = <Widget>[];
 
     if (moduleStats.averageDailyMl != null) {
       stats.add(_StatRow(
-        label: 'Average daily',
+        label: l10n.recapAverageDailyLabel,
         value: '${moduleStats.averageDailyMl!.toStringAsFixed(0)} ml',
       ));
     }
     if (moduleStats.daysGoalMet != null) {
       stats.add(_StatRow(
-        label: 'Goal met',
-        value: '${moduleStats.daysGoalMet} days',
+        label: l10n.recapDaysGoalMetLabel,
+        value: l10n.recapDaysGoalMet(moduleStats.daysGoalMet!),
       ));
     }
     if (moduleStats.adherencePercent != null) {
       stats.add(_StatRow(
-        label: 'Adherence',
-        value: '${moduleStats.adherencePercent!.toStringAsFixed(0)}%',
+        label: l10n.recapAdherenceLabel,
+        value: l10n.recapAdherencePercent(
+          moduleStats.adherencePercent!.round(),
+        ),
       ));
     }
     if (moduleStats.onTimePercent != null) {
       stats.add(_StatRow(
-        label: 'On time',
-        value: '${moduleStats.onTimePercent!.toStringAsFixed(0)}%',
+        label: l10n.recapOnTimeLabel,
+        value: l10n.recapOnTimePercent(
+          moduleStats.onTimePercent!.round(),
+        ),
       ));
     }
     if (moduleStats.longestStreakAll != null &&
         moduleStats.longestStreakAll! > 0) {
       stats.add(_StatRow(
-        label: 'Longest streak',
-        value: '${moduleStats.longestStreakAll} days',
+        label: l10n.recapLongestStreakLabel,
+        value: l10n.recapLongestStreak(moduleStats.longestStreakAll!),
       ));
     }
     if (moduleStats.monthsActive != null && moduleStats.monthsTotal != null) {
       stats.add(_StatRow(
-        label: 'Active',
-        value:
-            '${moduleStats.monthsActive} of ${moduleStats.monthsTotal} months',
+        label: l10n.recapMonthsActiveLabel,
+        value: l10n.recapMonthsActive(
+          moduleStats.monthsActive!,
+          moduleStats.monthsTotal!,
+        ),
       ));
     }
 

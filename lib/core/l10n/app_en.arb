@@ -1411,6 +1411,53 @@
   "@recapDoneButton": {
     "description": "Button to dismiss the recap and return to the app."
   },
+  "recapDosesTakenHero": "Doses taken",
+  "@recapDosesTakenHero": {
+    "description": "Hero label for the medicine module recap card."
+  },
+  "recapPrayersCompletedHero": "Prayers completed",
+  "@recapPrayersCompletedHero": {
+    "description": "Hero label for the prayer module recap card."
+  },
+  "recapAverageDailyLabel": "Average daily",
+  "@recapAverageDailyLabel": {
+    "description": "Label for the average daily intake supporting stat."
+  },
+  "recapDaysGoalMetLabel": "Goal met",
+  "@recapDaysGoalMetLabel": {
+    "description": "Label for the days goal met supporting stat."
+  },
+  "recapAdherenceLabel": "Adherence",
+  "@recapAdherenceLabel": {
+    "description": "Label for the adherence supporting stat."
+  },
+  "recapOnTimeLabel": "On time",
+  "@recapOnTimeLabel": {
+    "description": "Label for the on-time supporting stat."
+  },
+  "recapLongestStreakLabel": "Longest streak",
+  "@recapLongestStreakLabel": {
+    "description": "Label for the longest streak supporting stat."
+  },
+  "recapMonthsActiveLabel": "Active",
+  "@recapMonthsActiveLabel": {
+    "description": "Label for the months active supporting stat."
+  },
+  "recapDayStreak": "day streak",
+  "@recapDayStreak": {
+    "description": "Subtitle below the longest streak number on the hero card."
+  },
+  "recapModulesActive": "{count} modules active",
+  "@recapModulesActive": {
+    "description": "Number of modules active shown on the hero card.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "recapEncouragement": "Keep up the great work!",
+  "@recapEncouragement": {
+    "description": "Encouraging message at the bottom of the hero card."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

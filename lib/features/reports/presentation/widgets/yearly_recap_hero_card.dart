@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 
 /// Combined longest-streak hero card for the yearly recap.
@@ -11,17 +12,13 @@ class YearlyRecapHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    // Find the overall longest streak across all modules.
     var longestStreak = 0;
-    var bestDay = 0;
     for (final module in summary.modules) {
       if ((module.longestStreakAll ?? 0) > longestStreak) {
         longestStreak = module.longestStreakAll!;
-      }
-      if ((module.bestDayValue ?? 0) > bestDay) {
-        bestDay = module.bestDayValue!;
       }
     }
 
@@ -49,7 +46,7 @@ class YearlyRecapHeroCard extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Year ${summary.yearNumber}',
+                l10n.yearlyRecapYearLabel(summary.yearNumber),
                 style: theme.textTheme.headlineMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -65,7 +62,7 @@ class YearlyRecapHeroCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'day streak',
+                  l10n.recapDayStreak,
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                   ),
@@ -73,14 +70,14 @@ class YearlyRecapHeroCard extends StatelessWidget {
                 const SizedBox(height: 32),
               ],
               Text(
-                '${summary.modules.length} modules active',
+                l10n.recapModulesActive(summary.modules.length),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               const Spacer(),
               Text(
-                'Keep up the great work!',
+                l10n.recapEncouragement,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: Colors.white.withValues(alpha: 0.7),
                 ),

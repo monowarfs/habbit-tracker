@@ -425,8 +425,19 @@
   "recapMonthsActive": "{total} মাসের মধ্যে {active} মাস সক্রিয়",
   "recapCombinedHero": "আপনার বছর পর্যালোচনা",
   "recapOverallLongestStreak": "সামগ্রিক দীর্ঘতম ধারাবাহিকতা: {days} দিন",
-  "recapNotEnoughData": "এখন৪ পর্যাপ্ত তথ্য নেই",
+  "recapNotEnoughData": "এখনো পর্যাপ্ত তথ্য নেই",
   "recapNotEnoughDataBody": "অ্যাপটি ব্যবহার চালিয়ে যান! আপনার বার্ষিক র‍্যাপ আনলক করতে কমপক্ষে ২০০ দিন সক্রিয় থাকতে হবে।",
-  "recapDoneButton": "সম্পন্ন"
+  "recapDoneButton": "সম্পন্ন",
+  "recapDosesTakenHero": "ডোজ নেওয়া হয়েছে",
+  "recapPrayersCompletedHero": "নামাজ সম্পন্ন",
+  "recapAverageDailyLabel": "গড় দৈনিক",
+  "recapDaysGoalMetLabel": "লক্ষ্য পূরণ",
+  "recapAdherenceLabel": "মানানসই",
+  "recapOnTimeLabel": "সময়মতো",
+  "recapLongestStreakLabel": "দীর্ঘতম ধারাবাহিকতা",
+  "recapMonthsActiveLabel": "সক্রিয়",
+  "recapDayStreak": "দিনের ধারাবাহিকতা",
+  "recapModulesActive": "{count} মডিউল সক্রিয়",
+  "recapEncouragement": "ভালো কাজ চালিয়ে যান!"
 
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/features/reports/presentation/widgets/yearly_recap_card.dart';
 import 'package:habit_tracker/features/reports/presentation/widgets/yearly_recap_hero_card.dart';
@@ -33,6 +34,7 @@ class _YearlyRecapScreenState extends State<YearlyRecapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final pageCount = widget.summary.modules.length + 1;
 
@@ -95,7 +97,7 @@ class _YearlyRecapScreenState extends State<YearlyRecapScreen> {
             right: 0,
             child: Center(
               child: Text(
-                'Year ${widget.summary.yearNumber}',
+                l10n.yearlyRecapYearLabel(widget.summary.yearNumber),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
