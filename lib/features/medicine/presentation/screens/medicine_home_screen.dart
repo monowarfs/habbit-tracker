@@ -7,10 +7,11 @@ import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/audio/chime_player.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
-import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/core/widgets/streak_celebration_overlay.dart';
 import 'package:habit_tracker/core/widgets/undo_snackbar.dart';
@@ -76,7 +77,7 @@ class MedicineHomeScreen extends ConsumerWidget {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _RecalibrationCheck(moduleId: 'medicine'),
+                const _RecalibrationCheck(moduleId: 'medicine'),
                 const ActivePausesCard(moduleId: 'medicine'),
                 for (final view in views)
                   Padding(
@@ -138,6 +139,7 @@ Future<void> _markDoneAndCelebrate(
       .toSet();
 
   await controller.markDoseDone(doseId);
+  await HapticFeedbackHelper.lightImpact();
 
   // The chime is wired here — the UI-only call site — and nowhere in
   // `MedicineController`/`MedicineRepository`/`MedicineModule`, because
@@ -253,7 +255,7 @@ class _RecalibrationCheckState extends ConsumerState<_RecalibrationCheck> {
   @override
   void initState() {
     super.initState();
-    _check();
+    unawaited(_check());
   }
 
   Future<void> _check() async {

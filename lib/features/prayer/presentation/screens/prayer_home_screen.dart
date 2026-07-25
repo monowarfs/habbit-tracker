@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
-import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/illustrations/crescent_mat_painter.dart';
 import 'package:habit_tracker/core/widgets/module_empty_state.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
@@ -123,6 +124,7 @@ Future<void> _togglePrayedAndCelebrate(
   await ref
       .read(prayerControllerProvider.notifier)
       .togglePrayed(recordId, currentlyPrayed: currentlyPrayed);
+  await HapticFeedbackHelper.lightImpact();
 
   final after = await repository.watchByModule('prayer').first;
   final newlyUnlocked = after.where(
