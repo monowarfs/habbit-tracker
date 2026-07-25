@@ -13,15 +13,19 @@ part 'effectiveness_provider.g.dart';
 /// `moduleId` — backs the "Reminder Effectiveness" section on the
 /// notification settings screen (07-notification-effectiveness spec).
 ///
-/// `keepAlive: true` plus a self-invalidating 1-hour timer, per the plan's
-/// "cache effectiveness calculation for 1 hour" — re-opening the settings
-/// screen within that hour doesn't re-query the ledger, and it doesn't go
-/// stale forever either.
-@Riverpod(keepAlive: true)
+/// Uses `ref.keepAlive()` plus a 1-hour timer that closes the link, per
+/// the plan's "cache effectiveness calculation for 1 hour" — re-opening
+/// the settings screen within that hour doesn't re-query the ledger. This
+/// (rather than `@Riverpod(keepAlive: true)`) also lets the provider
+/// actually dispose once nobody's watching it and the hour has elapsed,
+/// instead of re-querying the ledger every hour forever for the rest of
+/// the app session even after the user never revisits this screen.
+@riverpod
 Future<Map<String, EffectivenessResult>> notificationEffectiveness(
   Ref ref,
 ) async {
-  final timer = Timer(const Duration(hours: 1), ref.invalidateSelf);
+  final link = ref.keepAlive();
+  final timer = Timer(const Duration(hours: 1), link.close);
   ref.onDispose(timer.cancel);
 
   final db = ref.watch(databaseProvider);

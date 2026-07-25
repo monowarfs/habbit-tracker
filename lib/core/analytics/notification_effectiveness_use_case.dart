@@ -9,17 +9,21 @@ class EffectivenessResult {
     required this.rate,
   });
 
-  /// Notifications that actually fired.
+  /// Reminders whose scheduled time has already passed — a proxy for
+  /// "actually fired" (see `NotificationLedgerRepository.firedRows`'s doc
+  /// comment: nothing in the notification stack confirms real OS
+  /// delivery, so this can overcount reminders an OEM battery-killer
+  /// silently dropped).
   final int total;
 
-  /// Fired notifications acted on (`done`) within the attribution window.
+  /// Of [total], the ones acted on (`done`) within the attribution window.
   final int acted;
 
   /// Effectiveness rate, `acted / total` (0.0 to 1.0).
   final double rate;
 }
 
-/// Measures how often a fired reminder actually led to a logged action
+/// Measures how often a reminder actually led to a logged action
 /// (`docs/superpowers/specs/08-analytics/07-notification-effectiveness-
 /// design.md`) — the self-metric surfaced on the notification settings
 /// screen so reminders that aren't working can be tuned or turned off.
@@ -37,6 +41,16 @@ class NotificationEffectivenessUseCase {
   /// later is more likely unrelated to that specific reminder. Falls back
   /// to `scheduledFor` as the fire instant when `firedAt` is unset (see
   /// `firedRows`'s doc comment for why that's usually the case).
+  ///
+  /// Known limitation: a snoozed reminder's `scheduledFor` is overwritten
+  /// in place with the re-fire time (`recordSnooze`), so a reminder that
+  /// actually fired, got snoozed, then acted on is attributed to the
+  /// *last* snooze time rather than the original fire — undercounting the
+  /// engagement of exactly the reminders a user snoozes instead of
+  /// ignoring outright. Fixing this needs a "first fired" timestamp that
+  /// survives snoozes, which isn't in scope here (touches the same
+  /// `original_scheduled_for` column the adaptive-reminder-offset feature
+  /// already uses for a different purpose).
   EffectivenessResult calculate({
     required List<NotificationLedgerRow> entries,
     Duration attributionWindow = const Duration(hours: 4),

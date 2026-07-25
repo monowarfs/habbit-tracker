@@ -57,7 +57,13 @@ class NotificationLedgerTable extends Table {
   /// old pre-shift samples age out of the rolling window.
   IntColumn get originalScheduledFor => integer().nullable()();
 
-  /// UTC epoch millis, set by the notification-received handler.
+  /// UTC epoch millis, meant to be set by a notification-received handler.
+  /// **Currently dead**: no such handler exists (`flutter_local_
+  /// notifications` has no cross-platform "delivered" callback, only a
+  /// tap callback), so this column is never written anywhere in the app.
+  /// `NotificationEffectivenessUseCase`/`firedRows` fall back to
+  /// `scheduledFor` as a proxy instead of relying on this column — see
+  /// their doc comments.
   IntColumn get firedAt => integer().nullable()();
 
   /// `'done'` | `'snooze'` | `'skip'` | null (not yet actioned).

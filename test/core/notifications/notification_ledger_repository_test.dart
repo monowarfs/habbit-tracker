@@ -217,6 +217,43 @@ void main() {
     },
   );
 
+  test(
+    'firedRows includes rows scheduled exactly at now or exactly at the '
+    'window edge (inclusive bounds)',
+    () async {
+      final now = DateTime.utc(2026, 6, 30);
+      final windowStart = now.subtract(const Duration(days: 30));
+
+      await repo.insertScheduled(
+        id: 'exactly-now',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'exactly-now',
+        title: 'title',
+        body: 'body',
+        scheduledFor: now,
+        deepLinkRoute: '/water',
+      );
+      await repo.insertScheduled(
+        id: 'exactly-window-start',
+        moduleId: 'water',
+        sourceType: 'water_reminder',
+        sourceId: 'exactly-window-start',
+        title: 'title',
+        body: 'body',
+        scheduledFor: windowStart,
+        deepLinkRoute: '/water',
+      );
+
+      final result = await repo.firedRows(windowDays: 30, now: now);
+
+      expect(
+        result.map((r) => r.id).toSet(),
+        {'exactly-now', 'exactly-window-start'},
+      );
+    },
+  );
+
   test('cancel soft-deletes the row so it drops out of pendingRows', () async {
     await repo.insertScheduled(
       id: 'r1',

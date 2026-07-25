@@ -74,6 +74,27 @@ void main() {
     expect(result.rate, 1);
   });
 
+  test('prefers firedAt over scheduledFor as the fire instant when both are '
+      'set and differ', () {
+    // scheduledFor is 5 hours before firedAt (e.g. an OEM-delayed OS
+    // delivery); actionAt is only 5 minutes after the real firedAt, but
+    // more than 4 hours (the default attributionWindow) after
+    // scheduledFor. Only counts as acted if firedAt, not scheduledFor,
+    // is used as the reference instant.
+    final result = useCase.calculate(
+      entries: [
+        _row(
+          id: '1',
+          scheduledFor: fired,
+          firedAt: fired.add(const Duration(hours: 5)),
+          action: 'done',
+          actionAt: fired.add(const Duration(hours: 5, minutes: 5)),
+        ),
+      ],
+    );
+    expect(result.acted, 1);
+  });
+
   test('done action exactly at the attribution window boundary counts', () {
     final result = useCase.calculate(
       entries: [
