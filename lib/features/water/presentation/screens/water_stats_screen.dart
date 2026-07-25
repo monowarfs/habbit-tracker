@@ -99,7 +99,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
         .value;
     final attainment = dayStatus == null
         ? null
-        : GoalAttainmentUseCase().calculate(dayStatus: dayStatus);
+        : const GoalAttainmentUseCase().calculate(dayStatus: dayStatus);
 
     return ListView(
       padding: const EdgeInsets.all(16),

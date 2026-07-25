@@ -7,7 +7,7 @@ ModuleDayStatus _s(ModuleDayStatusKind kind) =>
     ModuleDayStatus(kind: kind, value: 0);
 
 void main() {
-  final useCase = GoalAttainmentUseCase();
+  const useCase = GoalAttainmentUseCase();
 
   test('counts complete days against total active days', () {
     final map = {
@@ -47,12 +47,20 @@ void main() {
     expect(result.rate, 0.5);
   });
 
-  test('zero denominator (all no-data, or empty map) yields rate 0', () {
+  test('zero denominator (all no-data, all-paused, or empty map) yields '
+      'rate 0', () {
     final allNoData = {
       const LocalDate(2026, 6, 1): _s(ModuleDayStatusKind.none),
     };
     expect(useCase.calculate(dayStatus: allNoData).rate, 0);
     expect(useCase.calculate(dayStatus: allNoData).totalDays, 0);
+
+    final allPaused = {
+      const LocalDate(2026, 6, 1): _s(ModuleDayStatusKind.paused),
+      const LocalDate(2026, 6, 2): _s(ModuleDayStatusKind.paused),
+    };
+    expect(useCase.calculate(dayStatus: allPaused).totalDays, 0);
+    expect(useCase.calculate(dayStatus: allPaused).rate, 0);
 
     final result = useCase.calculate(dayStatus: const {});
     expect(result.totalDays, 0);

@@ -22,6 +22,9 @@ class GoalAttainmentResult {
 
 /// Counts days where goal was met vs total active days.
 class GoalAttainmentUseCase {
+  /// Creates the use case.
+  const GoalAttainmentUseCase();
+
   /// Calculates goal attainment from day-status data.
   ///
   /// Days with `kind == none` (before the module was first used) or
