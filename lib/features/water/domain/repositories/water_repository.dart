@@ -101,4 +101,7 @@ abstract class WaterRepository {
 
   /// Returns all archived water goals.
   Future<List<WaterGoal>> archivedGoals();
+
+  /// Whether the user has ever set any goal (active or archived).
+  Future<bool> hasAnyGoals();
 }

@@ -84,6 +84,11 @@ class MedicineDetailScreen extends ConsumerWidget {
                 PopupMenuItem(
                   value: 'archive',
                   child: Text(l10n.archiveAction),
+                )
+              else
+                PopupMenuItem(
+                  value: 'unarchive',
+                  child: Text(l10n.reviveAction),
                 ),
             ],
           ),
@@ -218,6 +223,34 @@ class MedicineDetailScreen extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.archiveSnackSuccess(currentName))),
             );
+            context.pop();
+          }
+        }
+      case 'unarchive':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.reviveConfirmTitle(currentName)),
+            content: Text(l10n.reviveConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n.reviveConfirmButton),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && context.mounted) {
+          await controller.restoreMedicine(medicineId);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.reviveSnackSuccess(currentName))),
+            );
+            context.pop();
           }
         }
     }

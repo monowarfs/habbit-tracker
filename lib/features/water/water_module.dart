@@ -341,8 +341,11 @@ class WaterModule implements HabitModule {
     }
     const resolveGoal = ResolveGoalForDateUseCase();
     final result = <LocalDate, ModuleDayStatus>{};
-    // If all goals are archived, the module is paused.
-    final isPaused = goals.isEmpty;
+    // Check if the user ever had goals (active or archived). If they
+    // archived all goals, the module is paused. If they never set any,
+    // the module is simply inactive (none).
+    final hasAnyGoals = await _repository.hasAnyGoals();
+    final isPaused = hasAnyGoals && goals.isEmpty;
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
       if (isPaused) {

@@ -418,10 +418,20 @@ class WaterRepositoryImpl implements WaterRepository {
   @override
   Future<List<WaterGoal>> archivedGoals() async {
     final rows = await (_db.select(_db.waterGoalsTable)
-          ..where((t) => t.archivedAt.isNotNull())
+          ..where(
+            (t) => t.archivedAt.isNotNull() & t.deletedAt.isNull(),
+          )
           ..orderBy([(t) => OrderingTerm.desc(t.archivedAt)]))
         .get();
     return rows.map(_goalFromRow).toList();
+  }
+
+  @override
+  Future<bool> hasAnyGoals() async {
+    final result = await _db.customSelect(
+      'SELECT 1 FROM water_goals LIMIT 1',
+    ).getSingleOrNull();
+    return result != null;
   }
 
   WaterEntry _entryFromRow(WaterLogRow row) => WaterEntry(
