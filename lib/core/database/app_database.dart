@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
+import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
@@ -47,6 +48,7 @@ part 'app_database.g.dart';
     PrayerRecordsTable,
     PrayerQadhaCountersTable,
     RecapsTable,
+    PauseRangesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -55,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -201,6 +203,9 @@ class AppDatabase extends _$AppDatabase {
           waterGoalsTable,
           waterGoalsTable.archivedAt,
         );
+      }
+      if (from < 13) {
+        await m.createTable(pauseRangesTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

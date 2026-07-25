@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/pauses/pause_service.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
@@ -34,9 +35,10 @@ import 'package:habit_tracker/features/medicine/presentation/screens/medicine_st
 /// (`technical/architecture.md`). Mirrors `WaterModule`'s shape exactly.
 class MedicineModule implements HabitModule {
   /// Creates the module backed by [_repository].
-  const MedicineModule(this._repository);
+  const MedicineModule(this._repository, {this._pauseService});
 
   final MedicineRepository _repository;
+  final PauseService? _pauseService;
 
   @override
   String get id => 'medicine';
@@ -279,9 +281,24 @@ class MedicineModule implements HabitModule {
       final day = localDayKey(dose.scheduledFor);
       (byDay[day] ??= []).add(dose);
     }
+    final pauseSvc = _pauseService;
+    final pausedDays = pauseSvc != null
+        ? await pauseSvc.pausedDaysInRange(
+            moduleId: 'medicine',
+            range: range,
+          )
+        : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
+      if (pausedDays.contains(day)) {
+        result[day] = const ModuleDayStatus(
+          kind: ModuleDayStatusKind.paused,
+          value: 0,
+        );
+        day = day.addDays(1);
+        continue;
+      }
       final dayDoses = byDay[day] ?? const [];
       if (dayDoses.isEmpty) {
         result[day] = const ModuleDayStatus(

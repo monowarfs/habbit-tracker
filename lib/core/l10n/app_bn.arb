@@ -457,6 +457,16 @@
   "reengagementBannerBody": "অনেক দিন হয়ে গেছে। শুরু করতে ট্যাপ করুন।",
   "reengagementBannerDismiss": "বাতিল",
   "reengagementSettingsLabel": "পুনঃসংযোগ রিমাইন্ডার",
-  "reengagementSettingsDescription": "এক সপ্তাহের নিষ্ক্রিয়তার পর একটি কোমল রিমাইন্ডার পান"
+  "reengagementSettingsDescription": "এক সপ্তাহের নিষ্ক্রিয়তার পর একটি কোমল রিমাইন্ডার পান",
+  "pauseModuleTitle": "{module} বিরতি",
+  "pauseStartDate": "শুরুর তারিখ",
+  "pauseEndDate": "শেষ তারিখ",
+  "pauseCreateButton": "বিরতি তৈরি করুন",
+  "pauseCancelButton": "বিরতি বাতিল করুন",
+  "pauseConfirmBackfill": "ব্যাকফিল বিরতি?",
+  "pauseConfirmBackfillBody": "এটি {start} থেকে {end} পর্যন্ত দিনগুলো বিরতিতে চিহ্নিত করবে। চালিয়ে যাবেন?",
+  "pauseConfirmCancel": "এই বিরতি বাতিল করবেন? ধারাবাহিকতা পুনরায় শুরু হবে।",
+  "pauseActiveLabel": "{date} পর্যন্ত বিরতি",
+  "pauseOverlapError": "এই পরিসীমা একটি বিদ্যমান বিরতির সাথে মিলে যাচ্ছে।"
 
 }

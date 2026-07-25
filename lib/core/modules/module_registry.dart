@@ -1,6 +1,9 @@
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
+import 'package:habit_tracker/core/pauses/pause_repository.dart';
+import 'package:habit_tracker/core/pauses/pause_service.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
 import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
@@ -24,16 +27,25 @@ part 'module_registry.g.dart';
 /// touched.
 List<HabitModule> buildHabitModules(AppDatabase db) {
   final settingsRepository = SettingsRepositoryImpl(db);
+  final pauseService = PauseService(
+    pauseRepository: PauseRepository(db),
+    notificationLedger: NotificationLedgerRepository(db),
+  );
   return [
-    MedicineModule(MedicineRepositoryImpl(db)),
+    MedicineModule(
+      MedicineRepositoryImpl(db),
+      pauseService: pauseService,
+    ),
     WaterModule(
       WaterRepositoryImpl(db),
       settingsRepository: settingsRepository,
       prayerRepository: PrayerRepositoryImpl(db),
+      pauseService: pauseService,
     ),
     PrayerModule(
       PrayerRepositoryImpl(db),
       settingsRepository: settingsRepository,
+      pauseService: pauseService,
     ),
   ];
 }

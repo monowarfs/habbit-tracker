@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/pauses/pause_service.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -28,6 +29,7 @@ import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_da
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_add_entry_screen.dart';
+import 'package:habit_tracker/core/pauses/presentation/create_pause_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/archived_goals_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
@@ -49,11 +51,13 @@ class WaterModule implements HabitModule {
     this._repository, {
     this._settingsRepository,
     this._prayerRepository,
+    this._pauseService,
   });
 
   final WaterRepository _repository;
   final SettingsRepository? _settingsRepository;
   final PrayerRepository? _prayerRepository;
+  final PauseService? _pauseService;
 
   @override
   String get id => 'water';
@@ -92,6 +96,12 @@ class WaterModule implements HabitModule {
         GoRoute(
           path: 'archived',
           builder: (context, state) => const ArchivedGoalsScreen(),
+        ),
+        GoRoute(
+          path: 'pause',
+          builder: (context, state) => const CreatePauseScreen(
+            moduleId: 'water',
+          ),
         ),
       ],
     ),
@@ -345,10 +355,15 @@ class WaterModule implements HabitModule {
     // archived all goals, the module is paused. If they never set any,
     // the module is simply inactive (none).
     final hasAnyGoals = await _repository.hasAnyGoals();
-    final isPaused = hasAnyGoals && goals.isEmpty;
+    final isArchived = hasAnyGoals && goals.isEmpty;
+    // Fetch pause-aware days for this module.
+    final pauseSvc = _pauseService;
+    final pausedDays = pauseSvc != null
+        ? await pauseSvc.pausedDaysInRange(moduleId: 'water', range: range)
+        : <LocalDate>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
-      if (isPaused) {
+      if (isArchived || pausedDays.contains(day)) {
         result[day] = const ModuleDayStatus(
           kind: ModuleDayStatusKind.paused,
           value: 0,

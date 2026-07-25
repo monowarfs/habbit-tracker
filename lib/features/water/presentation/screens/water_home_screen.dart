@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/widgets/illustrations/water_drop_painter.dart';
@@ -98,6 +99,7 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                const ActivePausesCard(moduleId: 'water'),
                 Center(
                   child: WaterProgressRing(
                     totalMl: progress.totalMl,

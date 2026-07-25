@@ -212,6 +212,12 @@ class WaterSettingsScreen extends ConsumerWidget {
           ),
           const Divider(height: 32),
           ListTile(
+            leading: const Icon(Icons.pause_outlined),
+            title: Text(l10n.pauseModuleTitle(l10n.navWater)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/water/pause'),
+          ),
+          ListTile(
             leading: const Icon(Icons.archive_outlined),
             title: Text(l10n.archivedGoalsTitle),
             trailing: const Icon(Icons.chevron_right),

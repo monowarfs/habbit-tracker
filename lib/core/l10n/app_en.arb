@@ -1546,6 +1546,56 @@
   "@reengagementSettingsDescription": {
     "description": "Description for the re-engagement nudge toggle."
   },
+  "pauseModuleTitle": "Pause {module}",
+  "@pauseModuleTitle": {
+    "description": "Title for the create-pause screen.",
+    "placeholders": {
+      "module": {"type": "String"}
+    }
+  },
+  "pauseStartDate": "Start date",
+  "@pauseStartDate": {
+    "description": "Label for the pause start date picker."
+  },
+  "pauseEndDate": "End date",
+  "@pauseEndDate": {
+    "description": "Label for the pause end date picker."
+  },
+  "pauseCreateButton": "Create Pause",
+  "@pauseCreateButton": {
+    "description": "Button to create a new pause."
+  },
+  "pauseCancelButton": "Cancel Pause",
+  "@pauseCancelButton": {
+    "description": "Button to cancel an active pause."
+  },
+  "pauseConfirmBackfill": "Backfill pause?",
+  "@pauseConfirmBackfill": {
+    "description": "Title of the backfill confirmation dialog."
+  },
+  "pauseConfirmBackfillBody": "This will mark days {start} to {end} as paused. Continue?",
+  "@pauseConfirmBackfillBody": {
+    "description": "Body of the backfill confirmation dialog.",
+    "placeholders": {
+      "start": {"type": "String"},
+      "end": {"type": "String"}
+    }
+  },
+  "pauseConfirmCancel": "Cancel this pause? Streaks will resume.",
+  "@pauseConfirmCancel": {
+    "description": "Confirmation dialog for cancelling a pause."
+  },
+  "pauseActiveLabel": "Paused until {date}",
+  "@pauseActiveLabel": {
+    "description": "Label shown on the active pauses card.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "pauseOverlapError": "This range overlaps with an existing pause.",
+  "@pauseOverlapError": {
+    "description": "Error shown when creating a pause that overlaps."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

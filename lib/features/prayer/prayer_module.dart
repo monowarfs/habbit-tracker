@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/pauses/pause_service.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/countdown_format.dart';
@@ -44,10 +45,15 @@ class PrayerModule implements HabitModule {
   /// 02-delightful/01-ramadan-mode-design.md`) — omitted (as every
   /// pre-existing call site/test still does), that relabeling never
   /// happens and everything else is unchanged.
-  const PrayerModule(this._repository, {this._settingsRepository});
+  const PrayerModule(
+    this._repository, {
+    this._settingsRepository,
+    this._pauseService,
+  });
 
   final PrayerRepository _repository;
   final SettingsRepository? _settingsRepository;
+  final PauseService? _pauseService;
 
   @override
   String get id => 'prayer';
@@ -283,9 +289,24 @@ class PrayerModule implements HabitModule {
     for (final record in records) {
       (byDay[record.prayerDate] ??= []).add(record);
     }
+    final pauseSvc = _pauseService;
+    final pausedDays = pauseSvc != null
+        ? await pauseSvc.pausedDaysInRange(
+            moduleId: 'prayer',
+            range: range,
+          )
+        : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
+      if (pausedDays.contains(day)) {
+        result[day] = const ModuleDayStatus(
+          kind: ModuleDayStatusKind.paused,
+          value: 0,
+        );
+        day = day.addDays(1);
+        continue;
+      }
       final dayRecords = byDay[day] ?? const [];
       if (dayRecords.length < 5 ||
           dayRecords.any((r) => r.storedStatus == PrayerStatus.upcoming)) {
