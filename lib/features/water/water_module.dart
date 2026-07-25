@@ -450,6 +450,7 @@ class WaterModule implements HabitModule {
       descriptionKey: 'achievementWaterStreak30Description',
       target: 30,
       currentProgress: _currentWaterStreak,
+      rarity: BadgeRarity.rare,
     ),
     AchievementDefinition(
       key: 'water_streak_100',
@@ -458,6 +459,7 @@ class WaterModule implements HabitModule {
       descriptionKey: 'achievementWaterStreak100Description',
       target: 100,
       currentProgress: _currentWaterStreak,
+      rarity: BadgeRarity.legendary,
     ),
     AchievementDefinition(
       key: 'water_perfect_week',
@@ -466,6 +468,7 @@ class WaterModule implements HabitModule {
       descriptionKey: 'achievementWaterPerfectWeekDescription',
       target: 1,
       currentProgress: _perfectWaterWeek,
+      rarity: BadgeRarity.rare,
     ),
   ];
 
