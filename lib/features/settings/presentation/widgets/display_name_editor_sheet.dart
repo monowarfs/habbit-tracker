@@ -45,9 +45,9 @@ class _DisplayNameEditorSheetState extends State<_DisplayNameEditorSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
+      padding: EdgeInsetsDirectional.only(
+        start: 16,
+        end: 16,
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
@@ -67,7 +67,7 @@ class _DisplayNameEditorSheetState extends State<_DisplayNameEditorSheet> {
           ),
           const SizedBox(height: 8),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: FilledButton(
               onPressed: () {
                 final trimmed = _controller.text.trim();
