@@ -93,6 +93,11 @@ abstract class SettingsRepository {
   /// Enables or disables the re-engagement nudge feature.
   Future<Result<void>> updateReengagementNudgeEnabled({required bool enabled});
 
+  /// Enables or disables recalibration prompts.
+  Future<Result<void>> updateRecalibrationPromptsEnabled({
+    required bool enabled,
+  });
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

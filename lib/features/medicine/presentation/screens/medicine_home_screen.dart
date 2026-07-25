@@ -8,6 +8,8 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/audio/chime_player.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
+import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
+import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/core/widgets/streak_celebration_overlay.dart';
@@ -74,6 +76,7 @@ class MedicineHomeScreen extends ConsumerWidget {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                _RecalibrationCheck(moduleId: 'medicine'),
                 const ActivePausesCard(moduleId: 'medicine'),
                 for (final view in views)
                   Padding(
@@ -231,4 +234,54 @@ Future<void> _skipWithUndo(
     onCommit: () {},
     onUndo: () => controller.undoDose(doseId),
   );
+}
+
+/// Stateful wrapper that checks if recalibration is due and shows the card.
+class _RecalibrationCheck extends ConsumerStatefulWidget {
+  const _RecalibrationCheck({required this.moduleId});
+
+  final String moduleId;
+
+  @override
+  ConsumerState<_RecalibrationCheck> createState() =>
+      _RecalibrationCheckState();
+}
+
+class _RecalibrationCheckState extends ConsumerState<_RecalibrationCheck> {
+  bool _show = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    final service = ref.read(recalibrationServiceProvider);
+    final settings = ref.read(appSettingsProvider).value;
+    final enabled = settings?.recalibrationPromptsEnabled ?? true;
+    if (await service.isDue(widget.moduleId, enabled: enabled)) {
+      if (mounted) setState(() => _show = true);
+      await service.onPromptShown(widget.moduleId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_show) return const SizedBox.shrink();
+    return RecalibrationCard(
+      onConfirmed: () async {
+        await ref
+            .read(recalibrationServiceProvider)
+            .onConfirmed(widget.moduleId);
+        setState(() => _show = false);
+      },
+      onDeferred: () async {
+        await ref
+            .read(recalibrationServiceProvider)
+            .onDeferred(widget.moduleId);
+        setState(() => _show = false);
+      },
+    );
+  }
 }

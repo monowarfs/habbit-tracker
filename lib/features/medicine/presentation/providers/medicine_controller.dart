@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -55,6 +56,9 @@ class MedicineController extends _$MedicineController {
       graceWindowMinutes: graceWindowMinutes,
     );
     if (scheduleResult case Failure(:final error)) logException(error);
+    if (scheduleResult case Success()) {
+      await ref.read(recalibrationServiceProvider).onGoalEdited('medicine');
+    }
     await repository.materializeDoses(clock.now());
   }
 

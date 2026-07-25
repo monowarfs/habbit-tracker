@@ -208,6 +208,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateRecalibrationPromptsEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(recalibrationPromptsEnabled: Value(enabled)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -235,6 +242,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           adaptiveReminderEnabled: Value(settings.adaptiveReminderEnabled),
           recapEnabled: Value(settings.recapEnabled),
           reengagementNudgeEnabled: Value(settings.reengagementNudgeEnabled),
+          recalibrationPromptsEnabled:
+              Value(settings.recalibrationPromptsEnabled),
 
           updatedAt: Value(now),
         ),
@@ -306,6 +315,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ),
     recapEnabled: row.recapEnabled,
     reengagementNudgeEnabled: row.reengagementNudgeEnabled,
+    recalibrationPromptsEnabled: row.recalibrationPromptsEnabled,
   );
 }
 

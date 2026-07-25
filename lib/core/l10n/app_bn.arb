@@ -468,6 +468,12 @@
   "pauseConfirmCancel": "এই বিরতি বাতিল করবেন? ধারাবাহিকতা পুনরায় শুরু হবে।",
   "pauseActiveLabel": "{date} পর্যন্ত বিরতি",
   "pauseOverlapError": "এই পরিসীমা একটি বিদ্যমান বিরতির সাথে মিলে যাচ্ছে।",
-  "pauseEndDateMustBeAfterStart": "শেষ তারিখ শুরুর তারিখের পরে হতে হবে"
+  "pauseEndDateMustBeAfterStart": "শেষ তারিখ শুরুর তারিখের পরে হতে হবে",
+  "recalibrationTitle": "আপনার লক্ষ্য এখনো সঠিক?",
+  "recalibrationBody": "আপনি আপনার লক্ষ্য আপডেট করা থেকে অনেক দিন হয়ে গেছে।",
+  "recalibrationConfirm": "এখনো সঠিক",
+  "recalibrationDefer": "পরে মনে করিয়ে দিন",
+  "recalibrationSettingsLabel": "লক্ষ্য পুনর্মূল্যায়ন প্রম্পট",
+  "recalibrationSettingsDescription": "সময়ে সময়ে চেক করুন আপনার লক্ষ্যগুলো এখনো উপযুক্ত কিনা"
 
 }

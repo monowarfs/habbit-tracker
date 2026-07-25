@@ -133,6 +133,10 @@ class AppSettingsTable extends Table {
   BoolColumn get reengagementNudgeEnabled =>
       boolean().withDefault(const Constant(true))();
 
+  /// Whether recalibration prompts are enabled. Default `true`.
+  BoolColumn get recalibrationPromptsEnabled =>
+      boolean().withDefault(const Constant(true))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

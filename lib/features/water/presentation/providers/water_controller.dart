@@ -1,4 +1,5 @@
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -111,6 +112,9 @@ class WaterController extends _$WaterController {
     final result = await ref
         .read(waterRepositoryProvider)
         .setGoal(goalMl, effectiveFrom: DateTime.now());
+    if (result case Success()) {
+      await ref.read(recalibrationServiceProvider).onGoalEdited('water');
+    }
     if (result case Failure(:final error)) logException(error);
   }
 
