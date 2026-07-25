@@ -1624,6 +1624,22 @@
   "@recalibrationSettingsDescription": {
     "description": "Description for the recalibration prompts toggle."
   },
+  "achievementTenure1YearTitle": "1 Year Together",
+  "@achievementTenure1YearTitle": {
+    "description": "Title for the 1-year tenure achievement."
+  },
+  "achievementTenure1YearDescription": "You've been with the app for a full year. Thank you for staying.",
+  "@achievementTenure1YearDescription": {
+    "description": "Description for the 1-year tenure achievement."
+  },
+  "achievementTenure2YearTitle": "2 Years Together",
+  "@achievementTenure2YearTitle": {
+    "description": "Title for the 2-year tenure achievement."
+  },
+  "achievementTenure2YearDescription": "Two years of tracking. Your consistency is remarkable.",
+  "@achievementTenure2YearDescription": {
+    "description": "Description for the 2-year tenure achievement."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

@@ -13,6 +13,7 @@ import 'package:habit_tracker/core/notifications/notification_bootstrap.dart';
 import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
+import 'package:habit_tracker/core/achievements/tenure_check.dart';
 import 'package:habit_tracker/core/nudges/reengagement_check.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
@@ -192,6 +193,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(refreshAllWidgets(ref.read(databaseProvider)));
       unawaited(syncWearableData(ref.read(databaseProvider)));
       unawaited(checkReEngagementNudge(ref));
+      unawaited(evaluateTenureBadges(ref.read(databaseProvider)));
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
