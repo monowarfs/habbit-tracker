@@ -2,13 +2,16 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/notifications/notification_reliability_screen.dart';
+import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/security/lock_reset_screen.dart';
 import 'package:habit_tracker/core/security/lock_screen.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
+import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
@@ -70,6 +73,12 @@ class AppRoutes {
 
   /// Ramadan mode settings screen.
   static const String settingsRamadan = '/settings/ramadan';
+
+  /// Past recaps list screen.
+  static const String settingsPastRecaps = '/settings/past-recaps';
+
+  /// Yearly recap full-screen viewer (receives YearSummary via extra).
+  static const String recap = '/reports/recap';
 
   /// PIN entry (top-level redirect target, not a normal pushed route).
   static const String lock = '/lock';
@@ -133,6 +142,14 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'reports',
                     builder: (context, state) => const ReportsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'recap',
+                        builder: (context, state) => YearlyRecapScreen(
+                          summary: state.extra! as YearSummary,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'achievements',
@@ -192,6 +209,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'about',
                     builder: (context, state) => const AboutScreen(),
+                  ),
+                  GoRoute(
+                    path: 'past-recaps',
+                    builder: (context, state) => const PastRecapsScreen(),
                   ),
                 ],
               ),
