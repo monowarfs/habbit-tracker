@@ -143,6 +143,23 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/pin'),
           ),
+          Semantics(
+            label: l10n.recalibrationSettingsLabel,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.track_changes_outlined),
+              title: Text(l10n.recalibrationSettingsLabel),
+              subtitle: Text(l10n.recalibrationSettingsDescription),
+              value:
+                  ref
+                      .watch(appSettingsProvider)
+                      .value
+                      ?.recalibrationPromptsEnabled ??
+                  true,
+              onChanged: (value) => ref
+                  .read(settingsRepositoryProvider)
+                  .updateRecalibrationPromptsEnabled(enabled: value),
+            ),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsData),
           ListTile(

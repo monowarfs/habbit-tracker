@@ -7,6 +7,8 @@ import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
+import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
+import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/widgets/illustrations/water_drop_painter.dart';
@@ -39,6 +41,23 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
   /// committed (the undo snackbar is still showing) — filtered out of
   /// the rendered list immediately (optimistic hide, zero DB write yet).
   final Set<String> _pendingDeleteIds = {};
+  bool _showRecalibration = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRecalibration();
+  }
+
+  Future<void> _checkRecalibration() async {
+    final service = ref.read(recalibrationServiceProvider);
+    final settings = ref.read(appSettingsProvider).value;
+    final enabled = settings?.recalibrationPromptsEnabled ?? true;
+    if (await service.isDue('water', enabled: enabled)) {
+      if (mounted) setState(() => _showRecalibration = true);
+      await service.onPromptShown('water');
+    }
+  }
 
   void _deleteWithUndo(AppLocalizations l10n, String entryId) {
     setState(() => _pendingDeleteIds.add(entryId));
@@ -99,6 +118,21 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (_showRecalibration)
+                  RecalibrationCard(
+                    onConfirmed: () async {
+                      await ref
+                          .read(recalibrationServiceProvider)
+                          .onConfirmed('water');
+                      setState(() => _showRecalibration = false);
+                    },
+                    onDeferred: () async {
+                      await ref
+                          .read(recalibrationServiceProvider)
+                          .onDeferred('water');
+                      setState(() => _showRecalibration = false);
+                    },
+                  ),
                 const ActivePausesCard(moduleId: 'water'),
                 Center(
                   child: WaterProgressRing(

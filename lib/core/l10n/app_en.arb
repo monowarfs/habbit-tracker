@@ -1600,6 +1600,30 @@
   "@pauseEndDateMustBeAfterStart": {
     "description": "Error shown when end date is before start date."
   },
+  "recalibrationTitle": "Is your goal still right?",
+  "@recalibrationTitle": {
+    "description": "Title of the recalibration prompt card."
+  },
+  "recalibrationBody": "It's been a while since you updated your goal.",
+  "@recalibrationBody": {
+    "description": "Body text of the recalibration prompt card."
+  },
+  "recalibrationConfirm": "Still right",
+  "@recalibrationConfirm": {
+    "description": "Button to confirm the goal is still correct."
+  },
+  "recalibrationDefer": "Remind later",
+  "@recalibrationDefer": {
+    "description": "Button to defer the recalibration prompt."
+  },
+  "recalibrationSettingsLabel": "Goal recalibration prompts",
+  "@recalibrationSettingsLabel": {
+    "description": "Toggle label for recalibration prompts in settings."
+  },
+  "recalibrationSettingsDescription": "Periodically check if your goals still fit",
+  "@recalibrationSettingsDescription": {
+    "description": "Description for the recalibration prompts toggle."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 
