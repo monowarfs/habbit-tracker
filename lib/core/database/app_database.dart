@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
+import 'package:habit_tracker/core/database/tables/cosmetic_unlocks_table.dart';
 import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
@@ -55,6 +56,7 @@ part 'app_database.g.dart';
     RecalibrationMarkersTable,
     ModuleSettingsTable,
     OnboardingProgressTable,
+    CosmeticUnlocksTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -63,7 +65,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -245,6 +247,9 @@ class AppDatabase extends _$AppDatabase {
             completedAt: Value(now),
           ),
         );
+      }
+      if (from < 17) {
+        await m.createTable(cosmeticUnlocksTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

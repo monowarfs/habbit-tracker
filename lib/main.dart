@@ -14,6 +14,10 @@ import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/achievements/tenure_check.dart';
+import 'package:habit_tracker/core/cosmetics/cosmetic_unlock_engine.dart';
+import 'package:habit_tracker/core/cosmetics/cosmetic_repository.dart';
+import 'package:habit_tracker/core/achievements/achievement_repository.dart';
+import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/nudges/reengagement_check.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
@@ -194,6 +198,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(syncWearableData(ref.read(databaseProvider)));
       unawaited(checkReEngagementNudge(ref));
       unawaited(evaluateTenureBadges(ref.read(databaseProvider)));
+      unawaited(_checkCosmeticUnlocks(ref.read(databaseProvider)));
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
@@ -237,5 +242,25 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: ref.watch(appRouterProvider),
     );
+  }
+}
+
+/// Checks if any tenure achievements unlocked cosmetic rewards.
+Future<void> _checkCosmeticUnlocks(AppDatabase db) async {
+  final repository = CosmeticRepository(db);
+  final engine = CosmeticUnlockEngine(cosmeticRepository: repository);
+
+  // Check tenure milestones for cosmetic mappings.
+  for (final entry in achievementToCosmetic.entries) {
+    final achievementKey = entry.key;
+    final cosmeticKey = entry.value;
+    if (!await repository.isUnlocked(cosmeticKey)) {
+      // Check if the achievement exists and is unlocked.
+      final achievementRepo = AchievementRepository(db);
+      final achievement = await achievementRepo.byKey(achievementKey);
+      if (achievement != null && achievement.unlockedAt != null) {
+        await engine.onAchievementUnlocked(achievementKey);
+      }
+    }
   }
 }

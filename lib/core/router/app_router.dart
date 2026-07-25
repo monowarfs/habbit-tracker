@@ -12,6 +12,7 @@ import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_
 import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/unlocks_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
@@ -232,6 +233,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'past-recaps',
                     builder: (context, state) => const PastRecapsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'unlocks',
+                    builder: (context, state) => const UnlocksScreen(),
                   ),
                 ],
               ),

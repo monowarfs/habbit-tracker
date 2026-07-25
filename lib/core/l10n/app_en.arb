@@ -1738,6 +1738,34 @@
   "@settingsModules": {
     "description": "Settings section header for module toggles."
   },
+  "unlocksTitle": "Unlocks",
+  "@unlocksTitle": {
+    "description": "Title of the unlocks screen."
+  },
+  "unlocksEmptyState": "No unlocks yet. Keep using the app to earn cosmetic rewards.",
+  "@unlocksEmptyState": {
+    "description": "Empty state when no cosmetics are unlocked."
+  },
+  "unlockThemeAccentMidnight": "Midnight Accent",
+  "@unlockThemeAccentMidnight": {
+    "description": "Title of the Midnight theme accent cosmetic."
+  },
+  "unlockThemeAccentMidnightDescription": "A deep blue-purple theme accent, unlocked after 2 years.",
+  "@unlockThemeAccentMidnightDescription": {
+    "description": "Description of the Midnight theme accent cosmetic."
+  },
+  "unlocksLockedLabel": "Locked",
+  "@unlocksLockedLabel": {
+    "description": "Label for locked cosmetic options."
+  },
+  "unlocksLockedDescription": "Unlock by using the app for 2 years.",
+  "@unlocksLockedDescription": {
+    "description": "Description shown for locked cosmetic options."
+  },
+  "unlockApply": "Apply",
+  "@unlockApply": {
+    "description": "Button to apply an unlocked cosmetic."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

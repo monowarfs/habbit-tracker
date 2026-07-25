@@ -501,6 +501,13 @@
   "moduleSuggestionBody": "এই মডিউল দিয়ে আপনার {module} ট্র্যাক করুন।",
   "moduleSuggestionEnable": "{module} সক্রিয় করুন",
   "moduleSuggestionDismiss": "এখন নয়",
-  "settingsModules": "মডিউল"
+  "settingsModules": "মডিউল",
+  "unlocksTitle": "আনলক",
+  "unlocksEmptyState": "এখনো কোনো আনলক নেই। কসমেটিক পুরস্কার অর্জন করতে অ্যাপটি ব্যবহার চালিয়ে যান।",
+  "unlockThemeAccentMidnight": "মিডনাইট অ্যাকসেন্ট",
+  "unlockThemeAccentMidnightDescription": "একটি গভীর নীল-বেগুনি থিম অ্যাকসেন্ট, ২ বছরের পর আনলক হয়।",
+  "unlocksLockedLabel": "লকড",
+  "unlocksLockedDescription": "অ্যাপটি ২ বছর ব্যবহার করে আনলক করুন।",
+  "unlockApply": "প্রয়োগ করুন"
 
 }
