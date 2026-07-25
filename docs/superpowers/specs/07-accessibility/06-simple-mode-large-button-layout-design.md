@@ -39,3 +39,51 @@ Add a `Simple Mode` setting alongside the existing theme/locale settings (same s
 ## Effort & sequencing notes
 
 Complexity L — the largest item in this category; touches multiple screens across modules and needs a new settings toggle wired through to layout branching. Sequence after items #1, #3, and #5 (the three audits) so Simple Mode is built on already-verified accessibility foundations rather than needing its own separate audit pass afterward.
+
+## Localization
+
+- New ARB keys needed for Simple Mode UI and settings:
+  - `settings_simple_mode_label` — "Simple Mode" / "সিম্পল মোড"
+  - `settings_simple_mode_description` — "Larger buttons and simpler layout" / "বড় বোতাম এবং সহজ লেআউট"
+  - `settings_simple_mode_toggle_hint` — accessibility hint for the toggle switch.
+- Per-module keys for Simple Mode's primary action screens:
+  - `water_simple_log_button` — the large "Log Water" button text.
+  - `medicine_simple_dose_done_button` — the large "Mark Done" button text.
+  - `prayer_simple_toggle_button` — the large "Mark as Done" button text.
+- These are new user-facing strings that must be added to both `app_en.arb` and `app_bn.arb`.
+- Simple Mode's layout does not introduce new status categories, so the color palette from #3 carries over unchanged; no new color-related localization is needed.
+- All Simple Mode screen-reader labels follow #1's established conventions.
+
+## Edge cases & error handling
+
+1. **Toggle not discoverable in Settings** — the Simple Mode toggle must be placed prominently in the Settings screen (near the top, alongside theme/locale toggles) and must have a clear description so a non-technical user understands what it does. The toggle itself needs a `Semantics` label per #1's audit.
+2. **Simple Mode + large text scale compound effect** — if a user enables both Simple Mode and 200% OS text scale (from #5), the combined effect could still cause overflow on some screens; verify this compound scenario during testing.
+3. **Module with no Simple Mode layout yet** — if a module doesn't have a Simple Mode layout in the first pass, it should gracefully fall back to its normal layout rather than crashing or showing a blank screen; the toggle must not break modules that haven't been converted yet.
+4. **Orientation change in Simple Mode** — landscape orientation on a phone may undermine the single-column layout intent; either lock Simple Mode to portrait or ensure the large-button layout adapts gracefully to landscape.
+5. **Toggling Simple Mode mid-session** — switching the toggle should immediately re-render affected screens without requiring an app restart; the setting must be reactive (using the existing `appSettingsProvider` stream pattern from `SettingsRepository`).
+
+## Cross-references
+
+- `docs/superpowers/specs/07-accessibility/01-talkback-voiceover-navigation-audit-design.md` — labeling conventions for all Simple Mode buttons/toggles.
+- `docs/superpowers/specs/07-accessibility/03-colorblind-safe-streak-heatmap-palette-check-design.md` — Simple Mode inherits the verified color palette.
+- `docs/superpowers/specs/07-accessibility/05-dynamic-text-scaling-stress-test-design.md` — Simple Mode layouts must also pass the text-scaling stress test.
+- `docs/superpowers/specs/07-accessibility/09-rtl-readiness-structural-audit-design.md` — new Simple Mode layouts must be RTL-ready from the start.
+- `lib/features/settings/` — `AppSettings` entity, `SettingsRepository`, `appSettingsProvider` for adding the toggle.
+- `lib/core/theme/app_theme.dart` — `AppSemanticColors` carried over to Simple Mode unchanged.
+- `lib/features/water/presentation/` — Water quick-add screen for Simple Mode layout.
+- `lib/features/medicine/presentation/` — Medicine dose list screen for Simple Mode layout.
+- `lib/features/prayer/presentation/` — Prayer checklist screen for Simple Mode layout.
+
+## Test strategy
+
+- **Widget tests**: Create `test/features/settings/presentation/simple_mode_toggle_test.dart` verifying:
+  - The toggle appears in Settings and is tappable.
+  - Toggling it persists the value to `AppSettings`.
+  - Affected screens re-render when the toggle changes.
+- **Widget tests per module**: For each module's Simple Mode layout:
+  - `test/features/water/presentation/water_simple_mode_test.dart` — verifies the single-column large-button layout renders and the log button is tappable.
+  - `test/features/medicine/presentation/medicine_simple_mode_test.dart` — verifies the dose list renders in Simple Mode with oversized done buttons.
+  - `test/features/prayer/presentation/prayer_simple_mode_test.dart` — verifies the checklist renders in Simple Mode.
+- **Compound scenario tests**: Create `test/accessibility/simple_mode_compound_test.dart` that pumps Simple Mode screens at 2.0x text scale and asserts no overflow.
+- **Regression-prevention strategy**: Add a CI check that enumerates all screens with a Simple Mode variant and asserts each variant's primary action button has a minimum touch target size of 48x48 logical pixels (WCAG 2.5.5 target size).
+- **Golden tests**: Golden tests for each Simple Mode layout at a fixed screen size to catch layout drift over time.

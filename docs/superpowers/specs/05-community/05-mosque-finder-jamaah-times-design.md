@@ -37,3 +37,43 @@ Extend Prayer's existing bundled-city-data pattern with a second curated dataset
 
 ## Effort & sequencing notes
 Medium (M) for a bundled-dataset v1 that follows Prayer's existing 65-city precedent closely. The live/crowdsourced version implied by "mosque finder" in the fullest sense would be substantially larger (effectively a backend service) and should be treated as a distinct, later decision rather than folded into this scope.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `mosqueFinderTitle` — "Nearby Mosques" / "কাছের মসজিদ"
+- `mosqueFinderSubtitle` — "Jamaah prayer times" / "জামাতের নামাজের সময়"
+- `mosqueFinderNoResults` — "No mosques found near your location" / "আপনার অবস্থানের কাছে কোনো মসজিদ পাওয়া যায়নি"
+- `mosqueFinderDistance` — "{distance} km away" / "{distance} কিমি দূরে"
+- `mosqueFinderJamaahOffset` — "Jamaah: {offset} min after Adhan" / "জামাত: আজানের {offset} মিনিট পরে"
+- `mosqueFinderNoLocation` — "Enable location to find nearby mosques" / "কাছের মসজিদ খুঁজে পেতে অবস্থান সক্রিয় করুন"
+- `mosqueFinderPrayerTime` — "{prayer}: {time}" / "{prayer}: {time}"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`.
+
+## Edge cases & error handling
+
+1. **No mosques in bundled dataset near user's location** — This is the common case outside major cities. Show a friendly empty state: "No mosques found near your location" with no error, just an informational message. Reference `AppException.notFound`.
+2. **Location permission denied** — Prayer's existing location resolver handles this. Surface the existing permission-explainer screen from `core/notifications/` or a similar permission request flow. Use `AppException.permission`.
+3. **Bundled dataset is outdated** — Mosque schedules change. For v1, accept staleness and note in the UI that times may not be current. Plan periodic dataset refreshes via app updates.
+4. **Multiple mosques at same distance** — Show a scrollable list sorted by distance, with ties broken alphabetically. No special error handling needed.
+5. **Jamaah offset model insufficient** — Some mosques have fully independent schedules (not just an offset). For v1, if a mosque's data doesn't fit the offset model, store its times directly as fixed values rather than computing from Adhan.
+
+## Cross-references
+
+- `docs/superpowers/specs/05-community/07-global-city-prayer-participation-stat-design.md` — prayer participation stat shares the location resolution infrastructure.
+- `lib/features/prayer/domain/usecases/` — `calculatePrayerTimes` and `effectivePrayerStatus` for the Adhan calculation this feature extends.
+- `lib/features/prayer/data/repositories/` — Prayer's bundled 65-city asset pattern for dataset loading.
+- `lib/features/prayer/presentation/` — Prayer module presentation layer where this screen/section is added.
+- `lib/core/error/app_exception.dart` — error taxonomy for permission/storage/validation failures.
+
+## Test strategy
+
+- **Unit tests**: Mosque dataset parsing (bundled JSON/asset → domain entities). Distance calculation between user location and mosque locations. Jamaah offset application to Adhan times.
+- **Widget tests**: Mosque list renders correctly with mock data. Empty state shows when no mosques are nearby. Distance and offset labels render correctly.
+- **Golden tests**: Mosque list item card layout for consistent visual presentation.
+- **Test files to create**:
+  - `test/features/prayer/mosque_finder_test.dart`
+  - `test/features/prayer/mosque_dataset_parser_test.dart`
+  - `test/goldens/mosque_list_item_golden.png`

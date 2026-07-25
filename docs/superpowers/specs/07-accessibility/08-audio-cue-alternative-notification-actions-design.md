@@ -39,3 +39,37 @@ Add a short sound-play call at the point each notification action currently comp
 ## Effort & sequencing notes
 
 Complexity S — one shared action-handler hook, three short sounds, no new architecture. Independent of the other items in this category; lowest priority in the list (Low retention impact) so it can slot in whenever convenient rather than needing early sequencing.
+
+## Localization
+
+- Audio earcons are non-linguistic (short tones, not speech), so they do not need en/bn ARB translations.
+- However, if a settings toggle is added to enable/disable earcons (per open question), new ARB keys are needed:
+  - `settings_audio_cues_label` — "Audio Cues" / "অডিও কিউ"
+  - `settings_audio_cues_description` — "Play sounds when acting on notifications" / "নোটিফিকেশনে কাজ করার সময় শব্দ বাজান"
+- The notification action handler itself (`notification_action_handler.dart`) already uses localized strings for notification titles/bodies; the earcon logic is additive and does not change existing localized content.
+
+## Edge cases & error handling
+
+1. **Background isolate audio playback limitations** — on Android, playing audio from a background isolate/headless context may be restricted by the OS; the implementer should test the `notification_action_handler.dart` background path and fall back to playing the sound only when the app is foregrounded if background playback fails.
+2. **OS Do Not Disturb / Silent mode** — the app should not bypass the user's system-level sound settings; if the OS is in DND or silent mode, the earcon should not play. `HapticFeedback` (item #4) is the complementary channel that works even when sound is silenced.
+3. **Audio asset bundle size** — three short audio files (each under 50KB) add minimal bundle size, but if platform system sound APIs are used instead (per open question), no assets are bundled at all; prefer system sounds where available to avoid bundle bloat.
+4. **Rapid successive actions** — if a user taps Done then immediately taps Snooze on two different notifications, both earcons should play sequentially (not overlap); queue audio playback rather than firing concurrent play calls.
+5. **Foreground vs. background sound consistency** — the same earcon for "Done" should sound identical whether the app is in the foreground or background; verify that the audio playback path produces the same result in both cases.
+
+## Cross-references
+
+- `docs/superpowers/specs/07-accessibility/04-haptic-feedback-on-log-complete-design.md` — haptics for in-app foreground actions (complementary to earcons for background/locked-screen actions).
+- `docs/superpowers/specs/07-accessibility/01-talkback-voiceover-navigation-audit-design.md` — screen-reader users may also benefit from audio cues; verify no conflict between earcons and TalkBack/VoiceOver audio.
+- `lib/core/notifications/notification_action_handler.dart` — the single entry point where Done/Snooze/Skip are processed; the earcon hook goes here.
+- `lib/core/notifications/notification_background_handler.dart` — the background isolate entry point; must also trigger earcons.
+- `lib/core/notifications/notification_service.dart` — the notification plugin wrapper; may provide platform-specific sound APIs.
+
+## Test strategy
+
+- **Unit tests**: Create `test/core/notifications/audio_cue_test.dart` that:
+  - Mocks the audio playback API and verifies the correct earcon is triggered for each action (Done, Snooze, Skip).
+  - Verifies that the earcon fires from both the foreground handler and the background isolate handler paths.
+  - Verifies that rapid successive actions queue audio sequentially (no overlap).
+- **Widget tests**: Not applicable — earcons are non-visual and triggered from the notification action handler, not from widget code.
+- **Regression-prevention strategy**: Add a test in `test/core/notifications/notification_action_handler_test.dart` that asserts `playEarcon(action)` is called for each action type, ensuring future refactors don't accidentally remove the earcon hook.
+- **Manual verification**: Test on at least one physical iOS and one physical Android device with the app both in the foreground and background; verify earcons are audible, distinct, and not played when the OS is in silent/DND mode.

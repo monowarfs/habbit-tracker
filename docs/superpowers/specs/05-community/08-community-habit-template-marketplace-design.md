@@ -37,3 +37,45 @@ Curate a small, static set of presets per module, each expressed in terms of tha
 
 ## Effort & sequencing notes
 Medium (M) for the curated v1 described above — no backend, no new domain logic, mostly content curation plus a browsing UI wired into each module's existing creation flow. The "full" version with user submissions is Large (L) and requires its own backend/moderation decision; do not conflate the two scopes when estimating.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `templateMarketplaceTitle` — "Habit Templates" / "অভ্যাস টেমপ্লেট"
+- `templateMarketplaceSubtitle` — "Start with a proven schedule" / "একটি প্রমাণিত সময়সূচী দিয়ে শুরু করুন"
+- `templateMarketplaceApplyAction` — "Use Template" / "টেমপ্লেট ব্যবহার করুন"
+- `templateMarketplacePreviewAction` — "Preview" / "পূর্বরূপ"
+- `templateMarketplaceConfirmApply` — "This will pre-fill your {module} setup. You can edit before saving." / "এটি আপনার {module} সেটআপ পূরণ করবে। সংরক্ষণের আগে সম্পাদনা করতে পারবেন।"
+- `templateMarketplaceNoTemplates` — "No templates available yet" / "এখনো কোনো টেমপ্লেট পাওয়া যায়নি"
+- `templateMarketplaceWater{N}` — Template names per module (e.g. "Office Hours Hydration", "Intermittent Fasting Water" with bn equivalents)
+- `templateMarketplaceMedicine{N}` — Medicine template names
+- `templateMarketplacePrayer{N}` — Prayer template names
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`.
+
+## Edge cases & error handling
+
+1. **Applying a template overwrites existing data** — This must never happen. The template should prefill the creation form, not silently overwrite. Verify that the existing creation flow supports pre-population and that the user can review/edit before saving. If the module already has an active schedule, show a confirmation: "This will replace your current {module} settings. Continue?" Use `AppException.validation`.
+2. **Template data shape doesn't match current module version** — If a template references an entity field that changed (e.g. a `RepeatRule` variant was added/removed), the template should fail gracefully and show "This template is out of date" rather than crashing. Use `AppException.validation`.
+3. **Curated template set is empty** — If no templates exist for a module (e.g. Prayer templates not yet curated), hide the template entry point for that module rather than showing an empty screen.
+4. **Bundled templates cannot be updated without an app release** — Accept this limitation for v1. Document that templates are refreshed with app updates. If a remote-fetchable template file is used instead, handle network failures gracefully with a fallback to the bundled set.
+5. **Template description text is too long for a card** — Truncate with ellipsis and expand on tap. No layout overflow.
+
+## Cross-references
+
+- `lib/features/water/domain/entities/` — `WaterGoal` entity that templates prefill.
+- `lib/features/medicine/domain/entities/` — `MedicineSchedule` and `RepeatRule` that Medicine templates use.
+- `lib/features/prayer/domain/entities/` — Prayer settings/reminder configuration that Prayer templates use.
+- `docs/superpowers/specs/05-community/06-cloud-accountability-groups-design.md` — the full UGC version would need the backend infrastructure this feature deliberately avoids.
+- `lib/core/l10n/app_en.arb` / `app_bn.arb` — localization source files.
+
+## Test strategy
+
+- **Unit tests**: Template data mapping: verify each curated template produces valid domain entities (WaterGoal, MedicineSchedule, RepeatRule). Verify template-to-entity conversion handles all RepeatRule variants.
+- **Widget tests**: Template list renders with correct titles and descriptions per module. Apply-template flow prefills the creation form correctly. Confirm dialog appears when replacing existing settings. Empty state for modules with no templates.
+- **Golden tests**: Template card layout for visual consistency.
+- **Test files to create**:
+  - `test/features/community/template_marketplace_test.dart`
+  - `test/core/template/template_to_entity_mapping_test.dart`
+  - `test/goldens/template_card_water_golden.png`

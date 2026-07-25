@@ -73,3 +73,60 @@ streak calculators, but touches three modules' definitions of "day
 completed" plus two UI surfaces (dashboard indicator, history calendar).
 Reasonable to schedule early since it directly strengthens the existing
 streak system rather than depending on anything new.
+
+## Database schema
+
+New `grace_tokens` table:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| module_id | TEXT | `'water'` \| `'medicine'` \| `'prayer'` |
+| month_key | TEXT | `'YYYY-MM'` format for calendar-month bucketing |
+| consumed_at | INTEGER NULL | UTC; null = token available, non-null = used |
+| created_at, updated_at | INTEGER | |
+
+Add to `AppDatabase`'s table manifest. One row per module per month.
+The `consumed_at` being null means the token is still available.
+
+## Localization
+
+New ARB keys (en/bn):
+- `graceTokenUsedTitle` / `graceTokenUsedBody` — snackbar on usage.
+- `graceTokenAvailable` / `graceTokenUnavailable` — dashboard label.
+- `graceTokenShieldLabel` — semantic label for shield icon in calendar.
+
+## Edge cases & error handling
+
+- **Medicine partial-day completion:** a day with 4/5 doses taken is
+  NOT a miss — Medicine's `effectiveDoseStatus` already handles this.
+  The grace token only fires when the day is classified as `missed` by
+  each module's own logic.
+- **Retroactive application:** the grace token can be applied after the
+  fact (user sees yesterday was missed, taps to apply). The token
+  consumes retroactively but does NOT restore the streak — it only
+  prevents the break from being recorded.
+- **Month boundary:** if a miss occurs on the last day of a month and
+  the user applies the token after midnight, it consumes the new month's
+  token. This is acceptable since tokens are calendar-month scoped.
+- **All tokens consumed:** show "No grace tokens remaining this month"
+  with a message about when the next token resets.
+
+## Cross-references
+
+- Extends each module's streak calculator:
+  - `lib/features/water/domain/usecases/calculate_water_streak_usecase.dart`
+  - `lib/features/prayer/domain/usecases/` (streak calculator)
+  - Medicine's adherence-based streak logic.
+- Dashboard indicator: `lib/features/dashboard/presentation/`.
+- History calendar: per-module stats screens.
+- Related: Spec 06-gamification/02 (XP system) — grace token usage
+  could optionally emit an XP event.
+
+## Test strategy
+
+- Unit test: grace token consumption logic (available, consumed, month
+  rollover).
+- Unit test: streak calculation with/without grace token applied.
+- Widget test: dashboard shield icon display.
+- Widget test: history calendar "protected" visual state.

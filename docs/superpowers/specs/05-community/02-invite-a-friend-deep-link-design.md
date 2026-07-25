@@ -36,3 +36,40 @@ Reuse the same native share-sheet mechanism as item 01 (share-a-streak) to send 
 
 ## Effort & sequencing notes
 Small (S), and naturally pairs with item 01 since both use `share_plus` and the native share sheet. Worth asking at scheduling time whether the attribution half is worth building at all given the low retention impact — the plain untagged share link alone may be the pragmatic v1.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `inviteFriendTitle` — "Invite a Friend" / "বন্ধুকে আমন্ত্রণ জানান"
+- `inviteFriendDescription` — "Share the app with someone you care about" / "আপনার প্রিয়জনের সাথে অ্যাপটি শেয়ার করুন"
+- `inviteFriendShareAction` — "Share Link" / "লিংক শেয়ার করুন"
+- `inviteFriendCopiedMessage` — "Link copied!" / "লিংক কপি হয়েছে!"
+- `inviteFriendReferralNote` — "Your friend will know you invited them" / "আপনার বন্ধু জানবে যে আপনি তাকে আমন্ত্রণ জানিয়েছেন"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`.
+
+## Edge cases & error handling
+
+1. **No share-capable app installed** — Same fallback as item 01: surface a SnackBar via `AppException.unexpected` when `share_plus` cannot find a target.
+2. **Deep-link parsing fails on first launch** — If `app_links` cannot parse the referral tag (corrupted URL, app opened via other means), silently ignore — this is best-effort attribution. Log at `LogSeverity.warning` but do not surface an error to the user.
+3. **Referral ID generation fails** — UUID generation (`core/utils/uuid.dart`) is deterministic and should never fail, but guard with `AppException.unexpected` as a catch-all.
+4. **Store URL unavailable** — Play Store / App Store URL might be malformed or the store might be unreachable (rare). Fall back to a generic "check out this app" message without a link, surfaced via `AppException.unexpected`.
+5. **Repeated sharing from same device** — The referral ID should remain stable across shares (same install = same tag). Ensure it's generated once and stored locally, not regenerated per share.
+
+## Cross-references
+
+- `docs/superpowers/specs/05-community/01-share-a-streak-image-design.md` — shares `share_plus` and native share sheet pattern.
+- `docs/superpowers/specs/05-community/03-external-community-link-design.md` — similar external-link pattern.
+- `lib/core/utils/uuid.dart` — for generating the anonymous referral identifier.
+- `lib/core/error/app_exception.dart` — error taxonomy for failures.
+- `lib/core/l10n/app_en.arb` / `app_bn.arb` — localization source files.
+
+## Test strategy
+
+- **Unit tests**: Referral ID generation produces a stable, non-empty string. Deep-link tag parsing extracts the correct referral ID from a URL. Verify URL construction with referral tag.
+- **Widget tests**: Invite button renders and triggers `share_plus` with correct URL. Verify copied-to-clipboard feedback.
+- **Integration tests**: End-to-end flow from tapping "Invite" to share sheet appearance (requires device/simulator).
+- **Test files to create**:
+  - `test/features/community/invite_friend_test.dart`
+  - `test/core/deep_link_referral_parser_test.dart`

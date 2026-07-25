@@ -83,3 +83,51 @@ dashboard surface for it. Best sequenced after (or alongside) the
 personal-record and heatmap items since all three read from the same
 day-status foundation, but this one needs its own scoring-formula design
 work the others don't.
+
+## Database schema
+
+No new tables. The consistency score is computed fresh each day from
+existing `dayStatus()` data, not persisted. This matches the codebase's
+approach to derived status (Medicine's lazily-derived dose status).
+
+## Scoring formula (recommended)
+
+Simple weighted average of per-module completion:
+- Each module contributes `completion_pct * weight`.
+- Weights: Water = 1.0, Medicine = 1.5 (more complex), Prayer = 1.2.
+- Final score = `sum(module_score * weight) / sum(weights) * 100`.
+- Single module: show that module's raw percentage (no averaging).
+
+## Localization
+
+New ARB keys (en/bn):
+- `consistencyScoreTitle` — "Consistency Score"
+- `consistencyScoreValue` — "{score}/100"
+- `consistencyScoreBreakdown` — "Water: {pct}%, Medicine: {pct}%, Prayer: {pct}%"
+- `consistencyScoreExcellent` — "Excellent!"
+- `consistencyScoreGood` — "Good"
+- `consistencyScoreNeedsWork` — "Keep going!"
+
+## Edge cases & error handling
+
+- **No modules enabled:** hide the consistency score entirely.
+- **Single module:** show that module's raw completion percentage
+  without the composite framing.
+- **Partial day:** show the score with an asterisk or "(in progress)"
+  indicator. The final score is computed at end-of-day.
+- **Score color:** green (80-100), yellow (50-79), red (0-49). Use
+  `AppSemanticColors` for accessibility.
+
+## Cross-references
+
+- Day-status data: `lib/core/reports/day_status_streaks.dart`.
+- Dashboard: `lib/features/dashboard/presentation/`.
+- Related: Spec 08-analytics/01 (heatmap) — same data source.
+- Related: Spec 08-analytics/09 (goal attainment) — related metric.
+
+## Test strategy
+
+- Unit test: scoring formula with various module combinations.
+- Unit test: single-module degenerate case.
+- Unit test: partial-day scoring.
+- Widget test: consistency score display on dashboard.

@@ -34,3 +34,38 @@ Add a single entry point (Settings, likely alongside the external-community-link
 
 ## Effort & sequencing notes
 Small (S), independent of every other Community item, similar in shape and effort to item 03 (external community link) — the two could reasonably be scheduled together since both are single Settings entries pointing at external, vendor- or team-hosted destinations.
+
+## Database schema
+
+No new tables. The feedback board is entirely external — the app only
+opens a link or web view to the vendor's hosted board.
+
+## Localization
+
+New ARB keys (en/bn):
+- `feedbackTitle` — "Feedback & Feature Requests"
+- `feedbackDescription` — "Tell us what you'd like to see next"
+- `feedbackOpenButton` — "Open Feedback Board"
+- `feedbackLoadingError` — "Could not open feedback board"
+
+## Edge cases & error handling
+
+- **No internet:** show a "No internet connection" message with a
+  "Copy Link" fallback so the user can visit later.
+- **Vendor link changes:** the link is a hardcoded constant in the
+  settings screen. If it changes, an app update is required.
+- **WebView failure (if embedded):** fall back to external browser.
+- **Store data-safety:** if the vendor collects analytics, update
+  store data-safety disclosures accordingly.
+
+## Cross-references
+
+- Related: Spec 05-community/03 (external community link) — sibling
+  Settings entry, same pattern.
+- Settings screen: `lib/features/settings/presentation/screens/settings_home_screen.dart`.
+
+## Test strategy
+
+- Widget test: settings entry navigates correctly.
+- Widget test: no-internet fallback state.
+- Widget test: WebView vs. external link behavior.

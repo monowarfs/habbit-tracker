@@ -39,3 +39,41 @@ Once the onboarding module-toggle checklist exists (it's currently a placeholder
 ## Effort & sequencing notes
 
 Complexity S — one screen, reusing item #1's labeling approach rather than inventing a new one. Sequence: wait for the onboarding module-toggle screen to be built, then check it immediately (ideally as part of that screen's own implementation, not a deferred follow-up), rather than waiting for the full app-wide audit in item #1 to reach it.
+
+## Database schema
+
+No database changes. This is an audit of an existing (future) screen's
+accessibility behavior.
+
+## Localization
+
+No new ARB keys needed. The audit verifies that existing toggle labels
+and skip/continue buttons are properly announced by screen readers.
+The `Semantics` labels should use existing localized strings from
+`app_en.arb`/`app_bn.arb`.
+
+## Edge cases & error handling
+
+- **Toggle state announcement:** verify that toggling a switch
+  announces its new state immediately (e.g. "Water, on" / "Water, off").
+- **Skip path accessibility:** the "Skip Setup" button must be reachable
+  by keyboard/tab and clearly labeled for screen readers.
+- **Empty state:** if the user skips all modules, the dashboard's
+  empty state must also be accessible.
+- **Notification permission screen:** if a permission explainer screen
+  exists (per CLAUDE.md), it should be checked in the same pass.
+
+## Cross-references
+
+- Onboarding: currently a placeholder (per CLAUDE.md). This audit runs
+  when the onboarding screen is built.
+- Related: Spec 07-accessibility/01 (TalkBack audit) — this is a
+  targeted subset of the full audit.
+- Related: Spec 07-accessibility/11 (captioned onboarding) — both
+  concern onboarding accessibility.
+
+## Test strategy
+
+- Widget test: verify toggle announces name and state under semantics.
+- Widget test: verify skip button is reachable and labeled.
+- Manual audit: walk the onboarding screen with TalkBack enabled.

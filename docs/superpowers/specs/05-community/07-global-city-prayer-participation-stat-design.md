@@ -37,3 +37,44 @@ Contingent on the backend/consent decision: on prayer completion (already tracke
 
 ## Effort & sequencing notes
 Large (L) complexity for Low retention impact — a candidate for deprioritization or bundling with item 06 rather than standing up independently, if the account/backend decision is ever made at all. Should not be scheduled ahead of resolving whether any backend gets built in the first place.
+
+## Localization
+
+New user-facing strings requiring en/bn ARB keys:
+
+- `prayerParticipationTitle` — "Prayer Participation" / "নামাজের অংশগ্রহণ"
+- `prayerParticipationCount` — "{count} people in {city} prayed {prayer} today" / "আজ {city}তে {count} জন নামাজ পড়েছেন"
+- `prayerParticipationOptIn` — "Share your completion anonymously" / "আপনার সমাপ্তি বেনামে শেয়ার করুন"
+- `prayerParticipationOptOut` — "Stop sharing" / "শেয়ার করা বন্ধ করুন"
+- `prayerParticipationHowItWorks` — "How this works" / "এটি কীভাবে কাজ করে"
+- `prayerParticipationNoData` — "No participation data available yet" / "এখনো কোনো অংশগ্রহণের তথ্য পাওয়া যায়নি"
+- `prayerParticipationPrivacyNotice` — "Only your city and prayer name are shared. Your exact time and location are never shared." / "শুধুমাত্র আপনার শহর এবং নামাজের নাম শেয়ার করা হয়। আপনার সঠিক সময় এবং অবস্থান কখনো শেয়ার করা হয় না।"
+
+Add these to `lib/core/l10n/app_en.arb` and `lib/core/l10n/app_bn.arb`. The privacy notice is critical for religious-observance data — ensure it is prominent and accurate in both languages.
+
+## Edge cases & error handling
+
+1. **Small population re-identification risk** — If only 1-2 users in a small town opt in, publishing their count could effectively re-identify them. Implement a minimum population threshold (e.g. suppress counts below 10 users per city) and return `AppException.notFound` with a "Data not available for your area" message.
+2. **Network unavailable for participation ping** — Queue the ping locally and send on next connectivity. If the queue exceeds a reasonable window (e.g. 24 hours), discard stale pings — they're not valuable after the prayer window passes.
+3. **User opts out mid-day** — Respect opt-out immediately: stop sending pings. Historical pings already sent cannot be un-sent (they're already aggregated). The opt-out is forward-looking only.
+4. **City name ambiguity** — Prayer's location resolver returns city-level data; ensure city names are consistent (e.g. "Dhaka" not "Dhaka, Bangladesh" in some cases and "Dhaka Division" in others). Normalize city names before aggregation.
+5. **Backend aggregation service down** — Show cached/last-known participation counts if available. If no cache exists, hide the participation stat gracefully rather than showing an error. Reference `AppException.storage`.
+
+## Cross-references
+
+- `docs/superpowers/specs/05-community/06-cloud-accountability-groups-design.md` — shares the backend/consent infrastructure decision.
+- `docs/superpowers/specs/05-community/05-mosque-finder-jamaah-times-design.md` — shares the GPS/location resolution infrastructure.
+- `docs/strategies/analytics-future.md` — the consent checklist this feature must satisfy (off-by-default opt-in, data-safety disclosure updates, privacy review).
+- `lib/features/prayer/domain/usecases/` — `calculatePrayerTimes` and prayer completion tracking.
+- `lib/features/prayer/data/repositories/` — `prayer_records` table as data source.
+- `lib/features/prayer/domain/entities/` — Prayer entity definitions.
+
+## Test strategy
+
+- **Unit tests**: City-name normalization logic. Population threshold enforcement (verify counts below threshold are suppressed). Ping payload construction (verify no user identifier included). Opt-out flag persistence.
+- **Widget tests**: Participation stat renders with correct count and city name. Opt-in/opt-out toggle works. Privacy notice displays correctly. Graceful degradation when data is unavailable.
+- **Integration tests**: Full opt-in flow: user enables → completes prayer → ping sent → count increments. Opt-out: user disables → no more pings.
+- **Test files to create**:
+  - `test/features/prayer/prayer_participation_test.dart`
+  - `test/core/prayer/participation_ping_test.dart`
+  - `test/core/prayer/city_normalization_test.dart`

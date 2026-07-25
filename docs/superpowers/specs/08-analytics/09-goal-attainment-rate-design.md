@@ -81,3 +81,46 @@ Atlas complexity: S. A straightforward derived count over data
 Medicine/Prayer is slightly more effort since each module's "goal"
 concept differs. Reasonable to scope Water-only first and treat the other
 two modules as a fast follow within the same feature.
+
+## Database schema
+
+No new tables. Goal attainment is computed at read time from existing
+`dayStatus()` data — count days where `kind == complete` vs. total days
+in the period.
+
+## Localization
+
+New ARB keys (en/bn):
+- `goalAttainmentTitle` — "Goal Attainment"
+- `goalAttainmentRate` — "{hit}/{total} days ({percent}%)"
+- `goalAttainmentWater` — "Water goal reached"
+- `goalAttainmentMedicine` — "All doses taken"
+- `goalAttainmentPrayer` — "All prayers on time"
+- `goalAttainmentEmpty` — "No data for this period"
+
+## Edge cases & error handling
+
+- **No-data days in denominator:** days before the module was first
+  used are EXCLUDED from the denominator. Only days where the module
+  was active count. This prevents penalizing users who started mid-period.
+- **Water-only first:** ship for Water first since it has the cleanest
+  goal concept (`daily_ml >= goal_ml`). Medicine and Prayer are follow-ups.
+- **Period selection:** reuse the existing week/month/year selector from
+  `AggregateReportUseCase`.
+- **Zero denominator:** if no days in the period have data, show "No
+  data for this period."
+
+## Cross-references
+
+- Water aggregate: `lib/features/water/domain/usecases/aggregate_water_series_usecase.dart`.
+- Goal resolution: `lib/features/water/domain/usecases/resolve_goal_for_date_usecase.dart`.
+- Day-status: `lib/core/reports/day_status_streaks.dart`.
+- Related: Spec 08-analytics/02 (personal record) — related streak metric.
+- Related: Spec 08-analytics/05 (consistency score) — composite metric.
+
+## Test strategy
+
+- Unit test: goal attainment count with various data patterns.
+- Unit test: no-data day exclusion from denominator.
+- Unit test: zero denominator handling.
+- Widget test: goal attainment display on stats screen.

@@ -141,3 +141,40 @@ product/legal, revisited only if/when the team deliberately decides to
 pursue it, per `analytics-future.md`'s explicit instruction that this
 "isn't scheduled work" and must never be evaluated as a one-line
 dependency add.
+
+## Database schema
+
+No local database changes. Analytics data is sent to a remote endpoint
+(chosen under gate point 4). The `AnalyticsService` interface and
+`NoOpAnalyticsService` are code-level constructs, not DB tables.
+
+## Localization
+
+All analytics-related UI text (opt-in prompt, settings toggle, privacy
+notice) needs en/bn ARB keys. The specific keys depend on the opt-in
+UI design, which is deferred until the gate clears.
+
+## Edge cases & error handling
+
+- **Network failure:** analytics events are queued locally and sent when
+  connectivity is available. If the queue exceeds 100 events, oldest
+  events are dropped (telemetry is best-effort, not critical).
+- **Opt-out mid-session:** immediately stop sending events. The durable
+  off switch (gate point 5) must be responsive, not batched.
+- **Data deletion request:** the deletion story (gate point 6) must
+  handle both local event queue deletion and remote data deletion.
+
+## Cross-references
+
+- Analytics strategy: `docs/strategies/analytics-future.md`.
+- Error handling precedent: `docs/strategies/error-handling-logging.md`.
+- Privacy review: `docs/strategies/security.md`.
+- Related: ALL other specs in this directory — none depend on this.
+
+## Test strategy
+
+- Unit test: `NoOpAnalyticsService` does nothing (existing).
+- Unit test: real `AnalyticsService` implementation sends events
+  correctly (when gate clears).
+- Widget test: opt-in prompt and settings toggle (when gate clears).
+- Integration test: end-to-end event flow (when gate clears).

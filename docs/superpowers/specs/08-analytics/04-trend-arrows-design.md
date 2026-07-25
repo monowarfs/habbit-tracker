@@ -73,3 +73,47 @@ Atlas complexity: S. Reuses existing aggregation use cases as-is; the only
 real work is a shared small widget and calling the aggregation function
 twice. Very low risk — a good early/cheap win in this batch, independent
 of the others.
+
+## Database schema
+
+No new tables. Trend arrows are computed by calling each module's
+aggregation use case twice (current period + previous period) and
+comparing the results.
+
+## Localization
+
+New ARB keys (en/bn):
+- `trendArrowUp` — "Improving" (+{percent}%)
+- `trendArrowDown` — "Declining" (-{percent}%)
+- `trendArrowFlat` — "Stable" (0%)
+- `trendArrowVsPrevious` — "vs. previous {period}"
+
+## Edge cases & error handling
+
+- **Partial period comparison:** compare the current partial period to
+  the same partial range in the previous period (e.g. first 3 days of
+  this week vs. first 3 days of last week). This avoids misleading
+  comparisons.
+- **No previous data:** if the previous period has no data, show "No
+  previous data" instead of an arrow.
+- **Zero-to-nonzero:** if the previous period was 0 and the current is
+  non-zero, show a green up arrow with "New!" instead of a percentage.
+- **Widget location:** place trend arrows in the stats screen header,
+  next to the headline number. Create `lib/core/widgets/trend_arrow.dart`
+  as a shared widget.
+
+## Cross-references
+
+- Aggregate report: `lib/core/reports/aggregate_report_usecase.dart`.
+- Related: Spec 08-analytics/03 (day-of-week) — same stats screen.
+- Related: Spec 08-analytics/06 (past-self comparison) — year-over-year
+  variant of the same pattern.
+- Related: Spec 08-analytics/05 (consistency score) — trend could show
+  consistency score trend.
+
+## Test strategy
+
+- Unit test: trend calculation (up/down/flat/partial).
+- Unit test: zero-to-nonzero edge case.
+- Widget test: trend arrow display with various states.
+- Widget test: insufficient previous data state.

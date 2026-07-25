@@ -74,3 +74,48 @@ presentation and reward-scaling difference, not new tracking
 infrastructure. Sequence after both weekly quest chains and the XP system
 exist, since it borrows structure from the former and stakes from the
 latter.
+
+## Database schema
+
+Reuses Spec 06-gamification/04's `weekly_quests` table with an additional
+`is_boss INTEGER (bool)` column (default false). Boss quests are
+regular quests with a higher threshold and distinct presentation.
+
+| Column | Type | Notes |
+|---|---|---|
+| is_boss | INTEGER (bool) | default false; true for boss challenges |
+
+## Localization
+
+New ARB keys (en/bn):
+- `bossChallengeTitle` — "Boss Challenge"
+- `bossChallengeDescription` — "Complete {threshold} {module} actions this week!"
+- `bossChallengeCountdown` — "{days} days remaining"
+- `bossChallengeCleared` — "Boss Cleared! +{xp} XP"
+- `bossChallengeFailed` — "Boss escaped... try again next week!"
+
+## Edge cases & error handling
+
+- **Boss selection:** spotlight a different module each week in rotation
+  (Water → Medicine → Prayer → repeat). This ensures variety without
+  randomness.
+- **Difficulty scaling:** fixed thresholds for v1 (e.g. 6/7 days for
+  Water, 90% adherence for Medicine, 5/5 prayers for 5 days). Scaled
+  difficulty based on history is a future enhancement.
+- **Boss cleared notification:** fire a local notification when the boss
+  is cleared, using the existing `NotificationService`.
+
+## Cross-references
+
+- Weekly quests: Spec 06-gamification/04 (hard dependency — boss is a
+  quest variant).
+- XP system: Spec 06-gamification/02 (for reward scaling).
+- Related: Spec 06-gamification/07 (certificate) — "boss cleared"
+  certificate variant.
+- Notification service: `lib/core/notifications/notification_service.dart`.
+
+## Test strategy
+
+- Unit test: boss quest generation with rotation logic.
+- Unit test: difficulty threshold calculations.
+- Widget test: boss challenge UI with countdown and progress.

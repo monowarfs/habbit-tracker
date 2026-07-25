@@ -36,3 +36,41 @@ Once multi-profile exists, add a household comparison view (likely on the Dashbo
 
 ## Effort & sequencing notes
 Medium (M) complexity, but entirely gated on multi-profile shipping first — this cannot be scheduled independently. Once that prerequisite lands, the feature itself is mostly presentation/aggregation work reusing existing calculators, not new domain logic.
+
+## Database schema
+
+No new tables. The leaderboard is computed at read time by querying
+each profile's existing streak/report data via the `profile_id` column
+(added by Spec 04-premium/03 multi-profile). The aggregation is a
+simple sort over profile-level stats.
+
+## Localization
+
+New ARB keys (en/bn):
+- `leaderboardTitle` — "Household Leaderboard"
+- `leaderboardRank` — "Rank #{position}"
+- `leaderboardYouLabel` — "(You)"
+- `leaderboardNoData` — "No data yet for {profileName}"
+- `leaderboardOptOut` — "Hide from leaderboard"
+
+## Edge cases & error handling
+
+- **Privacy opt-out:** each profile can opt out via "Manage Profiles"
+  (Spec 04-premium/03). Opted-out profiles don't appear.
+- **Different modules per profile:** compare only modules both profiles
+  use. If no overlap, show "No comparable data."
+- **Single profile:** hide the leaderboard (no one to compare against).
+- **Tied scores:** shared rank (e.g. both at rank 1 if tied).
+
+## Cross-references
+
+- Multi-profile: Spec 04-premium/03 (hard dependency).
+- Related: Spec 06-gamification/12 (household leaderboard) — the
+  gamification version of this feature.
+- Reports module: `lib/core/reports/aggregate_report_usecase.dart`.
+
+## Test strategy
+
+- Unit test: leaderboard computation from multi-profile data.
+- Unit test: privacy opt-out filtering.
+- Widget test: leaderboard display with ranks and ties.

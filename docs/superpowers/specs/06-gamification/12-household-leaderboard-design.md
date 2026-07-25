@@ -76,3 +76,47 @@ Medium, but effectively unlockable only after multi-profile ships —
 almost all the real cost lives in that prerequisite, not in this feature's
 own read-only aggregation logic. Do not schedule this before multi-profile
 support is planned and scoped.
+
+## Database schema
+
+No new tables. The leaderboard is computed at read time by querying
+each profile's existing streak/report data via the `profile_id` column
+(added by Spec 04-premium/03 multi-profile). The aggregation is a
+simple sort over profile-level stats, not a new persistence model.
+
+## Localization
+
+New ARB keys (en/bn):
+- `leaderboardTitle` — "Household Leaderboard"
+- `leaderboardRank` — "Rank #{position}"
+- `leaderboardYouLabel` — "(You)"
+- `leaderboardNoData` — "No data yet for {profileName}"
+- `leaderboardOptOut` — "Hide from leaderboard"
+
+## Edge cases & error handling
+
+- **Privacy opt-out:** each profile can opt out of the leaderboard
+  via a setting in "Manage Profiles" (Spec 04-premium/03). Opted-out
+  profiles simply don't appear in the ranking.
+- **Different modules per profile:** if Parent tracks Water and Child
+  tracks Medicine, the leaderboard compares only modules both profiles
+  use. If no overlap, show "No comparable data."
+- **Single profile:** if only one profile exists, the leaderboard is
+  hidden (no one to compare against).
+- **Tied scores:** profiles with the same metric value share the rank
+  (e.g. both at rank 1 if tied for longest streak).
+
+## Cross-references
+
+- Multi-profile: Spec 04-premium/03 (hard dependency).
+- Reports module: `lib/core/reports/aggregate_report_usecase.dart`.
+- Related: Spec 05-community/04 (household leaderboard) — the community
+  version of this feature.
+- Related: Spec 06-gamification/02 (XP) — XP/level as ranking metric.
+
+## Test strategy
+
+- Unit test: leaderboard computation from multi-profile data.
+- Unit test: privacy opt-out filtering.
+- Unit test: single-module overlap detection.
+- Widget test: leaderboard display with ranks and ties.

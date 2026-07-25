@@ -39,3 +39,43 @@ Walk each module's add/edit forms (Water custom-log, Medicine add-dose/add-medic
 ## Effort & sequencing notes
 
 Complexity M — moderate breadth (every form across three modules) with typically simple fixes (traversal-order overrides) once a bad order is found. Lower priority (Low retention impact) relative to items #1/#5/#6; can be scheduled alongside those since it reuses the same screen walkthrough.
+
+## Database schema
+
+No database changes. This is a code-level audit of focus-traversal
+behavior.
+
+## Localization
+
+No new ARB keys needed. The audit verifies that existing forms are
+keyboard-navigable, not that new text is accessible.
+
+## Edge cases & error handling
+
+- **Form validation error focus:** when a form submission fails
+  validation, focus should move to the first error field. Verify this
+  works with keyboard navigation.
+- **Dialog focus trapping:** confirmation dialogs and bottom sheets
+  (e.g. the global month calendar) need focus trapping — Tab should
+  cycle within the dialog, not escape to the background.
+- **Date/time picker focus:** Flutter's `showDatePicker`/`showTimePicker`
+  open dialogs that may or may not be keyboard-navigable. Verify on
+  both platforms.
+- **Custom controls:** Medicine's repeat-rule selector and Prayer's
+  location picker may need explicit `FocusTraversalPolicy` overrides.
+
+## Cross-references
+
+- Related: Spec 07-accessibility/01 (TalkBack audit) — complementary
+  audit (physical focus vs. screen-reader semantics).
+- Related: Spec 07-accessibility/06 (Simple Mode) — larger touch
+  targets may change focus traversal order.
+- Forms: per-module add/edit screens in `lib/features/*/presentation/`.
+
+## Test strategy
+
+- Widget tests: verify focus order on key forms using
+  `FocusNode` traversal.
+- Manual audit: walk every form with external keyboard.
+- Regression: add a CI check that verifies focus traversal on key
+  forms matches expected order.

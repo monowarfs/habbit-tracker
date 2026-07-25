@@ -77,3 +77,52 @@ animation pipeline is real production work outside the codebase itself.
 Reasonable to sequence after the XP system (companion mood could
 eventually factor in XP trends) but does not strictly require it; the
 dashboard's day-completion indicator alone is sufficient input for v1.
+
+## Database schema
+
+No new tables needed. The companion's mood is derived at read time from
+existing `dayStatus()` data (last 5-7 days). If companion mood history
+is desired for a "companion growth" narrative, a `companion_mood_log`
+table could be added:
+
+| Column | Type | Notes |
+|---|---|---|
+| id | TEXT PK | UUID v7 |
+| mood_state | TEXT | `'thriving'` \| `'happy'` \| `'neutral'` \| `'worried'` \| `'sad'` |
+| computed_at | INTEGER | UTC |
+| input_days_complete | INTEGER | how many of the last N days were complete |
+| created_at | INTEGER | |
+
+## Localization
+
+New ARB keys (en/bn):
+- `companionName` — the companion's display name (if named).
+- `companionStatusThriving` / `companionStatusSad` — mood labels.
+- `companionTapHint` — accessibility hint for tapping the companion.
+
+## Edge cases & error handling
+
+- **Emotional safety:** if the companion is "visibly unwell" for an
+  extended period, soften the visual — show "worried" rather than
+  "sad" after 7+ days to avoid shaming. The companion should always
+  look like it wants to help, not guilt.
+- **No data yet:** show the companion in "neutral" state until at least
+  3 days of data exist.
+- **Asset format:** use Lottie animations for smooth transitions between
+  mood states. Static fallback for Reduce-Motion users (spec 07/07).
+- **Overlap with Spec 06-gamification/10 (avatar):** the companion is
+  NOT the avatar. The companion is an autonomous character; the avatar
+  is a user-customized self-portrait. Both can coexist on the dashboard.
+
+## Cross-references
+
+- Dashboard day-completion indicator: `lib/features/dashboard/presentation/`.
+- Related: Spec 06-gamification/10 (avatar) — coexists on dashboard.
+- Related: Spec 07-accessibility/07 (reduce motion) — companion
+  animations must respect `MediaQuery.disableAnimations`.
+
+## Test strategy
+
+- Unit test: mood state derivation from day-status input.
+- Widget test: companion rendering in each mood state.
+- Golden test: companion visual states for regression.
