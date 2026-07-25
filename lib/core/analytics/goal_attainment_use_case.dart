@@ -24,13 +24,19 @@ class GoalAttainmentResult {
 class GoalAttainmentUseCase {
   /// Calculates goal attainment from day-status data.
   ///
-  /// Days with `kind == none` are excluded from the denominator
-  /// (they represent days before the module was first used).
+  /// Days with `kind == none` (before the module was first used) or
+  /// `kind == paused` are excluded from the denominator, matching
+  /// `day_status_streaks.dart`'s streak calculators — paused days
+  /// neither count nor break attainment.
   GoalAttainmentResult calculate({
     required Map<LocalDate, ModuleDayStatus> dayStatus,
   }) {
     final activeDays = dayStatus.values
-        .where((s) => s.kind != ModuleDayStatusKind.none)
+        .where(
+          (s) =>
+              s.kind != ModuleDayStatusKind.none &&
+              s.kind != ModuleDayStatusKind.paused,
+        )
         .length;
     final metDays = dayStatus.values
         .where((s) => s.kind == ModuleDayStatusKind.complete)
