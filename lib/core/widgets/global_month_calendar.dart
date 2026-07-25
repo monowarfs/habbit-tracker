@@ -54,6 +54,8 @@ class GlobalMonthCalendar extends StatelessWidget {
         return colors.tertiary;
       case ModuleDayStatusKind.missed:
         return colors.error;
+      case ModuleDayStatusKind.paused:
+        return colors.surfaceContainerHighest;
       case ModuleDayStatusKind.none:
         return colors.surfaceContainerHighest;
     }

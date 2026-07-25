@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/hijri_date.dart';
@@ -594,4 +595,84 @@ class WaterModule implements HabitModule {
     'source': entry.source == WaterEntrySource.quick ? 'quick' : 'custom',
     'notes': entry.notes,
   };
+
+  @override
+  Future<ModuleYearStats?> yearAggregation(DateRange yearRange) async {
+    final entries = await _repository
+        .watchEntriesInRange(yearRange.start, yearRange.end)
+        .first;
+    if (entries.isEmpty) return null;
+
+    final goals = await _repository.allGoals();
+    const resolveGoal = ResolveGoalForDateUseCase();
+
+    final totalsByDay = <LocalDate, int>{};
+    for (final entry in entries) {
+      final day = localDayKey(entry.loggedAt);
+      totalsByDay[day] = (totalsByDay[day] ?? 0) + entry.amountMl;
+    }
+
+    var totalMl = 0;
+    var daysGoalMet = 0;
+    var bestDayValue = 0;
+    final activeDays = <LocalDate>{};
+
+    var day = yearRange.start;
+    while (day.compareTo(yearRange.end) <= 0) {
+      final total = totalsByDay[day] ?? 0;
+      if (total > 0) {
+        activeDays.add(day);
+        totalMl += total;
+        if (total > bestDayValue) bestDayValue = total;
+        final goal = resolveGoal.execute(goals, day);
+        if (goal.goalMl > 0 && total >= goal.goalMl) daysGoalMet++;
+      }
+      day = day.addDays(1);
+    }
+
+    // Count days in range by iterating.
+    var daysInRange = 0;
+    var countDay = yearRange.start;
+    while (countDay.compareTo(yearRange.end) <= 0) {
+      daysInRange++;
+      countDay = countDay.addDays(1);
+    }
+    final averageDailyMl = daysInRange > 0 ? totalMl / daysInRange : 0.0;
+
+    // Compute longest consecutive streak.
+    var longest = 0;
+    var running = 0;
+    day = yearRange.start;
+    while (day.compareTo(yearRange.end) <= 0) {
+      final total = totalsByDay[day] ?? 0;
+      final goal = resolveGoal.execute(goals, day);
+      if (goal.goalMl > 0 && total >= goal.goalMl) {
+        running++;
+        if (running > longest) longest = running;
+      } else {
+        running = 0;
+      }
+      day = day.addDays(1);
+    }
+
+    // Compute months active.
+    final monthsActive = <int>{};
+    for (final d in activeDays) {
+      monthsActive.add(d.month);
+    }
+
+    return moduleYearStatsFromColor(
+      moduleId: id,
+      displayName: metadata.displayName,
+      accentColor: metadata.accentColor,
+      totalMl: totalMl,
+      averageDailyMl: averageDailyMl,
+      daysGoalMet: daysGoalMet,
+      longestConsecutiveStreak: longest,
+      longestStreakAll: longest,
+      bestDayValue: bestDayValue,
+      monthsActive: monthsActive.length,
+      monthsTotal: 12,
+    );
+  }
 }

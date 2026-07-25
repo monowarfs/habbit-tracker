@@ -106,6 +106,29 @@ class AppSettingsTable extends Table {
   /// matters" card hasn't been shown yet.
   IntColumn get prayerQadhaHintSeenAt => integer().nullable()();
 
+  /// UTC epoch millis; null for pre-existing installs before migration 10
+  /// (seeded from `created_at` during upgrade). Used by the yearly recap
+  /// trigger and re-engagement nudge to know how long the user has had
+  /// the app.
+  IntColumn get installDate => integer().nullable()();
+
+  /// Last year a yearly recap was generated. Implementation detail,
+  /// not user-facing — prevents re-triggering the same recap.
+  IntColumn get lastRecapYear => integer().withDefault(const Constant(0))();
+
+  /// Whether the yearly recap feature is enabled. Default `true`.
+  BoolColumn get recapEnabled =>
+      boolean().withDefault(const Constant(true))();
+
+  /// UTC epoch millis of the user's most recent module write activity
+  /// (any module, any action). Used by the re-engagement nudge to detect
+  /// inactivity.
+  IntColumn get lastActivityAt => integer().nullable()();
+
+  /// UTC epoch millis of when the last re-engagement nudge was sent.
+  /// Prevents re-nudging within the cooldown window.
+  IntColumn get nudgeSentAfter => integer().nullable()();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

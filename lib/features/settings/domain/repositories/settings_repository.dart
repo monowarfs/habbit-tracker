@@ -72,6 +72,24 @@ abstract class SettingsRepository {
   /// times based on historical response offsets).
   Future<Result<void>> updateAdaptiveReminderEnabled({required bool enabled});
 
+  /// Records the app install date. Called once on first launch; subsequent
+  /// calls are no-ops (the column is never overwritten after migration 10
+  /// seeds it from `created_at` for pre-existing installs).
+  Future<Result<void>> updateInstallDate(DateTime date);
+
+  /// Enables or disables the yearly recap feature.
+  Future<Result<void>> updateRecapEnabled({required bool enabled});
+
+  /// Updates the last year a recap was generated (implementation detail,
+  /// prevents re-triggering).
+  Future<Result<void>> updateLastRecapYear(int year);
+
+  /// Updates the user's most recent activity timestamp (any module write).
+  Future<Result<void>> updateLastActivityAt(DateTime date);
+
+  /// Records when a re-engagement nudge was last sent.
+  Future<Result<void>> updateNudgeSentAfter(DateTime date);
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

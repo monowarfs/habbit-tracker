@@ -19,6 +19,8 @@ double heatmapAlphaFor(ModuleDayStatus status, num maxValue) {
       return _bandedAlpha(status.value, maxValue, min: 0.15, max: 0.40);
     case ModuleDayStatusKind.complete:
       return _bandedAlpha(status.value, maxValue, min: 0.55, max: 0.95);
+    case ModuleDayStatusKind.paused:
+      return 0; // same as none — neutral surface color
   }
 }
 
@@ -123,6 +125,7 @@ class HabitHeatmapCalendar extends StatelessWidget {
         date,
         value,
       ),
+      ModuleDayStatusKind.paused => l10n.heatmapCellNoDataSemantics(date),
       ModuleDayStatusKind.none => l10n.heatmapCellNoDataSemantics(date),
     };
   }

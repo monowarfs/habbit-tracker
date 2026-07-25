@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
+import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_stock_events_table.dart';
@@ -45,6 +46,7 @@ part 'app_database.g.dart';
     PrayerSettingsTable,
     PrayerRecordsTable,
     PrayerQadhaCountersTable,
+    RecapsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -53,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -167,6 +169,25 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           notificationLedgerTable,
           notificationLedgerTable.originalScheduledFor,
+        );
+      }
+      if (from < 10) {
+        // installDate + lastRecapYear + lastActivityAt + nudgeSentAfter
+        // + recapEnabled for retention features (Specs 01, 02).
+        await m.addColumn(appSettingsTable, appSettingsTable.installDate);
+        await m.addColumn(appSettingsTable, appSettingsTable.lastRecapYear);
+        await m.addColumn(appSettingsTable, appSettingsTable.lastActivityAt);
+        await m.addColumn(appSettingsTable, appSettingsTable.nudgeSentAfter);
+        await m.addColumn(appSettingsTable, appSettingsTable.recapEnabled);
+
+        // Recaps table for yearly wrapped summaries.
+        await m.createTable(recapsTable);
+
+        // Seed installDate for existing installs: reuse createdAt as best
+        // proxy for actual install time.
+        await customUpdate(
+          'UPDATE app_settings SET install_date = created_at '
+          'WHERE install_date IS NULL',
         );
       }
       // Seam: when schemaVersion increments further, add

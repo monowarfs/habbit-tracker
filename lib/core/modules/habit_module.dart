@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
@@ -109,6 +110,11 @@ enum ModuleDayStatusKind {
   /// Nothing was completed and the day is fully resolved (not still in
   /// progress).
   missed,
+
+  /// The module was paused on this day (e.g. life-event pause or all
+  /// items archived). Paused days are excluded from streak calculations
+  /// — they neither count nor break streaks.
+  paused,
 
   /// No data for this day (before the module's first use, or a day still
   /// in progress with nothing logged yet).
@@ -269,4 +275,9 @@ abstract class HabitModule {
   /// replace semantics (`core/backup/wipe_all_data.dart`) — never called
   /// standalone outside that orchestrator.
   Future<void> wipeData();
+
+  /// Aggregates this module's stats for the given [yearRange] into a
+  /// [ModuleYearStats] for the yearly recap. Returns `null` if the module
+  /// has no data in the range.
+  Future<ModuleYearStats?> yearAggregation(DateRange yearRange);
 }

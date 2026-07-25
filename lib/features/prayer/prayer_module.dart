@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/countdown_format.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -620,4 +621,59 @@ class PrayerModule implements HabitModule {
     'prayerName': counter.prayerName.toDb(),
     'count': counter.count,
   };
+
+  @override
+  Future<ModuleYearStats?> yearAggregation(DateRange yearRange) async {
+    final records = await _repository.recordsInRange(
+      yearRange.start,
+      yearRange.end,
+    );
+    if (records.isEmpty) return null;
+
+    var totalPrayers = 0;
+    var prayersCompleted = 0;
+    var onTimeCount = 0;
+    final monthsActive = <int>{};
+    final recordsByDay = <LocalDate, List<PrayerRecord>>{};
+
+    for (final record in records) {
+      final day = record.prayerDate;
+      recordsByDay.putIfAbsent(day, () => []).add(record);
+      monthsActive.add(day.month);
+
+      if (record.storedStatus == PrayerStatus.upcoming) continue;
+      totalPrayers++;
+      if (record.storedStatus == PrayerStatus.prayed) {
+        prayersCompleted++;
+        final changedAt = record.statusChangedAt;
+        if (changedAt != null && !changedAt.isAfter(record.scheduledFor)) {
+          onTimeCount++;
+        }
+      }
+    }
+
+    final onTimePercent =
+        prayersCompleted > 0 ? onTimeCount / prayersCompleted * 100 : 0.0;
+
+    // Use the streak calculator for longest streak.
+    final streakResult = const CalculatePrayerStreakUseCase().execute(
+      recordsByDay: recordsByDay,
+      earliestDay: yearRange.start,
+      today: yearRange.end,
+    );
+
+    return moduleYearStatsFromColor(
+      moduleId: id,
+      displayName: metadata.displayName,
+      accentColor: metadata.accentColor,
+      totalPrayers: totalPrayers,
+      prayersCompleted: prayersCompleted,
+      onTimePercent: onTimePercent,
+      longestStreak: streakResult.longest,
+      longestStreakAll: streakResult.longest,
+      bestDayValue: prayersCompleted,
+      monthsActive: monthsActive.length,
+      monthsTotal: 12,
+    );
+  }
 }

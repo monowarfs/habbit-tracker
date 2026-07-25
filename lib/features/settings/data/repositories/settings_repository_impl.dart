@@ -50,6 +50,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
             locale: _defaultLocale().toDb(),
             themeMode: AppThemeMode.system.toDb(),
             waterUnit: WaterUnit.ml.toDb(),
+            installDate: Value(now),
             createdAt: now,
             updatedAt: now,
           ),
@@ -158,6 +159,48 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateInstallDate(DateTime date) async {
+    try {
+      await _ensureSeeded();
+      final now = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.appSettingsTable,
+      )..where((t) => t.id.equals(_singletonId))).write(
+        AppSettingsTableCompanion(
+          installDate: Value(date.toUtc().millisecondsSinceEpoch),
+          updatedAt: Value(now),
+        ),
+      );
+      return const Result.success(null);
+    } on Object catch (e) {
+      return Result.failure(AppException.storage('update_install_date', e));
+    }
+  }
+
+  @override
+  Future<Result<void>> updateRecapEnabled({required bool enabled}) =>
+      _update(AppSettingsTableCompanion(recapEnabled: Value(enabled)));
+
+  @override
+  Future<Result<void>> updateLastRecapYear(int year) => _update(
+    AppSettingsTableCompanion(lastRecapYear: Value(year)),
+  );
+
+  @override
+  Future<Result<void>> updateLastActivityAt(DateTime date) => _update(
+    AppSettingsTableCompanion(
+      lastActivityAt: Value(date.toUtc().millisecondsSinceEpoch),
+    ),
+  );
+
+  @override
+  Future<Result<void>> updateNudgeSentAfter(DateTime date) => _update(
+    AppSettingsTableCompanion(
+      nudgeSentAfter: Value(date.toUtc().millisecondsSinceEpoch),
+    ),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -183,6 +226,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ramadanModeManualOverride: Value(settings.ramadanModeManualOverride),
           ramadanAutoDetectEnabled: Value(settings.ramadanAutoDetectEnabled),
           adaptiveReminderEnabled: Value(settings.adaptiveReminderEnabled),
+          recapEnabled: Value(settings.recapEnabled),
 
           updatedAt: Value(now),
         ),
@@ -246,6 +290,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
     ramadanModeManualOverride: row.ramadanModeManualOverride,
     ramadanAutoDetectEnabled: row.ramadanAutoDetectEnabled,
     adaptiveReminderEnabled: row.adaptiveReminderEnabled,
+    installDate: row.installDate == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            row.installDate!,
+            isUtc: true,
+          ),
+    recapEnabled: row.recapEnabled,
   );
 }
 

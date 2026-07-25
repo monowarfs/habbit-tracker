@@ -135,6 +135,26 @@ class SettingsHomeScreen extends ConsumerWidget {
             onTap: () => context.push('/settings/data'),
           ),
           const Divider(),
+          _SectionHeader(l10n.settingsReports),
+          ListTile(
+            leading: const Icon(Icons.emoji_events_outlined),
+            title: Text(l10n.pastRecapsTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/past-recaps'),
+          ),
+          Semantics(
+            label: l10n.recapEnabledLabel,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.auto_awesome_outlined),
+              title: Text(l10n.recapEnabledLabel),
+              subtitle: Text(l10n.recapEnabledDescription),
+              value: settings?.recapEnabled ?? true,
+              onChanged: (value) => ref
+                  .read(settingsRepositoryProvider)
+                  .updateRecapEnabled(enabled: value),
+            ),
+          ),
+          const Divider(),
           _SectionHeader(l10n.settingsAbout),
           ListTile(
             leading: const Icon(Icons.info_outline),

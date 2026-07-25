@@ -39,6 +39,7 @@ class CalculateWaterStreakUseCase {
     required List<WaterGoal> goals,
     required LocalDate earliestDay,
     required LocalDate today,
+    Set<LocalDate> pausedDays = const {},
   }) {
     if (earliestDay.compareTo(today) > 0) {
       return const WaterStreakResult(current: 0, longest: 0);
@@ -50,6 +51,10 @@ class CalculateWaterStreakUseCase {
 
     var day = earliestDay;
     while (day.compareTo(today) <= 0) {
+      if (pausedDays.contains(day)) {
+        day = day.addDays(1);
+        continue;
+      }
       final total = dailyTotalsMl[day] ?? 0;
       final goal = resolveGoalForDate.execute(goals, day);
       final metGoal = goal.goalMl > 0 && total >= goal.goalMl;
