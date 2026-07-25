@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
+import 'package:habit_tracker/core/modules/module_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/display_name_editor_sheet.dart';
 
 /// The Settings tab: sectioned entry points into Appearance, Language,
@@ -189,6 +190,11 @@ class SettingsHomeScreen extends ConsumerWidget {
             ),
           ),
           const Divider(),
+          _SectionHeader(l10n.settingsModules),
+          _ModuleToggleTile(moduleId: 'water', label: l10n.navWater, locked: true),
+          _ModuleToggleTile(moduleId: 'medicine', label: l10n.navMedicine),
+          _ModuleToggleTile(moduleId: 'prayer', label: l10n.navPrayer),
+          const Divider(),
           _SectionHeader(l10n.settingsAbout),
           ListTile(
             leading: const Icon(Icons.info_outline),
@@ -220,4 +226,58 @@ class _SectionHeader extends StatelessWidget {
           ),
     ),
   );
+}
+
+class _ModuleToggleTile extends ConsumerStatefulWidget {
+  const _ModuleToggleTile({
+    required this.moduleId,
+    required this.label,
+    this.locked = false,
+  });
+
+  final String moduleId;
+  final String label;
+  final bool locked;
+
+  @override
+  ConsumerState<_ModuleToggleTile> createState() =>
+      _ModuleToggleTileState();
+}
+
+class _ModuleToggleTileState extends ConsumerState<_ModuleToggleTile> {
+  late Future<bool> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = ref
+        .read(moduleSettingsRepositoryProvider)
+        .isEnabled(widget.moduleId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _future,
+      builder: (context, snapshot) {
+        final enabled = snapshot.data ?? false;
+        return SwitchListTile(
+          title: Text(widget.label),
+          value: enabled,
+          onChanged: widget.locked
+              ? null
+              : (value) async {
+                  await ref
+                      .read(moduleSettingsRepositoryProvider)
+                      .setEnabled(widget.moduleId, enabled: value);
+                  setState(() {
+                    _future = ref
+                        .read(moduleSettingsRepositoryProvider)
+                        .isEnabled(widget.moduleId);
+                  });
+                },
+        );
+      },
+    );
+  }
 }

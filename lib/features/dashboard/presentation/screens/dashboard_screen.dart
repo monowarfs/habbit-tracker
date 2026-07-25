@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -69,6 +70,7 @@ class DashboardScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  const ModuleSuggestionCard(),
                   const _DashboardGreeting(),
                   const SizedBox(height: 8),
                   _DayCompletionIndicator(modules: modules),
