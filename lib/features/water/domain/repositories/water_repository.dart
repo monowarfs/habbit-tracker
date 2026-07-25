@@ -92,4 +92,13 @@ abstract class WaterRepository {
     required double temperatureCelsius,
     required DateTime fetchedAt,
   });
+
+  /// Archives a water goal, hiding it from active views.
+  Future<Result<void>> archiveGoal(String goalId);
+
+  /// Revives an archived water goal, making it active again.
+  Future<Result<void>> reviveGoal(String goalId);
+
+  /// Returns all archived water goals.
+  Future<List<WaterGoal>> archivedGoals();
 }

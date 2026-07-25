@@ -27,6 +27,10 @@ class WaterGoalsTable extends Table {
   /// Soft-delete marker; null = not deleted.
   IntColumn get deletedAt => integer().nullable()();
 
+  /// Archive marker; null = active. When set, the goal is hidden from
+  /// active views and excluded from streak calculations.
+  IntColumn get archivedAt => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

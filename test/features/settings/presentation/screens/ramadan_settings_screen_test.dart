@@ -131,6 +131,11 @@ class _FakeSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateNudgeSentAfter(DateTime date) =>
       Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateReengagementNudgeEnabled({
+    required bool enabled,
+  }) => Future.value(const Result.success(null));
 }
 
 const _initial = AppSettings(

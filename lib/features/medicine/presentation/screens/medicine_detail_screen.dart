@@ -80,6 +80,11 @@ class MedicineDetailScreen extends ConsumerWidget {
                 value: 'edit',
                 child: Text(l10n.medicineDetailEditSchedule),
               ),
+              if (medicine.archivedAt == null)
+                PopupMenuItem(
+                  value: 'archive',
+                  child: Text(l10n.archiveAction),
+                ),
             ],
           ),
         ],
@@ -188,6 +193,32 @@ class MedicineDetailScreen extends ConsumerWidget {
       case 'edit':
         if (context.mounted) {
           await context.push('/medicine/$medicineId/edit');
+        }
+      case 'archive':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.archiveConfirmTitle(currentName)),
+            content: Text(l10n.archiveConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n.archiveConfirmButton),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && context.mounted) {
+          await controller.archiveMedicine(medicineId);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.archiveSnackSuccess(currentName))),
+            );
+          }
         }
     }
   }

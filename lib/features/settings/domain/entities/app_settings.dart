@@ -69,5 +69,6 @@ sealed class AppSettings with _$AppSettings {
 
     DateTime? installDate,
     @Default(true) bool recapEnabled,
+    @Default(true) bool reengagementNudgeEnabled,
   }) = _AppSettings;
 }

@@ -11,5 +11,6 @@ sealed class WaterGoal with _$WaterGoal {
     required String id,
     required int goalMl,
     required DateTime effectiveFrom,
+    DateTime? archivedAt,
   }) = _WaterGoal;
 }

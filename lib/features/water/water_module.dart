@@ -28,6 +28,7 @@ import 'package:habit_tracker/features/water/domain/usecases/resolve_goal_for_da
 import 'package:habit_tracker/features/water/presentation/providers/water_controller.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_add_entry_screen.dart';
+import 'package:habit_tracker/features/water/presentation/screens/archived_goals_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_settings_screen.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
@@ -87,6 +88,10 @@ class WaterModule implements HabitModule {
         GoRoute(
           path: 'settings',
           builder: (context, state) => const WaterSettingsScreen(),
+        ),
+        GoRoute(
+          path: 'archived',
+          builder: (context, state) => const ArchivedGoalsScreen(),
         ),
       ],
     ),
@@ -336,16 +341,25 @@ class WaterModule implements HabitModule {
     }
     const resolveGoal = ResolveGoalForDateUseCase();
     final result = <LocalDate, ModuleDayStatus>{};
+    // If all goals are archived, the module is paused.
+    final isPaused = goals.isEmpty;
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
-      final total = totalsByDay[day] ?? 0;
-      final goal = resolveGoal.execute(goals, day);
-      final kind = total == 0
-          ? ModuleDayStatusKind.none
-          : (goal.goalMl > 0 && total >= goal.goalMl)
-          ? ModuleDayStatusKind.complete
-          : ModuleDayStatusKind.partial;
-      result[day] = ModuleDayStatus(kind: kind, value: total);
+      if (isPaused) {
+        result[day] = const ModuleDayStatus(
+          kind: ModuleDayStatusKind.paused,
+          value: 0,
+        );
+      } else {
+        final total = totalsByDay[day] ?? 0;
+        final goal = resolveGoal.execute(goals, day);
+        final kind = total == 0
+            ? ModuleDayStatusKind.none
+            : (goal.goalMl > 0 && total >= goal.goalMl)
+            ? ModuleDayStatusKind.complete
+            : ModuleDayStatusKind.partial;
+        result[day] = ModuleDayStatus(kind: kind, value: total);
+      }
       day = day.addDays(1);
     }
     return result;
