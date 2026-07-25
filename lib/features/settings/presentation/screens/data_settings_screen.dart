@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/features/settings/presentation/widgets/data_privacy_reassurance_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/backup/export_orchestrator.dart';
@@ -176,6 +177,8 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
                   title: Text(l10n.dataSettingsShareLogs),
                   onTap: _shareLogs,
                 ),
+                const SizedBox(height: 16),
+                const DataPrivacyReassuranceCard(),
               ],
             ),
     );
