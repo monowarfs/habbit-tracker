@@ -1774,6 +1774,27 @@
   "@trendArrowVsPrevious": {
     "description": "Label showing trend comparison to previous period."
   },
+  "goalAttainmentTitle": "Goal Attainment",
+  "@goalAttainmentTitle": {
+    "description": "Title for the goal-attainment rate stat, distinct from the streak display."
+  },
+  "goalAttainmentRate": "{hit}/{total} days ({percent}%)",
+  "@goalAttainmentRate": {
+    "description": "Goal-attainment count and percentage over the selected period.",
+    "placeholders": {
+      "hit": {"type": "int"},
+      "total": {"type": "int"},
+      "percent": {"type": "int"}
+    }
+  },
+  "goalAttainmentWater": "Water goal reached",
+  "@goalAttainmentWater": {
+    "description": "Label for what counts as a hit day for Water's goal attainment."
+  },
+  "goalAttainmentEmpty": "No data for this period",
+  "@goalAttainmentEmpty": {
+    "description": "Shown when the selected period has no active days to compute attainment from."
+  },
   "unlocksTitle": "Unlocks",
   "@unlocksTitle": {
     "description": "Title of the unlocks screen."
