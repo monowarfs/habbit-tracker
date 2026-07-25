@@ -59,13 +59,12 @@ class RecalibrationRepository {
   /// Records that the user dismissed with "Remind later" (resets to 30 days).
   Future<void> markDeferred(String moduleId) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
+    final current = await forModule(moduleId);
     await (_db.update(_db.recalibrationMarkersTable)
           ..where((t) => t.moduleId.equals(moduleId)))
         .write(RecalibrationMarkersTableCompanion(
       lastShownAt: Value(now),
-      consecutiveDismissals: Value(
-        (await forModule(moduleId)).consecutiveDismissals + 1,
-      ),
+      consecutiveDismissals: Value(current.consecutiveDismissals + 1),
     ));
   }
 
