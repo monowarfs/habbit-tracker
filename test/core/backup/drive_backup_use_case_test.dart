@@ -87,6 +87,20 @@ void main() {
       expect(result, isA<Failure<ImportPreview>>());
     });
 
+    test(
+      'fails instead of throwing when the download itself throws '
+      '(e.g. an expired Drive session)',
+      () async {
+        when(
+          () => driveTarget.download(),
+        ).thenThrow(StateError('Google Drive session expired'));
+
+        final result = await previewDriveRestore(driveTarget: driveTarget);
+
+        expect(result, isA<Failure<ImportPreview>>());
+      },
+    );
+
     test('validates a downloaded envelope', () async {
       final envelope = BackupEnvelope(
         schemaVersion: BackupEnvelope.currentSchemaVersion,

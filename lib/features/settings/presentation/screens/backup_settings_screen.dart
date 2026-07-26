@@ -53,15 +53,25 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
     final connected = await _authService.isDriveConnected();
     final backupRepo = DriveBackupRepository(ref.read(databaseProvider));
     final latest = await backupRepo.latestBackup();
+    var lastBackupAt = latest == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(latest.backedUpAt, isUtc: true);
+    // The local drive_backups history doesn't survive a reinstall/new
+    // device — fall back to asking Drive itself when there's no local
+    // record but a Drive account is connected.
+    if (lastBackupAt == null && connected) {
+      try {
+        lastBackupAt = await _driveTarget.getLastBackupTime();
+      } on Object {
+        // Best-effort fallback only — the local history (if any) already
+        // won above, and a real error surfaces on the next explicit
+        // backup/restore action instead.
+      }
+    }
     if (!mounted) return;
     setState(() {
       _connected = connected;
-      _lastBackupAt = latest == null
-          ? null
-          : DateTime.fromMillisecondsSinceEpoch(
-              latest.backedUpAt,
-              isUtc: true,
-            );
+      _lastBackupAt = lastBackupAt;
     });
   }
 
@@ -80,9 +90,15 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
 
   Future<void> _disconnect() async {
     setState(() => _busy = true);
-    await _authService.disconnectDrive();
-    await _refreshStatus();
-    if (mounted) setState(() => _busy = false);
+    try {
+      await _authService.disconnectDrive();
+    } on Object catch (e, st) {
+      logger.e('drive_disconnect_failed', error: e, stackTrace: st);
+      if (mounted) _showMessage(e.toString());
+    } finally {
+      await _refreshStatus();
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _backupNow() async {

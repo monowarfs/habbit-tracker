@@ -26,8 +26,7 @@ class GoogleDriveBackupTarget implements BackupTarget {
   String get id => 'google_drive';
 
   @override
-  Future<void> upload(File exportFile) async {
-    final api = await _api();
+  Future<void> upload(File exportFile) => _withApi((api) async {
     final bytes = await exportFile.readAsBytes();
     final media = drive.Media(Stream.value(bytes), bytes.length);
     final existingId = await _existingBackupFileId(api);
@@ -39,11 +38,10 @@ class GoogleDriveBackupTarget implements BackupTarget {
         uploadMedia: media,
       );
     }
-  }
+  });
 
   @override
-  Future<File?> download() async {
-    final api = await _api();
+  Future<File?> download() => _withApi((api) async {
     final fileId = await _existingBackupFileId(api);
     if (fileId == null) return null;
     final media =
@@ -58,25 +56,32 @@ class GoogleDriveBackupTarget implements BackupTarget {
     final file = File('${dir.path}/$_fileName');
     await file.writeAsBytes(bytes);
     return file;
-  }
+  });
 
   /// The Drive-reported modification time of the current backup file, or
   /// `null` if none exists yet — a fallback "last backup" source
   /// independent of the local `drive_backups` table (survives a
   /// reinstall/new device, unlike that local history).
-  Future<DateTime?> getLastBackupTime() async {
-    final api = await _api();
+  Future<DateTime?> getLastBackupTime() => _withApi((api) async {
     final files = await api.files.list(
       spaces: 'appDataFolder',
       q: "name = '$_fileName'",
       $fields: 'files(id, modifiedTime)',
     );
     return files.files?.firstOrNull?.modifiedTime;
-  }
+  });
 
-  Future<drive.DriveApi> _api() async {
+  /// Runs [action] against a freshly authorized [drive.DriveApi], always
+  /// closing the underlying HTTP client afterward — `DriveAuthService
+  /// .authorizedHttpClient` hands back a new client per call, so nothing
+  /// else owns its lifecycle.
+  Future<T> _withApi<T>(Future<T> Function(drive.DriveApi api) action) async {
     final client = await _authService.authorizedHttpClient();
-    return drive.DriveApi(client);
+    try {
+      return await action(drive.DriveApi(client));
+    } finally {
+      client.close();
+    }
   }
 
   Future<String?> _existingBackupFileId(drive.DriveApi api) async {

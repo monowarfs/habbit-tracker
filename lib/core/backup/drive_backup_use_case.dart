@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/backup/backup_envelope.dart';
 import 'package:habit_tracker/core/backup/drive_backup_repository.dart';
@@ -10,6 +11,7 @@ import 'package:habit_tracker/core/backup/import_orchestrator.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:path/path.dart' as p;
@@ -33,7 +35,7 @@ Future<Result<void>> performBackup({
   final backupId = await backupRepository.markInProgress(
     backupFileName: fileName,
     schemaVersion: BackupEnvelope.currentSchemaVersion,
-    backedUpAt: DateTime.now(),
+    backedUpAt: clock.now(),
   );
   try {
     final envelope = await buildExport(
@@ -61,7 +63,12 @@ Future<Result<void>> performBackup({
 Future<Result<ImportPreview>> previewDriveRestore({
   required GoogleDriveBackupTarget driveTarget,
 }) async {
-  final file = await driveTarget.download();
+  final File? file;
+  try {
+    file = await driveTarget.download();
+  } on Object catch (e) {
+    return Result.failure(AppException.storage('drive_restore_download', e));
+  }
   if (file == null) {
     return const Result.failure(
       AppException.notFound('drive_backup', 'no backup found on Drive'),
@@ -104,8 +111,10 @@ Future<Result<void>> applyDriveRestore({
       ),
     );
     await safetyFile.writeAsString(jsonEncode(safetyEnvelope.toJson()));
-  } on Object {
-    // Best-effort only — see doc comment above.
+  } on Object catch (e, st) {
+    // Best-effort only — see doc comment above — but still logged so a
+    // missing safety net leaves a trace.
+    logger.e('pre_restore_safety_backup_failed', error: e, stackTrace: st);
   }
 
   return applyImport(

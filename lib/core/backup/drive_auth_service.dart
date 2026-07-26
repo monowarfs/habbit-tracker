@@ -31,14 +31,18 @@ class DriveAuthService {
   static const _driveScope = 'https://www.googleapis.com/auth/drive.appdata';
   static const _connectedAccountKey = 'drive_connected_account_email';
 
-  bool _initialized = false;
+  // `GoogleSignIn.instance` is itself a process-wide singleton whose own
+  // docs say `initialize()` must run exactly once — this guard must be
+  // shared across every `DriveAuthService` instance (e.g. a fresh one is
+  // constructed each time `BackupSettingsScreen` remounts), not per
+  // instance, and memoizing the `Future` itself (not just a `bool`) also
+  // keeps two near-simultaneous calls from both racing into `initialize`.
+  static Future<void>? _initializeFuture;
 
-  Future<void> _ensureInitialized() async {
-    if (_initialized) return;
-    await GoogleSignIn.instance.initialize(
+  Future<void> _ensureInitialized() {
+    return _initializeFuture ??= GoogleSignIn.instance.initialize(
       clientId: driveOAuthClientId.isEmpty ? null : driveOAuthClientId,
     );
-    _initialized = true;
   }
 
   /// Initiates interactive Google Sign-In and requests the Drive
@@ -101,4 +105,7 @@ class _BearerTokenClient extends http.BaseClient {
     request.headers.addAll(_headers);
     return _inner.send(request);
   }
+
+  @override
+  void close() => _inner.close();
 }

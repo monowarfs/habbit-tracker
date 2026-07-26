@@ -49,9 +49,9 @@ class DriveBackupRepository {
 
   /// Marks [backupId] as successfully uploaded.
   Future<void> markComplete(String backupId, int fileSizeBytes) {
-    return (_db.update(_db.driveBackupsTable)
-          ..where((t) => t.id.equals(backupId)))
-        .write(
+    return (_db.update(
+      _db.driveBackupsTable,
+    )..where((t) => t.id.equals(backupId))).write(
       DriveBackupsTableCompanion(
         status: const Value('success'),
         fileSizeBytes: Value(fileSizeBytes),

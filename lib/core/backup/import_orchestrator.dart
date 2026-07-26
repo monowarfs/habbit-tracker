@@ -200,8 +200,7 @@ Future<Result<void>> applyImport({
             adaptiveReminderEnabled:
                 appSettingsJson['adaptiveReminderEnabled'] as bool? ?? false,
             driveBackupReminderEnabled:
-                appSettingsJson['driveBackupReminderEnabled'] as bool? ??
-                false,
+                appSettingsJson['driveBackupReminderEnabled'] as bool? ?? false,
           ),
         );
       }
