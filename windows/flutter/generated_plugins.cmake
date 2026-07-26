@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_timezone
   geolocator_windows
   local_auth_windows
+  printing
   share_plus
   url_launcher_windows
 )
