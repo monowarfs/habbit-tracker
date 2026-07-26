@@ -40,7 +40,9 @@ dependencies:
   package_info_plus: ^10.2.1
   path: ^1.9.1
   path_provider: ^2.1.6
+  pdf: ^3.10.0
   pointycastle: ^4.0.0
+  printing: ^5.12.0
   quick_actions: ^1.1.0
   riverpod_annotation: ^4.0.3
   screen_protector: ^1.4.2
@@ -76,6 +78,7 @@ flutter:
   assets:
     - assets/data/prayer_cities.json
     - assets/sounds/dose_done_chime.mp3
+    - assets/icon/icon.png
 
 flutter_launcher_icons:
   android: true

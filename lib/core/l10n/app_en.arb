@@ -954,6 +954,30 @@
   "@reportsShareMonthFailed": {
     "description": "Snackbar shown if rendering/sharing the recap card throws."
   },
+  "reportsExportButton": "Export report",
+  "@reportsExportButton": {"description": "AppBar action tooltip/button opening the export format picker."},
+  "reportsExportPremiumRequired": "Exporting reports as PDF or CSV is a premium feature.",
+  "@reportsExportPremiumRequired": {"description": "Message shown to non-premium users tapping Export."},
+  "reportsExportSheetTitle": "Export this report",
+  "@reportsExportSheetTitle": {"description": "Title of the export format-picker bottom sheet."},
+  "reportsExportFormatPdf": "PDF",
+  "@reportsExportFormatPdf": {"description": "PDF export format option."},
+  "reportsExportFormatCsv": "CSV",
+  "@reportsExportFormatCsv": {"description": "CSV export format option."},
+  "reportsExportIncludes": "Includes: {modules}",
+  "@reportsExportIncludes": {
+    "description": "Preview line listing which modules' data will be included in the export.",
+    "placeholders": {"modules": {"type": "String"}}
+  },
+  "reportsExportEmptyWarning": "No data for the current period — export anyway?",
+  "@reportsExportEmptyWarning": {"description": "Warning shown in the export sheet when the selected period has no data."},
+  "reportsExportInProgress": "Preparing your report…",
+  "@reportsExportInProgress": {"description": "Progress message shown while generating the export."},
+  "reportsExportFailed": "Export failed: {reason}",
+  "@reportsExportFailed": {
+    "description": "Error message shown when the export fails.",
+    "placeholders": {"reason": {"type": "String"}}
+  },
   "reportsLongestStreak": "Longest streak: {days} days",
   "@reportsLongestStreak": {
     "description": "A module's longest-streak record on the reports screen.",
