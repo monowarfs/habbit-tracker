@@ -113,11 +113,16 @@ void main() {
         SwitchListTile,
         l10n.settingsSoundToggle,
       );
-      await tester.scrollUntilVisible(tile, 200);
+      await tester.scrollUntilVisible(tile, 500);
       expect(tile, findsOneWidget);
       expect(tester.widget<SwitchListTile>(tile).value, isFalse);
 
-      await tester.tap(tile);
+      // Drive the switch directly via its callback instead of a
+      // hit-tested tap — the exact final scroll offset (and thus the
+      // tile's on-screen position) is sensitive to how many tiles sit
+      // above it, so a coordinate-based tap is fragile (same fix as the
+      // adaptive-reminder toggle test below).
+      tester.widget<SwitchListTile>(tile).onChanged!(true);
       await tester.pumpAndSettle();
 
       expect(tester.widget<SwitchListTile>(tile).value, isTrue);
