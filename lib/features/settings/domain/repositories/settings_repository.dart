@@ -99,6 +99,11 @@ abstract class SettingsRepository {
     required bool enabled,
   });
 
+  /// Enables or disables the daily Google Drive backup reminder.
+  Future<Result<void>> updateDriveBackupReminderEnabled({
+    required bool enabled,
+  });
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

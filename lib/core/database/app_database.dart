@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:habit_tracker/core/backup/drive_backup_table.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/cosmetic_unlocks_table.dart';
@@ -57,6 +58,7 @@ part 'app_database.g.dart';
     ModuleSettingsTable,
     OnboardingProgressTable,
     CosmeticUnlocksTable,
+    DriveBackupsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -65,7 +67,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -250,6 +252,15 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 17) {
         await m.createTable(cosmeticUnlocksTable);
+      }
+      if (from < 18) {
+        await m.createTable(driveBackupsTable);
+      }
+      if (from < 19) {
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.driveBackupReminderEnabled,
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

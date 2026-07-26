@@ -16,6 +16,7 @@ import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/backup_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
@@ -68,6 +69,9 @@ class AppRoutes {
 
   /// Export/import/share-logs screen.
   static const String settingsData = '/settings/data';
+
+  /// Google Drive backup/restore settings.
+  static const String settingsBackup = '/settings/backup';
 
   /// About/version/licenses screen.
   static const String settingsAbout = '/settings/about';
@@ -224,6 +228,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'data',
                     builder: (context, state) => const DataSettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'backup',
+                    builder: (context, state) => const BackupSettingsScreen(),
                   ),
                   GoRoute(
                     path: 'about',

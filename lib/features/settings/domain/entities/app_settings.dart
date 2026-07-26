@@ -71,5 +71,6 @@ sealed class AppSettings with _$AppSettings {
     @Default(true) bool recapEnabled,
     @Default(true) bool reengagementNudgeEnabled,
     @Default(true) bool recalibrationPromptsEnabled,
+    @Default(false) bool driveBackupReminderEnabled,
   }) = _AppSettings;
 }

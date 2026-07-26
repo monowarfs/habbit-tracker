@@ -52,6 +52,7 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'ramadanModeManualOverride': settings.ramadanModeManualOverride,
   'ramadanAutoDetectEnabled': settings.ramadanAutoDetectEnabled,
   'adaptiveReminderEnabled': settings.adaptiveReminderEnabled,
+  'driveBackupReminderEnabled': settings.driveBackupReminderEnabled,
 };
 
 Map<String, Object?> _achievementToJson(AchievementRow row) => {

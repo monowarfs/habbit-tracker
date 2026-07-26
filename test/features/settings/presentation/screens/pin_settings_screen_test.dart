@@ -311,4 +311,9 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   Future<Result<void>> updateRecalibrationPromptsEnabled({
     required bool enabled,
   }) => Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateDriveBackupReminderEnabled({
+    required bool enabled,
+  }) => Future.value(const Result.success(null));
 }
