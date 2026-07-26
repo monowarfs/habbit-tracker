@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_providers.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/features/community/community_links.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/display_name_editor_sheet.dart';
@@ -177,6 +178,14 @@ class SettingsHomeScreen extends ConsumerWidget {
             title: Text(l10n.settingsData),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/data'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.cloud_sync_outlined),
+            title: Text(l10n.backupSettingsTitle),
+            trailing: ref.watch(isPremiumUserProvider)
+                ? const Icon(Icons.chevron_right)
+                : const Icon(Icons.diamond_outlined),
+            onTap: () => context.push('/settings/backup'),
           ),
           const Divider(),
           _SectionHeader(l10n.settingsReports),
