@@ -131,6 +131,35 @@ void main() {
   );
 
   test(
+    'a custom range crossing a year boundary labels each month bar '
+    'with its year, so two Januaries a year apart are distinguishable',
+    () async {
+      final module = _FakeModule('water', {
+        const LocalDate(2024, 1, 15): const ModuleDayStatus(
+          kind: ModuleDayStatusKind.complete,
+          value: 1,
+        ),
+        const LocalDate(2025, 1, 15): const ModuleDayStatus(
+          kind: ModuleDayStatusKind.complete,
+          value: 2,
+        ),
+      });
+      final reports = await const AggregateReportUseCase().execute(
+        modules: [module],
+        period: ReportPeriod.custom,
+        periodAnchor: const LocalDate(2024, 1, 1),
+        customRange: const DateRange(
+          start: LocalDate(2024, 1, 1),
+          end: LocalDate(2025, 1, 31),
+        ),
+      );
+      final labels = reports.first.points.map((p) => p.label).toList();
+      expect(labels.first, isNot(labels.last));
+      expect(labels.toSet(), hasLength(labels.length));
+    },
+  );
+
+  test(
     'a 2-5 year custom range buckets one bar per quarter',
     () async {
       final module = _FakeModule('water', {

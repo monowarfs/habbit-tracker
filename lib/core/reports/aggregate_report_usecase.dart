@@ -95,9 +95,7 @@ class AggregateReportUseCase {
       case ReportPeriod.custom:
       case ReportPeriod.allTime:
         if (customRange == null) {
-          throw ArgumentError(
-            'customRange is required for ReportPeriod.$period',
-          );
+          throw ArgumentError('customRange is required for $period');
         }
         return customRange;
     }
@@ -186,7 +184,10 @@ class AggregateReportUseCase {
       final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
       points.add(
         BarChartPoint(
-          label: _monthLabels[month.month - 1],
+          // Year suffix disambiguates a range that crosses a year
+          // boundary (e.g. a 366-day custom range) — two different
+          // Januaries would otherwise both render as "J".
+          label: "${_monthLabels[month.month - 1]}'${month.year % 100}",
           value: totals[key] ?? 0,
         ),
       );
