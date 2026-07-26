@@ -179,6 +179,14 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/data'),
           ),
+          ListTile(
+            leading: const Icon(Icons.cloud_sync_outlined),
+            title: Text(l10n.backupSettingsTitle),
+            trailing: ref.watch(isPremiumUserProvider)
+                ? const Icon(Icons.chevron_right)
+                : const Icon(Icons.diamond_outlined),
+            onTap: () => context.push('/settings/backup'),
+          ),
           const Divider(),
           _SectionHeader(l10n.settingsReports),
           ListTile(
