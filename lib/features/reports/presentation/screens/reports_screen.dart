@@ -4,7 +4,9 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/reports/aggregate_report_usecase.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
@@ -12,6 +14,7 @@ import 'package:habit_tracker/features/reports/presentation/providers/reports_pr
 import 'package:habit_tracker/features/reports/presentation/recap_share_usecase.dart';
 import 'package:habit_tracker/features/reports/presentation/widgets/monthly_recap_card.dart';
 import 'package:habit_tracker/features/reports/presentation/widgets/recap_card_capture.dart';
+import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// Weekly/monthly/yearly cross-module reports (FR-C-12/14).
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -25,8 +28,11 @@ class ReportsScreen extends ConsumerStatefulWidget {
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   ReportPeriod _period = ReportPeriod.week;
   late LocalDate _anchor = localDayKey(clock.now());
+  DateRange? _customRange;
 
   void _shiftPeriod(int direction) {
+    // Custom/all-time ranges have no natural "previous/next" step — the
+    // chevrons are disabled for those periods (see build()).
     setState(() {
       _anchor = switch (_period) {
         ReportPeriod.week => _anchor.addDays(7 * direction),
@@ -40,8 +46,61 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           _anchor.month,
           1,
         ),
+        ReportPeriod.custom || ReportPeriod.allTime => _anchor,
       };
     });
+  }
+
+  /// Selects [period], gating the premium [ReportPeriod.custom]/
+  /// [ReportPeriod.allTime] options behind [isPremiumUserProvider] — a
+  /// non-premium tap shows an upsell snackbar instead of changing
+  /// anything (`docs/superpowers/specs/04-premium/
+  /// 08-extended-stats-range-multi-year-trends-design.md`).
+  Future<void> _selectPeriod(ReportPeriod period) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isPremium = ref.read(isPremiumUserProvider);
+    if ((period == ReportPeriod.custom || period == ReportPeriod.allTime) &&
+        !isPremium) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.reportsPremiumRangeUpsell)),
+      );
+      return;
+    }
+    if (period == ReportPeriod.allTime) {
+      final installDate = ref.read(appSettingsProvider).value?.installDate;
+      final today = localDayKey(clock.now());
+      final start = installDate == null
+          ? today.addDays(-365 * 5)
+          : LocalDate.fromDateTime(installDate);
+      setState(() {
+        _period = period;
+        _customRange = DateRange(start: start, end: today);
+      });
+      return;
+    }
+    if (period == ReportPeriod.custom) {
+      final today = clock.now();
+      final picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime.utc(2000),
+        lastDate: today,
+        initialDateRange: DateTimeRange(
+          start: today.subtract(const Duration(days: 30)),
+          end: today,
+        ),
+        helpText: l10n.reportsCustomRangePickerTitle,
+      );
+      if (picked == null || !mounted) return;
+      setState(() {
+        _period = period;
+        _customRange = DateRange(
+          start: LocalDate.fromDateTime(picked.start),
+          end: LocalDate.fromDateTime(picked.end),
+        );
+      });
+      return;
+    }
+    setState(() => _period = period);
   }
 
   Future<void> _shareMonth(List<ModuleReport> reports) async {
@@ -84,8 +143,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isPremium = ref.watch(isPremiumUserProvider);
+    final canShift =
+        _period != ReportPeriod.custom && _period != ReportPeriod.allTime;
     final reportsAsync = ref.watch(
-      moduleReportsProvider((period: _period, anchor: _anchor)),
+      moduleReportsProvider((
+        period: _period,
+        anchor: _anchor,
+        customRange: _customRange,
+      )),
     );
     return Scaffold(
       appBar: AppBar(
@@ -102,11 +168,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            onPressed: () => _shiftPeriod(-1),
+            onPressed: canShift ? () => _shiftPeriod(-1) : null,
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            onPressed: () => _shiftPeriod(1),
+            onPressed: canShift ? () => _shiftPeriod(1) : null,
           ),
         ],
       ),
@@ -126,9 +192,19 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 value: ReportPeriod.year,
                 label: Text(l10n.reportsPeriodYear),
               ),
+              ButtonSegment(
+                value: ReportPeriod.allTime,
+                label: Text(l10n.reportsPeriodAllTime),
+                icon: isPremium ? null : const Icon(Icons.lock, size: 14),
+              ),
+              ButtonSegment(
+                value: ReportPeriod.custom,
+                label: Text(l10n.reportsPeriodCustom),
+                icon: isPremium ? null : const Icon(Icons.lock, size: 14),
+              ),
             ],
             selected: {_period},
-            onSelectionChanged: (s) => setState(() => _period = s.first),
+            onSelectionChanged: (s) => unawaited(_selectPeriod(s.first)),
           ),
           Expanded(
             child: reportsAsync.when(
