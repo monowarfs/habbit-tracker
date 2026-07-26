@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
+import 'package:habit_tracker/core/utils/external_link_launcher.dart';
 import 'package:habit_tracker/features/settings/priority_support_links.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Priority Support channel screen
 /// (`docs/superpowers/specs/04-premium/09-priority-community-support-
@@ -40,38 +40,21 @@ class _Content extends StatelessWidget {
     ).showSnackBar(SnackBar(content: Text(l10n.prioritySupportEmailCopied)));
   }
 
-  Future<void> _openMailApp(BuildContext context) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: PrioritySupportLinks.priorityEmail,
-    );
-    await _launch(context, uri, PrioritySupportLinks.priorityEmail);
-  }
+  Future<void> _openMailApp(BuildContext context) => launchExternalLink(
+    context,
+    uri: Uri(scheme: 'mailto', path: PrioritySupportLinks.priorityEmail),
+    fallbackMessage: l10n.prioritySupportLinkFailed(
+      PrioritySupportLinks.priorityEmail,
+    ),
+  );
 
-  Future<void> _joinTelegram(BuildContext context) async {
-    final uri = Uri.parse(PrioritySupportLinks.telegramUrl);
-    await _launch(context, uri, PrioritySupportLinks.telegramUrlDisplay);
-  }
-
-  Future<void> _launch(
-    BuildContext context,
-    Uri uri,
-    String displayValue,
-  ) async {
-    var launched = false;
-    try {
-      if (await canLaunchUrl(uri)) {
-        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } on Object {
-      launched = false;
-    }
-    if (!launched && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.prioritySupportLinkFailed(displayValue))),
-      );
-    }
-  }
+  Future<void> _joinTelegram(BuildContext context) => launchExternalLink(
+    context,
+    uri: Uri.parse(PrioritySupportLinks.telegramUrl),
+    fallbackMessage: l10n.prioritySupportLinkFailed(
+      PrioritySupportLinks.telegramUrlDisplay,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
