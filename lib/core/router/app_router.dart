@@ -21,6 +21,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/data_settin
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/priority_support_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/quiet_hours_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/ramadan_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
@@ -84,6 +85,9 @@ class AppRoutes {
 
   /// Past recaps list screen.
   static const String settingsPastRecaps = '/settings/past-recaps';
+
+  /// Priority support channel screen.
+  static const String settingsPrioritySupport = '/settings/priority-support';
 
   /// Yearly recap full-screen viewer (receives YearSummary via extra).
   static const String recap = '/reports/recap';
@@ -244,6 +248,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'unlocks',
                     builder: (context, state) => const UnlocksScreen(),
+                  ),
+                  GoRoute(
+                    path: 'priority-support',
+                    builder: (context, state) => const PrioritySupportScreen(),
                   ),
                 ],
               ),

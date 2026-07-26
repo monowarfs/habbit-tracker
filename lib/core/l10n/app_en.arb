@@ -1150,6 +1150,40 @@
     "description": "Error message shown when export fails.",
     "placeholders": {"reason": {"type": "String"}}
   },
+  "prioritySupportTitle": "Priority Support",
+  "@prioritySupportTitle": {"description": "Title of the Priority Support screen, and its entry on the Settings home screen."},
+  "prioritySupportPremiumRequired": "Priority Support is a premium feature.",
+  "@prioritySupportPremiumRequired": {"description": "Shown instead of the support channel details for non-premium users."},
+  "prioritySupportUnlockPremium": "Unlock Premium",
+  "@prioritySupportUnlockPremium": {"description": "CTA button shown to non-premium users on the priority support screen."},
+  "prioritySupportThankYou": "Thank you for supporting Habit Tracker! As a premium user, you get a direct, faster line to us.",
+  "@prioritySupportThankYou": {"description": "Thank-you message shown at the top of the priority support screen."},
+  "prioritySupportEmailSectionTitle": "Priority email",
+  "@prioritySupportEmailSectionTitle": {"description": "Section header for the priority email contact."},
+  "prioritySupportCopyEmail": "Copy Email",
+  "@prioritySupportCopyEmail": {"description": "Button to copy the support email address to the clipboard."},
+  "prioritySupportEmailCopied": "Email copied to clipboard",
+  "@prioritySupportEmailCopied": {"description": "Confirmation snackbar after copying the email address."},
+  "prioritySupportOpenMailApp": "Open Mail App",
+  "@prioritySupportOpenMailApp": {"description": "Button to launch the device's email client addressed to priority support."},
+  "prioritySupportReceiptGuidance": "Include your purchase receipt or order id in your message so we can verify your priority status quickly.",
+  "@prioritySupportReceiptGuidance": {"description": "Guidance text asking the user to include their receipt."},
+  "prioritySupportTelegramSectionTitle": "Priority Telegram group",
+  "@prioritySupportTelegramSectionTitle": {"description": "Section header for the priority Telegram group link."},
+  "prioritySupportJoinGroup": "Join Group",
+  "@prioritySupportJoinGroup": {"description": "Button to open the priority Telegram group."},
+  "prioritySupportGeneralSectionTitle": "General support",
+  "@prioritySupportGeneralSectionTitle": {"description": "Section header comparing the general (non-premium) support email."},
+  "prioritySupportGeneralDescription": "Non-premium users can still reach us at {email}, with a longer typical response time.",
+  "@prioritySupportGeneralDescription": {
+    "description": "Description of the general support email shown for comparison.",
+    "placeholders": {"email": {"type": "String"}}
+  },
+  "prioritySupportLinkFailed": "Couldn't open link — the address is {value}",
+  "@prioritySupportLinkFailed": {
+    "description": "Fallback message shown when launching mail/Telegram fails.",
+    "placeholders": {"value": {"type": "String"}}
+  },
   "backupSettingsTitle": "Backup & Restore",
   "@backupSettingsTitle": {"description": "Title of the Google Drive backup settings screen, and its entry on the Settings home screen."},
   "backupSettingsPremiumRequired": "Google Drive backup is a premium feature.",
@@ -1815,6 +1849,10 @@
   "settingsCommunity": "Community",
   "@settingsCommunity": {
     "description": "Settings section header for community features."
+  },
+  "settingsPremium": "Premium",
+  "@settingsPremium": {
+    "description": "Settings section header for premium-only features."
   },
   "communityJoinTitle": "Join Our Community",
   "@communityJoinTitle": {
