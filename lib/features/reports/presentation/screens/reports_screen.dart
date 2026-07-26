@@ -33,6 +33,7 @@ class ReportsScreen extends ConsumerStatefulWidget {
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   ReportPeriod _period = ReportPeriod.week;
   late LocalDate _anchor = localDayKey(clock.now());
+  bool _exporting = false;
 
   void _shiftPeriod(int direction) {
     setState(() {
@@ -196,6 +197,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   }
 
   Future<void> _export(bool asPdf, List<ModuleReport> reports) async {
+    if (_exporting) return;
+    _exporting = true;
     final navigator = Navigator.of(context);
     if (navigator.canPop()) navigator.pop();
     final l10n = AppLocalizations.of(context)!;
@@ -248,6 +251,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           SnackBar(content: Text(l10n.reportsExportFailed(e.toString()))),
         );
       }
+    } finally {
+      _exporting = false;
     }
   }
 
