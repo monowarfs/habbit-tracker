@@ -136,6 +136,13 @@ class AppSettingsTable extends Table {
   BoolColumn get recalibrationPromptsEnabled =>
       boolean().withDefault(const Constant(true))();
 
+  /// Whether the daily Google Drive backup reminder notification is
+  /// enabled (`docs/superpowers/specs/04-premium/
+  /// 01-google-drive-backup-restore-design.md`) — default `false`,
+  /// opt-in.
+  BoolColumn get driveBackupReminderEnabled =>
+      boolean().withDefault(const Constant(false))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

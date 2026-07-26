@@ -16,10 +16,12 @@ import 'package:habit_tracker/features/reports/presentation/screens/past_recaps_
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/yearly_recap_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/about_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/backup_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/priority_support_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/quiet_hours_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/ramadan_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
@@ -69,6 +71,9 @@ class AppRoutes {
   /// Export/import/share-logs screen.
   static const String settingsData = '/settings/data';
 
+  /// Google Drive backup/restore settings.
+  static const String settingsBackup = '/settings/backup';
+
   /// About/version/licenses screen.
   static const String settingsAbout = '/settings/about';
 
@@ -80,6 +85,9 @@ class AppRoutes {
 
   /// Past recaps list screen.
   static const String settingsPastRecaps = '/settings/past-recaps';
+
+  /// Priority support channel screen.
+  static const String settingsPrioritySupport = '/settings/priority-support';
 
   /// Yearly recap full-screen viewer (receives YearSummary via extra).
   static const String recap = '/reports/recap';
@@ -226,6 +234,10 @@ GoRouter buildAppRouter(
                     builder: (context, state) => const DataSettingsScreen(),
                   ),
                   GoRoute(
+                    path: 'backup',
+                    builder: (context, state) => const BackupSettingsScreen(),
+                  ),
+                  GoRoute(
                     path: 'about',
                     builder: (context, state) => const AboutScreen(),
                   ),
@@ -236,6 +248,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'unlocks',
                     builder: (context, state) => const UnlocksScreen(),
+                  ),
+                  GoRoute(
+                    path: 'priority-support',
+                    builder: (context, state) => const PrioritySupportScreen(),
                   ),
                 ],
               ),

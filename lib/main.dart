@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/achievements/tenure_check.dart';
+import 'package:habit_tracker/core/backup/backup_reminder_scheduler.dart';
 import 'package:habit_tracker/core/changelog/changelog_data.dart';
 import 'package:habit_tracker/core/changelog/presentation/whats_new_sheet.dart';
 import 'package:habit_tracker/core/changelog/version_compare.dart';
@@ -197,6 +198,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(refreshAllWidgets(ref.read(databaseProvider)));
       unawaited(syncWearableData(ref.read(databaseProvider)));
       unawaited(checkReEngagementNudge(ref));
+      unawaited(checkBackupReminder(ref));
       unawaited(evaluateTenureBadges(ref.read(databaseProvider)));
       unawaited(_checkCosmeticUnlocks(ref.read(databaseProvider)));
     }

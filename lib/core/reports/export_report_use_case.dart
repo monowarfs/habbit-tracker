@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/reports/aggregate_report_usecase.dart';
 import 'package:habit_tracker/core/reports/csv_report_generator.dart';
 import 'package:habit_tracker/core/reports/pdf_report_generator.dart';
+import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:path/path.dart' as p;
 
@@ -44,14 +45,20 @@ class ExportReportUseCase {
     String? profileName,
     Uint8List? logoBytes,
     Map<String, Uint8List>? chartImages,
+    DateRange? customRange,
   }) async {
     try {
       final reports = await _aggregate.execute(
         modules: modules,
         period: period,
         periodAnchor: anchor,
+        customRange: customRange,
       );
-      final range = _aggregate.rangeForPeriod(period, anchor);
+      final range = _aggregate.rangeForPeriod(
+        period,
+        anchor,
+        customRange: customRange,
+      );
       final bytes = await _pdf.generate(
         reports: reports,
         range: range,
@@ -79,9 +86,14 @@ class ExportReportUseCase {
     required List<HabitModule> modules,
     required ReportPeriod period,
     required LocalDate anchor,
+    DateRange? customRange,
   }) async {
     try {
-      final range = _aggregate.rangeForPeriod(period, anchor);
+      final range = _aggregate.rangeForPeriod(
+        period,
+        anchor,
+        customRange: customRange,
+      );
       final csv = await _csv.generate(modules: modules, range: range);
       final file = File(
         p.join(

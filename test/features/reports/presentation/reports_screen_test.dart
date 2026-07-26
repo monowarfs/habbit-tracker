@@ -154,6 +154,50 @@ void main() {
   );
 
   testWidgets(
+    'All Time and Custom show a lock icon for non-premium users, and '
+    'tapping either shows an upsell instead of changing the period',
+    (tester) async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+        final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+              isPremiumUserProvider.overrideWithValue(false),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: ReportsScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.lock), findsNWidgets(2));
+
+        await tester.tap(find.text(l10n.reportsPeriodAllTime));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.reportsPremiumRangeUpsell), findsOneWidget);
+        // The period didn't actually change — the share button is still
+        // disabled (only enabled for month).
+        expect(
+          tester
+              .widget<IconButton>(
+                find.ancestor(
+                  of: find.byIcon(Icons.ios_share),
+                  matching: find.byType(IconButton),
+                ),
+              )
+              .onPressed,
+          isNull,
+        );
+      });
+    },
+  );
+
+  testWidgets(
     'tapping Export as a premium user opens the format picker with a '
     'module preview',
     (tester) async {
@@ -184,4 +228,25 @@ void main() {
       });
     },
   );
+
+  testWidgets('no lock icon is shown for premium users', (tester) async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+            isPremiumUserProvider.overrideWithValue(true),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ReportsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.lock), findsNothing);
+    });
+  });
 }
