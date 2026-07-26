@@ -1,10 +1,18 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/reports/aggregate_report_usecase.dart';
+import 'package:habit_tracker/core/reports/chart_image_renderer.dart';
+import 'package:habit_tracker/core/reports/export_report_use_case.dart';
+import 'package:habit_tracker/core/reports/share_report_helper.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
@@ -81,6 +89,162 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     }
   }
 
+  /// Opens the export format picker, gated behind [isPremiumUserProvider]
+  /// (`docs/superpowers/specs/04-premium/05-exportable-pdf-csv-reports-
+  /// IMPLEMENTATION-PLAN.md`) — exports whatever period is currently
+  /// selected on this screen rather than duplicating a second range
+  /// picker inside the sheet.
+  Future<void> _openExportSheet(List<ModuleReport> reports) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!ref.read(isPremiumUserProvider)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.reportsExportPremiumRequired)),
+      );
+      return;
+    }
+    final moduleNames = reports.map((r) => r.displayName).join(', ');
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.reportsExportSheetTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                reports.isEmpty
+                    ? l10n.reportsExportEmptyWarning
+                    : l10n.reportsExportIncludes(moduleNames),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => unawaited(_export(true, reports)),
+                      child: Text(l10n.reportsExportFormatPdf),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => unawaited(_export(false, reports)),
+                      child: Text(l10n.reportsExportFormatCsv),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Renders each report's `PeriodBarChart` off-screen (same
+  /// far-outside-the-viewport `Overlay` technique as [_shareMonth]) and
+  /// captures it to PNG, one module at a time so each capture's
+  /// [ChartImageRenderer] boundary key never collides with another's.
+  Future<Map<String, Uint8List>> _captureChartImages(
+    List<ModuleReport> reports,
+  ) async {
+    final overlayState = Overlay.of(context);
+    final images = <String, Uint8List>{};
+    for (final report in reports) {
+      if (report.points.isEmpty) continue;
+      final renderer = ChartImageRenderer();
+      final completer = Completer<void>();
+      late final OverlayEntry entry;
+      entry = OverlayEntry(
+        builder: (context) => Positioned(
+          left: -9999,
+          top: 0,
+          child: Material(
+            child: SizedBox(
+              width: 400,
+              child: renderer.wrap(
+                PeriodBarChart(
+                  points: report.points,
+                  color: report.accentColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      overlayState.insert(entry);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => completer.complete(),
+      );
+      await completer.future;
+      images[report.moduleId] = await renderer.capture();
+      entry.remove();
+    }
+    return images;
+  }
+
+  Future<void> _export(bool asPdf, List<ModuleReport> reports) async {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) navigator.pop();
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context)
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.reportsExportInProgress),
+          duration: const Duration(seconds: 30),
+        ),
+      );
+    try {
+      final modules = ref.read(habitModulesProvider);
+      final periodLabel = switch (_period) {
+        ReportPeriod.week => l10n.reportsPeriodWeek,
+        ReportPeriod.month => l10n.reportsPeriodMonth,
+        ReportPeriod.year => l10n.reportsPeriodYear,
+      };
+      final Result<String> result;
+      if (asPdf) {
+        final chartImages = await _captureChartImages(reports);
+        final logoData = await rootBundle.load('assets/icon/icon.png');
+        result = await const ExportReportUseCase().exportPdf(
+          modules: modules,
+          period: _period,
+          anchor: _anchor,
+          periodLabel: periodLabel,
+          logoBytes: logoData.buffer.asUint8List(),
+          chartImages: chartImages,
+        );
+      } else {
+        result = await const ExportReportUseCase().exportCsv(
+          modules: modules,
+          period: _period,
+          anchor: _anchor,
+        );
+      }
+      messenger.hideCurrentSnackBar();
+      if (!mounted) return;
+      if (result case Failure(:final error)) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.reportsExportFailed(error.toString()))),
+        );
+        return;
+      }
+      await shareReportFile((result as Success<String>).value);
+    } on Object catch (e) {
+      messenger.hideCurrentSnackBar();
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.reportsExportFailed(e.toString()))),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -91,6 +255,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       appBar: AppBar(
         title: Text(l10n.reportsTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: l10n.reportsExportButton,
+            onPressed: () =>
+                unawaited(_openExportSheet(reportsAsync.value ?? [])),
+          ),
           IconButton(
             icon: const Icon(Icons.ios_share),
             tooltip: l10n.reportsShareMonthButton,

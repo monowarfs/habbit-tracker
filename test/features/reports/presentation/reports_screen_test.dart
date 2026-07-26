@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/reports/presentation/screens/reports_screen.dart';
@@ -115,6 +116,71 @@ void main() {
               .onPressed,
           isNotNull,
         );
+      });
+    },
+  );
+
+  testWidgets(
+    'tapping Export as a non-premium user shows an upsell instead of a '
+    'format picker',
+    (tester) async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+        final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+              isPremiumUserProvider.overrideWithValue(false),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: ReportsScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.file_download_outlined));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(l10n.reportsExportPremiumRequired),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.reportsExportSheetTitle), findsNothing);
+      });
+    },
+  );
+
+  testWidgets(
+    'tapping Export as a premium user opens the format picker with a '
+    'module preview',
+    (tester) async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+        final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+              isPremiumUserProvider.overrideWithValue(true),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: ReportsScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.file_download_outlined));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.reportsExportSheetTitle), findsOneWidget);
+        expect(find.text(l10n.reportsExportIncludes('Water')), findsOneWidget);
+        expect(find.text(l10n.reportsExportFormatPdf), findsOneWidget);
+        expect(find.text(l10n.reportsExportFormatCsv), findsOneWidget);
       });
     },
   );
