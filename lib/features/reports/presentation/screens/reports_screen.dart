@@ -179,12 +179,18 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         ),
       );
       overlayState.insert(entry);
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => completer.complete(),
-      );
-      await completer.future;
-      images[report.moduleId] = await renderer.capture();
-      entry.remove();
+      try {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => completer.complete(),
+        );
+        await completer.future;
+        images[report.moduleId] = await renderer.capture();
+      } finally {
+        // Always remove the off-screen entry, even if capture() throws —
+        // otherwise a failed capture mid-loop leaks it into the app's
+        // Overlay permanently.
+        entry.remove();
+      }
     }
     return images;
   }
