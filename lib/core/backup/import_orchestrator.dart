@@ -199,6 +199,9 @@ Future<Result<void>> applyImport({
                 appSettingsJson['ramadanAutoDetectEnabled'] as bool? ?? true,
             adaptiveReminderEnabled:
                 appSettingsJson['adaptiveReminderEnabled'] as bool? ?? false,
+            driveBackupReminderEnabled:
+                appSettingsJson['driveBackupReminderEnabled'] as bool? ??
+                false,
           ),
         );
       }

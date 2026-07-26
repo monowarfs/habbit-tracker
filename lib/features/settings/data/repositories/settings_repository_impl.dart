@@ -215,6 +215,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateDriveBackupReminderEnabled({
+    required bool enabled,
+  }) => _update(
+    AppSettingsTableCompanion(driveBackupReminderEnabled: Value(enabled)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -244,6 +251,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           reengagementNudgeEnabled: Value(settings.reengagementNudgeEnabled),
           recalibrationPromptsEnabled: Value(
             settings.recalibrationPromptsEnabled,
+          ),
+          driveBackupReminderEnabled: Value(
+            settings.driveBackupReminderEnabled,
           ),
 
           updatedAt: Value(now),
@@ -317,6 +327,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     recapEnabled: row.recapEnabled,
     reengagementNudgeEnabled: row.reengagementNudgeEnabled,
     recalibrationPromptsEnabled: row.recalibrationPromptsEnabled,
+    driveBackupReminderEnabled: row.driveBackupReminderEnabled,
   );
 }
 
