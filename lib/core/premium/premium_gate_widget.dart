@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 
 /// A wrapper widget that gates content behind a premium entitlement check.
@@ -59,9 +60,7 @@ class _DefaultLockedCTA extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: () {
-                // TODO: Navigate to purchase screen (Task 8).
-              },
+              onPressed: () => context.push('/settings/purchase'),
               child: const Text('View Plans'),
             ),
           ],

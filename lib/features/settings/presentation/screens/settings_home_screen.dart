@@ -143,7 +143,13 @@ class SettingsHomeScreen extends ConsumerWidget {
             leading: const Icon(Icons.diamond_outlined),
             title: Text(l10n.unlocksTitle),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/settings/unlocks'),
+            onTap: () {
+              if (ref.read(isPremiumUserProvider)) {
+                context.push('/settings/unlocks');
+              } else {
+                context.push('/settings/purchase');
+              }
+            },
           ),
           const Divider(),
           _SectionHeader(l10n.settingsSecurity),

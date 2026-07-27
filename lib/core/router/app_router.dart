@@ -7,6 +7,7 @@ import 'package:habit_tracker/core/security/lock_reset_screen.dart';
 import 'package:habit_tracker/core/security/lock_screen.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
+import 'package:habit_tracker/core/premium/purchase_screen.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
@@ -88,6 +89,9 @@ class AppRoutes {
 
   /// Priority support channel screen.
   static const String settingsPrioritySupport = '/settings/priority-support';
+
+  /// Purchase premium screen.
+  static const String settingsPurchase = '/settings/purchase';
 
   /// Yearly recap full-screen viewer (receives YearSummary via extra).
   static const String recap = '/reports/recap';
@@ -252,6 +256,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'priority-support',
                     builder: (context, state) => const PrioritySupportScreen(),
+                  ),
+                  GoRoute(
+                    path: 'purchase',
+                    builder: (context, state) => const PurchaseScreen(),
                   ),
                 ],
               ),
