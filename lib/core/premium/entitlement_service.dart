@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -29,9 +30,10 @@ class EntitlementState {
 /// (`docs/superpowers/specs/04-premium/07-lifetime-unlock-pricing-tier-design.md`).
 class EntitlementService {
   final AppDatabase db;
-  final InAppPurchase _iap = InAppPurchase.instance;
+  final InAppPurchase _iap;
 
-  EntitlementService(this.db);
+  EntitlementService(this.db, {InAppPurchase? iap})
+      : _iap = iap ?? InAppPurchase.instance;
 
   /// Product IDs for the lifetime unlock and subscription.
   static const String lifetimeProductId = 'premium_lifetime_unlock';
@@ -60,7 +62,7 @@ class EntitlementService {
     await db.into(db.premiumEntitlements).insertOnConflictUpdate(
       PremiumEntitlementsCompanion.insert(
         id: 'singleton',
-        isPremium: state.isPremium,
+        isPremium: Value(state.isPremium),
         entitlementSource: Value(state.source),
         subscriptionExpiresAt: Value(state.expiresAt?.millisecondsSinceEpoch != null 
             ? state.expiresAt!.millisecondsSinceEpoch ~/ 1000 
