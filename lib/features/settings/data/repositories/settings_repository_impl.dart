@@ -222,6 +222,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateActivePaletteId(String paletteId) => _update(
+    AppSettingsTableCompanion(activePaletteId: Value(paletteId)),
+  );
+
+  @override
+  Future<Result<void>> updateActiveIconPackId(String iconPackId) => _update(
+    AppSettingsTableCompanion(activeIconPackId: Value(iconPackId)),
+  );
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -255,6 +265,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           driveBackupReminderEnabled: Value(
             settings.driveBackupReminderEnabled,
           ),
+          activePaletteId: Value(settings.activePaletteId),
+          activeIconPackId: Value(settings.activeIconPackId),
 
           updatedAt: Value(now),
         ),
@@ -328,6 +340,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     reengagementNudgeEnabled: row.reengagementNudgeEnabled,
     recalibrationPromptsEnabled: row.recalibrationPromptsEnabled,
     driveBackupReminderEnabled: row.driveBackupReminderEnabled,
+    activePaletteId: row.activePaletteId,
+    activeIconPackId: row.activeIconPackId,
   );
 }
 

@@ -104,6 +104,12 @@ abstract class SettingsRepository {
     required bool enabled,
   });
 
+  /// Updates the active theme color palette ID.
+  Future<Result<void>> updateActivePaletteId(String paletteId);
+
+  /// Updates the active launcher icon pack ID.
+  Future<Result<void>> updateActiveIconPackId(String iconPackId);
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

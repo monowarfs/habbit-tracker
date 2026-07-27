@@ -72,5 +72,7 @@ sealed class AppSettings with _$AppSettings {
     @Default(true) bool reengagementNudgeEnabled,
     @Default(true) bool recalibrationPromptsEnabled,
     @Default(false) bool driveBackupReminderEnabled,
+    @Default('teal') String activePaletteId,
+    @Default('default') String activeIconPackId,
   }) = _AppSettings;
 }
