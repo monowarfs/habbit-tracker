@@ -21,6 +21,7 @@ import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/nudges/reengagement_check.dart';
 import 'package:habit_tracker/core/premium/entitlement_provider.dart';
+import 'package:habit_tracker/core/theme/palette_provider.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/screen_privacy_service.dart';
@@ -222,6 +223,8 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     final locale = ref.watch(localeControllerProvider);
     final isBangla = locale.languageCode == 'bn';
     final seasonalSeed = ref.watch(seasonalAccentSeedProvider);
+    final paletteSeed = ref.watch(activePaletteProvider).seedColor;
+
     // Single call site for applying screen privacy (`strategies/
     // security.md`): fires once on cold start with whatever was
     // persisted, and again on every Settings toggle — never called
@@ -241,8 +244,16 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     });
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: AppTheme.light(isBangla: isBangla, seasonalSeed: seasonalSeed),
-      darkTheme: AppTheme.dark(isBangla: isBangla, seasonalSeed: seasonalSeed),
+      theme: AppTheme.light(
+        isBangla: isBangla,
+        seasonalSeed: seasonalSeed,
+        paletteSeed: paletteSeed,
+      ),
+      darkTheme: AppTheme.dark(
+        isBangla: isBangla,
+        seasonalSeed: seasonalSeed,
+        paletteSeed: paletteSeed,
+      ),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: supportedLocales,

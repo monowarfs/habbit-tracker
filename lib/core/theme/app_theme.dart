@@ -96,27 +96,30 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 class AppTheme {
   const AppTheme._();
 
-  /// Light theme, seeded from [_seedColor] unless [seasonalSeed]
-  /// overrides it (a curated seasonal accent, `core/theme/
-  /// seasonal_accent_provider.dart` — `null` when no occasion is active
-  /// or the user opted out).
-  static ThemeData light({required bool isBangla, Color? seasonalSeed}) =>
-      _build(
-        brightness: Brightness.light,
-        semanticColors: AppSemanticColors.light,
-        isBangla: isBangla,
-        seedColor: seasonalSeed ?? _seedColor,
-      );
+  /// Light theme, seeded from [_seedColor] unless [seasonalSeed] or
+  /// [paletteSeed] overrides it.
+  static ThemeData light({
+    required bool isBangla,
+    Color? seasonalSeed,
+    Color? paletteSeed,
+  }) => _build(
+    brightness: Brightness.light,
+    semanticColors: AppSemanticColors.light,
+    isBangla: isBangla,
+    seedColor: seasonalSeed ?? paletteSeed ?? _seedColor,
+  );
 
-  /// Dark theme, seeded from [_seedColor] unless [seasonalSeed] overrides
-  /// it.
-  static ThemeData dark({required bool isBangla, Color? seasonalSeed}) =>
-      _build(
-        brightness: Brightness.dark,
-        semanticColors: AppSemanticColors.dark,
-        isBangla: isBangla,
-        seedColor: seasonalSeed ?? _seedColor,
-      );
+  /// Dark theme.
+  static ThemeData dark({
+    required bool isBangla,
+    Color? seasonalSeed,
+    Color? paletteSeed,
+  }) => _build(
+    brightness: Brightness.dark,
+    semanticColors: AppSemanticColors.dark,
+    isBangla: isBangla,
+    seedColor: seasonalSeed ?? paletteSeed ?? _seedColor,
+  );
 
   static ThemeData _build({
     required Brightness brightness,
