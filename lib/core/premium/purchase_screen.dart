@@ -14,7 +14,7 @@ class PurchaseScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unlock Premium'),
+        title: Text(l10n.premiumPurchaseTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -22,28 +22,28 @@ class PurchaseScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Master your habits with Premium',
+              l10n.premiumPurchaseHeadline,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            _buildFeatureList(theme),
+            _buildFeatureList(l10n, theme),
             const SizedBox(height: 40),
             _PricingCard(
-              title: 'Monthly Subscription',
-              price: '$2.99 / month',
-              description: 'Access all premium features on one device.',
+              title: l10n.premiumPlanMonthly,
+              price: l10n.premiumPriceMonthly('$2.99'),
+              description: l10n.premiumPlanMonthlyDesc,
               onTap: () {
                 // TODO: Start IAP flow.
               },
             ),
             const SizedBox(height: 16),
             _PricingCard(
-              title: 'Lifetime Unlock',
-              price: '$29.99 once',
-              description: 'One-time payment for lifetime access.',
+              title: l10n.premiumPlanLifetime,
+              price: l10n.premiumPriceLifetime('$29.99'),
+              description: l10n.premiumPlanLifetimeDesc,
               isHighlighted: true,
               onTap: () {
                 // TODO: Start IAP flow.
@@ -54,23 +54,23 @@ class PurchaseScreen extends ConsumerWidget {
               onPressed: () {
                 // TODO: Restore purchases.
               },
-              child: const Text('Restore Purchase'),
+              child: Text(l10n.premiumRestorePurchase),
             ),
             const SizedBox(height: 16),
-            const _LegalLinks(),
+            _LegalLinks(l10n: l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFeatureList(ThemeData theme) {
+  Widget _buildFeatureList(AppLocalizations l10n, ThemeData theme) {
     final features = [
-      'Advanced themes & icon packs',
-      'Additional habit modules',
-      'PDF/CSV report export',
-      'Extended stats & trends',
-      'Priority support',
+      l10n.premiumFeatureThemes,
+      l10n.premiumFeatureModules,
+      l10n.premiumFeatureExport,
+      l10n.premiumFeatureStats,
+      l10n.premiumFeatureSupport,
     ];
 
     return Column(
@@ -80,7 +80,7 @@ class PurchaseScreen extends ConsumerWidget {
           children: [
             Icon(Icons.check_circle_outline, size: 20, color: theme.colorScheme.primary),
             const SizedBox(width: 12),
-            Text(f),
+            Expanded(child: Text(f)),
           ],
         ),
       )).toList(),
@@ -107,6 +107,7 @@ class _PricingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       elevation: isHighlighted ? 4 : 1,
@@ -135,7 +136,7 @@ class _PricingCard extends StatelessWidget {
                         color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('Best Value', style: theme.textTheme.labelSmall?.copyWith(color: colorScheme.onPrimaryContainer)),
+                      child: Text(l10n.premiumBestValue, style: theme.textTheme.labelSmall?.copyWith(color: colorScheme.onPrimaryContainer)),
                     ),
                 ],
               ),
@@ -152,19 +153,21 @@ class _PricingCard extends StatelessWidget {
 }
 
 class _LegalLinks extends StatelessWidget {
-  const _LegalLinks();
+  final AppLocalizations l10n;
+
+  const _LegalLinks({required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         Text(
-          'Subscription clarifies recurring cost. Sync excluded from lifetime tier.',
+          l10n.premiumSyncExclusionNote,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
-        SizedBox(height: 8),
-        Row(
+        const SizedBox(height: 8),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Terms of Service', style: TextStyle(fontSize: 12, decoration: TextDecoration.underline)),
