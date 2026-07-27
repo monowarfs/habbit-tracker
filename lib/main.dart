@@ -20,6 +20,7 @@ import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/nudges/reengagement_check.dart';
+import 'package:habit_tracker/core/premium/entitlement_provider.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/screen_privacy_service.dart';
@@ -133,7 +134,10 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
         (_) => ref.read(appRouterProvider).go(route),
       );
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWhatsNew());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _maybeShowWhatsNew();
+        ref.read(entitlementNotifierProvider.notifier).refresh();
+      });
     }
     // Registers the 3 static home-screen/app-shortcut items
     // (`core/shortcuts/`) once now and again on every locale change, so
@@ -201,6 +205,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(checkBackupReminder(ref));
       unawaited(evaluateTenureBadges(ref.read(databaseProvider)));
       unawaited(_checkCosmeticUnlocks(ref.read(databaseProvider)));
+      unawaited(ref.read(entitlementNotifierProvider.notifier).refresh());
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
