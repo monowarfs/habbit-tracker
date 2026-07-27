@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Defines a theme color palette.
 class PalettePack {
-  final String id;
-  final String displayNameKey;
-  final Color seedColor;
-  final bool isPremium;
-  final Map<String, Color>? moduleAccents;
-
+  /// Creates a palette pack definition.
   const PalettePack({
     required this.id,
     required this.displayNameKey,
@@ -15,6 +10,21 @@ class PalettePack {
     this.isPremium = false,
     this.moduleAccents,
   });
+
+  /// Stable identifier stored in settings.
+  final String id;
+
+  /// l10n key for the pack's display name.
+  final String displayNameKey;
+
+  /// The `ColorScheme.fromSeed` seed color for this palette.
+  final Color seedColor;
+
+  /// Whether selecting this palette requires premium.
+  final bool isPremium;
+
+  /// Optional per-module accent color overrides, keyed by module id.
+  final Map<String, Color>? moduleAccents;
 }
 
 /// The set of available theme palettes.
@@ -23,7 +33,6 @@ const palettePacks = [
     id: 'teal',
     displayNameKey: 'palettePackTeal',
     seedColor: Color(0xFF006874), // Original default
-    isPremium: false,
   ),
   PalettePack(
     id: 'ocean',

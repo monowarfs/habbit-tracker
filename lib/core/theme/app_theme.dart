@@ -12,14 +12,20 @@ const Color _seedColor = Color(0xFF006874);
 /// Per-module accent colors.
 @immutable
 class ModuleThemeAccents extends ThemeExtension<ModuleThemeAccents> {
+  /// Creates a set of per-module accent colors.
   const ModuleThemeAccents({
     required this.water,
     required this.medicine,
     required this.prayer,
   });
 
+  /// The Water module's accent color.
   final Color water;
+
+  /// The Medicine module's accent color.
   final Color medicine;
+
+  /// The Prayer module's accent color.
   final Color prayer;
 
   /// Default accents.

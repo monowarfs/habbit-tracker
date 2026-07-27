@@ -1,16 +1,15 @@
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/premium/entitlement_service.dart';
-import 'package:drift/native.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockInAppPurchase extends Mock implements InAppPurchase {}
 
 void main() {
   late AppDatabase db;
   late EntitlementService service;
-  // ignore: unused_local_variable
   late MockInAppPurchase mockIap;
 
   setUp(() {
@@ -42,8 +41,10 @@ void main() {
 
       expect(cached.isPremium, isTrue);
       expect(cached.source, 'lifetime_purchase');
-      expect(cached.lastVerifiedAt.millisecondsSinceEpoch ~/ 1000, 
-             now.millisecondsSinceEpoch ~/ 1000);
+      expect(
+        cached.lastVerifiedAt.millisecondsSinceEpoch ~/ 1000,
+        now.millisecondsSinceEpoch ~/ 1000,
+      );
     });
 
     test('onPurchaseCompleted updates to premium', () async {

@@ -1,4 +1,3 @@
-import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/theme/palette_packs.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,6 +21,6 @@ class ActivePalette extends _$ActivePalette {
   Future<void> setPalette(String paletteId) async {
     final repository = ref.read(settingsRepositoryProvider);
     await repository.updateActivePaletteId(paletteId);
-    // The provider will rebuild automatically because it watches appSettingsProvider.
+    // Rebuilds automatically because build() watches appSettingsProvider.
   }
 }

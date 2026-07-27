@@ -22,7 +22,7 @@ class ActiveIconPack extends _$ActiveIconPack {
   Future<void> setIconPack(String iconPackId) async {
     final pack = iconPacks.firstWhere((p) => p.id == iconPackId);
     await IconSwitcher.setIcon(pack);
-    
+
     final repository = ref.read(settingsRepositoryProvider);
     await repository.updateActiveIconPackId(iconPackId);
   }

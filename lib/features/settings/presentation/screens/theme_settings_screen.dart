@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/theme/icon_pack_provider.dart';
@@ -6,7 +11,6 @@ import 'package:habit_tracker/core/theme/palette_packs.dart';
 import 'package:habit_tracker/core/theme/palette_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
-import 'package:go_router/go_router.dart';
 
 /// Theme mode picker, extracted from the old flat Settings home screen.
 class ThemeSettingsScreen extends ConsumerWidget {
@@ -115,9 +119,13 @@ class _PaletteSelector extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       if (locked) {
-                        context.push('/settings/purchase');
+                        unawaited(context.push('/settings/purchase'));
                       } else {
-                        ref.read(activePaletteProvider.notifier).setPalette(palette.id);
+                        unawaited(
+                          ref
+                              .read(activePaletteProvider.notifier)
+                              .setPalette(palette.id),
+                        );
                       }
                     },
                     child: Container(
@@ -135,7 +143,7 @@ class _PaletteSelector extends ConsumerWidget {
                         boxShadow: [
                           if (isSelected)
                             BoxShadow(
-                              color: palette.seedColor.withOpacity(0.4),
+                              color: palette.seedColor.withValues(alpha: 0.4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
@@ -144,8 +152,8 @@ class _PaletteSelector extends ConsumerWidget {
                       child: locked
                           ? const Icon(Icons.lock_outline, color: Colors.white)
                           : isSelected
-                              ? const Icon(Icons.check, color: Colors.white)
-                              : null,
+                          ? const Icon(Icons.check, color: Colors.white)
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -200,16 +208,22 @@ class _IconPackSelector extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       if (locked) {
-                        context.push('/settings/purchase');
+                        unawaited(context.push('/settings/purchase'));
                       } else {
-                        ref.read(activeIconPackProvider.notifier).setIconPack(pack.id);
+                        unawaited(
+                          ref
+                              .read(activeIconPackProvider.notifier)
+                              .setIconPack(pack.id),
+                        );
                       }
                     },
                     child: Container(
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
                         border: isSelected
                             ? Border.all(
@@ -226,7 +240,9 @@ class _IconPackSelector extends ConsumerWidget {
                             size: 40,
                             color: isSelected
                                 ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
                           if (locked)
                             Positioned(

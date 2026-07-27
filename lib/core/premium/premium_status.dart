@@ -8,6 +8,6 @@ part 'premium_status.g.dart';
 /// extended stats ranges) reads this single provider.
 @riverpod
 bool isPremiumUser(Ref ref) {
-  final entitlement = ref.watch(entitlementNotifierProvider);
+  final entitlement = ref.watch(entitlementProvider);
   return entitlement.value ?? false;
 }

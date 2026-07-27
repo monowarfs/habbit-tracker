@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -145,9 +147,9 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               if (ref.read(isPremiumUserProvider)) {
-                context.push('/settings/unlocks');
+                unawaited(context.push('/settings/unlocks'));
               } else {
-                context.push('/settings/purchase');
+                unawaited(context.push('/settings/purchase'));
               }
             },
           ),

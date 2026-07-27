@@ -316,4 +316,12 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   Future<Result<void>> updateDriveBackupReminderEnabled({
     required bool enabled,
   }) => Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateActivePaletteId(String paletteId) =>
+      Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateActiveIconPackId(String iconPackId) =>
+      Future.value(const Result.success(null));
 }

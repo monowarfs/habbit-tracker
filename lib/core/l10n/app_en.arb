@@ -1991,6 +1991,80 @@
   "@premiumRequired": {
     "description": "Label for premium-gated items."
   },
+  "premiumBestValue": "Best value",
+  "@premiumBestValue": {
+    "description": "Badge on the best-value premium purchase option."
+  },
+  "premiumSyncExclusionNote": "Purchases don't sync across devices and are non-refundable except where required by law.",
+  "@premiumSyncExclusionNote": {
+    "description": "Legal note shown below premium purchase options."
+  },
+  "premiumPurchaseTitle": "Go Premium",
+  "@premiumPurchaseTitle": {
+    "description": "App bar title on the purchase screen."
+  },
+  "premiumPurchaseHeadline": "Unlock everything the app offers",
+  "@premiumPurchaseHeadline": {
+    "description": "Headline on the purchase screen."
+  },
+  "premiumPlanMonthly": "Monthly",
+  "@premiumPlanMonthly": {
+    "description": "Name of the monthly subscription plan."
+  },
+  "premiumPriceMonthly": "{price} / month",
+  "@premiumPriceMonthly": {
+    "description": "Price label for the monthly plan.",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumPlanMonthlyDesc": "Billed monthly, cancel anytime",
+  "@premiumPlanMonthlyDesc": {
+    "description": "Description of the monthly plan."
+  },
+  "premiumPlanLifetime": "Lifetime",
+  "@premiumPlanLifetime": {
+    "description": "Name of the one-time lifetime plan."
+  },
+  "premiumPriceLifetime": "{price} once",
+  "@premiumPriceLifetime": {
+    "description": "Price label for the lifetime plan.",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumPlanLifetimeDesc": "Pay once, own it forever",
+  "@premiumPlanLifetimeDesc": {
+    "description": "Description of the lifetime plan."
+  },
+  "premiumRestorePurchase": "Restore purchase",
+  "@premiumRestorePurchase": {
+    "description": "Button to restore a previous purchase."
+  },
+  "premiumFeatureThemes": "Extra color themes",
+  "@premiumFeatureThemes": {
+    "description": "Premium feature bullet: themes."
+  },
+  "premiumFeatureModules": "Additional habit modules",
+  "@premiumFeatureModules": {
+    "description": "Premium feature bullet: modules."
+  },
+  "premiumFeatureExport": "Data export",
+  "@premiumFeatureExport": {
+    "description": "Premium feature bullet: export."
+  },
+  "premiumFeatureStats": "Advanced statistics",
+  "@premiumFeatureStats": {
+    "description": "Premium feature bullet: stats."
+  },
+  "premiumFeatureSupport": "Priority support",
+  "@premiumFeatureSupport": {
+    "description": "Premium feature bullet: support."
+  },
   "iconPackDefault": "Default",
   "@iconPackDefault": {
     "description": "App icon name."

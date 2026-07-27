@@ -11,7 +11,7 @@ class IconSwitcher {
   /// Sets the alternate app icon.
   static Future<void> setIcon(IconPack pack) async {
     try {
-      if (!await FlutterDynamicIcon.canIconChange) return;
+      if (!await FlutterDynamicIcon.supportsAlternateIcons) return;
 
       if (pack.id == 'default') {
         await FlutterDynamicIcon.setAlternateIconName(null);

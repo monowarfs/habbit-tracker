@@ -1,11 +1,6 @@
 /// Defines an app icon pack.
 class IconPack {
-  final String id;
-  final String displayNameKey;
-  final String? androidAlias;
-  final String? iosIconName;
-  final bool isPremium;
-
+  /// Creates an icon pack definition.
   const IconPack({
     required this.id,
     required this.displayNameKey,
@@ -13,15 +8,26 @@ class IconPack {
     this.iosIconName,
     this.isPremium = false,
   });
+
+  /// Stable identifier stored in settings.
+  final String id;
+
+  /// l10n key for the pack's display name.
+  final String displayNameKey;
+
+  /// Android activity-alias name, if this pack changes the launcher icon.
+  final String? androidAlias;
+
+  /// iOS alternate icon name, if this pack changes the launcher icon.
+  final String? iosIconName;
+
+  /// Whether selecting this pack requires premium.
+  final bool isPremium;
 }
 
 /// The set of available app icons.
 const iconPacks = [
-  IconPack(
-    id: 'default',
-    displayNameKey: 'iconPackDefault',
-    isPremium: false,
-  ),
+  IconPack(id: 'default', displayNameKey: 'iconPackDefault'),
   IconPack(
     id: 'ocean',
     displayNameKey: 'iconPackOcean',

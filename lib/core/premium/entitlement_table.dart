@@ -12,13 +12,14 @@ class PremiumEntitlements extends Table {
   /// Whether the user currently has premium access.
   BoolColumn get isPremium => boolean().withDefault(const Constant(false))();
 
-  /// Where the entitlement came from (e.g. 'lifetime_purchase', 'subscription').
+  /// Where the entitlement came from (e.g. 'lifetime_purchase',
+  /// 'subscription').
   TextColumn get entitlementSource => text().nullable()();
 
   /// Epoch seconds when the subscription expires (null for lifetime).
   IntColumn get subscriptionExpiresAt => integer().nullable()();
 
-  /// Epoch seconds when this state was last successfully verified with the store.
+  /// Epoch seconds when this state was last verified with the store.
   IntColumn get lastVerifiedAt => integer()();
 
   @override

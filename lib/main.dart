@@ -21,7 +21,6 @@ import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/notifications/notification_workmanager.dart';
 import 'package:habit_tracker/core/nudges/reengagement_check.dart';
 import 'package:habit_tracker/core/premium/entitlement_provider.dart';
-import 'package:habit_tracker/core/theme/palette_provider.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/security/screen_privacy_service.dart';
@@ -29,6 +28,7 @@ import 'package:habit_tracker/core/shortcuts/quick_action_handler.dart';
 import 'package:habit_tracker/core/shortcuts/shortcut_items.dart';
 import 'package:habit_tracker/core/stacking/habit_stack_suggestion_evaluator.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/theme/palette_provider.dart';
 import 'package:habit_tracker/core/theme/seasonal_accent_provider.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/wearable/wearable_sync_helper.dart';
@@ -136,8 +136,8 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       );
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _maybeShowWhatsNew();
-        ref.read(entitlementNotifierProvider.notifier).refresh();
+        unawaited(_maybeShowWhatsNew());
+        unawaited(ref.read(entitlementProvider.notifier).refresh());
       });
     }
     // Registers the 3 static home-screen/app-shortcut items
@@ -206,7 +206,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(checkBackupReminder(ref));
       unawaited(evaluateTenureBadges(ref.read(databaseProvider)));
       unawaited(_checkCosmeticUnlocks(ref.read(databaseProvider)));
-      unawaited(ref.read(entitlementNotifierProvider.notifier).refresh());
+      unawaited(ref.read(entitlementProvider.notifier).refresh());
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
@@ -227,9 +227,14 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     final paletteSeed = palette.seedColor;
 
     final moduleAccents = ModuleThemeAccents(
-      water: palette.moduleAccents?['water'] ?? ModuleThemeAccents.defaults.water,
-      medicine: palette.moduleAccents?['medicine'] ?? ModuleThemeAccents.defaults.medicine,
-      prayer: palette.moduleAccents?['prayer'] ?? ModuleThemeAccents.defaults.prayer,
+      water:
+          palette.moduleAccents?['water'] ?? ModuleThemeAccents.defaults.water,
+      medicine:
+          palette.moduleAccents?['medicine'] ??
+          ModuleThemeAccents.defaults.medicine,
+      prayer:
+          palette.moduleAccents?['prayer'] ??
+          ModuleThemeAccents.defaults.prayer,
     );
 
     // Single call site for applying screen privacy (`strategies/

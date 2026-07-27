@@ -18,7 +18,9 @@ EntitlementService entitlementService(Ref ref) {
 class EntitlementNotifier extends _$EntitlementNotifier {
   @override
   FutureOr<bool> build() async {
-    final state = await ref.watch(entitlementServiceProvider).getCachedEntitlement();
+    final state = await ref
+        .watch(entitlementServiceProvider)
+        .getCachedEntitlement();
     return state.isPremium;
   }
 
@@ -34,7 +36,7 @@ class EntitlementNotifier extends _$EntitlementNotifier {
   }
 
   /// Manually sets the premium state (e.g. after a successful purchase).
-  void setPremium(bool isPremium) {
+  void setPremium({required bool isPremium}) {
     state = AsyncValue.data(isPremium);
   }
 }

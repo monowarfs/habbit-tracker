@@ -33,26 +33,26 @@ class PurchaseScreen extends ConsumerWidget {
             const SizedBox(height: 40),
             _PricingCard(
               title: l10n.premiumPlanMonthly,
-              price: l10n.premiumPriceMonthly('\$2.99'),
+              price: l10n.premiumPriceMonthly(r'$2.99'),
               description: l10n.premiumPlanMonthlyDesc,
               onTap: () {
-                // TODO: Start IAP flow.
+                // TODO(monowarmini): Start IAP flow.
               },
             ),
             const SizedBox(height: 16),
             _PricingCard(
               title: l10n.premiumPlanLifetime,
-              price: l10n.premiumPriceLifetime('\$29.99'),
+              price: l10n.premiumPriceLifetime(r'$29.99'),
               description: l10n.premiumPlanLifetimeDesc,
               isHighlighted: true,
               onTap: () {
-                // TODO: Start IAP flow.
+                // TODO(monowarmini): Start IAP flow.
               },
             ),
             const SizedBox(height: 32),
             TextButton(
               onPressed: () {
-                // TODO: Restore purchases.
+                // TODO(monowarmini): Restore purchases.
               },
               child: Text(l10n.premiumRestorePurchase),
             ),
@@ -74,34 +74,42 @@ class PurchaseScreen extends ConsumerWidget {
     ];
 
     return Column(
-      children: features.map((f) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Icon(Icons.check_circle_outline, size: 20, color: theme.colorScheme.primary),
-            const SizedBox(width: 12),
-            Expanded(child: Text(f)),
-          ],
-        ),
-      )).toList(),
+      children: features
+          .map(
+            (f) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(f)),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }
 
 class _PricingCard extends StatelessWidget {
+  const _PricingCard({
+    required this.title,
+    required this.price,
+    required this.description,
+    required this.onTap,
+    this.isHighlighted = false,
+  });
+
   final String title;
   final String price;
   final String description;
   final bool isHighlighted;
   final VoidCallback onTap;
-
-  const _PricingCard({
-    required this.title,
-    required this.price,
-    required this.description,
-    this.isHighlighted = false,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -128,20 +136,39 @@ class _PricingCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   if (isHighlighted)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(l10n.premiumBestValue, style: theme.textTheme.labelSmall?.copyWith(color: colorScheme.onPrimaryContainer)),
+                      child: Text(
+                        l10n.premiumBestValue,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(price, style: theme.textTheme.headlineSmall?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+              Text(
+                price,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Text(description, style: theme.textTheme.bodyMedium),
             ],
@@ -153,9 +180,9 @@ class _PricingCard extends StatelessWidget {
 }
 
 class _LegalLinks extends StatelessWidget {
-  final AppLocalizations l10n;
-
   const _LegalLinks({required this.l10n});
+
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -170,9 +197,21 @@ class _LegalLinks extends StatelessWidget {
         const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Terms of Service', style: TextStyle(fontSize: 12, decoration: TextDecoration.underline)),
+            Text(
+              'Terms of Service',
+              style: TextStyle(
+                fontSize: 12,
+                decoration: TextDecoration.underline,
+              ),
+            ),
             SizedBox(width: 16),
-            Text('Privacy Policy', style: TextStyle(fontSize: 12, decoration: TextDecoration.underline)),
+            Text(
+              'Privacy Policy',
+              style: TextStyle(
+                fontSize: 12,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ],
         ),
       ],

@@ -44,7 +44,7 @@ class MedicineModule implements HabitModule {
   String get id => 'medicine';
 
   @override
-  ModuleMetadata get metadata => const ModuleMetadata(
+  ModuleMetadata get metadata => ModuleMetadata(
     displayName: 'Medicine',
     icon: Icons.medication,
     accentColor: ModuleThemeAccents.defaults.medicine,
@@ -106,7 +106,10 @@ class MedicineModule implements HabitModule {
     return Builder(
       builder: (context) => Card(
         child: ListTile(
-          leading: const Icon(Icons.medication, color: ModuleThemeAccents.defaults.medicine),
+          leading: Icon(
+            Icons.medication,
+            color: ModuleThemeAccents.defaults.medicine,
+          ),
           title: Text(metadata.displayName),
           subtitle: Text(
             dueOrUpcoming.isEmpty

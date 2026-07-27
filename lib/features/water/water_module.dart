@@ -63,7 +63,7 @@ class WaterModule implements HabitModule {
   String get id => 'water';
 
   @override
-  ModuleMetadata get metadata => const ModuleMetadata(
+  ModuleMetadata get metadata => ModuleMetadata(
     displayName: 'Water',
     icon: Icons.water_drop,
     accentColor: ModuleThemeAccents.defaults.water,
@@ -143,7 +143,10 @@ class WaterModule implements HabitModule {
   Widget? settingsEntry(WidgetRef ref) {
     return Builder(
       builder: (context) => ListTile(
-        leading: const Icon(Icons.water_drop, color: ModuleThemeAccents.defaults.water),
+        leading: Icon(
+          Icons.water_drop,
+          color: ModuleThemeAccents.defaults.water,
+        ),
         title: Text(metadata.displayName),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/water/settings'),
