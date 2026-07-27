@@ -1967,6 +1967,46 @@
   "@unlockApply": {
     "description": "Button to apply an unlocked cosmetic."
   },
+  "palettePackTeal": "Teal",
+  "@palettePackTeal": {
+    "description": "Theme palette name."
+  },
+  "palettePackOcean": "Ocean",
+  "@palettePackOcean": {
+    "description": "Theme palette name."
+  },
+  "palettePackSunset": "Sunset",
+  "@palettePackSunset": {
+    "description": "Theme palette name."
+  },
+  "palettePackLavender": "Lavender",
+  "@palettePackLavender": {
+    "description": "Theme palette name."
+  },
+  "palettePackMidnight": "Midnight",
+  "@palettePackMidnight": {
+    "description": "Theme palette name."
+  },
+  "premiumRequired": "Premium required",
+  "@premiumRequired": {
+    "description": "Label for premium-gated items."
+  },
+  "iconPackDefault": "Default",
+  "@iconPackDefault": {
+    "description": "App icon name."
+  },
+  "iconPackOcean": "Ocean",
+  "@iconPackOcean": {
+    "description": "App icon name."
+  },
+  "iconPackSunset": "Sunset",
+  "@iconPackSunset": {
+    "description": "App icon name."
+  },
+  "settingsAppIcon": "App Icon",
+  "@settingsAppIcon": {
+    "description": "Label for the app icon selector."
+  },
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 

@@ -42,3 +42,4 @@ This document defines the strict operational procedure for AI agents implementin
 - Push the updated `dev` branch to remote: `git push origin dev`.
 - Update `docs/IMPLEMENTATION-ORDER.md` to mark the task as complete.
 - Proceed to the next task in the serial list.
+- Clear or compact the session.

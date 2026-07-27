@@ -574,6 +574,15 @@
   "unlockThemeAccentMidnightDescription": "একটি গভীর নীল-বেগুনি থিম অ্যাকসেন্ট, ২ বছরের পর আনলক হয়।",
   "unlocksLockedLabel": "লকড",
   "unlocksLockedDescription": "অ্যাপটি ২ বছর ব্যবহার করে আনলক করুন।",
-  "unlockApply": "প্রয়োগ করুন"
-
+  "unlockApply": "প্রয়োগ করুন",
+  "palettePackTeal": "টিল",
+  "palettePackOcean": "ওশান",
+  "palettePackSunset": "সানসেট",
+  "palettePackLavender": "ল্যাভেন্ডার",
+  "palettePackMidnight": "মিডনাইট",
+  "premiumRequired": "প্রিমিয়াম প্রয়োজন",
+  "iconPackDefault": "ডিফল্ট",
+  "iconPackOcean": "ওশান",
+  "iconPackSunset": "সানসেট",
+  "settingsAppIcon": "অ্যাপ আইকন"
 }
