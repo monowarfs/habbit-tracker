@@ -69,7 +69,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -266,6 +266,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 20) {
         await m.createTable(premiumEntitlements);
+      }
+      if (from < 21) {
+        await m.addColumn(appSettingsTable, appSettingsTable.activePaletteId);
+        await m.addColumn(appSettingsTable, appSettingsTable.activeIconPackId);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

@@ -143,6 +143,14 @@ class AppSettingsTable extends Table {
   BoolColumn get driveBackupReminderEnabled =>
       boolean().withDefault(const Constant(false))();
 
+  /// The ID of the currently active theme color palette.
+  TextColumn get activePaletteId =>
+      text().withDefault(const Constant('teal'))();
+
+  /// The ID of the currently active launcher icon pack.
+  TextColumn get activeIconPackId =>
+      text().withDefault(const Constant('default'))();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

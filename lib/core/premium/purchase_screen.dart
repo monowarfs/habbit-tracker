@@ -33,7 +33,7 @@ class PurchaseScreen extends ConsumerWidget {
             const SizedBox(height: 40),
             _PricingCard(
               title: l10n.premiumPlanMonthly,
-              price: l10n.premiumPriceMonthly('$2.99'),
+              price: l10n.premiumPriceMonthly('\$2.99'),
               description: l10n.premiumPlanMonthlyDesc,
               onTap: () {
                 // TODO: Start IAP flow.
@@ -42,7 +42,7 @@ class PurchaseScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _PricingCard(
               title: l10n.premiumPlanLifetime,
-              price: l10n.premiumPriceLifetime('$29.99'),
+              price: l10n.premiumPriceLifetime('\$29.99'),
               description: l10n.premiumPlanLifetimeDesc,
               isHighlighted: true,
               onTap: () {
