@@ -54,7 +54,11 @@ class AggregateReportUseCase {
     required LocalDate periodAnchor,
     DateRange? customRange,
   }) async {
-    final range = _resolveRange(period, periodAnchor, customRange);
+    final range = rangeForPeriod(
+      period,
+      periodAnchor,
+      customRange: customRange,
+    );
     final reports = <ModuleReport>[];
     for (final module in modules) {
       final dayStatus = await module.dayStatus(range);
@@ -73,11 +77,17 @@ class AggregateReportUseCase {
     return reports;
   }
 
-  DateRange _resolveRange(
+  /// Resolves [period] (anchored at [anchor]) to the concrete [DateRange]
+  /// it covers — exposed (not private) so other Reports-module code that
+  /// needs the same range without re-deriving it, e.g. the PDF/CSV
+  /// export use case, can reuse this instead of duplicating the
+  /// week/month/year date math. [customRange] is required for
+  /// [ReportPeriod.custom]/[ReportPeriod.allTime] and ignored otherwise.
+  DateRange rangeForPeriod(
     ReportPeriod period,
-    LocalDate anchor,
+    LocalDate anchor, {
     DateRange? customRange,
-  ) {
+  }) {
     switch (period) {
       case ReportPeriod.week:
         final weekday = anchor.toDateTimeUtc().weekday;

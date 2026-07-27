@@ -121,6 +121,39 @@ void main() {
   );
 
   testWidgets(
+    'tapping Export as a non-premium user shows an upsell instead of a '
+    'format picker',
+    (tester) async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+        final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+              isPremiumUserProvider.overrideWithValue(false),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: ReportsScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.file_download_outlined));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(l10n.reportsExportPremiumRequired),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.reportsExportSheetTitle), findsNothing);
+      });
+    },
+  );
+
+  testWidgets(
     'All Time and Custom show a lock icon for non-premium users, and '
     'tapping either shows an upsell instead of changing the period',
     (tester) async {
@@ -160,6 +193,38 @@ void main() {
               .onPressed,
           isNull,
         );
+      });
+    },
+  );
+
+  testWidgets(
+    'tapping Export as a premium user opens the format picker with a '
+    'module preview',
+    (tester) async {
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+        final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              habitModulesProvider.overrideWith((ref) => [_DataModule()]),
+              isPremiumUserProvider.overrideWithValue(true),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: ReportsScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.file_download_outlined));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.reportsExportSheetTitle), findsOneWidget);
+        expect(find.text(l10n.reportsExportIncludes('Water')), findsOneWidget);
+        expect(find.text(l10n.reportsExportFormatPdf), findsOneWidget);
+        expect(find.text(l10n.reportsExportFormatCsv), findsOneWidget);
       });
     },
   );
