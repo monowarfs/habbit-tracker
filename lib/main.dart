@@ -223,7 +223,14 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     final locale = ref.watch(localeControllerProvider);
     final isBangla = locale.languageCode == 'bn';
     final seasonalSeed = ref.watch(seasonalAccentSeedProvider);
-    final paletteSeed = ref.watch(activePaletteProvider).seedColor;
+    final palette = ref.watch(activePaletteProvider);
+    final paletteSeed = palette.seedColor;
+
+    final moduleAccents = ModuleThemeAccents(
+      water: palette.moduleAccents?['water'] ?? ModuleThemeAccents.defaults.water,
+      medicine: palette.moduleAccents?['medicine'] ?? ModuleThemeAccents.defaults.medicine,
+      prayer: palette.moduleAccents?['prayer'] ?? ModuleThemeAccents.defaults.prayer,
+    );
 
     // Single call site for applying screen privacy (`strategies/
     // security.md`): fires once on cold start with whatever was
@@ -248,11 +255,13 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
         isBangla: isBangla,
         seasonalSeed: seasonalSeed,
         paletteSeed: paletteSeed,
+        moduleAccents: moduleAccents,
       ),
       darkTheme: AppTheme.dark(
         isBangla: isBangla,
         seasonalSeed: seasonalSeed,
         paletteSeed: paletteSeed,
+        moduleAccents: moduleAccents,
       ),
       themeMode: themeMode,
       locale: locale,

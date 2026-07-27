@@ -14,11 +14,12 @@ Future<void> _pumpMedicineList(WidgetTester tester, AppDatabase db) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [databaseProvider.overrideWithValue(db)],
-      child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: MedicineListScreen(),
-      ),
+      child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      theme: ThemeData(extensions: const [ModuleThemeAccents.defaults]),
+      home: const MedicineListScreen(),
+    ),
     ),
   );
   await tester.pumpAndSettle();
@@ -44,7 +45,7 @@ void main() {
         .widgetList<CustomPaint>(find.byType(CustomPaint))
         .firstWhere((w) => w.painter is PillCalendarPainter);
     final painter = customPaint.painter! as PillCalendarPainter;
-    expect(painter.color, ModuleAccents.medicine);
+    expect(painter.color, ModuleThemeAccents.defaults.medicine);
 
     await disposeTree(tester);
   });

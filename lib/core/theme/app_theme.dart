@@ -9,17 +9,44 @@ const Color _seedColor = Color(0xFF006874);
 
 /// Per-module accent colors (`strategies/theme.md`), used only for a
 /// module's icon/dashboard tile/nav highlight — never as `ColorScheme` roles.
-class ModuleAccents {
-  const ModuleAccents._();
+/// Per-module accent colors.
+@immutable
+class ModuleThemeAccents extends ThemeExtension<ModuleThemeAccents> {
+  const ModuleThemeAccents({
+    required this.water,
+    required this.medicine,
+    required this.prayer,
+  });
 
-  /// Water module accent.
-  static const Color water = Color(0xFF1565C0);
+  final Color water;
+  final Color medicine;
+  final Color prayer;
 
-  /// Medicine module accent.
-  static const Color medicine = Color(0xFF5E35B1);
+  /// Default accents.
+  static const ModuleThemeAccents defaults = ModuleThemeAccents(
+    water: Color(0xFF1565C0),
+    medicine: Color(0xFF5E35B1),
+    prayer: Color(0xFFB8860B),
+  );
 
-  /// Prayer module accent.
-  static const Color prayer = Color(0xFFB8860B);
+  @override
+  ModuleThemeAccents copyWith({Color? water, Color? medicine, Color? prayer}) {
+    return ModuleThemeAccents(
+      water: water ?? this.water,
+      medicine: medicine ?? this.medicine,
+      prayer: prayer ?? this.prayer,
+    );
+  }
+
+  @override
+  ModuleThemeAccents lerp(ThemeExtension<ModuleThemeAccents>? other, double t) {
+    if (other is! ModuleThemeAccents) return this;
+    return ModuleThemeAccents(
+      water: Color.lerp(water, other.water, t) ?? water,
+      medicine: Color.lerp(medicine, other.medicine, t) ?? medicine,
+      prayer: Color.lerp(prayer, other.prayer, t) ?? prayer,
+    );
+  }
 }
 
 /// A curated seasonal occasion this app acknowledges cosmetically
@@ -102,11 +129,13 @@ class AppTheme {
     required bool isBangla,
     Color? seasonalSeed,
     Color? paletteSeed,
+    ModuleThemeAccents? moduleAccents,
   }) => _build(
     brightness: Brightness.light,
     semanticColors: AppSemanticColors.light,
     isBangla: isBangla,
     seedColor: seasonalSeed ?? paletteSeed ?? _seedColor,
+    moduleAccents: moduleAccents ?? ModuleThemeAccents.defaults,
   );
 
   /// Dark theme.
@@ -114,11 +143,13 @@ class AppTheme {
     required bool isBangla,
     Color? seasonalSeed,
     Color? paletteSeed,
+    ModuleThemeAccents? moduleAccents,
   }) => _build(
     brightness: Brightness.dark,
     semanticColors: AppSemanticColors.dark,
     isBangla: isBangla,
     seedColor: seasonalSeed ?? paletteSeed ?? _seedColor,
+    moduleAccents: moduleAccents ?? ModuleThemeAccents.defaults,
   );
 
   static ThemeData _build({
@@ -126,6 +157,7 @@ class AppTheme {
     required AppSemanticColors semanticColors,
     required bool isBangla,
     required Color seedColor,
+    required ModuleThemeAccents moduleAccents,
   }) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seedColor,
@@ -135,7 +167,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: _textTheme(isBangla: isBangla),
-      extensions: [semanticColors],
+      extensions: [semanticColors, moduleAccents],
     );
   }
 
@@ -149,4 +181,10 @@ class AppTheme {
       heightFactor: heightMultiplier,
     );
   }
+}
+
+/// Helper extension to access module accents from the theme.
+extension ModuleAccentsTheme on ThemeData {
+  /// The app's per-module accent colors.
+  ModuleThemeAccents get moduleAccents => extension<ModuleThemeAccents>()!;
 }

@@ -58,8 +58,7 @@ class HabitHeatmapCalendar extends StatelessWidget {
   /// The exact return shape of `HabitModule.dayStatus()`.
   final Map<LocalDate, ModuleDayStatus> dayStatus;
 
-  /// The module's own accent color (`ModuleAccents.water`/`.medicine`/
-  /// `.prayer`).
+  /// The module's own themeable accent color.
   final Color accentColor;
 
   /// A stable, caller-supplied ceiling `status.value` is measured

@@ -27,7 +27,9 @@ class QuickAddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilledButton.tonal(
       onPressed: onTap,
-      style: FilledButton.styleFrom(foregroundColor: ModuleAccents.water),
+      style: FilledButton.styleFrom(
+        foregroundColor: Theme.of(context).moduleAccents.water,
+      ),
       child: Text('+${formatWaterAmount(context, amountMl, unit)}'),
     );
   }

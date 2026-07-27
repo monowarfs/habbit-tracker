@@ -50,7 +50,10 @@ void main() {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
-        extensions: const [AppSemanticColors.light],
+        extensions: const [
+          AppSemanticColors.light,
+          ModuleThemeAccents.defaults,
+        ],
       ),
       home: const PrayerHomeScreen(),
     ),
@@ -91,7 +94,7 @@ void main() {
           .widgetList<CustomPaint>(find.byType(CustomPaint))
           .firstWhere((w) => w.painter is CrescentMatPainter);
       final painter = customPaint.painter! as CrescentMatPainter;
-      expect(painter.color, ModuleAccents.prayer);
+      expect(painter.color, ModuleThemeAccents.defaults.prayer);
     },
   );
 

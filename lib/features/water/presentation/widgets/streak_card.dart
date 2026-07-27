@@ -27,7 +27,7 @@ class StreakCard extends StatelessWidget {
             ),
             _StreakStat(
               icon: Icons.emoji_events,
-              iconColor: ModuleAccents.water,
+              iconColor: Theme.of(context).moduleAccents.water,
               value: streak.longest,
               label: 'Longest streak',
             ),

@@ -63,7 +63,7 @@ class PrayerHomeScreen extends ConsumerWidget {
           ? ModuleEmptyState(
               painter: CrescentMatPainter.new,
               message: l10n.prayerHomeEmpty,
-              accentColor: ModuleAccents.prayer,
+              accentColor: Theme.of(context).moduleAccents.prayer,
             )
           : Column(
               children: [

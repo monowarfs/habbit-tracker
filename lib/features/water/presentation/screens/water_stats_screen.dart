@@ -135,7 +135,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
                   value: point.totalMl.toDouble(),
                 ),
             ],
-            color: ModuleAccents.water,
+            color: Theme.of(context).moduleAccents.water,
             targetLine: goal?.goalMl.toDouble(),
           ),
         if (series != null && series.length >= 2)

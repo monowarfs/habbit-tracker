@@ -71,15 +71,11 @@ void main() {
     );
 
     test(
-      'ModuleAccents are plain static constants, unaffected by any '
-      'seasonalSeed argument',
+      'ModuleThemeAccents.defaults are plain static constants',
       () {
-        // ModuleAccents has no constructor/argument surface at all — this
-        // test documents that invariant rather than exercising behavior:
-        // there is no seasonalSeed-shaped input that could reach it.
-        expect(ModuleAccents.water, const Color(0xFF1565C0));
-        expect(ModuleAccents.medicine, const Color(0xFF5E35B1));
-        expect(ModuleAccents.prayer, const Color(0xFFB8860B));
+        expect(ModuleThemeAccents.defaults.water, const Color(0xFF1565C0));
+        expect(ModuleThemeAccents.defaults.medicine, const Color(0xFF5E35B1));
+        expect(ModuleThemeAccents.defaults.prayer, const Color(0xFFB8860B));
       },
     );
   });

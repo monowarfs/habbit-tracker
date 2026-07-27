@@ -62,7 +62,7 @@ class PrayerStatsScreen extends ConsumerWidget {
               Text(l10n.prayerStatsLast7DaysLabel),
               PeriodBarChart(
                 points: points,
-                color: ModuleAccents.prayer,
+                color: Theme.of(context).moduleAccents.prayer,
                 targetLine: 5,
               ),
               const SizedBox(height: 16),

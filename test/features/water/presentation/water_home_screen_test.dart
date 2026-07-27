@@ -22,10 +22,11 @@ Future<void> _pumpWaterHome(
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(db)],
-        child: const MaterialApp(
+        child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: WaterHomeScreen(),
+          theme: ThemeData(extensions: const [ModuleThemeAccents.defaults]),
+          home: const WaterHomeScreen(),
         ),
       ),
     );
@@ -71,7 +72,7 @@ void main() {
           .widgetList<CustomPaint>(find.byType(CustomPaint))
           .firstWhere((w) => w.painter is WaterDropPainter);
       final painter = customPaint.painter! as WaterDropPainter;
-      expect(painter.color, ModuleAccents.water);
+      expect(painter.color, ModuleThemeAccents.defaults.water);
 
       await disposeTree(tester);
     },

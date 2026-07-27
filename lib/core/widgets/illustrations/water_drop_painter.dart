@@ -7,8 +7,8 @@ class WaterDropPainter extends CustomPainter {
   /// Creates a water-drop painter using [color].
   const WaterDropPainter(this.color);
 
-  /// The color the drop (and its highlight) is painted with — always one
-  /// of `ModuleAccents`' fixed colors at call sites, never scheme-derived.
+  /// The color the drop (and its highlight) is painted with — always the
+  /// theme's module accent at call sites, never scheme-derived.
   final Color color;
 
   @override

@@ -62,7 +62,7 @@ class PrayerModule implements HabitModule {
   ModuleMetadata get metadata => const ModuleMetadata(
     displayName: 'Prayer',
     icon: Icons.mosque,
-    accentColor: ModuleAccents.prayer,
+    accentColor: ModuleThemeAccents.defaults.prayer,
   );
 
   @override
@@ -113,7 +113,7 @@ class PrayerModule implements HabitModule {
     return Builder(
       builder: (context) => Card(
         child: ListTile(
-          leading: const Icon(Icons.mosque, color: ModuleAccents.prayer),
+          leading: const Icon(Icons.mosque, color: ModuleThemeAccents.defaults.prayer),
           title: Text(metadata.displayName),
           subtitle: Text(
             allPrayed
@@ -130,7 +130,7 @@ class PrayerModule implements HabitModule {
   Widget? settingsEntry(WidgetRef ref) {
     return Builder(
       builder: (context) => ListTile(
-        leading: const Icon(Icons.mosque, color: ModuleAccents.prayer),
+        leading: const Icon(Icons.mosque, color: ModuleThemeAccents.defaults.prayer),
         title: Text(metadata.displayName),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/prayer/settings'),

@@ -88,7 +88,7 @@ class _MedicineListView extends ConsumerWidget {
         message: archivedOnly
             ? l10n.medicineListArchivedEmpty
             : l10n.medicineListEmpty,
-        accentColor: ModuleAccents.medicine,
+        accentColor: Theme.of(context).moduleAccents.medicine,
       );
     }
     return ListView(

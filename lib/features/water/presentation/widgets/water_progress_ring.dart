@@ -38,8 +38,8 @@ class WaterProgressRing extends StatelessWidget {
     final fraction = goalMl > 0 ? (totalMl / goalMl).clamp(0.0, 1.0) : 0.0;
     final semanticColors = Theme.of(context).extension<AppSemanticColors>();
     final ringColor = goalMet
-        ? (semanticColors?.success ?? ModuleAccents.water)
-        : ModuleAccents.water;
+        ? (semanticColors?.success ?? Theme.of(context).moduleAccents.water)
+        : Theme.of(context).moduleAccents.water;
 
     return SizedBox(
       width: size,

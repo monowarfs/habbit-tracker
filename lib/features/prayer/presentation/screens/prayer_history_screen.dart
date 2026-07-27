@@ -97,7 +97,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
               HabitHeatmapCalendar(
                 month: monthStart,
                 dayStatus: dayStatus,
-                accentColor: ModuleAccents.prayer,
+                accentColor: Theme.of(context).moduleAccents.prayer,
                 // Five daily prayers is a fixed, known ceiling — no
                 // per-instance computation needed.
                 maxValue: 5,

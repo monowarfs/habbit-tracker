@@ -186,7 +186,7 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
                     child: ModuleEmptyState(
                       painter: WaterDropPainter.new,
                       message: l10n.waterHomeEmptyLogs,
-                      accentColor: ModuleAccents.water,
+                      accentColor: Theme.of(context).moduleAccents.water,
                     ),
                   )
                 else

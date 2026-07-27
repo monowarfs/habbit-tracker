@@ -19,23 +19,24 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final moduleAccents = Theme.of(context).extension<ModuleThemeAccents>()!;
 
     final navIcons = [
       (icon: Icons.dashboard_outlined, selected: Icons.dashboard, accent: null),
       (
         icon: Icons.water_drop_outlined,
         selected: Icons.water_drop,
-        accent: ModuleAccents.water,
+        accent: moduleAccents.water,
       ),
       (
         icon: Icons.medication_outlined,
         selected: Icons.medication,
-        accent: ModuleAccents.medicine,
+        accent: moduleAccents.medicine,
       ),
       (
         icon: Icons.mosque_outlined,
         selected: Icons.mosque,
-        accent: ModuleAccents.prayer,
+        accent: moduleAccents.prayer,
       ),
       (
         icon: Icons.settings_outlined,

@@ -95,7 +95,10 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        PeriodBarChart(points: points, color: ModuleAccents.medicine),
+        PeriodBarChart(
+          points: points,
+          color: Theme.of(context).moduleAccents.medicine,
+        ),
         const SizedBox(height: 24),
         Text(
           l10n.medicineStatsMissedDosesLabel,
@@ -184,7 +187,7 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
                 return HabitHeatmapCalendar(
                   month: monthStart,
                   dayStatus: dayStatus,
-                  accentColor: ModuleAccents.medicine,
+                  accentColor: Theme.of(context).moduleAccents.medicine,
                   maxValue: maxValue,
                   onDayTap: (day) {
                     final dayDoses = byDay[day] ?? const [];

@@ -24,7 +24,7 @@ class ModuleEmptyState extends StatelessWidget {
   /// verbatim, not a new key.
   final String message;
 
-  /// The module's `ModuleAccents` color the illustration is painted with.
+  /// The module's themeable accent color the illustration is painted with.
   final Color accentColor;
 
   @override
