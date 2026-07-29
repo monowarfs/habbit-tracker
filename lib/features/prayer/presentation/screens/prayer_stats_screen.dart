@@ -122,7 +122,7 @@ class PrayerStatsScreen extends ConsumerWidget {
   };
 
   int _onTimePercent(PrayerAdherenceStats stats) =>
-      stats.total == 0 ? 0 : (stats.prayed * 100 / stats.total).round();
+      _percent(stats.prayed, stats.total);
 
   /// Sums per-prayer-name stats into a single overall on-time/late/missed
   /// split (08-analytics/10-prayer-on-time-vs-late) — a first-pass single
