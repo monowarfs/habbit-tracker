@@ -1,8 +1,8 @@
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/effective_prayer_status.dart';
 
-/// Per-prayer adherence breakdown (FR-P-10). [prayed] is on-time
-/// completions only; [prayedLate] is completions past the grace window
+/// Per-prayer adherence breakdown (FR-P-10). `prayed` is on-time
+/// completions only; `prayedLate` is completions past the grace window
 /// (08-analytics/10-prayer-on-time-vs-late) — `prayed + prayedLate` is
 /// the overall "completed" count.
 typedef PrayerAdherenceStats = ({

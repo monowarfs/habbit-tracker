@@ -2,7 +2,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-/// Minutes after [scheduledFor] within which a `prayed` record still
+/// Minutes after `scheduledFor` within which a `prayed` record still
 /// counts as on time (08-analytics/10-prayer-on-time-vs-late). Prayer has
 /// no per-record configurable grace window (unlike Medicine's
 /// per-schedule one), so this is a fixed module-wide default.
