@@ -2,16 +2,51 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+/// Minutes after [scheduledFor] within which a `prayed` record still
+/// counts as on time (08-analytics/10-prayer-on-time-vs-late). Prayer has
+/// no per-record configurable grace window (unlike Medicine's
+/// per-schedule one), so this is a fixed module-wide default.
+const defaultPrayerGraceWindowMinutes = 15;
+
+/// Whether a prayer completed at [statusChangedAt] counts as on time
+/// relative to [scheduledFor]. A `null` [statusChangedAt] (pre-existing
+/// records from before this distinction existed) is treated as on time —
+/// the backward-compatibility default (FR-P-10's on-time/late split).
+bool isPrayedOnTime({
+  required DateTime scheduledFor,
+  DateTime? statusChangedAt,
+  int graceWindowMinutes = defaultPrayerGraceWindowMinutes,
+}) {
+  if (statusChangedAt == null) return true;
+  return !statusChangedAt.isAfter(
+    scheduledFor.add(Duration(minutes: graceWindowMinutes)),
+  );
+}
+
 /// Derives a prayer record's live status (FR-P-07). [storedStatus] is
 /// only ever `upcoming`/`prayed`/`missed` in the database — `due` is
 /// computed here, at read time, mirroring Medicine's
-/// `effectiveDoseStatus` precedent.
+/// `effectiveDoseStatus` precedent. `prayedLate` is likewise derived
+/// here, never stored — callers only see it if they pass
+/// [statusChangedAt] (existing live-derivation call sites that don't
+/// care about the on-time/late split can omit it and keep getting
+/// `prayed`, unchanged).
 PrayerStatus effectivePrayerStatus({
   required PrayerStatus storedStatus,
   required DateTime scheduledFor,
   required DateTime cutoff,
   required DateTime now,
+  DateTime? statusChangedAt,
+  int graceWindowMinutes = defaultPrayerGraceWindowMinutes,
 }) {
+  if (storedStatus == PrayerStatus.prayed &&
+      !isPrayedOnTime(
+        scheduledFor: scheduledFor,
+        statusChangedAt: statusChangedAt,
+        graceWindowMinutes: graceWindowMinutes,
+      )) {
+    return PrayerStatus.prayedLate;
+  }
   if (storedStatus != PrayerStatus.upcoming) return storedStatus;
   if (now.isBefore(scheduledFor)) return PrayerStatus.upcoming;
   if (now.isBefore(cutoff)) return PrayerStatus.due;
