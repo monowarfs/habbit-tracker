@@ -41,6 +41,7 @@ class PrayerStatsScreen extends ConsumerWidget {
             today: today,
           );
           final adherence = calculateAdherence(records: records);
+          final overallSplit = _sumSplit(adherence.values);
           final points = [
             for (var offset = 6; offset >= 0; offset--)
               BarChartPoint(
@@ -78,6 +79,31 @@ class PrayerStatsScreen extends ConsumerWidget {
                   '${_labelFor(l10n, entry.key)}: '
                   '${_onTimePercent(entry.value)}%',
                 ),
+              const SizedBox(height: 16),
+              Text(l10n.prayerStatsSplitTitle),
+              Text(
+                l10n.prayerOnTimeLabel(
+                  overallSplit.prayed,
+                  _percent(overallSplit.prayed, overallSplit.total),
+                ),
+              ),
+              Text(
+                l10n.prayerLateLabel(
+                  overallSplit.prayedLate,
+                  _percent(overallSplit.prayedLate, overallSplit.total),
+                ),
+              ),
+              Text(
+                l10n.prayerMissedLabel(
+                  overallSplit.missed,
+                  _percent(overallSplit.missed, overallSplit.total),
+                ),
+              ),
+              Text(
+                l10n.prayerOnTimeRate(
+                  _percent(overallSplit.prayed, overallSplit.total),
+                ),
+              ),
             ],
           );
         },
@@ -97,4 +123,29 @@ class PrayerStatsScreen extends ConsumerWidget {
 
   int _onTimePercent(PrayerAdherenceStats stats) =>
       stats.total == 0 ? 0 : (stats.prayed * 100 / stats.total).round();
+
+  /// Sums per-prayer-name stats into a single overall on-time/late/missed
+  /// split (08-analytics/10-prayer-on-time-vs-late) — a first-pass single
+  /// combined figure rather than a per-prayer-name breakdown.
+  PrayerAdherenceStats _sumSplit(Iterable<PrayerAdherenceStats> stats) {
+    var prayed = 0;
+    var prayedLate = 0;
+    var missed = 0;
+    var total = 0;
+    for (final s in stats) {
+      prayed += s.prayed;
+      prayedLate += s.prayedLate;
+      missed += s.missed;
+      total += s.total;
+    }
+    return (
+      prayed: prayed,
+      prayedLate: prayedLate,
+      missed: missed,
+      total: total,
+    );
+  }
+
+  int _percent(int count, int total) =>
+      total == 0 ? 0 : (count * 100 / total).round();
 }
