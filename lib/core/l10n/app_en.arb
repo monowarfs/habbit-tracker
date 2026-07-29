@@ -746,6 +746,39 @@
   "@prayerStatsQadhaSummaryLabel": {"description": "Section header for the Qadha counters summary."},
   "prayerStatsOnTimeLabel": "On-time %, last 30 days",
   "@prayerStatsOnTimeLabel": {"description": "Section header for the per-prayer on-time percentage list."},
+  "prayerStatsSplitTitle": "Completion breakdown, last 30 days",
+  "@prayerStatsSplitTitle": {"description": "Section header for the overall on-time/late/missed three-way split."},
+  "prayerOnTimeLabel": "On Time: {count} ({percent}%)",
+  "@prayerOnTimeLabel": {
+    "description": "On-time completed prayer count and percentage of total.",
+    "placeholders": {
+      "count": {"type": "int"},
+      "percent": {"type": "int"}
+    }
+  },
+  "prayerLateLabel": "Late but Completed: {count} ({percent}%)",
+  "@prayerLateLabel": {
+    "description": "Late-but-completed prayer count and percentage of total.",
+    "placeholders": {
+      "count": {"type": "int"},
+      "percent": {"type": "int"}
+    }
+  },
+  "prayerMissedLabel": "Missed: {count} ({percent}%)",
+  "@prayerMissedLabel": {
+    "description": "Missed prayer count and percentage of total.",
+    "placeholders": {
+      "count": {"type": "int"},
+      "percent": {"type": "int"}
+    }
+  },
+  "prayerOnTimeRate": "On-time rate: {percent}%",
+  "@prayerOnTimeRate": {
+    "description": "Overall on-time percentage of all completed-or-missed prayers.",
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
   "prayerSettingsTitle": "Prayer settings",
   "@prayerSettingsTitle": {"description": "Title of the prayer settings screen."},
   "prayerSettingsMethodLabel": "Calculation method",

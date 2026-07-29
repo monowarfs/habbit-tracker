@@ -149,11 +149,15 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
     PrayerName.isha => l10n.prayerNameIsha,
   };
 
+  // `prayedLate` is never persisted, so `record.storedStatus` (this
+  // screen's data source) never actually produces it — folded into
+  // "Prayed" here only so the switch stays exhaustive.
   String _statusLabel(AppLocalizations l10n, PrayerStatus status) =>
       switch (status) {
         PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
         PrayerStatus.due => l10n.prayerStatusDue,
-        PrayerStatus.prayed => l10n.prayerStatusPrayed,
+        PrayerStatus.prayed || PrayerStatus.prayedLate =>
+          l10n.prayerStatusPrayed,
         PrayerStatus.missed => l10n.prayerStatusMissedDue,
       };
 }

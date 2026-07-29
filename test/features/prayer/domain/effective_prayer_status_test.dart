@@ -82,6 +82,86 @@ void main() {
         PrayerStatus.missed,
       );
     });
+
+    test('prayed within the grace window (no statusChangedAt): prayed', () {
+      expect(
+        effectivePrayerStatus(
+          storedStatus: PrayerStatus.prayed,
+          scheduledFor: scheduledFor,
+          cutoff: cutoff,
+          now: cutoff,
+        ),
+        PrayerStatus.prayed,
+      );
+    });
+
+    test('prayed within the grace window: prayed', () {
+      expect(
+        effectivePrayerStatus(
+          storedStatus: PrayerStatus.prayed,
+          scheduledFor: scheduledFor,
+          cutoff: cutoff,
+          now: cutoff,
+          statusChangedAt: scheduledFor.add(const Duration(minutes: 15)),
+        ),
+        PrayerStatus.prayed,
+      );
+    });
+
+    test('prayed one minute past the grace window: prayedLate', () {
+      expect(
+        effectivePrayerStatus(
+          storedStatus: PrayerStatus.prayed,
+          scheduledFor: scheduledFor,
+          cutoff: cutoff,
+          now: cutoff,
+          statusChangedAt: scheduledFor.add(const Duration(minutes: 16)),
+        ),
+        PrayerStatus.prayedLate,
+      );
+    });
+
+    test('a custom grace window is respected', () {
+      expect(
+        effectivePrayerStatus(
+          storedStatus: PrayerStatus.prayed,
+          scheduledFor: scheduledFor,
+          cutoff: cutoff,
+          now: cutoff,
+          statusChangedAt: scheduledFor.add(const Duration(minutes: 45)),
+          graceWindowMinutes: 60,
+        ),
+        PrayerStatus.prayed,
+      );
+    });
+  });
+
+  group('isPrayedOnTime', () {
+    final scheduledFor = DateTime.utc(2026, 6, 1, 12);
+
+    test('null statusChangedAt is treated as on time', () {
+      expect(isPrayedOnTime(scheduledFor: scheduledFor), isTrue);
+    });
+
+    test('exactly at the grace boundary is on time', () {
+      expect(
+        isPrayedOnTime(
+          scheduledFor: scheduledFor,
+          statusChangedAt: scheduledFor.add(const Duration(minutes: 15)),
+        ),
+        isTrue,
+      );
+    });
+
+    test('one minute past the grace boundary is late', () {
+      expect(
+        isPrayedOnTime(
+          scheduledFor: scheduledFor,
+          statusChangedAt: scheduledFor.add(const Duration(minutes: 16)),
+        ),
+        isFalse,
+      );
+    });
   });
 
   group('cutoffForPrayer', () {

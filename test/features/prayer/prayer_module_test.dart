@@ -205,15 +205,18 @@ void main() {
     },
   );
 
-  test('onNotificationAction(done) marks the record prayed', () async {
-    when(
-      () => repo.markPrayed(any()),
-    ).thenAnswer((_) async => const Result.success(null));
+  test(
+    'onNotificationAction(done) marks the record prayed, forced on time',
+    () async {
+      when(
+        () => repo.markPrayed(any(), forceOnTime: any(named: 'forceOnTime')),
+      ).thenAnswer((_) async => const Result.success(null));
 
-    await module.onNotificationAction('r1', NotificationActionType.done);
+      await module.onNotificationAction('r1', NotificationActionType.done);
 
-    verify(() => repo.markPrayed('r1')).called(1);
-  });
+      verify(() => repo.markPrayed('r1', forceOnTime: true)).called(1);
+    },
+  );
 
   test(
     'onNotificationAction(skip) marks the record missed '

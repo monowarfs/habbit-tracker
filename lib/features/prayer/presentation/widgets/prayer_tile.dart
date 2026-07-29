@@ -88,11 +88,17 @@ class PrayerTile extends StatelessWidget {
     PrayerName.isha => l10n.prayerNameIsha,
   };
 
+  // `prayedLate` folds into the same "Prayed" label here — the checklist
+  // isn't where the on-time/late split is surfaced (that's the stats
+  // screen); it's only reachable if a caller opts into passing
+  // `statusChangedAt` to `effectivePrayerStatus`, which this tile's data
+  // source doesn't.
   String _statusLabel(AppLocalizations l10n, PrayerStatus status) =>
       switch (status) {
         PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
         PrayerStatus.due => l10n.prayerStatusDue,
-        PrayerStatus.prayed => l10n.prayerStatusPrayed,
+        PrayerStatus.prayed || PrayerStatus.prayedLate =>
+          l10n.prayerStatusPrayed,
         PrayerStatus.missed => l10n.prayerStatusMissedDue,
       };
 }

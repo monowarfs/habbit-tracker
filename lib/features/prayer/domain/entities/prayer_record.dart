@@ -27,7 +27,10 @@ enum PrayerName {
 /// A prayer record's status. `due` is never persisted — computed at read
 /// time (`effective_prayer_status.dart`). `missed` IS persisted, unlike
 /// Medicine's transient `missed`, because crossing into it has a
-/// one-shot Qadha side effect (FR-P-05).
+/// one-shot Qadha side effect (FR-P-05). `prayedLate` is likewise never
+/// persisted — the DB always stores `prayed`; `prayedLate` only ever
+/// comes out of `effectivePrayerStatus`'s on-time/late derivation
+/// (08-analytics/10-prayer-on-time-vs-late) for callers that opt into it.
 enum PrayerStatus {
   /// Not yet its scheduled time.
   upcoming,
@@ -35,8 +38,12 @@ enum PrayerStatus {
   /// Past its scheduled time, not yet its cutoff (derived, never stored).
   due,
 
-  /// Marked as prayed by the user.
+  /// Marked as prayed by the user, within the on-time grace window.
   prayed,
+
+  /// Marked as prayed, but after the on-time grace window (derived,
+  /// never stored — see `effectivePrayerStatus`).
+  prayedLate,
 
   /// Past its cutoff without being prayed (persisted).
   missed,
