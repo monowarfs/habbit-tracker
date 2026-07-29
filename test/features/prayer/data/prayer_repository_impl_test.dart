@@ -211,6 +211,36 @@ void main() {
   });
 
   test(
+    'markPrayed(forceOnTime: true) backdates statusChangedAt to '
+    'scheduledFor',
+    () async {
+      const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
+      await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
+        await repo.materializeRecords(clock.now(), location);
+      });
+      final records = await repo.recordsInRange(
+        const LocalDate(2026, 6, 1),
+        const LocalDate(2026, 6, 1),
+      );
+      final record = records.first;
+
+      await withClock(
+        Clock.fixed(record.scheduledFor.add(const Duration(hours: 2))),
+        () => repo.markPrayed(record.id, forceOnTime: true),
+      );
+
+      final updated = await repo.recordsInRange(
+        const LocalDate(2026, 6, 1),
+        const LocalDate(2026, 6, 1),
+      );
+      expect(
+        updated.firstWhere((r) => r.id == record.id).statusChangedAt,
+        record.scheduledFor,
+      );
+    },
+  );
+
+  test(
     'unmarkPrayed reverts a prayed record to upcoming (toggle off)',
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');

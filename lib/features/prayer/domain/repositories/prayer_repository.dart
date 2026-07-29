@@ -64,7 +64,11 @@ abstract class PrayerRepository {
 
   /// Marks a record prayed (FR-P-07's one-tap toggle). Fails validation
   /// if the record is already `missed` (never a manual tap target).
-  Future<Result<void>> markPrayed(String recordId);
+  /// [forceOnTime] backdates `statusChangedAt` to the record's own
+  /// `scheduledFor` — used by the notification Done action, which is
+  /// always considered on time regardless of when the user actually
+  /// taps it (08-analytics/10-prayer-on-time-vs-late).
+  Future<Result<void>> markPrayed(String recordId, {bool forceOnTime = false});
 
   /// Un-marks a prayed record back to `upcoming` (toggle off).
   Future<Result<void>> unmarkPrayed(String recordId);

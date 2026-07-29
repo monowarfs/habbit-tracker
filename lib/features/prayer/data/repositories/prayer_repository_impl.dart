@@ -400,15 +400,22 @@ class PrayerRepositoryImpl implements PrayerRepository {
   }
 
   @override
-  Future<Result<void>> markPrayed(String recordId) => _resolveRecord(
-    recordId,
-    guard: (record) => record.storedStatus != PrayerStatus.missed,
-    apply: (record, nowMillis) => PrayerRecordsTableCompanion(
-      status: const Value('prayed'),
-      statusChangedAt: Value(nowMillis),
-      updatedAt: Value(nowMillis),
-    ),
-  );
+  Future<Result<void>> markPrayed(
+    String recordId, {
+    bool forceOnTime = false,
+  }) => _resolveRecord(
+        recordId,
+        guard: (record) => record.storedStatus != PrayerStatus.missed,
+        apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+          status: const Value('prayed'),
+          statusChangedAt: Value(
+            forceOnTime
+                ? record.scheduledFor.toUtc().millisecondsSinceEpoch
+                : nowMillis,
+          ),
+          updatedAt: Value(nowMillis),
+        ),
+      );
 
   @override
   Future<Result<void>> unmarkPrayed(String recordId) => _resolveRecord(
@@ -672,10 +679,13 @@ extension PrayerNameDb on PrayerName {
 extension PrayerStatusDb on PrayerStatus {
   /// The stored DB string for this value. `due` is never actually
   /// persisted (FR-P-07) — included here only so the mapping is total.
+  /// `prayedLate` is likewise never persisted (it's derived-only —
+  /// `effective_prayer_status.dart`); maps to `'prayed'` for completeness.
   String toDb() => switch (this) {
     PrayerStatus.upcoming => 'upcoming',
     PrayerStatus.due => 'due',
     PrayerStatus.prayed => 'prayed',
+    PrayerStatus.prayedLate => 'prayed',
     PrayerStatus.missed => 'missed',
   };
 

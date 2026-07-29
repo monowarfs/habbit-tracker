@@ -245,7 +245,10 @@ class PrayerModule implements HabitModule {
         : sourceId;
     switch (action) {
       case NotificationActionType.done:
-        await _repository.markPrayed(recordId);
+        // The notification fired at the scheduled time, so a Done tap
+        // is always on time regardless of how late the user acts on it
+        // (08-analytics/10-prayer-on-time-vs-late).
+        await _repository.markPrayed(recordId, forceOnTime: true);
       case NotificationActionType.skip:
         await _repository.markMissedBySkip(recordId);
       case NotificationActionType.snooze:
