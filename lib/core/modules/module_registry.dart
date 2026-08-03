@@ -6,6 +6,8 @@ import 'package:habit_tracker/core/pauses/pause_repository.dart';
 import 'package:habit_tracker/core/pauses/pause_service.dart';
 import 'package:habit_tracker/core/premium/entitlement_service.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
+import 'package:habit_tracker/features/blood_pressure/blood_pressure_module.dart';
+import 'package:habit_tracker/features/blood_pressure/data/repositories/bp_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
 import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
@@ -64,6 +66,10 @@ List<HabitModule> buildHabitModules(
       ),
     ),
     (id: 'sleep', module: SleepModule(SleepRepositoryImpl(db))),
+    (
+      id: 'blood_pressure',
+      module: BloodPressureModule(BpRepositoryImpl(db)),
+    ),
   ];
   if (enabledModules == null) return allModules.map((e) => e.module).toList();
   return allModules
@@ -97,7 +103,7 @@ List<HabitModule> habitModules(Ref ref) {
 /// `PremiumGateWidget` as defense in depth (a direct deep link must not
 /// bypass this list), but this list is what actually controls whether a
 /// gated module is *advertised or usable* on every UI/display surface.
-const premiumGatedModuleIds = {'sleep'};
+const premiumGatedModuleIds = {'sleep', 'blood_pressure'};
 
 bool _isVisible(HabitModule module, {required bool isPremium}) =>
     isPremium || !premiumGatedModuleIds.contains(module.id);
