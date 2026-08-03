@@ -14,6 +14,9 @@ import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_ad
 import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_home_screen.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_stats_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:habit_tracker/features/exercise/presentation/screens/exercise_add_entry_screen.dart';
+import 'package:habit_tracker/features/exercise/presentation/screens/exercise_home_screen.dart';
+import 'package:habit_tracker/features/exercise/presentation/screens/exercise_stats_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
@@ -107,6 +110,10 @@ class AppRoutes {
   /// Blood Pressure module home screen (premium-gated; no permanent
   /// bottom-nav tab — see `BloodPressureModule`'s doc comment).
   static const String settingsBloodPressure = '/settings/blood-pressure';
+
+  /// Exercise module home screen (premium-gated; no permanent bottom-nav
+  /// tab — see `ExerciseModule`'s doc comment).
+  static const String settingsExercise = '/settings/exercise';
 
   /// Purchase premium screen.
   static const String settingsPurchase = '/settings/purchase';
@@ -301,6 +308,22 @@ GoRouter buildAppRouter(
                       GoRoute(
                         path: 'stats',
                         builder: (context, state) => const BpStatsScreen(),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'exercise',
+                    builder: (context, state) => const ExerciseHomeScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'add',
+                        builder: (context, state) =>
+                            const ExerciseAddEntryScreen(),
+                      ),
+                      GoRoute(
+                        path: 'stats',
+                        builder: (context, state) =>
+                            const ExerciseStatsScreen(),
                       ),
                     ],
                   ),
