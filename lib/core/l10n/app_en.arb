@@ -2117,5 +2117,29 @@
   "@weatherNudgePermissionDeniedSnackbar": {
     "description": "Snackbar shown when the user declines location access after opting into weather-aware reminders."
 
+  },
+  "companionName": "Habitree",
+  "@companionName": {
+    "description": "Name of the dashboard's virtual companion character."
+  },
+  "companionStatusThriving": "Thriving",
+  "@companionStatusThriving": {
+    "description": "Companion mood label: 5-7 of the last 7 days complete."
+  },
+  "companionStatusHappy": "Happy",
+  "@companionStatusHappy": {
+    "description": "Companion mood label: 3-4 of the last 7 days complete."
+  },
+  "companionStatusNeutral": "Neutral",
+  "@companionStatusNeutral": {
+    "description": "Companion mood label: 1-2 of the last 7 days complete, or too little data yet."
+  },
+  "companionStatusWorried": "Needs attention",
+  "@companionStatusWorried": {
+    "description": "Companion mood label: 0 of the last 7 days complete."
+  },
+  "companionTapHint": "Your companion reflects your recent habits",
+  "@companionTapHint": {
+    "description": "Accessibility hint describing what the companion represents."
   }
 }

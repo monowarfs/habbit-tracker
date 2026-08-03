@@ -16,6 +16,7 @@ import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/virtual_companion.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
@@ -73,6 +74,8 @@ class DashboardScreen extends ConsumerWidget {
                   const _DashboardGreeting(),
                   const SizedBox(height: 8),
                   _DayCompletionIndicator(modules: modules),
+                  const SizedBox(height: 16),
+                  const VirtualCompanion(),
                   const SizedBox(height: 16),
                   _UpcomingStrip(modules: modules),
                   const SizedBox(height: 16),
