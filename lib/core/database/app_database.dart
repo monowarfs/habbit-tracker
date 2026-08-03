@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:habit_tracker/core/backup/drive_backup_table.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/app_settings_table.dart';
+import 'package:habit_tracker/core/database/tables/avatar_equipped_table.dart';
 import 'package:habit_tracker/core/database/tables/cosmetic_unlocks_table.dart';
 import 'package:habit_tracker/core/database/tables/habit_stack_suggestions_table.dart';
 import 'package:habit_tracker/core/database/tables/module_settings_table.dart';
@@ -61,6 +62,7 @@ part 'app_database.g.dart';
     CosmeticUnlocksTable,
     DriveBackupsTable,
     PremiumEntitlements,
+    AvatarEquippedTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -69,7 +71,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -270,6 +272,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 21) {
         await m.addColumn(appSettingsTable, appSettingsTable.activePaletteId);
         await m.addColumn(appSettingsTable, appSettingsTable.activeIconPackId);
+      }
+      if (from < 22) {
+        await m.addColumn(cosmeticUnlocksTable, cosmeticUnlocksTable.slot);
+        await m.createTable(avatarEquippedTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

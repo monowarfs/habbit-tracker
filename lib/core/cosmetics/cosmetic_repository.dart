@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,6 +16,23 @@ class CosmeticRepository {
     return rows.map((r) => r.cosmeticKey).toSet();
   }
 
+  /// Reactive stream of unlocked cosmetic keys.
+  Stream<Set<String>> watchUnlockedKeys() {
+    return _db.select(_db.cosmeticUnlocksTable).watch().map(
+      (rows) => rows.map((r) => r.cosmeticKey).toSet(),
+    );
+  }
+
+  /// Reactive stream of unlocked cosmetic keys that are avatar pieces
+  /// (`slot` non-null) — excludes non-avatar cosmetics like theme accents.
+  Stream<Set<String>> watchUnlockedAvatarPieceIds() {
+    return (_db.select(
+      _db.cosmeticUnlocksTable,
+    )..where((t) => t.slot.isNotNull())).watch().map(
+      (rows) => rows.map((r) => r.cosmeticKey).toSet(),
+    );
+  }
+
   /// Whether [cosmeticKey] is unlocked.
   Future<bool> isUnlocked(String cosmeticKey) async {
     final row =
@@ -25,10 +43,12 @@ class CosmeticRepository {
     return row != null;
   }
 
-  /// Records a cosmetic unlock (append-only, idempotent).
+  /// Records a cosmetic unlock (append-only, idempotent). [slot] tags the
+  /// row with its `AvatarSlot.name` when the cosmetic is an avatar piece.
   Future<void> unlock({
     required String achievementKey,
     required String cosmeticKey,
+    String? slot,
   }) async {
     // Check if already unlocked.
     final existing =
@@ -46,6 +66,7 @@ class CosmeticRepository {
             id: const Uuid().v4(),
             achievementKey: achievementKey,
             cosmeticKey: cosmeticKey,
+            slot: Value(slot),
             unlockedAt: now,
           ),
         );

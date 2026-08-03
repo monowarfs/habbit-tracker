@@ -15,6 +15,11 @@ class CosmeticUnlocksTable extends Table {
   /// The cosmetic option key (e.g. `'theme_accent_midnight'`).
   TextColumn get cosmeticKey => text()();
 
+  /// The avatar slot this cosmetic occupies (`'head'`/`'body'`/
+  /// `'background'`/`'frame'`), or null for non-avatar cosmetics
+  /// (e.g. theme accents).
+  TextColumn get slot => text().nullable()();
+
   /// UTC epoch millis when this cosmetic was unlocked.
   IntColumn get unlockedAt => integer()();
 

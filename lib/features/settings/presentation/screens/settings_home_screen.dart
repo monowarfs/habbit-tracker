@@ -147,6 +147,13 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.face_retouching_natural_outlined),
+            title: Text(l10n.avatarCustomizeTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/avatar'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.diamond_outlined),
             title: Text(l10n.unlocksTitle),
             trailing: const Icon(Icons.chevron_right),

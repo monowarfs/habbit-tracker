@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/greeting.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -14,6 +15,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_display.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/virtual_companion.dart';
@@ -71,7 +73,19 @@ class DashboardScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 children: [
                   const ModuleSuggestionCard(),
-                  const _DashboardGreeting(),
+                  Row(
+                    children: [
+                      const Expanded(child: _DashboardGreeting()),
+                      const SizedBox(width: 12),
+                      Semantics(
+                        button: true,
+                        child: GestureDetector(
+                          onTap: () => context.push(AppRoutes.settingsAvatar),
+                          child: const AvatarDisplay(),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   _DayCompletionIndicator(modules: modules),
                   const SizedBox(height: 16),

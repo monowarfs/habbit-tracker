@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/security/lock_screen.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
+import 'package:habit_tracker/features/avatar/presentation/screens/avatar_customize_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
@@ -89,6 +90,9 @@ class AppRoutes {
 
   /// Priority support channel screen.
   static const String settingsPrioritySupport = '/settings/priority-support';
+
+  /// Avatar customization screen.
+  static const String settingsAvatar = '/settings/avatar';
 
   /// Purchase premium screen.
   static const String settingsPurchase = '/settings/purchase';
@@ -252,6 +256,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'unlocks',
                     builder: (context, state) => const UnlocksScreen(),
+                  ),
+                  GoRoute(
+                    path: 'avatar',
+                    builder: (context, state) => const AvatarCustomizeScreen(),
                   ),
                   GoRoute(
                     path: 'priority-support',
