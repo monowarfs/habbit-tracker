@@ -135,23 +135,45 @@ class _QuickLogRowState extends ConsumerState<_QuickLogRow> {
   }
 }
 
-class _MoodLogTile extends ConsumerWidget {
+class _MoodLogTile extends ConsumerStatefulWidget {
   const _MoodLogTile({required this.log});
 
   final MoodLog log;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_MoodLogTile> createState() => _MoodLogTileState();
+}
+
+class _MoodLogTileState extends ConsumerState<_MoodLogTile> {
+  bool _deleting = false;
+
+  Future<void> _delete() async {
+    if (_deleting) return;
+    setState(() => _deleting = true);
+    final succeeded = await ref
+        .read(moodControllerProvider.notifier)
+        .deleteLog(widget.log.id);
+    if (!mounted) return;
+    setState(() => _deleting = false);
+    if (!succeeded) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.moodDeleteError)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      leading: Icon(moodValueIcons[log.moodValue]),
-      title: Text(moodValueLabel(l10n, log.moodValue)),
-      subtitle: log.notes == null ? null : Text(log.notes!),
+      leading: Icon(moodValueIcons[widget.log.moodValue]),
+      title: Text(moodValueLabel(l10n, widget.log.moodValue)),
+      subtitle: widget.log.notes == null ? null : Text(widget.log.notes!),
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline),
         tooltip: l10n.commonDelete,
-        onPressed: () =>
-            ref.read(moodControllerProvider.notifier).deleteLog(log.id),
+        onPressed: _deleting ? null : _delete,
       ),
     );
   }

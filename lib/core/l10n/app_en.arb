@@ -2458,6 +2458,10 @@
   "@moodLogSaveError": {
     "description": "Shown when a quick-log mood check-in fails to save."
   },
+  "moodDeleteError": "Couldn't delete this check-in. Try again.",
+  "@moodDeleteError": {
+    "description": "Shown when deleting a mood check-in fails."
+  },
   "moodValue1": "Very Low",
   "@moodValue1": {
     "description": "Label for mood value 1 (lowest)."
