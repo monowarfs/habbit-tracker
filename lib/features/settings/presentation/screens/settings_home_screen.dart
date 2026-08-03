@@ -1,16 +1,21 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/dev/seed_data_generator.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_providers.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/utils/external_link_launcher.dart';
 import 'package:habit_tracker/features/community/community_links.dart';
+import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
+import 'package:habit_tracker/features/prayer/presentation/providers/prayer_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/display_name_editor_sheet.dart';
+import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 
 /// The Settings tab: sectioned entry points into Appearance, Language,
 /// Notifications, Security, Data, and About
@@ -258,9 +263,77 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/about'),
           ),
+          if (kDebugMode) ...[
+            const Divider(),
+            const _SectionHeader('Developer'),
+            ListTile(
+              leading: const Icon(Icons.science_outlined),
+              title: const Text('Seed Data Generator'),
+              subtitle: const Text(
+                'Wipes Water/Medicine/Prayer data and backfills 1 month-2 '
+                'years of random test history',
+              ),
+              onTap: () => _seedData(context, ref),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _seedData(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Seed Data Generator'),
+        content: const Text(
+          'This permanently deletes all existing Water, Medicine, and '
+          'Prayer data and replaces it with randomized test history. '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Generate'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Generating seed data…'),
+            ],
+          ),
+        ),
+      ),
+    );
+    try {
+      await generateSeedData(
+        waterRepository: ref.read(waterRepositoryProvider),
+        medicineRepository: ref.read(medicineRepositoryProvider),
+        prayerRepository: ref.read(prayerRepositoryProvider),
+      );
+    } finally {
+      if (context.mounted) Navigator.of(context).pop();
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seed data generated')),
+      );
+    }
   }
 }
 
