@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
@@ -57,6 +58,7 @@ class _Content extends ConsumerWidget {
       moodLogsInRangeProvider(today.addDays(-13), today),
     );
     final logs = logsAsync.value;
+    final sorted = logs?.reversed.toList();
     return Column(
       children: [
         const Padding(
@@ -64,9 +66,9 @@ class _Content extends ConsumerWidget {
           child: _QuickLogRow(),
         ),
         Expanded(
-          child: logs == null
+          child: sorted == null
               ? const Center(child: CircularProgressIndicator())
-              : logs.isEmpty
+              : sorted.isEmpty
               ? ModuleEmptyState(
                   painter: (color) => ModuleIconPainter(
                     color,
@@ -76,9 +78,9 @@ class _Content extends ConsumerWidget {
                   accentColor: const Color(0xFF8E24AA),
                 )
               : ListView.builder(
-                  itemCount: logs.length,
+                  itemCount: sorted.length,
                   itemBuilder: (context, index) =>
-                      _MoodLogTile(log: logs.reversed.toList()[index]),
+                      _MoodLogTile(log: sorted[index]),
                 ),
         ),
       ],
@@ -86,11 +88,34 @@ class _Content extends ConsumerWidget {
   }
 }
 
-class _QuickLogRow extends ConsumerWidget {
+class _QuickLogRow extends ConsumerStatefulWidget {
   const _QuickLogRow();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_QuickLogRow> createState() => _QuickLogRowState();
+}
+
+class _QuickLogRowState extends ConsumerState<_QuickLogRow> {
+  bool _saving = false;
+
+  Future<void> _logMood(int value) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final result = await ref
+        .read(moodControllerProvider.notifier)
+        .logMood(value);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (result case Failure()) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.moodLogSaveError)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -102,8 +127,7 @@ class _QuickLogRow extends ConsumerWidget {
             child: IconButton(
               iconSize: 36,
               icon: Icon(moodValueIcons[value]),
-              onPressed: () =>
-                  ref.read(moodControllerProvider.notifier).logMood(value),
+              onPressed: _saving ? null : () => _logMood(value),
             ),
           ),
       ],

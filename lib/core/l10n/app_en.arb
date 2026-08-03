@@ -2454,6 +2454,10 @@
   "@moodHomeEmpty": {
     "description": "Empty state on the Mood home screen before any check-ins are logged."
   },
+  "moodLogSaveError": "Couldn't save your check-in. Try again.",
+  "@moodLogSaveError": {
+    "description": "Shown when a quick-log mood check-in fails to save."
+  },
   "moodValue1": "Very Low",
   "@moodValue1": {
     "description": "Label for mood value 1 (lowest)."

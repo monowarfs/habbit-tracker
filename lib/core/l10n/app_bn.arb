@@ -698,6 +698,7 @@
   "achievementExerciseStreak100Description": "টানা ১০০ দিন ওয়ার্কআউট লগ করুন",
   "moodHomeTitle": "মেজাজ",
   "moodHomeEmpty": "এখনো কোনো চেক-ইন লগ করা হয়নি",
+  "moodLogSaveError": "আপনার চেক-ইন সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।",
   "moodValue1": "খুব খারাপ",
   "moodValue2": "খারাপ",
   "moodValue3": "ঠিক আছে",
