@@ -31,6 +31,11 @@ String localizedAchievementTitle(AppLocalizations l10n, String titleKey) {
     'achievementBpStreak7Title' => l10n.achievementBpStreak7Title,
     'achievementBpStreak30Title' => l10n.achievementBpStreak30Title,
     'achievementBpStreak100Title' => l10n.achievementBpStreak100Title,
+    'achievementExerciseFirstLogTitle' => l10n.achievementExerciseFirstLogTitle,
+    'achievementExerciseStreak7Title' => l10n.achievementExerciseStreak7Title,
+    'achievementExerciseStreak30Title' => l10n.achievementExerciseStreak30Title,
+    'achievementExerciseStreak100Title' =>
+      l10n.achievementExerciseStreak100Title,
     'achievementMoodFirstLogTitle' => l10n.achievementMoodFirstLogTitle,
     'achievementMoodStreak7Title' => l10n.achievementMoodStreak7Title,
     'achievementMoodStreak30Title' => l10n.achievementMoodStreak30Title,
@@ -80,13 +85,19 @@ String localizedAchievementDescription(
       l10n.achievementSleepStreak30Description,
     'achievementSleepStreak100Description' =>
       l10n.achievementSleepStreak100Description,
-    'achievementBpFirstLogDescription' =>
-      l10n.achievementBpFirstLogDescription,
+    'achievementBpFirstLogDescription' => l10n.achievementBpFirstLogDescription,
     'achievementBpStreak7Description' => l10n.achievementBpStreak7Description,
-    'achievementBpStreak30Description' =>
-      l10n.achievementBpStreak30Description,
+    'achievementBpStreak30Description' => l10n.achievementBpStreak30Description,
     'achievementBpStreak100Description' =>
       l10n.achievementBpStreak100Description,
+    'achievementExerciseFirstLogDescription' =>
+      l10n.achievementExerciseFirstLogDescription,
+    'achievementExerciseStreak7Description' =>
+      l10n.achievementExerciseStreak7Description,
+    'achievementExerciseStreak30Description' =>
+      l10n.achievementExerciseStreak30Description,
+    'achievementExerciseStreak100Description' =>
+      l10n.achievementExerciseStreak100Description,
     'achievementMoodFirstLogDescription' =>
       l10n.achievementMoodFirstLogDescription,
     'achievementMoodStreak7Description' =>

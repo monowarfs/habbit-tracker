@@ -32,4 +32,30 @@ void main() {
       );
     });
   });
+
+  group('weekStartFor', () {
+    test('a Monday snaps to itself', () {
+      // 2026-08-03 is a Monday.
+      expect(
+        weekStartFor(const LocalDate(2026, 8, 3)),
+        const LocalDate(2026, 8, 3),
+      );
+    });
+
+    test("a mid-week day snaps back to that week's Monday", () {
+      // 2026-06-09 is a Tuesday, in the week starting 2026-06-08.
+      expect(
+        weekStartFor(const LocalDate(2026, 6, 9)),
+        const LocalDate(2026, 6, 8),
+      );
+    });
+
+    test("a Sunday snaps back to the same week's Monday", () {
+      // 2026-08-09 is a Sunday, in the week starting 2026-08-03.
+      expect(
+        weekStartFor(const LocalDate(2026, 8, 9)),
+        const LocalDate(2026, 8, 3),
+      );
+    });
+  });
 }

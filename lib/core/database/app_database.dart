@@ -16,6 +16,7 @@ import 'package:habit_tracker/core/database/tables/recalibration_markers_table.d
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/core/premium/entitlement_table.dart';
 import 'package:habit_tracker/features/blood_pressure/data/tables/bp_logs_table.dart';
+import 'package:habit_tracker/features/exercise/data/tables/exercise_logs_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_stock_events_table.dart';
@@ -69,6 +70,7 @@ part 'app_database.g.dart';
     SleepLogsTable,
     BpLogsTable,
     MoodLogsTable,
+    ExerciseLogsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -77,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -290,6 +292,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(bpLogsTable);
       }
       if (from < 25) {
+        await m.createTable(exerciseLogsTable);
+      }
+      if (from < 26) {
         await m.createTable(moodLogsTable);
       }
       // Seam: when schemaVersion increments further, add

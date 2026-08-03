@@ -2356,6 +2356,96 @@
   "@achievementBpStreak100Title": {"description": "Achievement title: 100-day blood pressure streak."},
   "achievementBpStreak100Description": "Log a reading for 100 days in a row",
   "@achievementBpStreak100Description": {"description": "Achievement description: 100-day blood pressure streak."},
+  "exerciseHomeTitle": "Exercise",
+  "@exerciseHomeTitle": {
+    "description": "Title of the Exercise module's home screen."
+  },
+  "exerciseHomeEmpty": "No workouts logged yet",
+  "@exerciseHomeEmpty": {
+    "description": "Empty state on the Exercise home screen before any workouts are logged."
+  },
+  "exerciseHomeDurationOnly": "{minutes} min",
+  "@exerciseHomeDurationOnly": {
+    "description": "Subtitle for a workout tile with no calorie count.",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "exerciseHomeDurationAndCalories": "{minutes} min · {calories} cal",
+  "@exerciseHomeDurationAndCalories": {
+    "description": "Subtitle for a workout tile that includes a calorie count.",
+    "placeholders": {
+      "minutes": {"type": "int"},
+      "calories": {"type": "int"}
+    }
+  },
+  "exerciseAddEntryTitle": "Log Workout",
+  "@exerciseAddEntryTitle": {
+    "description": "Title of the Exercise add-entry screen."
+  },
+  "exerciseAddEntryTypeLabel": "Exercise type",
+  "@exerciseAddEntryTypeLabel": {
+    "description": "Label for the exercise type input on the Exercise add-entry screen."
+  },
+  "exerciseAddEntryDurationLabel": "Duration (minutes)",
+  "@exerciseAddEntryDurationLabel": {
+    "description": "Label for the duration input on the Exercise add-entry screen."
+  },
+  "exerciseAddEntryCaloriesLabel": "Calories (optional)",
+  "@exerciseAddEntryCaloriesLabel": {
+    "description": "Label for the optional calories input on the Exercise add-entry screen."
+  },
+  "exerciseAddEntryInvalidInput": "Enter a workout type and a valid duration",
+  "@exerciseAddEntryInvalidInput": {
+    "description": "Validation error shown when a field couldn't be parsed."
+  },
+  "exerciseAddEntryInvalidType": "Exercise type is required",
+  "@exerciseAddEntryInvalidType": {
+    "description": "Validation error shown when the exercise type is empty."
+  },
+  "exerciseAddEntryInvalidDuration": "Duration must be between 1 and 1440 minutes",
+  "@exerciseAddEntryInvalidDuration": {
+    "description": "Validation error shown when duration is out of the plausible range."
+  },
+  "exerciseAddEntryInvalidCalories": "Calories must be between 0 and 10000",
+  "@exerciseAddEntryInvalidCalories": {
+    "description": "Validation error shown when calories is out of the plausible range."
+  },
+  "exerciseAddEntryFutureError": "Cannot select a future date or time",
+  "@exerciseAddEntryFutureError": {
+    "description": "Validation error shown when the workout time is after now."
+  },
+  "exerciseStatsTitle": "Exercise Stats",
+  "@exerciseStatsTitle": {
+    "description": "Title of the Exercise stats screen."
+  },
+  "exerciseStatsWeeklyMinutesLabel": "Weekly minutes",
+  "@exerciseStatsWeeklyMinutesLabel": {
+    "description": "Chart label for the weekly total-minutes trend on the Exercise stats screen."
+  },
+  "exerciseStatsCurrentStreak": "Current streak: {count} days",
+  "@exerciseStatsCurrentStreak": {
+    "description": "Current consecutive-days-logged streak on the Exercise stats screen.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "achievementExerciseFirstLogTitle": "First Workout",
+  "@achievementExerciseFirstLogTitle": {"description": "Achievement title: first workout ever logged."},
+  "achievementExerciseFirstLogDescription": "Log your first workout",
+  "@achievementExerciseFirstLogDescription": {"description": "Achievement description: first workout ever logged."},
+  "achievementExerciseStreak7Title": "Getting Fit",
+  "@achievementExerciseStreak7Title": {"description": "Achievement title: 7-day exercise streak."},
+  "achievementExerciseStreak7Description": "Log a workout for 7 days in a row",
+  "@achievementExerciseStreak7Description": {"description": "Achievement description: 7-day exercise streak."},
+  "achievementExerciseStreak30Title": "Fitness Champion",
+  "@achievementExerciseStreak30Title": {"description": "Achievement title: 30-day exercise streak."},
+  "achievementExerciseStreak30Description": "Log a workout for 30 days in a row",
+  "@achievementExerciseStreak30Description": {"description": "Achievement description: 30-day exercise streak."},
+  "achievementExerciseStreak100Title": "Fitness Legend",
+  "@achievementExerciseStreak100Title": {"description": "Achievement title: 100-day exercise streak."},
+  "achievementExerciseStreak100Description": "Log a workout for 100 days in a row",
+  "@achievementExerciseStreak100Description": {"description": "Achievement description: 100-day exercise streak."},
   "moodHomeTitle": "Mood",
   "@moodHomeTitle": {
     "description": "Title of the Mood module's home screen."

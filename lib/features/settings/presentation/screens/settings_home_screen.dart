@@ -172,6 +172,15 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.fitness_center_outlined),
+            title: Text(l10n.exerciseHomeTitle),
+            trailing: ref.watch(isPremiumUserProvider)
+                ? const Icon(Icons.chevron_right)
+                : const Icon(Icons.diamond_outlined),
+            onTap: () => context.push('/settings/exercise'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.sentiment_satisfied_outlined),
             title: Text(l10n.moodHomeTitle),
             trailing: ref.watch(isPremiumUserProvider)
