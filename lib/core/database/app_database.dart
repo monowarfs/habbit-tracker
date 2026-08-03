@@ -22,6 +22,7 @@ import 'package:habit_tracker/features/medicine/data/tables/medicines_table.dart
 import 'package:habit_tracker/features/prayer/data/tables/prayer_qadha_counters_table.dart';
 import 'package:habit_tracker/features/prayer/data/tables/prayer_records_table.dart';
 import 'package:habit_tracker/features/prayer/data/tables/prayer_settings_table.dart';
+import 'package:habit_tracker/features/sleep/data/tables/sleep_logs_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_goals_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_logs_table.dart';
 import 'package:habit_tracker/features/water/data/tables/water_settings_table.dart';
@@ -63,6 +64,7 @@ part 'app_database.g.dart';
     DriveBackupsTable,
     PremiumEntitlements,
     AvatarEquippedTable,
+    SleepLogsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -71,7 +73,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -276,6 +278,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 22) {
         await m.addColumn(cosmeticUnlocksTable, cosmeticUnlocksTable.slot);
         await m.createTable(avatarEquippedTable);
+      }
+      if (from < 23) {
+        await m.createTable(sleepLogsTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
