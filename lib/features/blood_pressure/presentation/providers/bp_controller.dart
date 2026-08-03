@@ -1,6 +1,7 @@
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
+import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_log.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/usecases/log_bp_use_case.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/providers/bp_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -15,9 +16,10 @@ class BpController extends _$BpController {
   @override
   void build() {}
 
-  /// Logs a reading. Returns whether it succeeded, so the screen can show
-  /// a validation error instead of closing as if it had actually saved.
-  Future<bool> logReading({
+  /// Logs a reading. Returns the [Result] so the screen can show the
+  /// specific validation message instead of closing as if it had
+  /// actually saved, or showing a generic error for every failure reason.
+  Future<Result<BpLog>> logReading({
     required int systolic,
     required int diastolic,
     DateTime? loggedAt,
@@ -34,10 +36,10 @@ class BpController extends _$BpController {
     );
     if (result case Failure(:final error)) {
       logException(error);
-      return false;
+      return result;
     }
     await ref.read(achievementEngineProvider).evaluate('blood_pressure');
-    return true;
+    return result;
   }
 
   /// Deletes a reading.

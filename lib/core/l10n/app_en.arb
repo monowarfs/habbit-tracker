@@ -121,6 +121,10 @@
   "@commonUndo": {
     "description": "Generic Undo action label on an undo snackbar, reused across modules."
   },
+  "commonOk": "OK",
+  "@commonOk": {
+    "description": "Generic OK/dismiss button label, reused across modules."
+  },
   "waterHomeEmptyLogs": "No entries yet today",
   "@waterHomeEmptyLogs": {
     "description": "Shown under the progress ring when no water has been logged today."
@@ -2269,9 +2273,33 @@
   "@bpAddEntryPulseLabel": {
     "description": "Label for the optional pulse input on the Blood Pressure add-entry screen."
   },
-  "bpAddEntryInvalidInput": "Check your systolic, diastolic, and pulse values",
+  "bpAddEntryInvalidInput": "Enter valid numbers for systolic, diastolic, and pulse",
   "@bpAddEntryInvalidInput": {
-    "description": "Validation error shown when the reading fails validation (out of range, or diastolic not lower than systolic)."
+    "description": "Validation error shown when a field couldn't be parsed as a number."
+  },
+  "bpAddEntryInvalidSystolic": "Systolic must be between 50 and 300",
+  "@bpAddEntryInvalidSystolic": {
+    "description": "Validation error shown when systolic is out of the plausible range."
+  },
+  "bpAddEntryInvalidDiastolic": "Diastolic must be between 30 and 200, and lower than systolic",
+  "@bpAddEntryInvalidDiastolic": {
+    "description": "Validation error shown when diastolic is out of range or not lower than systolic."
+  },
+  "bpAddEntryInvalidPulse": "Pulse must be between 20 and 300",
+  "@bpAddEntryInvalidPulse": {
+    "description": "Validation error shown when pulse is out of the plausible range."
+  },
+  "bpAddEntryFutureError": "Cannot select a future date or time",
+  "@bpAddEntryFutureError": {
+    "description": "Validation error shown when the reading time is after now."
+  },
+  "bpCrisisWarningTitle": "Seek medical attention",
+  "@bpCrisisWarningTitle": {
+    "description": "Title of the dialog shown after logging a hypertensive-crisis-range reading."
+  },
+  "bpCrisisWarningBody": "This reading is in the hypertensive crisis range. If you're experiencing symptoms like chest pain, shortness of breath, or vision changes, seek emergency medical care now.",
+  "@bpCrisisWarningBody": {
+    "description": "Body text of the hypertensive-crisis warning dialog."
   },
   "bpStatsTitle": "Blood Pressure Stats",
   "@bpStatsTitle": {

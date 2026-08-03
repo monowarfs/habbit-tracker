@@ -91,4 +91,20 @@ void main() {
     await repository.wipeAll();
     expect(await repository.allLogs(), isEmpty);
   });
+
+  test('BpClassificationDb round-trips every value through toDb/fromDb', () {
+    for (final classification in BpClassification.values) {
+      expect(
+        BpClassificationDb.fromDb(classification.toDb()),
+        classification,
+      );
+    }
+  });
+
+  test('BpClassificationDb.fromDb throws on an unrecognized value', () {
+    expect(
+      () => BpClassificationDb.fromDb('not_a_real_classification'),
+      throwsStateError,
+    );
+  });
 }

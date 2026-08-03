@@ -159,12 +159,17 @@ extension BpClassificationDb on BpClassification {
     BpClassification.hypertensionCrisis => 'hypertension_crisis',
   };
 
-  /// Parses a stored DB string back to [BpClassification].
+  /// Parses a stored DB string back to [BpClassification]. Every case is
+  /// matched explicitly — an unrecognized string throws rather than
+  /// silently defaulting to a severity level, since defaulting corrupted
+  /// or unexpected data to `hypertensionCrisis` (the most alarming label)
+  /// would be actively misleading for a health metric.
   static BpClassification fromDb(String value) => switch (value) {
     'normal' => BpClassification.normal,
     'elevated' => BpClassification.elevated,
     'hypertension1' => BpClassification.hypertension1,
     'hypertension2' => BpClassification.hypertension2,
-    _ => BpClassification.hypertensionCrisis,
+    'hypertension_crisis' => BpClassification.hypertensionCrisis,
+    _ => throw StateError('Unknown BpClassification DB value: $value'),
   };
 }

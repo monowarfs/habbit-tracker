@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
+import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_log.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/providers/bp_providers.dart';
 
 /// Blood Pressure's stats screen: last 7 days' systolic/diastolic and the
@@ -42,26 +43,28 @@ class _StatsContent extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Average per day, when multiple readings exist the same day.
-    final systolicByDay = <String, List<int>>{};
-    final diastolicByDay = <String, List<int>>{};
+    // Group by day once; average per day, when multiple readings exist
+    // the same day.
+    final logsByDay = <String, List<BpLog>>{};
     for (final log in logs) {
-      final key = localDayKey(log.loggedAt).toIso();
-      (systolicByDay[key] ??= []).add(log.systolic);
-      (diastolicByDay[key] ??= []).add(log.diastolic);
+      (logsByDay[localDayKey(log.loggedAt).toIso()] ??= []).add(log);
     }
     final systolicPoints = <BarChartPoint>[];
     final diastolicPoints = <BarChartPoint>[];
     var day = start;
     while (day.compareTo(today) <= 0) {
-      final key = day.toIso();
-      final systolicValues = systolicByDay[key] ?? const [];
-      final diastolicValues = diastolicByDay[key] ?? const [];
+      final dayLogs = logsByDay[day.toIso()] ?? const [];
       systolicPoints.add(
-        BarChartPoint(label: '${day.day}', value: _average(systolicValues)),
+        BarChartPoint(
+          label: '${day.day}',
+          value: _average(dayLogs.map((l) => l.systolic)),
+        ),
       );
       diastolicPoints.add(
-        BarChartPoint(label: '${day.day}', value: _average(diastolicValues)),
+        BarChartPoint(
+          label: '${day.day}',
+          value: _average(dayLogs.map((l) => l.diastolic)),
+        ),
       );
       day = day.addDays(1);
     }
@@ -92,6 +95,8 @@ class _StatsContent extends ConsumerWidget {
     );
   }
 
-  double _average(List<int> values) =>
-      values.isEmpty ? 0 : values.reduce((a, b) => a + b) / values.length;
+  double _average(Iterable<int> values) {
+    if (values.isEmpty) return 0;
+    return values.reduce((a, b) => a + b) / values.length;
+  }
 }

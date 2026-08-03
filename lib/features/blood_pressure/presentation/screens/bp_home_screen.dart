@@ -7,6 +7,8 @@ import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/illustrations/module_icon_painter.dart';
+import 'package:habit_tracker/core/widgets/module_empty_state.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_classification.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_log.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/providers/bp_controller.dart';
@@ -41,8 +43,7 @@ class BpHomeScreen extends ConsumerWidget {
       body: PremiumGateWidget(child: _RecentLogsList(l10n: l10n)),
       floatingActionButton: isPremium
           ? FloatingActionButton(
-              onPressed: () =>
-                  context.push('/settings/blood-pressure/add'),
+              onPressed: () => context.push('/settings/blood-pressure/add'),
               child: const Icon(Icons.add),
             )
           : null,
@@ -64,7 +65,12 @@ class _RecentLogsList extends ConsumerWidget {
     final logs = logsAsync.value;
     if (logs == null) return const Center(child: CircularProgressIndicator());
     if (logs.isEmpty) {
-      return Center(child: Text(l10n.bpHomeEmpty));
+      return ModuleEmptyState(
+        painter: (color) =>
+            ModuleIconPainter(color, Icons.monitor_heart_outlined),
+        message: l10n.bpHomeEmpty,
+        accentColor: const Color(0xFFE53935),
+      );
     }
     final sorted = logs.reversed.toList();
     return ListView.builder(

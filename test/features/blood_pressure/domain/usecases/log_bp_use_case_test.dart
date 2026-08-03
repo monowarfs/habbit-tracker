@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/error/app_exception.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_classification.dart';
@@ -55,31 +56,38 @@ class _FakeBpRepository implements BpRepository {
 void main() {
   final fixedNow = DateTime.utc(2026, 6, 15, 8);
 
-  test('rejects diastolic >= systolic', () async {
+  // Field names are asserted, not just failure/success, because
+  // bp_add_entry_screen.dart maps each field to a distinct localized
+  // message — a drift here would silently fall through to the generic
+  // "invalid input" message for a real, specific validation failure.
+  test('diastolic >= systolic tags the diastolic field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
       return useCase.execute(systolic: 110, diastolic: 115);
     });
-    expect(result, isA<Failure<BpLog>>());
+    final error = (result as Failure<BpLog>).error;
+    expect((error as ValidationException).field, 'diastolic');
   });
 
-  test('rejects out-of-range systolic', () async {
+  test('out-of-range systolic tags the systolic field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
       return useCase.execute(systolic: 20, diastolic: 10);
     });
-    expect(result, isA<Failure<BpLog>>());
+    final error = (result as Failure<BpLog>).error;
+    expect((error as ValidationException).field, 'systolic');
   });
 
-  test('rejects out-of-range pulse', () async {
+  test('out-of-range pulse tags the pulse field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
       return useCase.execute(systolic: 120, diastolic: 80, pulse: 400);
     });
-    expect(result, isA<Failure<BpLog>>());
+    final error = (result as Failure<BpLog>).error;
+    expect((error as ValidationException).field, 'pulse');
   });
 
-  test('rejects a future reading time', () async {
+  test('a future reading tags the loggedAt field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
       return useCase.execute(
@@ -88,7 +96,8 @@ void main() {
         loggedAt: fixedNow.add(const Duration(hours: 1)),
       );
     });
-    expect(result, isA<Failure<BpLog>>());
+    final error = (result as Failure<BpLog>).error;
+    expect((error as ValidationException).field, 'loggedAt');
   });
 
   test('logs a valid reading', () async {
