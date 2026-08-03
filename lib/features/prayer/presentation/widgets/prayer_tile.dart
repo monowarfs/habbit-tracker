@@ -37,7 +37,7 @@ class PrayerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final success = theme.extension<AppSemanticColors>()!.success;
+    final success = theme.semanticColors.success;
     final label = view.showAsJumuah
         ? l10n.prayerNameJumuah
         : _labelFor(l10n, view.record.prayerName);

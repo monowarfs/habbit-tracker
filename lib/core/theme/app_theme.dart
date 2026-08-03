@@ -124,6 +124,20 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   }
 }
 
+/// Safe access to [AppSemanticColors] from any [ThemeData] — falls back to
+/// the light/dark defaults (by [ThemeData.brightness]) instead of the
+/// `null` a bare `MaterialApp` (not built from [AppTheme.light] or
+/// [AppTheme.dark]) would otherwise produce, e.g. a widget test's own
+/// minimal `ThemeData`.
+extension AppSemanticColorsTheme on ThemeData {
+  /// This theme's [AppSemanticColors], registered or defaulted.
+  AppSemanticColors get semanticColors =>
+      extension<AppSemanticColors>() ??
+      (brightness == Brightness.dark
+          ? AppSemanticColors.dark
+          : AppSemanticColors.light);
+}
+
 /// Builds the light/dark [ThemeData] pair used by `MaterialApp.theme`/
 /// `.darkTheme`, plus the locale-aware text theme adjustment.
 class AppTheme {
