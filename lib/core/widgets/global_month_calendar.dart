@@ -46,7 +46,7 @@ class GlobalMonthCalendar extends StatelessWidget {
 
   Color _colorFor(BuildContext context, ModuleDayStatusKind kind) {
     final colors = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final semantic = Theme.of(context).semanticColors;
     switch (kind) {
       case ModuleDayStatusKind.complete:
         return semantic.success;
