@@ -21,6 +21,7 @@ import 'package:habit_tracker/features/medicine/data/tables/medicine_doses_table
 import 'package:habit_tracker/features/medicine/data/tables/medicine_schedules_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicine_stock_events_table.dart';
 import 'package:habit_tracker/features/medicine/data/tables/medicines_table.dart';
+import 'package:habit_tracker/features/mood/data/tables/mood_logs_table.dart';
 import 'package:habit_tracker/features/prayer/data/tables/prayer_qadha_counters_table.dart';
 import 'package:habit_tracker/features/prayer/data/tables/prayer_records_table.dart';
 import 'package:habit_tracker/features/prayer/data/tables/prayer_settings_table.dart';
@@ -68,6 +69,7 @@ part 'app_database.g.dart';
     AvatarEquippedTable,
     SleepLogsTable,
     BpLogsTable,
+    MoodLogsTable,
     ExerciseLogsTable,
   ],
 )
@@ -77,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -291,6 +293,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 25) {
         await m.createTable(exerciseLogsTable);
+      }
+      if (from < 26) {
+        await m.createTable(moodLogsTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

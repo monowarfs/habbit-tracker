@@ -36,6 +36,10 @@ String localizedAchievementTitle(AppLocalizations l10n, String titleKey) {
     'achievementExerciseStreak30Title' => l10n.achievementExerciseStreak30Title,
     'achievementExerciseStreak100Title' =>
       l10n.achievementExerciseStreak100Title,
+    'achievementMoodFirstLogTitle' => l10n.achievementMoodFirstLogTitle,
+    'achievementMoodStreak7Title' => l10n.achievementMoodStreak7Title,
+    'achievementMoodStreak30Title' => l10n.achievementMoodStreak30Title,
+    'achievementMoodStreak100Title' => l10n.achievementMoodStreak100Title,
     _ => titleKey,
   };
 }
@@ -94,6 +98,14 @@ String localizedAchievementDescription(
       l10n.achievementExerciseStreak30Description,
     'achievementExerciseStreak100Description' =>
       l10n.achievementExerciseStreak100Description,
+    'achievementMoodFirstLogDescription' =>
+      l10n.achievementMoodFirstLogDescription,
+    'achievementMoodStreak7Description' =>
+      l10n.achievementMoodStreak7Description,
+    'achievementMoodStreak30Description' =>
+      l10n.achievementMoodStreak30Description,
+    'achievementMoodStreak100Description' =>
+      l10n.achievementMoodStreak100Description,
     _ => descriptionKey,
   };
 }

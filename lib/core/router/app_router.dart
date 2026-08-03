@@ -17,6 +17,8 @@ import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_add_entry_screen.dart';
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_home_screen.dart';
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_stats_screen.dart';
+import 'package:habit_tracker/features/mood/presentation/screens/mood_home_screen.dart';
+import 'package:habit_tracker/features/mood/presentation/screens/mood_stats_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
@@ -114,6 +116,10 @@ class AppRoutes {
   /// Exercise module home screen (premium-gated; no permanent bottom-nav
   /// tab — see `ExerciseModule`'s doc comment).
   static const String settingsExercise = '/settings/exercise';
+
+  /// Mood module home screen (premium-gated; no permanent bottom-nav
+  /// tab — see `MoodModule`'s doc comment).
+  static const String settingsMood = '/settings/mood';
 
   /// Purchase premium screen.
   static const String settingsPurchase = '/settings/purchase';
@@ -324,6 +330,16 @@ GoRouter buildAppRouter(
                         path: 'stats',
                         builder: (context, state) =>
                             const ExerciseStatsScreen(),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'mood',
+                    builder: (context, state) => const MoodHomeScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'stats',
+                        builder: (context, state) => const MoodStatsScreen(),
                       ),
                     ],
                   ),
