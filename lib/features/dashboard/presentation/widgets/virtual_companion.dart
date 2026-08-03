@@ -18,7 +18,7 @@ const Map<CompanionMood, IconData> _moodIcons = {
 };
 
 Color _moodColor(CompanionMood mood, ThemeData theme) {
-  final success = theme.extension<AppSemanticColors>()!.success;
+  final success = theme.semanticColors.success;
   return switch (mood) {
     CompanionMood.thriving || CompanionMood.happy => success,
     CompanionMood.neutral => theme.colorScheme.onSurfaceVariant,
