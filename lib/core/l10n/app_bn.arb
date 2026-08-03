@@ -611,5 +611,16 @@
   "companionStatusHappy": "খুশি",
   "companionStatusNeutral": "স্বাভাবিক",
   "companionStatusWorried": "মনোযোগ প্রয়োজন",
-  "companionTapHint": "আপনার সঙ্গী সাম্প্রতিক অভ্যাস প্রতিফলিত করে"
+  "companionTapHint": "আপনার সঙ্গী সাম্প্রতিক অভ্যাস প্রতিফলিত করে",
+  "avatarCustomizeTitle": "অবতার কাস্টমাইজ করুন",
+  "avatarSlotHead": "মাথা",
+  "avatarSlotBody": "শরীর",
+  "avatarSlotBackground": "ব্যাকগ্রাউন্ড",
+  "avatarSlotFrame": "ফ্রেম",
+  "avatarLocked": "লক করা",
+  "avatarHeadBandana": "বান্দানা",
+  "avatarHeadCrown": "মুকুট",
+  "avatarBodyRobe": "পোশাক",
+  "avatarBgSunset": "সূর্যাস্ত ব্যাকগ্রাউন্ড",
+  "avatarFrameGold": "সোনালী ফ্রেম"
 }

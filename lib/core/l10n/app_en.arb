@@ -2141,5 +2141,49 @@
   "companionTapHint": "Your companion reflects your recent habits",
   "@companionTapHint": {
     "description": "Accessibility hint describing what the companion represents."
+  },
+  "avatarCustomizeTitle": "Customize Avatar",
+  "@avatarCustomizeTitle": {
+    "description": "Title of the avatar customization screen, and its entry point in Settings."
+  },
+  "avatarSlotHead": "Head",
+  "@avatarSlotHead": {
+    "description": "Avatar equip slot name."
+  },
+  "avatarSlotBody": "Body",
+  "@avatarSlotBody": {
+    "description": "Avatar equip slot name."
+  },
+  "avatarSlotBackground": "Background",
+  "@avatarSlotBackground": {
+    "description": "Avatar equip slot name."
+  },
+  "avatarSlotFrame": "Frame",
+  "@avatarSlotFrame": {
+    "description": "Avatar equip slot name."
+  },
+  "avatarLocked": "Locked",
+  "@avatarLocked": {
+    "description": "Shown under a not-yet-unlocked avatar piece in the customize grid."
+  },
+  "avatarHeadBandana": "Bandana",
+  "@avatarHeadBandana": {
+    "description": "Avatar head piece name, unlocked at a 7-day Water streak."
+  },
+  "avatarHeadCrown": "Crown",
+  "@avatarHeadCrown": {
+    "description": "Avatar head piece name, unlocked at a 100-day Water streak."
+  },
+  "avatarBodyRobe": "Robe",
+  "@avatarBodyRobe": {
+    "description": "Avatar body piece name, unlocked at a 30-day Prayer streak."
+  },
+  "avatarBgSunset": "Sunset Background",
+  "@avatarBgSunset": {
+    "description": "Avatar background piece name, unlocked at a 7-day Medicine adherence streak."
+  },
+  "avatarFrameGold": "Gold Frame",
+  "@avatarFrameGold": {
+    "description": "Avatar frame piece name, unlocked at a 100-day Prayer streak."
   }
 }
