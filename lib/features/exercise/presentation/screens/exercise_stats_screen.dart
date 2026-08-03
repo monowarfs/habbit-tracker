@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/features/exercise/domain/usecases/aggregate_weekly_minutes.dart';
@@ -36,7 +37,12 @@ class _StatsContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final today = localDayKey(clock.now());
-    final start = today.addDays(-(_weeksShown * 7 - 1));
+    // Snap to this week's Monday first, then step back full weeks — keeps
+    // the window exactly `_weeksShown` buckets regardless of today's
+    // weekday (a plain `today.addDays(-N)` isn't Monday-aligned, so the
+    // aggregator's own week-snapping would otherwise add an extra bucket
+    // on 6 of 7 weekdays).
+    final start = weekStartFor(today).addDays(-(_weeksShown - 1) * 7);
     final logsAsync = ref.watch(exerciseLogsInRangeProvider(start, today));
     final streakAsync = ref.watch(exerciseCurrentStreakProvider);
     final logs = logsAsync.value;

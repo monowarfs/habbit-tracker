@@ -34,8 +34,8 @@ class AggregateWeeklyMinutesUseCase {
     final totalsByWeekStart = <LocalDate, int>{};
     final weekOrder = <LocalDate>[];
 
-    var day = _weekStartFor(start);
-    final lastWeekStart = _weekStartFor(end);
+    var day = weekStartFor(start);
+    final lastWeekStart = weekStartFor(end);
     while (day.compareTo(lastWeekStart) <= 0) {
       totalsByWeekStart[day] = 0;
       weekOrder.add(day);
@@ -43,7 +43,7 @@ class AggregateWeeklyMinutesUseCase {
     }
 
     for (final log in logs) {
-      final weekStart = _weekStartFor(localDayKey(log.loggedAt));
+      final weekStart = weekStartFor(localDayKey(log.loggedAt));
       if (!totalsByWeekStart.containsKey(weekStart)) continue;
       totalsByWeekStart[weekStart] =
           totalsByWeekStart[weekStart]! + log.durationMinutes;
@@ -56,10 +56,5 @@ class AggregateWeeklyMinutesUseCase {
           totalMinutes: totalsByWeekStart[weekStart]!,
         ),
     ];
-  }
-
-  LocalDate _weekStartFor(LocalDate day) {
-    final weekday = day.toDateTimeUtc().weekday; // 1=Mon..7=Sun
-    return day.addDays(-(weekday - 1));
   }
 }

@@ -55,4 +55,22 @@ void main() {
     expect(result, hasLength(1));
     expect(result.first.totalMinutes, 0);
   });
+
+  test(
+    'a Monday-aligned start produces exactly N buckets for N weeks',
+    () {
+      // Regression: ExerciseStatsScreen derives `start` via
+      // `weekStartFor(today).addDays(-(weeksShown - 1) * 7)` so it's
+      // always Monday-aligned — a non-Monday-aligned `start` (e.g. a
+      // plain `today.addDays(-days)`) used to make the aggregator's
+      // internal week-snapping add an extra bucket.
+      const weeksShown = 8;
+      final today = weekStartFor(const LocalDate(2026, 6, 9)); // a Tuesday
+      final start = today.addDays(-(weeksShown - 1) * 7);
+
+      final result = useCase.execute(logs: [], start: start, end: today);
+
+      expect(result, hasLength(weeksShown));
+    },
+  );
 }

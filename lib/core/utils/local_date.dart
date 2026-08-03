@@ -83,6 +83,15 @@ class LocalDate implements Comparable<LocalDate> {
   String toString() => toIso();
 }
 
+/// The Monday that starts [day]'s ISO week (Monday=1..Sunday=7) — the one
+/// shared week-bucketing formula for period charts (Reports' week view,
+/// per-module weekly-total charts), so every caller snaps to the same
+/// week boundary instead of each re-deriving it.
+LocalDate weekStartFor(LocalDate day) {
+  final weekday = day.toDateTimeUtc().weekday;
+  return day.addDays(-(weekday - 1));
+}
+
 /// A local wall-clock time-of-day with no date or timezone attached (D-14)
 /// — used for recurring schedule times (e.g. `times_of_day`).
 @immutable

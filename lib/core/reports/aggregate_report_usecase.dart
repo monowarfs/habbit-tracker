@@ -90,8 +90,7 @@ class AggregateReportUseCase {
   }) {
     switch (period) {
       case ReportPeriod.week:
-        final weekday = anchor.toDateTimeUtc().weekday;
-        final start = anchor.addDays(-(weekday - 1));
+        final start = weekStartFor(anchor);
         return DateRange(start: start, end: start.addDays(6));
       case ReportPeriod.month:
         final start = LocalDate(anchor.year, anchor.month, 1);

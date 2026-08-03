@@ -59,9 +59,11 @@ class _ExerciseAddEntryScreenState
     final duration = int.tryParse(_durationController.text);
     final caloriesText = _caloriesController.text.trim();
     final calories = caloriesText.isEmpty ? null : int.tryParse(caloriesText);
-    if (exerciseType.isEmpty ||
-        duration == null ||
-        (caloriesText.isNotEmpty && calories == null)) {
+    // exerciseType's emptiness is left to LogExerciseUseCase's own
+    // validation below — it produces the specific
+    // exerciseAddEntryInvalidType message; short-circuiting here would
+    // make that message unreachable.
+    if (duration == null || (caloriesText.isNotEmpty && calories == null)) {
       _showError(l10n.exerciseAddEntryInvalidInput);
       return;
     }
