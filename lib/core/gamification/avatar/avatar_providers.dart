@@ -17,8 +17,11 @@ Stream<EquippedAvatarPieces> avatarEquipped(Ref ref) {
   return ref.watch(avatarEquippedRepositoryProvider).watchEquipped();
 }
 
-/// Reactive stream of unlocked cosmetic keys, including avatar pieces.
+/// Reactive stream of unlocked avatar piece ids (excludes non-avatar
+/// cosmetics like theme accents).
 @riverpod
 Stream<Set<String>> unlockedAvatarPieceIds(Ref ref) {
-  return CosmeticRepository(ref.watch(databaseProvider)).watchUnlockedKeys();
+  return CosmeticRepository(
+    ref.watch(databaseProvider),
+  ).watchUnlockedAvatarPieceIds();
 }

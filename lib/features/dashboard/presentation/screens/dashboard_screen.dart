@@ -77,9 +77,12 @@ class DashboardScreen extends ConsumerWidget {
                     children: [
                       const Expanded(child: _DashboardGreeting()),
                       const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () => context.push(AppRoutes.settingsAvatar),
-                        child: const AvatarDisplay(),
+                      Semantics(
+                        button: true,
+                        child: GestureDetector(
+                          onTap: () => context.push(AppRoutes.settingsAvatar),
+                          child: const AvatarDisplay(),
+                        ),
                       ),
                     ],
                   ),

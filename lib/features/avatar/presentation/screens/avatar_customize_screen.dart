@@ -81,72 +81,84 @@ class _PieceGrid extends ConsumerWidget {
           final locked = !unlockedIds.contains(piece.id);
           final isEquipped = piece.id == equippedId;
 
-          return GestureDetector(
-            onTap: locked
-                ? null
-                : () => ref
-                      .read(avatarEquippedRepositoryProvider)
-                      .equip(slot: slot, pieceId: isEquipped ? null : piece.id),
-            child: Column(
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16),
-                    border: isEquipped
-                        ? Border.all(color: theme.colorScheme.primary, width: 4)
-                        : null,
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        avatarPieceIcons[piece.id],
-                        size: 36,
-                        color: locked
-                            ? theme.colorScheme.onSurfaceVariant
-                                  .withValues(alpha: 0.4)
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                      if (locked)
-                        Positioned(
-                          right: 4,
-                          top: 4,
-                          child: Icon(
-                            Icons.lock,
-                            size: 16,
-                            color: theme.colorScheme.primary,
-                          ),
+          return Semantics(
+            button: true,
+            enabled: !locked,
+            selected: isEquipped,
+            child: GestureDetector(
+              onTap: locked
+                  ? null
+                  : () => ref
+                        .read(avatarEquippedRepositoryProvider)
+                        .equip(
+                          slot: slot,
+                          pieceId: isEquipped ? null : piece.id,
                         ),
-                      if (isEquipped)
-                        const Positioned(
-                          right: 4,
-                          bottom: 4,
-                          child: Icon(
-                            Icons.check_circle,
-                            size: 16,
-                            color: Colors.green,
-                          ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(16),
+                      border: isEquipped
+                          ? Border.all(
+                              color: theme.colorScheme.primary,
+                              width: 4,
+                            )
+                          : null,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          avatarPieceIcons[piece.id],
+                          size: 36,
+                          color: locked
+                              ? theme.colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.4,
+                                )
+                              : theme.colorScheme.onSurfaceVariant,
                         ),
-                    ],
+                        if (locked)
+                          Positioned(
+                            right: 4,
+                            top: 4,
+                            child: Icon(
+                              Icons.lock,
+                              size: 16,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        if (isEquipped)
+                          const Positioned(
+                            right: 4,
+                            bottom: 4,
+                            child: Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: Colors.green,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  width: 72,
-                  child: Text(
-                    locked
-                        ? l10n.avatarLocked
-                        : localizedAvatarPieceName(l10n, piece.nameKey),
-                    style: theme.textTheme.labelSmall,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: 72,
+                    child: Text(
+                      locked
+                          ? l10n.avatarLocked
+                          : localizedAvatarPieceName(l10n, piece.nameKey),
+                      style: theme.textTheme.labelSmall,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

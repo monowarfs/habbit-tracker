@@ -57,4 +57,13 @@ void main() {
     final rows = await db.select(db.cosmeticUnlocksTable).get();
     expect(rows.where((r) => r.cosmeticKey == 'head_bandana'), hasLength(1));
   });
+
+  test('watchUnlockedAvatarPieceIds excludes non-avatar cosmetics', () async {
+    await engine.onAchievementUnlocked('water_streak_7');
+    await engine.onAchievementUnlocked('tenure_2_year');
+
+    final avatarOnly = await repository.watchUnlockedAvatarPieceIds().first;
+    expect(avatarOnly, {'head_bandana'});
+    expect(avatarOnly, isNot(contains('theme_accent_midnight')));
+  });
 }

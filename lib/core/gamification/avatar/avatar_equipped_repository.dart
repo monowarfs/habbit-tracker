@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
+import 'package:habit_tracker/core/cosmetics/cosmetic_repository.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/avatar/avatar_piece_catalog.dart';
 
@@ -53,10 +54,19 @@ class AvatarEquippedRepository {
   }
 
   /// Equips [pieceId] in [slot], or clears the slot when [pieceId] is null.
+  ///
+  /// A no-op if [pieceId] isn't unlocked or belongs to a different slot —
+  /// the UI already disables locked pieces, but this is the actual gate:
+  /// any other caller can't equip an unearned piece by construction.
   Future<void> equip({
     required AvatarSlot slot,
     required String? pieceId,
   }) async {
+    if (pieceId != null) {
+      final piece = avatarPieceCatalog.where((p) => p.id == pieceId);
+      if (piece.isEmpty || piece.first.slot != slot) return;
+      if (!await CosmeticRepository(_db).isUnlocked(pieceId)) return;
+    }
     await _ensureSeeded();
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     final companion = switch (slot) {

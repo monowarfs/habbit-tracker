@@ -23,6 +23,16 @@ class CosmeticRepository {
     );
   }
 
+  /// Reactive stream of unlocked cosmetic keys that are avatar pieces
+  /// (`slot` non-null) — excludes non-avatar cosmetics like theme accents.
+  Stream<Set<String>> watchUnlockedAvatarPieceIds() {
+    return (_db.select(
+      _db.cosmeticUnlocksTable,
+    )..where((t) => t.slot.isNotNull())).watch().map(
+      (rows) => rows.map((r) => r.cosmeticKey).toSet(),
+    );
+  }
+
   /// Whether [cosmeticKey] is unlocked.
   Future<bool> isUnlocked(String cosmeticKey) async {
     final row =
