@@ -2185,5 +2185,60 @@
   "avatarFrameGold": "Gold Frame",
   "@avatarFrameGold": {
     "description": "Avatar frame piece name, unlocked at a 100-day Prayer streak."
-  }
+  },
+  "sleepHomeTitle": "Sleep",
+  "@sleepHomeTitle": {
+    "description": "Title of the Sleep module's home screen."
+  },
+  "sleepHomeEmpty": "No sleep logged yet",
+  "@sleepHomeEmpty": {
+    "description": "Empty state on the Sleep home screen before any nights are logged."
+  },
+  "sleepAddEntryTitle": "Log Sleep",
+  "@sleepAddEntryTitle": {
+    "description": "Title of the Sleep add-entry screen."
+  },
+  "sleepAddEntryBedTimeLabel": "Bed time",
+  "@sleepAddEntryBedTimeLabel": {
+    "description": "Label for the bed-time picker on the Sleep add-entry screen."
+  },
+  "sleepAddEntryWakeTimeLabel": "Wake time",
+  "@sleepAddEntryWakeTimeLabel": {
+    "description": "Label for the wake-time picker on the Sleep add-entry screen."
+  },
+  "sleepAddEntryQualityLabel": "Sleep quality",
+  "@sleepAddEntryQualityLabel": {
+    "description": "Label for the quality slider on the Sleep add-entry screen."
+  },
+  "sleepAddEntryInvalidRange": "Wake time must be after bed time",
+  "@sleepAddEntryInvalidRange": {
+    "description": "Validation error shown when wake time isn't after bed time."
+  },
+  "sleepStatsTitle": "Sleep Stats",
+  "@sleepStatsTitle": {
+    "description": "Title of the Sleep stats screen."
+  },
+  "sleepStatsCurrentStreak": "Current streak: {count} nights",
+  "@sleepStatsCurrentStreak": {
+    "description": "Current consecutive-nights-logged streak on the Sleep stats screen.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "achievementSleepFirstLogTitle": "First Night",
+  "@achievementSleepFirstLogTitle": {"description": "Achievement title: first sleep entry ever logged."},
+  "achievementSleepFirstLogDescription": "Log your first night's sleep",
+  "@achievementSleepFirstLogDescription": {"description": "Achievement description: first sleep entry ever logged."},
+  "achievementSleepStreak7Title": "Well Rested",
+  "@achievementSleepStreak7Title": {"description": "Achievement title: 7-day sleep streak."},
+  "achievementSleepStreak7Description": "Log sleep for 7 nights in a row",
+  "@achievementSleepStreak7Description": {"description": "Achievement description: 7-day sleep streak."},
+  "achievementSleepStreak30Title": "Sleep Champion",
+  "@achievementSleepStreak30Title": {"description": "Achievement title: 30-day sleep streak."},
+  "achievementSleepStreak30Description": "Log sleep for 30 nights in a row",
+  "@achievementSleepStreak30Description": {"description": "Achievement description: 30-day sleep streak."},
+  "achievementSleepStreak100Title": "Sleep Legend",
+  "@achievementSleepStreak100Title": {"description": "Achievement title: 100-day sleep streak."},
+  "achievementSleepStreak100Description": "Log sleep for 100 nights in a row",
+  "@achievementSleepStreak100Description": {"description": "Achievement description: 100-day sleep streak."}
 }

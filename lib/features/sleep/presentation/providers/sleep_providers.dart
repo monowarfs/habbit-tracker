@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/sleep/data/repositories/sleep_repository_impl.dart';
 import 'package:habit_tracker/features/sleep/domain/entities/sleep_log.dart';
 import 'package:habit_tracker/features/sleep/domain/repositories/sleep_repository.dart';
+import 'package:habit_tracker/features/sleep/domain/usecases/sleep_day_status.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'sleep_providers.g.dart';
@@ -42,4 +43,11 @@ Future<SleepLog?> lastNightSleepLog(Ref ref) async {
       .first;
   if (logs.isEmpty) return null;
   return logs.last;
+}
+
+/// The current consecutive-nights-logged streak, ending today.
+@riverpod
+Future<int> sleepCurrentStreak(Ref ref) {
+  final today = localDayKey(clock.now());
+  return currentSleepStreak(ref.watch(sleepRepositoryProvider), today);
 }

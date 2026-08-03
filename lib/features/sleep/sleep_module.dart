@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
-import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 import 'package:habit_tracker/features/sleep/domain/entities/sleep_log.dart';
 import 'package:habit_tracker/features/sleep/domain/repositories/sleep_repository.dart';
+import 'package:habit_tracker/features/sleep/domain/usecases/sleep_day_status.dart';
 import 'package:habit_tracker/features/sleep/presentation/providers/sleep_providers.dart';
 
 /// The Sleep module's [HabitModule] registration
@@ -91,19 +91,7 @@ class SleepModule implements HabitModule {
     final logs = await _repository
         .watchLogsInRange(range.start, range.end)
         .first;
-    final loggedDays = logs.map((l) => localDayKey(l.wakeTime)).toSet();
-    final result = <LocalDate, ModuleDayStatus>{};
-    var day = range.start;
-    while (day.compareTo(range.end) <= 0) {
-      result[day] = ModuleDayStatus(
-        kind: loggedDays.contains(day)
-            ? ModuleDayStatusKind.complete
-            : ModuleDayStatusKind.none,
-        value: 0,
-      );
-      day = day.addDays(1);
-    }
-    return result;
+    return calculateSleepDayStatus(logs: logs, range: range);
   }
 
   @override
@@ -156,15 +144,8 @@ class SleepModule implements HabitModule {
     ),
   ];
 
-  Future<int> _currentSleepStreak() async {
-    final logs = await _repository.allLogs();
-    if (logs.isEmpty) return 0;
-    final today = localDayKey(clock.now());
-    final earliest = logs
-        .map((l) => localDayKey(l.wakeTime))
-        .reduce((a, b) => a.compareTo(b) <= 0 ? a : b);
-    final status = await dayStatus(DateRange(start: earliest, end: today));
-    return currentStreak(status, today);
+  Future<int> _currentSleepStreak() {
+    return currentSleepStreak(_repository, localDayKey(clock.now()));
   }
 
   @override
