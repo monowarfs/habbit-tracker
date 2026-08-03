@@ -2244,5 +2244,88 @@
   "achievementSleepStreak100Title": "Sleep Legend",
   "@achievementSleepStreak100Title": {"description": "Achievement title: 100-day sleep streak."},
   "achievementSleepStreak100Description": "Log sleep for 100 nights in a row",
-  "@achievementSleepStreak100Description": {"description": "Achievement description: 100-day sleep streak."}
+  "@achievementSleepStreak100Description": {"description": "Achievement description: 100-day sleep streak."},
+  "bpHomeTitle": "Blood Pressure",
+  "@bpHomeTitle": {
+    "description": "Title of the Blood Pressure module's home screen."
+  },
+  "bpHomeEmpty": "No readings logged yet",
+  "@bpHomeEmpty": {
+    "description": "Empty state on the Blood Pressure home screen before any readings are logged."
+  },
+  "bpAddEntryTitle": "Log Blood Pressure",
+  "@bpAddEntryTitle": {
+    "description": "Title of the Blood Pressure add-entry screen."
+  },
+  "bpAddEntrySystolicLabel": "Systolic (mmHg)",
+  "@bpAddEntrySystolicLabel": {
+    "description": "Label for the systolic input on the Blood Pressure add-entry screen."
+  },
+  "bpAddEntryDiastolicLabel": "Diastolic (mmHg)",
+  "@bpAddEntryDiastolicLabel": {
+    "description": "Label for the diastolic input on the Blood Pressure add-entry screen."
+  },
+  "bpAddEntryPulseLabel": "Pulse (bpm, optional)",
+  "@bpAddEntryPulseLabel": {
+    "description": "Label for the optional pulse input on the Blood Pressure add-entry screen."
+  },
+  "bpAddEntryInvalidInput": "Check your systolic, diastolic, and pulse values",
+  "@bpAddEntryInvalidInput": {
+    "description": "Validation error shown when the reading fails validation (out of range, or diastolic not lower than systolic)."
+  },
+  "bpStatsTitle": "Blood Pressure Stats",
+  "@bpStatsTitle": {
+    "description": "Title of the Blood Pressure stats screen."
+  },
+  "bpStatsSystolicLabel": "Systolic",
+  "@bpStatsSystolicLabel": {
+    "description": "Chart label for the systolic trend on the Blood Pressure stats screen."
+  },
+  "bpStatsDiastolicLabel": "Diastolic",
+  "@bpStatsDiastolicLabel": {
+    "description": "Chart label for the diastolic trend on the Blood Pressure stats screen."
+  },
+  "bpStatsCurrentStreak": "Current streak: {count} days",
+  "@bpStatsCurrentStreak": {
+    "description": "Current consecutive-days-logged streak on the Blood Pressure stats screen.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bpClassificationNormal": "Normal",
+  "@bpClassificationNormal": {
+    "description": "AHA blood pressure classification label."
+  },
+  "bpClassificationElevated": "Elevated",
+  "@bpClassificationElevated": {
+    "description": "AHA blood pressure classification label."
+  },
+  "bpClassificationHypertension1": "Hypertension Stage 1",
+  "@bpClassificationHypertension1": {
+    "description": "AHA blood pressure classification label."
+  },
+  "bpClassificationHypertension2": "Hypertension Stage 2",
+  "@bpClassificationHypertension2": {
+    "description": "AHA blood pressure classification label."
+  },
+  "bpClassificationCrisis": "Hypertensive Crisis",
+  "@bpClassificationCrisis": {
+    "description": "AHA blood pressure classification label — needs immediate medical attention."
+  },
+  "achievementBpFirstLogTitle": "First Reading",
+  "@achievementBpFirstLogTitle": {"description": "Achievement title: first blood pressure entry ever logged."},
+  "achievementBpFirstLogDescription": "Log your first blood pressure reading",
+  "@achievementBpFirstLogDescription": {"description": "Achievement description: first blood pressure entry ever logged."},
+  "achievementBpStreak7Title": "Heart Watcher",
+  "@achievementBpStreak7Title": {"description": "Achievement title: 7-day blood pressure streak."},
+  "achievementBpStreak7Description": "Log a reading for 7 days in a row",
+  "@achievementBpStreak7Description": {"description": "Achievement description: 7-day blood pressure streak."},
+  "achievementBpStreak30Title": "Heart Champion",
+  "@achievementBpStreak30Title": {"description": "Achievement title: 30-day blood pressure streak."},
+  "achievementBpStreak30Description": "Log a reading for 30 days in a row",
+  "@achievementBpStreak30Description": {"description": "Achievement description: 30-day blood pressure streak."},
+  "achievementBpStreak100Title": "Heart Legend",
+  "@achievementBpStreak100Title": {"description": "Achievement title: 100-day blood pressure streak."},
+  "achievementBpStreak100Description": "Log a reading for 100 days in a row",
+  "@achievementBpStreak100Description": {"description": "Achievement description: 100-day blood pressure streak."}
 }

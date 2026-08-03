@@ -10,6 +10,9 @@ import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
 import 'package:habit_tracker/features/avatar/presentation/screens/avatar_customize_screen.dart';
+import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_add_entry_screen.dart';
+import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_home_screen.dart';
+import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_stats_screen.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_module_selection_screen.dart';
@@ -100,6 +103,10 @@ class AppRoutes {
   /// Sleep module home screen (premium-gated; no permanent bottom-nav
   /// tab — see `SleepModule`'s doc comment).
   static const String settingsSleep = '/settings/sleep';
+
+  /// Blood Pressure module home screen (premium-gated; no permanent
+  /// bottom-nav tab — see `BloodPressureModule`'s doc comment).
+  static const String settingsBloodPressure = '/settings/blood-pressure';
 
   /// Purchase premium screen.
   static const String settingsPurchase = '/settings/purchase';
@@ -280,6 +287,20 @@ GoRouter buildAppRouter(
                       GoRoute(
                         path: 'stats',
                         builder: (context, state) => const SleepStatsScreen(),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'blood-pressure',
+                    builder: (context, state) => const BpHomeScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'add',
+                        builder: (context, state) => const BpAddEntryScreen(),
+                      ),
+                      GoRoute(
+                        path: 'stats',
+                        builder: (context, state) => const BpStatsScreen(),
                       ),
                     ],
                   ),
