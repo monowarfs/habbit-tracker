@@ -2355,5 +2355,64 @@
   "achievementBpStreak100Title": "Heart Legend",
   "@achievementBpStreak100Title": {"description": "Achievement title: 100-day blood pressure streak."},
   "achievementBpStreak100Description": "Log a reading for 100 days in a row",
-  "@achievementBpStreak100Description": {"description": "Achievement description: 100-day blood pressure streak."}
+  "@achievementBpStreak100Description": {"description": "Achievement description: 100-day blood pressure streak."},
+  "moodHomeTitle": "Mood",
+  "@moodHomeTitle": {
+    "description": "Title of the Mood module's home screen."
+  },
+  "moodHomeEmpty": "No check-ins logged yet",
+  "@moodHomeEmpty": {
+    "description": "Empty state on the Mood home screen before any check-ins are logged."
+  },
+  "moodValue1": "Very Low",
+  "@moodValue1": {
+    "description": "Label for mood value 1 (lowest)."
+  },
+  "moodValue2": "Low",
+  "@moodValue2": {
+    "description": "Label for mood value 2."
+  },
+  "moodValue3": "Okay",
+  "@moodValue3": {
+    "description": "Label for mood value 3 (middle)."
+  },
+  "moodValue4": "Good",
+  "@moodValue4": {
+    "description": "Label for mood value 4."
+  },
+  "moodValue5": "Great",
+  "@moodValue5": {
+    "description": "Label for mood value 5 (highest)."
+  },
+  "moodStatsTitle": "Mood Stats",
+  "@moodStatsTitle": {
+    "description": "Title of the Mood stats screen."
+  },
+  "moodStatsDistributionLabel": "Last 30 days",
+  "@moodStatsDistributionLabel": {
+    "description": "Chart label for the mood-value distribution on the Mood stats screen."
+  },
+  "moodStatsCurrentStreak": "Current streak: {count} days",
+  "@moodStatsCurrentStreak": {
+    "description": "Current consecutive-days-logged streak on the Mood stats screen.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "achievementMoodFirstLogTitle": "First Check-in",
+  "@achievementMoodFirstLogTitle": {"description": "Achievement title: first mood entry ever logged."},
+  "achievementMoodFirstLogDescription": "Log your first mood check-in",
+  "@achievementMoodFirstLogDescription": {"description": "Achievement description: first mood entry ever logged."},
+  "achievementMoodStreak7Title": "Mood Tracker",
+  "@achievementMoodStreak7Title": {"description": "Achievement title: 7-day mood streak."},
+  "achievementMoodStreak7Description": "Log a mood check-in for 7 days in a row",
+  "@achievementMoodStreak7Description": {"description": "Achievement description: 7-day mood streak."},
+  "achievementMoodStreak30Title": "Mood Champion",
+  "@achievementMoodStreak30Title": {"description": "Achievement title: 30-day mood streak."},
+  "achievementMoodStreak30Description": "Log a mood check-in for 30 days in a row",
+  "@achievementMoodStreak30Description": {"description": "Achievement description: 30-day mood streak."},
+  "achievementMoodStreak100Title": "Mood Legend",
+  "@achievementMoodStreak100Title": {"description": "Achievement title: 100-day mood streak."},
+  "achievementMoodStreak100Description": "Log a mood check-in for 100 days in a row",
+  "@achievementMoodStreak100Description": {"description": "Achievement description: 100-day mood streak."}
 }

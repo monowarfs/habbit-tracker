@@ -172,6 +172,15 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.sentiment_satisfied_outlined),
+            title: Text(l10n.moodHomeTitle),
+            trailing: ref.watch(isPremiumUserProvider)
+                ? const Icon(Icons.chevron_right)
+                : const Icon(Icons.diamond_outlined),
+            onTap: () => context.push('/settings/mood'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.diamond_outlined),
             title: Text(l10n.unlocksTitle),
             trailing: const Icon(Icons.chevron_right),
