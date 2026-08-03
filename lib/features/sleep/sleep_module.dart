@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
@@ -10,6 +11,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/widget_summary_data.dart';
 import 'package:habit_tracker/features/sleep/domain/entities/sleep_log.dart';
 import 'package:habit_tracker/features/sleep/domain/repositories/sleep_repository.dart';
+import 'package:habit_tracker/features/sleep/domain/usecases/log_sleep_use_case.dart';
 import 'package:habit_tracker/features/sleep/domain/usecases/sleep_day_status.dart';
 import 'package:habit_tracker/features/sleep/presentation/providers/sleep_providers.dart';
 
@@ -57,7 +59,7 @@ class SleepModule implements HabitModule {
           title: Text(metadata.displayName),
           subtitle: Text(
             lastNight == null
-                ? 'No sleep logged yet'
+                ? AppLocalizations.of(context)!.sleepHomeEmpty
                 : _formatDuration(lastNight.durationMinutes),
           ),
           onTap: () => context.push('/settings/sleep'),
@@ -104,45 +106,52 @@ class SleepModule implements HabitModule {
   Future<List<SearchResult>> search(String query) async => const [];
 
   @override
-  List<AchievementDefinition> get achievementDefinitions => [
-    AchievementDefinition(
-      key: 'sleep_first_log',
-      moduleId: id,
-      titleKey: 'achievementSleepFirstLogTitle',
-      descriptionKey: 'achievementSleepFirstLogDescription',
-      target: 1,
-      currentProgress: () async {
-        final logs = await _repository.allLogs();
-        return logs.isEmpty ? 0 : 1;
-      },
-    ),
-    AchievementDefinition(
-      key: 'sleep_streak_7',
-      moduleId: id,
-      titleKey: 'achievementSleepStreak7Title',
-      descriptionKey: 'achievementSleepStreak7Description',
-      target: 7,
-      currentProgress: _currentSleepStreak,
-    ),
-    AchievementDefinition(
-      key: 'sleep_streak_30',
-      moduleId: id,
-      titleKey: 'achievementSleepStreak30Title',
-      descriptionKey: 'achievementSleepStreak30Description',
-      target: 30,
-      currentProgress: _currentSleepStreak,
-      rarity: BadgeRarity.rare,
-    ),
-    AchievementDefinition(
-      key: 'sleep_streak_100',
-      moduleId: id,
-      titleKey: 'achievementSleepStreak100Title',
-      descriptionKey: 'achievementSleepStreak100Description',
-      target: 100,
-      currentProgress: _currentSleepStreak,
-      rarity: BadgeRarity.legendary,
-    ),
-  ];
+  List<AchievementDefinition> get achievementDefinitions {
+    // Computed once per access (AchievementEngine.evaluate() reads this
+    // getter exactly once per evaluation) and shared by all 3 streak
+    // definitions below, instead of each independently re-running the
+    // same unbounded allLogs() scan.
+    final streak = _currentSleepStreak();
+    return [
+      AchievementDefinition(
+        key: 'sleep_first_log',
+        moduleId: id,
+        titleKey: 'achievementSleepFirstLogTitle',
+        descriptionKey: 'achievementSleepFirstLogDescription',
+        target: 1,
+        currentProgress: () async {
+          final logs = await _repository.allLogs();
+          return logs.isEmpty ? 0 : 1;
+        },
+      ),
+      AchievementDefinition(
+        key: 'sleep_streak_7',
+        moduleId: id,
+        titleKey: 'achievementSleepStreak7Title',
+        descriptionKey: 'achievementSleepStreak7Description',
+        target: 7,
+        currentProgress: () => streak,
+      ),
+      AchievementDefinition(
+        key: 'sleep_streak_30',
+        moduleId: id,
+        titleKey: 'achievementSleepStreak30Title',
+        descriptionKey: 'achievementSleepStreak30Description',
+        target: 30,
+        currentProgress: () => streak,
+        rarity: BadgeRarity.rare,
+      ),
+      AchievementDefinition(
+        key: 'sleep_streak_100',
+        moduleId: id,
+        titleKey: 'achievementSleepStreak100Title',
+        descriptionKey: 'achievementSleepStreak100Description',
+        target: 100,
+        currentProgress: () => streak,
+        rarity: BadgeRarity.legendary,
+      ),
+    ];
+  }
 
   Future<int> _currentSleepStreak() {
     return currentSleepStreak(_repository, localDayKey(clock.now()));
@@ -158,8 +167,9 @@ class SleepModule implements HabitModule {
   Future<void> importData(ModuleExport data) async {
     final logs = (data.payload['logs'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
+    final logSleep = LogSleepUseCase(_repository);
     for (final json in logs) {
-      await _repository.addLog(
+      await logSleep.execute(
         bedTime: DateTime.parse(json['bedTime'] as String),
         wakeTime: DateTime.parse(json['wakeTime'] as String),
         quality: json['quality'] as int?,

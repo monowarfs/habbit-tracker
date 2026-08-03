@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 import 'package:habit_tracker/core/pauses/pause_repository.dart';
 import 'package:habit_tracker/core/pauses/pause_service.dart';
+import 'package:habit_tracker/core/premium/entitlement_service.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
 import 'package:habit_tracker/features/medicine/medicine_module.dart';
@@ -78,30 +79,51 @@ List<HabitModule> buildHabitModules(
 /// Deliberately includes every module regardless of premium entitlement —
 /// the router splices `modules.firstWhere((m) => m.id == 'water').routes`
 /// (and would do the same for a future premium module needing its own
-/// branch) off this list, and background/data-integrity paths (Reports,
-/// backups, the achievement engine) should see a lapsed-premium user's
-/// existing data too. UI surfaces that should hide premium-gated modules
-/// (the dashboard) watch [visibleHabitModulesProvider] instead.
+/// branch) off this list, and data-integrity paths (the achievement
+/// engine's own evaluation, local export) should see a lapsed-premium
+/// user's existing data too. Every UI/display surface (dashboard, Reports,
+/// the achievement gallery, local import, home-screen-widget/wearable
+/// refresh) must instead go through [visibleHabitModulesProvider] or
+/// [visibleHabitModules] — see those docs for why using this list directly
+/// in a display surface is a premium-gating bug, not just a style choice.
 @Riverpod(keepAlive: true)
 List<HabitModule> habitModules(Ref ref) {
   return buildHabitModules(ref.watch(databaseProvider));
 }
 
 /// Module ids gated behind premium entitlement — hidden from
-/// [visibleHabitModulesProvider] (and therefore the dashboard/global
-/// search/quick-actions) until the user is premium. Their own screens
-/// (e.g. `SleepHomeScreen`) are the actual access gate via
-/// `PremiumGateWidget`; this list only controls whether they're
-/// *advertised* on the dashboard.
+/// [visibleHabitModulesProvider]/[visibleHabitModules] until the user is
+/// premium. Sleep's own screens are additionally gated via
+/// `PremiumGateWidget` as defense in depth (a direct deep link must not
+/// bypass this list), but this list is what actually controls whether a
+/// gated module is *advertised or usable* on every UI/display surface.
 const premiumGatedModuleIds = {'sleep'};
 
+bool _isVisible(HabitModule module, {required bool isPremium}) =>
+    isPremium || !premiumGatedModuleIds.contains(module.id);
+
 /// [habitModulesProvider], filtered to modules the user can actually see
-/// on the dashboard right now — every module for a premium user, every
-/// non-premium-gated module otherwise.
+/// right now — every module for a premium user, every non-premium-gated
+/// module otherwise. Use this (never [habitModulesProvider] directly) from
+/// any widget-tree display surface: dashboard, Reports, the achievement
+/// gallery, local import.
 @riverpod
 List<HabitModule> visibleHabitModules(Ref ref) {
   final modules = ref.watch(habitModulesProvider);
   final isPremium = ref.watch(isPremiumUserProvider);
-  if (isPremium) return modules;
-  return modules.where((m) => !premiumGatedModuleIds.contains(m.id)).toList();
+  return modules
+      .where((m) => _isVisible(m, isPremium: isPremium))
+      .toList();
+}
+
+/// The ref-free equivalent of [visibleHabitModulesProvider], for
+/// background/non-widget code that can't obtain a `Ref` (the home-screen-
+/// widget refresh helper, the wearable sync helper) but still pushes data
+/// to a *display* surface, not a data-integrity one — so it must not
+/// leak a premium-gated module's data either.
+Future<List<HabitModule>> visibleHabitModulesFromDb(AppDatabase db) async {
+  final entitlement = await EntitlementService(db).getCachedEntitlement();
+  return buildHabitModules(
+    db,
+  ).where((m) => _isVisible(m, isPremium: entitlement.isPremium)).toList();
 }

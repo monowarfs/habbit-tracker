@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
+import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/sleep/domain/entities/sleep_log.dart';
 import 'package:habit_tracker/features/sleep/presentation/providers/sleep_controller.dart';
@@ -11,7 +12,11 @@ import 'package:habit_tracker/features/sleep/presentation/providers/sleep_provid
 
 /// The Sleep module's home screen: a recent-nights list, gated behind
 /// premium (`PremiumGateWidget`) since this route is always registered
-/// regardless of entitlement — see `SleepModule`'s doc comment.
+/// regardless of entitlement — see `SleepModule`'s doc comment. The FAB
+/// and stats button are hidden (not just the body) for non-premium users
+/// as a UX nicety; SleepAddEntryScreen/SleepStatsScreen each gate
+/// themselves too, so hiding these isn't the actual security boundary —
+/// it just avoids a pointless tap into a paywall.
 class SleepHomeScreen extends ConsumerWidget {
   /// Creates the sleep home screen.
   const SleepHomeScreen({super.key});
@@ -19,21 +24,25 @@ class SleepHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isPremium = ref.watch(isPremiumUserProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.sleepHomeTitle),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            onPressed: () => context.push('/settings/sleep/stats'),
-          ),
+          if (isPremium)
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              onPressed: () => context.push('/settings/sleep/stats'),
+            ),
         ],
       ),
       body: PremiumGateWidget(child: _RecentLogsList(l10n: l10n)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/settings/sleep/add'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isPremium
+          ? FloatingActionButton(
+              onPressed: () => context.push('/settings/sleep/add'),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

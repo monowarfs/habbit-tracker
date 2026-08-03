@@ -15,8 +15,11 @@ class SleepController extends _$SleepController {
   @override
   void build() {}
 
-  /// Logs a night's sleep from [bedTime] to [wakeTime].
-  Future<void> logSleep({
+  /// Logs a night's sleep from [bedTime] to [wakeTime]. Returns whether it
+  /// succeeded, so the screen can show a validation error (e.g. a future
+  /// wake time, an out-of-range quality) instead of closing as if the
+  /// entry had actually been saved.
+  Future<bool> logSleep({
     required DateTime bedTime,
     required DateTime wakeTime,
     int? quality,
@@ -31,9 +34,10 @@ class SleepController extends _$SleepController {
     );
     if (result case Failure(:final error)) {
       logException(error);
-      return;
+      return false;
     }
     await ref.read(achievementEngineProvider).evaluate('sleep');
+    return true;
   }
 
   /// Deletes a log.

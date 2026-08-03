@@ -89,7 +89,12 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
     try {
       final applied = await applyImport(
         envelope: preview.envelope,
-        modules: ref.read(habitModulesProvider),
+        // Premium-filtered: importing a backup must not be a back door to
+        // writing a premium-gated module's data for a user who was never
+        // entitled to it (export stays unfiltered above — exporting your
+        // own already-existing data, even from a lapsed subscription, is
+        // fine).
+        modules: ref.read(visibleHabitModulesProvider),
         db: ref.read(databaseProvider),
         settingsRepository: ref.read(settingsRepositoryProvider),
       );

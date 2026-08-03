@@ -18,7 +18,9 @@ typedef AchievementView = ({
 /// current persisted progress, for the badge gallery.
 @riverpod
 Stream<List<AchievementView>> achievementViews(Ref ref) {
-  final modules = ref.watch(habitModulesProvider);
+  // Premium-filtered: the badge gallery shouldn't advertise a gated
+  // module's achievement ladder to a user who can't earn any of it.
+  final modules = ref.watch(visibleHabitModulesProvider);
   final repository = ref.watch(achievementRepositoryProvider);
   return repository.watchAll().map((rows) {
     final rowsByKey = {for (final row in rows) row.key: row};

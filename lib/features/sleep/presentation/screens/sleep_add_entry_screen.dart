@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/premium/premium_gate_widget.dart';
 import 'package:habit_tracker/features/sleep/presentation/providers/sleep_controller.dart';
 
 /// Form to log a night's sleep (bed time, wake time, optional quality).
@@ -65,10 +66,17 @@ class _SleepAddEntryScreenState extends ConsumerState<SleepAddEntryScreen> {
       ).showSnackBar(SnackBar(content: Text(l10n.sleepAddEntryInvalidRange)));
       return;
     }
-    await ref
+    final succeeded = await ref
         .read(sleepControllerProvider.notifier)
         .logSleep(bedTime: _bedTime, wakeTime: _wakeTime, quality: _quality);
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    if (!succeeded) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sleepAddEntryFutureError)));
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -76,32 +84,36 @@ class _SleepAddEntryScreenState extends ConsumerState<SleepAddEntryScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.sleepAddEntryTitle)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          ListTile(
-            title: Text(l10n.sleepAddEntryBedTimeLabel),
-            subtitle: Text(_bedTime.toLocal().toString()),
-            onTap: () => _pickDateTime(isBedTime: true),
-          ),
-          ListTile(
-            title: Text(l10n.sleepAddEntryWakeTimeLabel),
-            subtitle: Text(_wakeTime.toLocal().toString()),
-            onTap: () => _pickDateTime(isBedTime: false),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.sleepAddEntryQualityLabel),
-          Slider(
-            value: (_quality ?? 3).toDouble(),
-            min: 1,
-            max: 5,
-            divisions: 4,
-            label: '${_quality ?? 3}',
-            onChanged: (value) => setState(() => _quality = value.round()),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: _save, child: Text(l10n.commonSave)),
-        ],
+      // Defense in depth against a direct deep link bypassing
+      // SleepHomeScreen's own gate (see that screen's doc comment).
+      body: PremiumGateWidget(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            ListTile(
+              title: Text(l10n.sleepAddEntryBedTimeLabel),
+              subtitle: Text(_bedTime.toLocal().toString()),
+              onTap: () => _pickDateTime(isBedTime: true),
+            ),
+            ListTile(
+              title: Text(l10n.sleepAddEntryWakeTimeLabel),
+              subtitle: Text(_wakeTime.toLocal().toString()),
+              onTap: () => _pickDateTime(isBedTime: false),
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.sleepAddEntryQualityLabel),
+            Slider(
+              value: (_quality ?? 3).toDouble(),
+              min: 1,
+              max: 5,
+              divisions: 4,
+              label: '${_quality ?? 3}',
+              onChanged: (value) => setState(() => _quality = value.round()),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: _save, child: Text(l10n.commonSave)),
+          ],
+        ),
       ),
     );
   }

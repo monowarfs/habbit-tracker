@@ -630,6 +630,7 @@
   "sleepAddEntryWakeTimeLabel": "ঘুম থেকে ওঠার সময়",
   "sleepAddEntryQualityLabel": "ঘুমের মান",
   "sleepAddEntryInvalidRange": "ওঠার সময় ঘুমাতে যাওয়ার সময়ের পরে হতে হবে",
+  "sleepAddEntryFutureError": "ভবিষ্যতের তারিখ বা সময় নির্বাচন করা যাবে না",
   "sleepStatsTitle": "ঘুমের পরিসংখ্যান",
   "sleepStatsCurrentStreak": "বর্তমান ধারা: {count} রাত",
   "achievementSleepFirstLogTitle": "প্রথম রাত",

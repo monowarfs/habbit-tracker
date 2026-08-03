@@ -2214,6 +2214,10 @@
   "@sleepAddEntryInvalidRange": {
     "description": "Validation error shown when wake time isn't after bed time."
   },
+  "sleepAddEntryFutureError": "Cannot select a future date or time",
+  "@sleepAddEntryFutureError": {
+    "description": "Validation error shown when the wake time is after now."
+  },
   "sleepStatsTitle": "Sleep Stats",
   "@sleepStatsTitle": {
     "description": "Title of the Sleep stats screen."

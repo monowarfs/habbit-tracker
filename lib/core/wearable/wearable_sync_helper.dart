@@ -17,7 +17,7 @@ const wearSyncChannel = 'dev.shurjomoy.habit_tracker/wear_sync';
 Future<void> syncWearableData(AppDatabase db) async {
   if (!Platform.isAndroid) return;
   try {
-    final modules = buildHabitModules(db);
+    final modules = await visibleHabitModulesFromDb(db);
     final summaries = <String, Object?>{};
     var totalPending = 0;
     for (final module in modules) {

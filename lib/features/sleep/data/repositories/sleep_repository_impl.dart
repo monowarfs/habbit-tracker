@@ -105,14 +105,15 @@ class SleepRepositoryImpl implements SleepRepository {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.sleepLogsTable,
-          )..where((t) => t.id.equals(id))).write(
-            SleepLogsTableCompanion(
-              deletedAt: Value(now),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.sleepLogsTable)..where(
+                (t) => t.id.equals(id) & t.deletedAt.isNull(),
+              ))
+              .write(
+                SleepLogsTableCompanion(
+                  deletedAt: Value(now),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('SleepLog', id));
       }
