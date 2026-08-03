@@ -20,7 +20,7 @@ Future<void> refreshWidgetsForModule(
 ) async {
   if (!Platform.isAndroid && !Platform.isIOS) return;
   try {
-    final modules = buildHabitModules(db);
+    final modules = await visibleHabitModulesFromDb(db);
     for (final module in modules) {
       if (module.id != moduleId) continue;
       final summary = await module.widgetSummary();
@@ -43,7 +43,7 @@ Future<void> refreshWidgetsForModule(
 Future<void> refreshAllWidgets(AppDatabase db) async {
   if (!Platform.isAndroid && !Platform.isIOS) return;
   try {
-    final modules = buildHabitModules(db);
+    final modules = await visibleHabitModulesFromDb(db);
     for (final module in modules) {
       final summary = await module.widgetSummary();
       if (summary != null) {

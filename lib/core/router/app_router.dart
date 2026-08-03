@@ -29,6 +29,9 @@ import 'package:habit_tracker/features/settings/presentation/screens/ramadan_set
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/unlocks_screen.dart';
+import 'package:habit_tracker/features/sleep/presentation/screens/sleep_add_entry_screen.dart';
+import 'package:habit_tracker/features/sleep/presentation/screens/sleep_home_screen.dart';
+import 'package:habit_tracker/features/sleep/presentation/screens/sleep_stats_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_router.g.dart';
@@ -93,6 +96,10 @@ class AppRoutes {
 
   /// Avatar customization screen.
   static const String settingsAvatar = '/settings/avatar';
+
+  /// Sleep module home screen (premium-gated; no permanent bottom-nav
+  /// tab — see `SleepModule`'s doc comment).
+  static const String settingsSleep = '/settings/sleep';
 
   /// Purchase premium screen.
   static const String settingsPurchase = '/settings/purchase';
@@ -260,6 +267,21 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'avatar',
                     builder: (context, state) => const AvatarCustomizeScreen(),
+                  ),
+                  GoRoute(
+                    path: 'sleep',
+                    builder: (context, state) => const SleepHomeScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'add',
+                        builder: (context, state) =>
+                            const SleepAddEntryScreen(),
+                      ),
+                      GoRoute(
+                        path: 'stats',
+                        builder: (context, state) => const SleepStatsScreen(),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'priority-support',

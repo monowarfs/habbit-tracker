@@ -31,7 +31,10 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final modules = ref.watch(habitModulesProvider);
+    // Premium-gated modules (e.g. Sleep) are excluded here so they don't
+    // advertise themselves on the dashboard before purchase — see
+    // visibleHabitModulesProvider's doc comment.
+    final modules = ref.watch(visibleHabitModulesProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navDashboard),

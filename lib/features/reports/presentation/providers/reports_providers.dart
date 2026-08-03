@@ -18,7 +18,10 @@ typedef ReportRequest = ({
 /// Every enabled module's [ModuleReport] for [request].
 @riverpod
 Future<List<ModuleReport>> moduleReports(Ref ref, ReportRequest request) {
-  final modules = ref.watch(habitModulesProvider);
+  // Premium-filtered: Reports is a browsing surface like the dashboard,
+  // not a data-integrity path — a gated module shouldn't show up here
+  // for a user who can't access it.
+  final modules = ref.watch(visibleHabitModulesProvider);
   return const AggregateReportUseCase().execute(
     modules: modules,
     period: request.period,
