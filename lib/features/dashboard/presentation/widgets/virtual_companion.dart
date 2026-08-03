@@ -18,7 +18,16 @@ const Map<CompanionMood, IconData> _moodIcons = {
 };
 
 Color _moodColor(CompanionMood mood, ThemeData theme) {
-  final success = theme.extension<AppSemanticColors>()!.success;
+  // Falls back to the light/dark defaults rather than force-unwrapping:
+  // any MaterialApp not built from AppTheme.light()/dark() (widget tests
+  // that hand-roll a bare MaterialApp, e.g.) has no AppSemanticColors
+  // extension registered at all.
+  final semanticColors =
+      theme.extension<AppSemanticColors>() ??
+      (theme.brightness == Brightness.dark
+          ? AppSemanticColors.dark
+          : AppSemanticColors.light);
+  final success = semanticColors.success;
   return switch (mood) {
     CompanionMood.thriving || CompanionMood.happy => success,
     CompanionMood.neutral => theme.colorScheme.onSurfaceVariant,
