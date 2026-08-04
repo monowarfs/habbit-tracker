@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
@@ -36,6 +37,9 @@ class PrayerController extends _$PrayerController {
       return;
     }
     await ref.read(achievementEngineProvider).evaluate('prayer');
+    await ref
+        .read(questEngineProvider)
+        .evaluateModule('prayer', now: clock.now());
     final db = ref.read(databaseProvider);
     await refreshWidgetsForModule(db, 'prayer');
   }
