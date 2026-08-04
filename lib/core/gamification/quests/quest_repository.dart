@@ -16,6 +16,12 @@ class QuestRepository {
   /// Ensures a row exists for every one of [definitions] in the week
   /// containing [now] — inserts missing rows at `0/target`, leaves
   /// existing rows (and any progress already on them) untouched.
+  ///
+  /// Called on every app resume and every module write (`quest_engine
+  /// .dart`), so a not-yet-generated week's first-ever rows can easily
+  /// see two concurrent callers both find a row missing — `insertOrIgnore`
+  /// makes the second insert a silent no-op against the `{questKey,
+  /// weekKey}` unique key instead of throwing (PR #77 review finding).
   Future<void> ensureCurrentWeekQuests({
     required List<QuestDefinition> definitions,
     required DateTime now,
@@ -44,6 +50,7 @@ class QuestRepository {
               createdAt: nowMillis,
               updatedAt: nowMillis,
             ),
+            mode: InsertMode.insertOrIgnore,
           );
     }
   }

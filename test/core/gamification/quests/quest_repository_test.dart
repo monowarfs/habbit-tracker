@@ -43,6 +43,24 @@ void main() {
   );
 
   test(
+    'concurrent ensureCurrentWeekQuests calls do not throw on the unique '
+    'key (PR #77 review finding — resume + write can race on the '
+    "week's first-ever rows)",
+    () async {
+      final defs = [
+        _def('water_goal_5_of_7'),
+        _def('water_no_skip_week', target: 7),
+      ];
+      await Future.wait([
+        repo.ensureCurrentWeekQuests(definitions: defs, now: now),
+        repo.ensureCurrentWeekQuests(definitions: defs, now: now),
+      ]);
+      final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+      expect(rows, hasLength(2));
+    },
+  );
+
+  test(
     'ensureCurrentWeekQuests is idempotent (dedup on questKey+weekKey)',
     () async {
       await repo.ensureCurrentWeekQuests(

@@ -2523,6 +2523,13 @@
       "target": {"type": "int"}
     }
   },
+  "weeklyQuestProgressPercent": "{current}%",
+  "@weeklyQuestProgressPercent": {
+    "description": "A percentage-valued quest's progress, e.g. '67%' (medicine_90_percent).",
+    "placeholders": {
+      "current": {"type": "int"}
+    }
+  },
   "weeklyQuestComplete": "Quest complete! Claim your reward.",
   "@weeklyQuestComplete": {"description": "Shown when a weekly quest's target has been reached."},
   "weeklyQuestReset": "New quests available every Monday.",

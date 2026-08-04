@@ -47,13 +47,28 @@ class WeeklyQuestList extends ConsumerWidget {
   }
 }
 
-class _QuestTile extends ConsumerWidget {
+/// Quests whose progress is a percentage (0-100), not a day count —
+/// [_QuestTile] formats these with
+/// [AppLocalizations.weeklyQuestProgressPercent] instead of the day-count
+/// string, since "67/90 days" reads as nonsense for a quest with no
+/// 90-day target (PR #77 review finding).
+const _percentQuestKeys = {'medicine_90_percent'};
+
+class _QuestTile extends ConsumerStatefulWidget {
   const _QuestTile({required this.quest});
 
   final WeeklyQuestRow quest;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_QuestTile> createState() => _QuestTileState();
+}
+
+class _QuestTileState extends ConsumerState<_QuestTile> {
+  bool _claiming = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final quest = widget.quest;
     final l10n = AppLocalizations.of(context)!;
     final isComplete = quest.completedAt != null;
     final isClaimed = quest.rewardClaimed == 1;
@@ -74,10 +89,12 @@ class _QuestTile extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                l10n.weeklyQuestProgress(
-                  quest.progressCurrent,
-                  quest.progressTarget,
-                ),
+                _percentQuestKeys.contains(quest.questKey)
+                    ? l10n.weeklyQuestProgressPercent(quest.progressCurrent)
+                    : l10n.weeklyQuestProgress(
+                        quest.progressCurrent,
+                        quest.progressTarget,
+                      ),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -88,18 +105,25 @@ class _QuestTile extends ConsumerWidget {
           const Icon(Icons.check_circle, color: Colors.green)
         else if (isComplete)
           TextButton(
-            onPressed: () => _claim(context, ref),
+            onPressed: _claiming ? null : _claim,
             child: Text(l10n.weeklyQuestClaimButton),
           ),
       ],
     );
   }
 
-  Future<void> _claim(BuildContext context, WidgetRef ref) async {
+  Future<void> _claim() async {
+    if (_claiming) return;
+    setState(() => _claiming = true);
     await ref
         .read(questRepositoryProvider)
-        .claimReward(quest.questKey, quest.weekKey, now: clock.now());
-    if (!context.mounted) return;
+        .claimReward(
+          widget.quest.questKey,
+          widget.quest.weekKey,
+          now: clock.now(),
+        );
+    if (!mounted) return;
+    setState(() => _claiming = false);
     await showQuestCompletionCelebration(context);
   }
 

@@ -9,6 +9,14 @@ import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 /// current week's rows exist), so this is just a lifecycle-hook call site,
 /// not its own reset logic — a missed week's quests simply expire
 /// unclaimed, no cleanup needed.
-Future<void> checkAndResetWeeklyQuests(WidgetRef ref) {
-  return ref.read(questEngineProvider).generateWeek(now: clock.now());
+///
+/// [currentWeekQuestsProvider] computes its week key once, when first
+/// read, and (being a plain top-level provider with no `.autoDispose`)
+/// stays alive for the process's lifetime — without this invalidation, a
+/// session left open across a Monday reset would keep the dashboard
+/// showing the now-frozen previous week's quests until the app was
+/// force-killed (PR #77 review finding).
+Future<void> checkAndResetWeeklyQuests(WidgetRef ref) async {
+  await ref.read(questEngineProvider).generateWeek(now: clock.now());
+  ref.invalidate(currentWeekQuestsProvider);
 }

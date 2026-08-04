@@ -718,6 +718,7 @@
   "achievementMoodStreak100Description": "টানা ১০০ দিন মেজাজ চেক-ইন লগ করুন",
   "weeklyQuestTitle": "এই সপ্তাহের অভিযান",
   "weeklyQuestProgress": "{current}/{target} দিন",
+  "weeklyQuestProgressPercent": "{current}%",
   "weeklyQuestComplete": "অভিযান সম্পন্ন! আপনার পুরস্কার দাবি করুন।",
   "weeklyQuestReset": "প্রতি সোমবার নতুন অভিযান পাওয়া যায়।",
   "weeklyQuestClaimButton": "পুরস্কার দাবি করুন",

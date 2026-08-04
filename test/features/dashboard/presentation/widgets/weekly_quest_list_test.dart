@@ -89,6 +89,31 @@ void main() {
     await disposeTree(tester);
   });
 
+  testWidgets(
+    'medicine_90_percent shows its progress as a percentage, not '
+    "'N/90 days' (PR #77 review finding)",
+    (tester) async {
+      final repository = QuestRepository(db);
+      await repository.ensureCurrentWeekQuests(
+        definitions: [_def('medicine_90_percent', target: 90)],
+        now: now,
+      );
+      await repository.updateProgress(
+        questKey: 'medicine_90_percent',
+        weekKey: '2026-W32',
+        current: 67,
+        now: now,
+      );
+
+      await pumpList(tester);
+
+      expect(find.text('67%'), findsOneWidget);
+      expect(find.text('67/90 days'), findsNothing);
+
+      await disposeTree(tester);
+    },
+  );
+
   testWidgets('a completed, unclaimed quest shows a claim button', (
     tester,
   ) async {
