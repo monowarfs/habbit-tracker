@@ -19,6 +19,7 @@ import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_dis
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/virtual_companion.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/weekly_quest_list.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 
 /// The dashboard tab. Shows an empty state until a module is enabled;
@@ -93,6 +94,8 @@ class DashboardScreen extends ConsumerWidget {
                   _DayCompletionIndicator(modules: modules),
                   const SizedBox(height: 16),
                   const VirtualCompanion(),
+                  const SizedBox(height: 16),
+                  const WeeklyQuestList(),
                   const SizedBox(height: 16),
                   _UpcomingStrip(modules: modules),
                   const SizedBox(height: 16),
