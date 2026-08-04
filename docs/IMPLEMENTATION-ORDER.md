@@ -1,17 +1,18 @@
-# Implementation Order: 57 Specs Across 5 Directories
+# Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Total specs:** 57 (11 premium + 11 community + 12 gamification + 12 accessibility + 11 analytics)
+**Updated:** 2026-08-04 — implemented specs removed (20 of 57 done: Wave 0,
+Wave 1 in full, plus #14-17/36/38/40/41 from Wave 2-3). See git log
+(`--merges` and direct commits, PRs #54-76) for what shipped, including
+`04-additional-habit-modules-pack` (Sleep/BP/Mood/Exercise modules, PRs
+#73-76 — merged to dev, `flutter analyze` clean).
+**Remaining specs:** 37
 
 ---
 
 ## Dependency Graph Summary
 
-### Foundational (no dependencies, implement first)
-These specs establish infrastructure that other specs depend on.
-
-### Wave 1: Independent specs (can be implemented in parallel)
-### Wave 2: Depends on Wave 1
+### Wave 2: Depends on Wave 1 or foundational
 ### Wave 3: Depends on Wave 2
 ### Blocked: Requires external decisions (backend, accounts, future features)
 
@@ -19,40 +20,9 @@ These specs establish infrastructure that other specs depend on.
 
 ## Implementation Order
 
-### Wave 0: Foundational IAP Infrastructure
-| # | Spec | Directory | Effort | Why first |
-|---|---|---|---|---|
-| 1 | 07-lifetime-unlock-pricing-tier | 04-premium | 2-3 days | Establishes entitlement system all premium features use |
-| 2 | 06-icon-packs-advanced-theming | 04-premium | 2-3 days | First premium feature, validates IAP flow |
-
-**Rationale:** These two specs establish the `core/premium/entitlement_service.dart` and `premium_gate_widget.dart` that all other premium features depend on. Must ship together.
-
----
-
-### Wave 1: Zero-dependency features
-| # | Spec                                      | Directory | Effort | Dependencies |
-|---|-------------------------------------------|---|---|---|
-| 3 | 03-external-community-link                | 05-community | 0.25 day | None |
-| 4 | 10-in-app-feedback-feature-request-board  | 05-community | 0.25 day | None |
-| 5 | 04-haptic-feedback-on-log-complete        | 07-accessibility | 0.5 day | None |
-| 6 | 07-reduce-motion-respect                  | 07-accessibility | 0.5 day | None |
-| 7 | 09-rtl-readiness-structural-audit         | 07-accessibility | 0.5 day | None |
-| 8 | 05-badge-rarity-tiers                     | 06-gamification | 0.5 day | None |
-| 9 | 11-achievement-almost-there-progress-bars | 06-gamification | 1 day | None |
-| 10 | 04-trend-arrows                           | 08-analytics | 0.5 day | None |
-| 11 | 03-day-of-week-breakdown                  | 08-analytics | 0.5 day | None |
-| 12 | 09-goal-attainment-rate                   | 08-analytics | 0.5 day | None |
-| 13 | c                                         | 08-analytics | 0.5 day | None |
-
----
-
 ### Wave 2: Depends on Wave 1 or foundational
 | # | Spec | Directory | Effort | Dependencies |
 |---|---|---|---|---|
-| 14 | 01-google-drive-backup-restore | 04-premium | 3-4 days | Local export/import (existing) |
-| 15 | 05-exportable-pdf-csv-reports | 04-premium | 3-4 days | Reports module (existing) |
-| 16 | 08-extended-stats-range | 04-premium | 1-2 days | Reports module (existing) |
-| 17 | 09-priority-support | 04-premium | 1 day | Spec 07 (entitlements) |
 | 18 | 10-advanced-widget-layouts | 04-premium | 4-5 days | Existing widget infrastructure |
 | 19 | 11-exclusive-cosmetic-badge-sets | 04-premium | 2-3 days | Spec 07 (entitlements) |
 | 20 | 01-share-a-streak-image | 05-community | 1 day | `share_plus`, streak use cases |
@@ -71,7 +41,6 @@ These specs establish infrastructure that other specs depend on.
 | 33 | 02-personal-record-tracking | 08-analytics | 1 day | longestStreak() |
 | 34 | 08-adherence-by-medicine | 08-analytics | 1 day | calculateAdherence |
 | 35 | 05-consistency-score | 08-analytics | 2 days | dayStatus() per module |
-| 36 | 10-prayer-on-time-vs-late | 08-analytics | 2 days | PrayerStatus schema change |
 
 ---
 
@@ -79,10 +48,7 @@ These specs establish infrastructure that other specs depend on.
 | # | Spec | Directory | Effort | Dependencies |
 |---|---|---|---|---|
 | 37 | 02-multi-device-sync | 04-premium | 8-10 days | Spec 01 (Drive backup) |
-| 38 | 04-additional-habit-modules-pack | 04-premium | 10-12 days | Spec 07 (entitlements) |
 | 39 | 04-weekly-quest-chains | 06-gamification | 3 days | Achievements engine extension |
-| 40 | 03-virtual-companion | 06-gamification | 3 days | Art assets |
-| 41 | 10-avatar-customization | 06-gamification | 3 days | Art assets, overlaps with 03 |
 | 42 | 02-chart-data-table-fallback | 07-accessibility | 1 day | Spec 01 (TalkBack audit) |
 | 43 | 10-focus-order-keyboard-navigation-pass | 07-accessibility | 1 day | Spec 01 |
 | 44 | 06-simple-mode-large-button-layout | 07-accessibility | 3 days | Specs 01, 03, 05 |
@@ -122,18 +88,17 @@ These specs establish infrastructure that other specs depend on.
 
 ## Implementation Sequence (recommended)
 
-**Phase 1 (Wave 0 + Wave 1):** ~5-6 days
-Specs 1-13: Foundational IAP + zero-dependency features
+**Wave 2 (18 specs):** premium/community/gamification/accessibility/analytics
+features depending only on Wave 0-1 foundations, which are already live.
 
-**Phase 2 (Wave 2):** ~15-20 days
-Specs 14-36: Features depending on Wave 1
+**Wave 3 (6 specs):** depends on Wave 2 items landing first (notably specs 01
+TalkBack audit and 01 Drive backup).
 
-**Phase 3 (Wave 3):** ~12-15 days
-Specs 37-45: Features depending on Wave 2
+**Wave 4-5 (5 specs):** depends on multi-device sync (#37) and family
+multi-profile (#46) — the two heaviest remaining specs (8-10 days each).
 
-**Phase 4 (Wave 4-5):** ~12-14 days
-Specs 46-50: Features depending on Wave 3
+**Blocked (7 specs):** deferred until backend/account/legal decisions clear.
 
-**Blocked specs (51-57):** Deferred until blockers clear
-
-**Total estimated effort:** 44-55 days of implementation work
+**# column values are preserved from the original 57-spec numbering** for
+traceability back to `docs/superpowers/specs/`; they are not sequential in
+this trimmed file.
