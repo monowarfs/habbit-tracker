@@ -123,7 +123,14 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
           now: clock.now(),
         );
     if (!mounted) return;
-    setState(() => _claiming = false);
+    // Deliberately not resetting `_claiming` back to false here: the
+    // claim celebration overlay doesn't block input (`streak_celebration
+    // _overlay.dart`'s own doc comment), and the stream-driven
+    // `isClaimed` rebuild that hides this button entirely lags a beat
+    // behind this write completing — re-enabling in between reopens the
+    // exact double-tap window this guard exists to close (PR #77
+    // second-review finding). `claimReward` is a no-op past this point
+    // either way, so there's nothing a second tap could still do.
     await showQuestCompletionCelebration(context);
   }
 
