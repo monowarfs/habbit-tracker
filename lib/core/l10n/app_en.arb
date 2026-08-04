@@ -2512,5 +2512,35 @@
   "achievementMoodStreak100Title": "Mood Legend",
   "@achievementMoodStreak100Title": {"description": "Achievement title: 100-day mood streak."},
   "achievementMoodStreak100Description": "Log a mood check-in for 100 days in a row",
-  "@achievementMoodStreak100Description": {"description": "Achievement description: 100-day mood streak."}
+  "@achievementMoodStreak100Description": {"description": "Achievement description: 100-day mood streak."},
+  "weeklyQuestTitle": "This Week's Quests",
+  "@weeklyQuestTitle": {"description": "Header for the dashboard's weekly quest list."},
+  "weeklyQuestProgress": "{current}/{target} days",
+  "@weeklyQuestProgress": {
+    "description": "A quest's progress toward its target, e.g. '3/5 days'.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "target": {"type": "int"}
+    }
+  },
+  "weeklyQuestComplete": "Quest complete! Claim your reward.",
+  "@weeklyQuestComplete": {"description": "Shown when a weekly quest's target has been reached."},
+  "weeklyQuestReset": "New quests available every Monday.",
+  "@weeklyQuestReset": {"description": "Explains the weekly quest reset cadence."},
+  "weeklyQuestClaimButton": "Claim Reward",
+  "@weeklyQuestClaimButton": {"description": "Button to claim a completed weekly quest's reward."},
+  "weeklyQuestClaimed": "Reward claimed",
+  "@weeklyQuestClaimed": {"description": "Shown after a weekly quest's reward has been claimed."},
+  "questWater5of7": "Meet your water goal 5 of 7 days",
+  "@questWater5of7": {"description": "Weekly quest: hit the water goal 5 of 7 days."},
+  "questWaterNoSkip": "Log water every day this week",
+  "@questWaterNoSkip": {"description": "Weekly quest: log water every day this week."},
+  "questMedicinePerfect": "Take all doses every day this week",
+  "@questMedicinePerfect": {"description": "Weekly quest: perfect medicine adherence this week."},
+  "questMedicine90": "90% medicine adherence this week",
+  "@questMedicine90": {"description": "Weekly quest: 90% medicine adherence this week."},
+  "questPrayer5of7": "Complete all 5 prayers 5 of 7 days",
+  "@questPrayer5of7": {"description": "Weekly quest: all 5 prayers on 5 of 7 days."},
+  "questPrayerNoSkip": "Pray at least once every day this week",
+  "@questPrayerNoSkip": {"description": "Weekly quest: pray at least once every day this week."}
 }

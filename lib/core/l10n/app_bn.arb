@@ -715,5 +715,17 @@
   "achievementMoodStreak30Title": "মেজাজ চ্যাম্পিয়ন",
   "achievementMoodStreak30Description": "টানা ৩০ দিন মেজাজ চেক-ইন লগ করুন",
   "achievementMoodStreak100Title": "মেজাজ কিংবদন্তি",
-  "achievementMoodStreak100Description": "টানা ১০০ দিন মেজাজ চেক-ইন লগ করুন"
+  "achievementMoodStreak100Description": "টানা ১০০ দিন মেজাজ চেক-ইন লগ করুন",
+  "weeklyQuestTitle": "এই সপ্তাহের অভিযান",
+  "weeklyQuestProgress": "{current}/{target} দিন",
+  "weeklyQuestComplete": "অভিযান সম্পন্ন! আপনার পুরস্কার দাবি করুন।",
+  "weeklyQuestReset": "প্রতি সোমবার নতুন অভিযান পাওয়া যায়।",
+  "weeklyQuestClaimButton": "পুরস্কার দাবি করুন",
+  "weeklyQuestClaimed": "পুরস্কার দাবি করা হয়েছে",
+  "questWater5of7": "৭ দিনের মধ্যে ৫ দিন পানির লক্ষ্য পূরণ করুন",
+  "questWaterNoSkip": "এই সপ্তাহে প্রতিদিন পানি লগ করুন",
+  "questMedicinePerfect": "এই সপ্তাহে প্রতিদিন সব ডোজ নিন",
+  "questMedicine90": "এই সপ্তাহে ৯০% ওষুধ মেনে চলা",
+  "questPrayer5of7": "৭ দিনের মধ্যে ৫ দিন সবগুলো ৫ নামাজ সম্পন্ন করুন",
+  "questPrayerNoSkip": "এই সপ্তাহে প্রতিদিন অন্তত একবার নামাজ পড়ুন"
 }
