@@ -23,18 +23,22 @@ class ComboDetector {
     return completed == modules.length;
   }
 
-  /// How many of [modules] are complete for [date].
+  /// How many of [modules] are complete for [date]. Queries all modules
+  /// in parallel — matches `_DayCompletionIndicator`'s own
+  /// `Future.wait`-based `dayStatus()` fan-out (PR #80 review finding).
   Future<int> completedModuleCount({
     required LocalDate date,
     required List<HabitModule> modules,
   }) async {
-    var completed = 0;
-    for (final module in modules) {
-      final statuses = await module.dayStatus(
-        DateRange(start: date, end: date),
-      );
-      if (statuses[date]?.kind == ModuleDayStatusKind.complete) completed++;
-    }
-    return completed;
+    final results = await Future.wait(
+      modules.map(
+        (module) => module.dayStatus(DateRange(start: date, end: date)),
+      ),
+    );
+    return results
+        .where(
+          (statuses) => statuses[date]?.kind == ModuleDayStatusKind.complete,
+        )
+        .length;
   }
 }
