@@ -1,7 +1,10 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-05 — #25 (02-cross-module-xp-level-system, PR #79)
+**Updated:** 2026-08-05 — #26 (06-same-day-multi-module-combo-bonus, PR
+#80) removed: merged to dev. Uses `XpValues.comboBonus`, reserved by
+spec 02 since PR #79.
+Prior update 2026-08-05 — #25 (02-cross-module-xp-level-system, PR #79)
 removed: merged to dev. Retrofits weekly-quest/boss-claim copy to show
 real XP amounts (`+{amount} XP`), closing the gap #39/#48 shipped
 without. #47 (point-shop) is now unblocked — its "Spec 02 (XP system)"
@@ -12,7 +15,7 @@ Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 34
+**Remaining specs:** 33
 
 ---
 
@@ -36,7 +39,6 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | 22 | 08-community-habit-template-marketplace | 05-community | 1 day | Module creation forms |
 | 23 | 05-mosque-finder-jamaah-times | 05-community | 2 days | Prayer location resolver |
 | 24 | 01-streak-freeze-grace-token | 06-gamification | 2 days | Streak calculators |
-| 26 | 06-same-day-multi-module-combo-bonus | 06-gamification | 1 day | Dashboard completion |
 | 27 | 07-milestone-certificate-image | 06-gamification | 2 days | Image renderer |
 | 28 | 01-talkback-voiceover-navigation-audit | 07-accessibility | 2 days | All screens complete |
 | 29 | 03-colorblind-safe-streak-heatmap | 07-accessibility | 0.5 day | AppSemanticColors |
