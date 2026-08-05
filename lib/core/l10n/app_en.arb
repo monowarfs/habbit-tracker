@@ -2591,5 +2591,42 @@
   "bossQuestPrayer5of5": "All 5 prayers for 5 days",
   "@bossQuestPrayer5of5": {"description": "Boss quest title: all 5 prayers for 5 days."},
   "bossQuestPrayer5of5Desc": "A week of complete devotion!",
-  "@bossQuestPrayer5of5Desc": {"description": "Boss quest description: all 5 prayers for 5 days."}
+  "@bossQuestPrayer5of5Desc": {"description": "Boss quest description: all 5 prayers for 5 days."},
+  "xpGainToast": "+{amount} XP",
+  "@xpGainToast": {
+    "description": "Toast shown after an action-level XP award.",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "levelUpTitle": "Level Up!",
+  "@levelUpTitle": {"description": "Title of the level-up celebration."},
+  "levelUpBody": "You reached Level {level}!",
+  "@levelUpBody": {
+    "description": "Body of the level-up celebration.",
+    "placeholders": {
+      "level": {"type": "int"}
+    }
+  },
+  "levelDisplay": "Level {level}",
+  "@levelDisplay": {
+    "description": "Compact level label, e.g. 'Level 5'.",
+    "placeholders": {
+      "level": {"type": "int"}
+    }
+  },
+  "xpProgress": "{current}/{next} XP to next level",
+  "@xpProgress": {
+    "description": "Progress within the current level toward the next, e.g. '50/200 XP to next level'.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "next": {"type": "int"}
+    }
+  },
+  "xpLevelDashboardLabel": "Your Level",
+  "@xpLevelDashboardLabel": {"description": "Label above the dashboard's level/XP card."},
+  "xpHistoryTitle": "XP History",
+  "@xpHistoryTitle": {"description": "Title of the XP ledger history screen."},
+  "xpHistoryEmpty": "No XP earned yet",
+  "@xpHistoryEmpty": {"description": "Empty state for the XP ledger history screen."}
 }

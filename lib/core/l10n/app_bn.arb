@@ -739,5 +739,13 @@
   "bossQuestMedicinePerfect": "টানা ৭ দিন নিখুঁত ওষুধ মেনে চলা",
   "bossQuestMedicinePerfectDesc": "প্রতিটি ডোজ, প্রতিদিন!",
   "bossQuestPrayer5of5": "৫ দিন সবগুলো ৫ নামাজ",
-  "bossQuestPrayer5of5Desc": "সম্পূর্ণ ভক্তির এক সপ্তাহ!"
+  "bossQuestPrayer5of5Desc": "সম্পূর্ণ ভক্তির এক সপ্তাহ!",
+  "xpGainToast": "+{amount} XP",
+  "levelUpTitle": "লেভেল আপ!",
+  "levelUpBody": "আপনি লেভেল {level} এ পৌঁছেছেন!",
+  "levelDisplay": "লেভেল {level}",
+  "xpProgress": "{current}/{next} XP পরবর্তী লেভেলে",
+  "xpLevelDashboardLabel": "আপনার লেভেল",
+  "xpHistoryTitle": "XP ইতিহাস",
+  "xpHistoryEmpty": "এখনও কোনো XP অর্জিত হয়নি"
 }
