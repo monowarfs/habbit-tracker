@@ -161,4 +161,46 @@ void main() {
         .first;
     expect(otherWeekRows, isEmpty);
   });
+
+  test('ensureBossQuest inserts a row flagged isBoss', () async {
+    await repo.ensureBossQuest(
+      _def('boss_water_6_of_7', target: 6),
+      weekKey: '2026-W32',
+      now: now,
+    );
+    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    expect(row.isBoss, 1);
+    expect(row.progressTarget, 6);
+  });
+
+  test('ensureBossQuest is idempotent (insertOrIgnore)', () async {
+    await repo.ensureBossQuest(
+      _def('boss_water_6_of_7', target: 6),
+      weekKey: '2026-W32',
+      now: now,
+    );
+    await repo.updateProgress(
+      questKey: 'boss_water_6_of_7',
+      weekKey: '2026-W32',
+      current: 3,
+      now: now,
+    );
+    await repo.ensureBossQuest(
+      _def('boss_water_6_of_7', target: 6),
+      weekKey: '2026-W32',
+      now: now,
+    );
+    final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+    expect(rows, hasLength(1));
+    expect(rows.single.progressCurrent, 3);
+  });
+
+  test('a regular quest row has isBoss 0', () async {
+    await repo.ensureCurrentWeekQuests(
+      definitions: [_def('water_goal_5_of_7')],
+      now: now,
+    );
+    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    expect(row.isBoss, 0);
+  });
 }

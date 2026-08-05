@@ -55,6 +55,38 @@ class QuestRepository {
     }
   }
 
+  /// Ensures the week's boss quest ([definition]) exists — same shape as
+  /// [ensureCurrentWeekQuests], just for the single spotlighted-module
+  /// definition `QuestEngine.generateWeek` picks per week, and flagged
+  /// `isBoss: 1` for `WeeklyQuestList`/`BossChallengeCard` to tell them
+  /// apart. `insertOrIgnore` for the same reason as
+  /// [ensureCurrentWeekQuests]: this runs on every resume and every
+  /// module write.
+  Future<void> ensureBossQuest(
+    QuestDefinition definition, {
+    required String weekKey,
+    required DateTime now,
+  }) async {
+    final nowMillis = now.millisecondsSinceEpoch;
+    await _db
+        .into(_db.weeklyQuestsTable)
+        .insert(
+          WeeklyQuestsTableCompanion.insert(
+            id: generateId(),
+            questKey: definition.questKey,
+            moduleId: definition.moduleId,
+            weekKey: weekKey,
+            progressCurrent: 0,
+            progressTarget: definition.target,
+            rewardClaimed: 0,
+            isBoss: const Value(1),
+            createdAt: nowMillis,
+            updatedAt: nowMillis,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+
   /// Updates [questKey]'s progress for [weekKey] to [current], setting
   /// `completedAt` the first time [current] reaches the row's own stored
   /// target. No-ops if the row doesn't exist yet (a write raced ahead of

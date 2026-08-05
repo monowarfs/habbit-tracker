@@ -81,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -301,6 +301,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 27) {
         await m.createTable(weeklyQuestsTable);
+      }
+      if (from < 28) {
+        await m.addColumn(weeklyQuestsTable, weeklyQuestsTable.isBoss);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

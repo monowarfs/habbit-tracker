@@ -252,4 +252,31 @@ void main() {
       await disposeTree(tester);
     },
   );
+
+  testWidgets(
+    "a boss quest row doesn't render in the regular quest list "
+    '(PR #78 review finding — BossChallengeCard owns boss rows)',
+    (tester) async {
+      final repository = QuestRepository(db);
+      await repository.ensureCurrentWeekQuests(
+        definitions: [_def('water_goal_5_of_7')],
+        now: now,
+      );
+      await repository.ensureBossQuest(
+        _def('boss_water_6_of_7', target: 6),
+        weekKey: '2026-W32',
+        now: now,
+      );
+
+      await pumpList(tester);
+
+      expect(find.text('Meet your water goal 5 of 7 days'), findsOneWidget);
+      // boss_water_6_of_7 has no _questTitle mapping in WeeklyQuestList,
+      // so if the isBoss filter regressed it would render its raw
+      // questKey as a fallback — assert that never shows up.
+      expect(find.text('boss_water_6_of_7'), findsNothing);
+
+      await disposeTree(tester);
+    },
+  );
 }

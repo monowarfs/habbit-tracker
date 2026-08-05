@@ -66,11 +66,15 @@ void main() {
     final rows = await QuestRepository(
       db,
     ).watchCurrentWeek(weekKey: '2026-W32').first;
-    // 2 water + 2 medicine + 2 prayer = 6.
-    expect(rows, hasLength(6));
+    // 2 water + 2 medicine + 2 prayer + 1 boss (prayer is 2026-W32's
+    // spotlighted module, week 32 % 3 == 2) = 7.
+    expect(rows, hasLength(7));
+    expect(rows.where((r) => r.isBoss == 1), hasLength(1));
   });
 
   test('generateWeek is safe to call twice (no duplicate rows)', () async {
+    // Only water is registered, and prayer (not water) is 2026-W32's
+    // spotlighted boss module — no boss row gets created here.
     final modules = [_FakeModule('water', const {})];
     engine = QuestEngine(
       repository: QuestRepository(db),
@@ -82,7 +86,7 @@ void main() {
     final rows = await QuestRepository(
       db,
     ).watchCurrentWeek(weekKey: '2026-W32').first;
-    expect(rows, hasLength(2));
+    expect(rows, hasLength(2)); // 2 regular water quests, no duplicates.
   });
 
   test("evaluateModule updates only the affected module's quests", () async {
@@ -113,13 +117,28 @@ void main() {
     expect(waterGoal.progressCurrent, 5); // clamped to target.
     expect(waterGoal.completedAt, isNotNull);
 
-    final prayerQuests = rows.where((r) => r.moduleId == 'prayer');
+    // Prayer (not water) is 2026-W32's spotlighted boss module, so
+    // evaluateModule('water') must generate prayer's boss row (via its
+    // internal generateWeek() call) but leave its progress untouched —
+    // only evaluating the module actually written to.
+    final bossQuest = rows.firstWhere(
+      (r) => r.questKey == 'boss_prayer_5of5_5days',
+    );
+    expect(bossQuest.isBoss, 1);
+    expect(bossQuest.progressCurrent, 0);
+    expect(bossQuest.completedAt, isNull);
+
+    final prayerQuests = rows.where(
+      (r) => r.moduleId == 'prayer' && r.isBoss == 0,
+    );
     expect(prayerQuests.every((r) => r.progressCurrent == 0), isTrue);
   });
 
   test(
     'evaluateModule generates the week first if quests do not exist yet',
     () async {
+      // Only water is registered, and prayer (not water) is 2026-W32's
+      // spotlighted boss module — no boss row gets created here.
       final modules = [_FakeModule('water', const {})];
       engine = QuestEngine(
         repository: QuestRepository(db),
@@ -131,7 +150,7 @@ void main() {
       final rows = await QuestRepository(
         db,
       ).watchCurrentWeek(weekKey: '2026-W32').first;
-      expect(rows, hasLength(2));
+      expect(rows, hasLength(2)); // 2 regular water quests.
     },
   );
 }

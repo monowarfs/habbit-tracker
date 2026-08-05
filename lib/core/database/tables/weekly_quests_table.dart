@@ -30,6 +30,10 @@ class WeeklyQuestsTable extends Table {
   /// Whether the reward has been claimed: 0 or 1.
   IntColumn get rewardClaimed => integer()();
 
+  /// Whether this is a boss challenge (higher threshold, distinct
+  /// dashboard presentation): 0 or 1.
+  IntColumn get isBoss => integer().withDefault(const Constant(0))();
+
   /// UTC epoch millis when this row was created.
   IntColumn get createdAt => integer()();
 
