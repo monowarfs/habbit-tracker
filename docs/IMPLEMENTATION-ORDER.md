@@ -1,18 +1,18 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-05 — #39 (04-weekly-quest-chains, PR #77) and #48
+**Updated:** 2026-08-05 — #25 (02-cross-module-xp-level-system, PR #79)
+removed: merged to dev. Retrofits weekly-quest/boss-claim copy to show
+real XP amounts (`+{amount} XP`), closing the gap #39/#48 shipped
+without. #47 (point-shop) is now unblocked — its "Spec 02 (XP system)"
+dependency is satisfied.
+Prior update 2026-08-05 — #39 (04-weekly-quest-chains, PR #77) and #48
 (09-weekly-boss-milestone-challenge, PR #78) removed: both merged to dev.
-Both explicitly shipped **without** spec #25 (02-cross-module-xp-level-
-system) — neither quest completion nor boss-clear shows an XP amount,
-since that spec was never built. #25 is now the most directly related
-remaining item: it's the literal dependency both decided to skip, and
-unblocks #47 (point-shop, also gated on it) too.
 Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 35
+**Remaining specs:** 34
 
 ---
 
@@ -36,7 +36,6 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | 22 | 08-community-habit-template-marketplace | 05-community | 1 day | Module creation forms |
 | 23 | 05-mosque-finder-jamaah-times | 05-community | 2 days | Prayer location resolver |
 | 24 | 01-streak-freeze-grace-token | 06-gamification | 2 days | Streak calculators |
-| 25 | 02-cross-module-xp-level-system | 06-gamification | 3 days | Achievements engine |
 | 26 | 06-same-day-multi-module-combo-bonus | 06-gamification | 1 day | Dashboard completion |
 | 27 | 07-milestone-certificate-image | 06-gamification | 2 days | Image renderer |
 | 28 | 01-talkback-voiceover-navigation-audit | 07-accessibility | 2 days | All screens complete |
@@ -65,7 +64,7 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | # | Spec | Directory | Effort | Dependencies |
 |---|---|---|---|---|
 | 46 | 03-family-multi-profile | 04-premium | 8-10 days | Spec 02 (sync) |
-| 47 | 08-point-shop-cosmetic-unlocks | 06-gamification | 2 days | Spec 02 (XP system) |
+| 47 | 08-point-shop-cosmetic-unlocks | 06-gamification | 2 days | Spec 02 (XP system) — done, PR #79 |
 
 ---
 
