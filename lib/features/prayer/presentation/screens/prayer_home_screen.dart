@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_toast.dart';
+import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
@@ -125,6 +127,11 @@ Future<void> _togglePrayedAndCelebrate(
       .read(prayerControllerProvider.notifier)
       .togglePrayed(recordId, currentlyPrayed: currentlyPrayed);
   await HapticFeedbackHelper.lightImpact();
+  // Matches PrayerController.togglePrayed's own guard: only the
+  // mark-prayed direction is a new action worth XP.
+  if (!currentlyPrayed && context.mounted) {
+    showXpGainToast(context, amount: XpValues.prayerAction);
+  }
 
   final after = await repository.watchByModule('prayer').first;
   final newlyUnlocked = after.where(
