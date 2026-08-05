@@ -1,12 +1,18 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-04 — implemented specs removed (20 of 57 done: Wave 0,
-Wave 1 in full, plus #14-17/36/38/40/41 from Wave 2-3). See git log
-(`--merges` and direct commits, PRs #54-76) for what shipped, including
-`04-additional-habit-modules-pack` (Sleep/BP/Mood/Exercise modules, PRs
-#73-76 — merged to dev, `flutter analyze` clean).
-**Remaining specs:** 37
+**Updated:** 2026-08-05 — #39 (04-weekly-quest-chains, PR #77) and #48
+(09-weekly-boss-milestone-challenge, PR #78) removed: both merged to dev.
+Both explicitly shipped **without** spec #25 (02-cross-module-xp-level-
+system) — neither quest completion nor boss-clear shows an XP amount,
+since that spec was never built. #25 is now the most directly related
+remaining item: it's the literal dependency both decided to skip, and
+unblocks #47 (point-shop, also gated on it) too.
+Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
+#14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
+commits, PRs #54-76), including `04-additional-habit-modules-pack`
+(Sleep/BP/Mood/Exercise modules, PRs #73-76).
+**Remaining specs:** 35
 
 ---
 
@@ -48,7 +54,6 @@ Wave 1 in full, plus #14-17/36/38/40/41 from Wave 2-3). See git log
 | # | Spec | Directory | Effort | Dependencies |
 |---|---|---|---|---|
 | 37 | 02-multi-device-sync | 04-premium | 8-10 days | Spec 01 (Drive backup) |
-| 39 | 04-weekly-quest-chains | 06-gamification | 3 days | Achievements engine extension |
 | 42 | 02-chart-data-table-fallback | 07-accessibility | 1 day | Spec 01 (TalkBack audit) |
 | 43 | 10-focus-order-keyboard-navigation-pass | 07-accessibility | 1 day | Spec 01 |
 | 44 | 06-simple-mode-large-button-layout | 07-accessibility | 3 days | Specs 01, 03, 05 |
@@ -61,7 +66,6 @@ Wave 1 in full, plus #14-17/36/38/40/41 from Wave 2-3). See git log
 |---|---|---|---|---|
 | 46 | 03-family-multi-profile | 04-premium | 8-10 days | Spec 02 (sync) |
 | 47 | 08-point-shop-cosmetic-unlocks | 06-gamification | 2 days | Spec 02 (XP system) |
-| 48 | 09-weekly-boss-milestone-challenge | 06-gamification | 2 days | Specs 04, 02 |
 
 ---
 
