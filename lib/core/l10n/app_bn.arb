@@ -728,5 +728,16 @@
   "questMedicinePerfect": "এই সপ্তাহে প্রতিদিন সব ডোজ নিন",
   "questMedicine90": "এই সপ্তাহে ৯০% ওষুধ মেনে চলা",
   "questPrayer5of7": "৭ দিনের মধ্যে ৫ দিন সবগুলো ৫ নামাজ সম্পন্ন করুন",
-  "questPrayerNoSkip": "এই সপ্তাহে প্রতিদিন অন্তত একবার নামাজ পড়ুন"
+  "questPrayerNoSkip": "এই সপ্তাহে প্রতিদিন অন্তত একবার নামাজ পড়ুন",
+  "bossChallengeTitle": "বস চ্যালেঞ্জ",
+  "bossChallengeModuleWeek": "{module} সপ্তাহ",
+  "bossChallengeCountdown": "{days} দিন বাকি",
+  "bossChallengeCleared": "বস পরাজিত!",
+  "bossChallengeFailed": "বস পালিয়ে গেছে... আবার চেষ্টা করুন!",
+  "bossQuestWater6of7": "৭ দিনের মধ্যে ৬ দিন পানির লক্ষ্য পূরণ করুন",
+  "bossQuestWater6of7Desc": "হাইড্রেশনের তীব্র এক সপ্তাহ!",
+  "bossQuestMedicinePerfect": "টানা ৭ দিন নিখুঁত ওষুধ মেনে চলা",
+  "bossQuestMedicinePerfectDesc": "প্রতিটি ডোজ, প্রতিদিন!",
+  "bossQuestPrayer5of5": "৫ দিন সবগুলো ৫ নামাজ",
+  "bossQuestPrayer5of5Desc": "সম্পূর্ণ ভক্তির এক সপ্তাহ!"
 }

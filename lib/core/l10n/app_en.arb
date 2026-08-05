@@ -2549,5 +2549,37 @@
   "questPrayer5of7": "Complete all 5 prayers 5 of 7 days",
   "@questPrayer5of7": {"description": "Weekly quest: all 5 prayers on 5 of 7 days."},
   "questPrayerNoSkip": "Pray at least once every day this week",
-  "@questPrayerNoSkip": {"description": "Weekly quest: pray at least once every day this week."}
+  "@questPrayerNoSkip": {"description": "Weekly quest: pray at least once every day this week."},
+  "bossChallengeTitle": "Boss Challenge",
+  "@bossChallengeTitle": {"description": "Header for the dashboard's boss challenge card."},
+  "bossChallengeModuleWeek": "{module} Week",
+  "@bossChallengeModuleWeek": {
+    "description": "Which module is spotlighted this week's boss, e.g. 'Water Week'.",
+    "placeholders": {
+      "module": {"type": "String"}
+    }
+  },
+  "bossChallengeCountdown": "{days} days remaining",
+  "@bossChallengeCountdown": {
+    "description": "Days left in the current boss challenge week.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "bossChallengeCleared": "Boss Cleared!",
+  "@bossChallengeCleared": {"description": "Shown after the boss challenge's reward has been claimed."},
+  "bossChallengeFailed": "Boss escaped... try again next week!",
+  "@bossChallengeFailed": {"description": "Would describe an expired, uncompleted boss challenge (no UI surface currently shows this — a missed boss expires silently, same as a regular quest)."},
+  "bossQuestWater6of7": "Hit water goal 6 of 7 days",
+  "@bossQuestWater6of7": {"description": "Boss quest title: water goal 6 of 7 days."},
+  "bossQuestWater6of7Desc": "An intense week of hydration!",
+  "@bossQuestWater6of7Desc": {"description": "Boss quest description: water goal 6 of 7 days."},
+  "bossQuestMedicinePerfect": "Perfect adherence all 7 days",
+  "@bossQuestMedicinePerfect": {"description": "Boss quest title: perfect medicine adherence all 7 days."},
+  "bossQuestMedicinePerfectDesc": "Every dose, every day!",
+  "@bossQuestMedicinePerfectDesc": {"description": "Boss quest description: perfect medicine adherence all 7 days."},
+  "bossQuestPrayer5of5": "All 5 prayers for 5 days",
+  "@bossQuestPrayer5of5": {"description": "Boss quest title: all 5 prayers for 5 days."},
+  "bossQuestPrayer5of5Desc": "A week of complete devotion!",
+  "@bossQuestPrayer5of5Desc": {"description": "Boss quest description: all 5 prayers for 5 days."}
 }
