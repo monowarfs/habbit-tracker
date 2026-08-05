@@ -2,14 +2,9 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_engine.dart';
+import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/gamification/xp_repository.dart';
 import 'package:habit_tracker/core/gamification/xp_values.dart';
-
-/// Whether an achievement key names a streak-length milestone (every
-/// module's achievement keys follow the same `*_streak_<n>` convention,
-/// e.g. `water_streak_7`, `medicine_adherence_streak_30`) — the only
-/// achievement category this listener awards XP for.
-bool isStreakMilestoneKey(String key) => key.contains('streak');
 
 /// Subscribes to [AchievementEngine.events] and awards
 /// [XpValues.streakMilestone] XP for each streak-length achievement's

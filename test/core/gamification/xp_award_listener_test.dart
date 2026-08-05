@@ -27,14 +27,6 @@ AchievementDefinition _def(String key, {int target = 1, int progress = 1}) =>
     );
 
 void main() {
-  test("isStreakMilestoneKey matches every module's actual naming", () {
-    expect(isStreakMilestoneKey('water_streak_7'), isTrue);
-    expect(isStreakMilestoneKey('medicine_adherence_streak_30'), isTrue);
-    expect(isStreakMilestoneKey('prayer_streak_100'), isTrue);
-    expect(isStreakMilestoneKey('water_first_log'), isFalse);
-    expect(isStreakMilestoneKey('water_perfect_week'), isFalse);
-  });
-
   test(
     'awards XP for a justUnlocked streak achievement, ignores non-streak',
     () async {
