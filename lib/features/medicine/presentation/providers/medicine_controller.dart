@@ -100,7 +100,7 @@ class MedicineController extends _$MedicineController {
     await ref
         .read(questEngineProvider)
         .evaluateModule('medicine', now: clock.now());
-    await awardActionXp(ref, moduleId: 'medicine');
+    await awardActionXp(ref, moduleId: 'medicine', actionSourceId: doseId);
   }
 
   /// Marks a dose skipped (FR-M-07).

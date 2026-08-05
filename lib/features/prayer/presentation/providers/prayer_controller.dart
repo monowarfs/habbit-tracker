@@ -42,10 +42,13 @@ class PrayerController extends _$PrayerController {
         .read(questEngineProvider)
         .evaluateModule('prayer', now: clock.now());
     // Only the mark-prayed direction is a new action — un-marking is a
-    // correction, not something to award (and would let a
-    // mark/unmark/mark cycle double-dip on action XP for one prayer).
+    // correction, not something to award. actionSourceId: recordId
+    // additionally dedupes so a mark/unmark/mark cycle on the *same*
+    // prayer record can't re-earn action XP either (PR #79 review
+    // finding) — the direction guard alone only stopped the unmark step
+    // itself from awarding, not a later re-mark of the same record.
     if (!currentlyPrayed) {
-      await awardActionXp(ref, moduleId: 'prayer');
+      await awardActionXp(ref, moduleId: 'prayer', actionSourceId: recordId);
     }
     final db = ref.read(databaseProvider);
     await refreshWidgetsForModule(db, 'prayer');
