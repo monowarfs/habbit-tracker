@@ -16,6 +16,7 @@ import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_display.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/boss_challenge_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/virtual_companion.dart';
@@ -96,6 +97,8 @@ class DashboardScreen extends ConsumerWidget {
                   const VirtualCompanion(),
                   const SizedBox(height: 16),
                   const WeeklyQuestList(),
+                  const SizedBox(height: 16),
+                  const BossChallengeCard(),
                   const SizedBox(height: 16),
                   _UpcomingStrip(modules: modules),
                   const SizedBox(height: 16),

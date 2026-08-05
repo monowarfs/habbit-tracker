@@ -22,13 +22,15 @@ class WeeklyQuestList extends ConsumerWidget {
     // for (e.g. `buildHabitModules(enabledModules: ...)` excluding it) —
     // `watchCurrentWeek` has no module-list awareness of its own, so a
     // disabled module's already-created row would otherwise stay stuck
-    // on the dashboard forever (PR #77 review finding).
+    // on the dashboard forever (PR #77 review finding). Boss rows are
+    // excluded too — `BossChallengeCard` renders those, so a boss quest
+    // never appears in both cards at once.
     final activeModuleIds = ref
         .watch(habitModulesProvider)
         .map((m) => m.id)
         .toSet();
     final quests = (ref.watch(currentWeekQuestsProvider).value ?? const [])
-        .where((q) => activeModuleIds.contains(q.moduleId))
+        .where((q) => q.isBoss == 0 && activeModuleIds.contains(q.moduleId))
         .toList();
     if (quests.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
