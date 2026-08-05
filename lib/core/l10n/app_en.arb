@@ -2628,5 +2628,20 @@
   "xpHistoryTitle": "XP History",
   "@xpHistoryTitle": {"description": "Title of the XP ledger history screen."},
   "xpHistoryEmpty": "No XP earned yet",
-  "@xpHistoryEmpty": {"description": "Empty state for the XP ledger history screen."}
+  "@xpHistoryEmpty": {"description": "Empty state for the XP ledger history screen."},
+  "comboCelebrationTitle": "Combo Complete!",
+  "@comboCelebrationTitle": {"description": "Title of the same-day multi-module combo celebration."},
+  "comboCelebrationBody": "All modules done today!",
+  "@comboCelebrationBody": {"description": "Body of the same-day multi-module combo celebration."},
+  "comboXpBonus": "+{amount} XP combo bonus",
+  "@comboXpBonus": {
+    "description": "The XP amount awarded for a same-day combo.",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "comboIndicatorLabel": "All modules complete today",
+  "@comboIndicatorLabel": {"description": "Accessibility/tooltip label for the dashboard's combo indicator icon."},
+  "comboMinModules": "Enable 2+ modules for combo bonuses",
+  "@comboMinModules": {"description": "Explains why a single-module user doesn't see combo bonuses (no UI surface currently shows this — the combo indicator is simply absent for single-module users, not replaced by explanatory text)."}
 }

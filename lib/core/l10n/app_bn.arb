@@ -747,5 +747,10 @@
   "xpProgress": "{current}/{next} XP পরবর্তী লেভেলে",
   "xpLevelDashboardLabel": "আপনার লেভেল",
   "xpHistoryTitle": "XP ইতিহাস",
-  "xpHistoryEmpty": "এখনও কোনো XP অর্জিত হয়নি"
+  "xpHistoryEmpty": "এখনও কোনো XP অর্জিত হয়নি",
+  "comboCelebrationTitle": "কম্বো সম্পন্ন!",
+  "comboCelebrationBody": "আজ সব মডিউল সম্পন্ন হয়েছে!",
+  "comboXpBonus": "+{amount} XP কম্বো বোনাস",
+  "comboIndicatorLabel": "আজ সব মডিউল সম্পন্ন",
+  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন"
 }

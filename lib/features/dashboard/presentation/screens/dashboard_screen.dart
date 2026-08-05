@@ -4,6 +4,11 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/gamification/combo/combo_celebration.dart';
+import 'package:habit_tracker/core/gamification/combo/combo_detector.dart';
+import 'package:habit_tracker/core/gamification/combo/combo_event_emitter.dart';
+import 'package:habit_tracker/core/gamification/xp_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
@@ -143,15 +148,44 @@ class _DashboardGreeting extends ConsumerWidget {
   }
 }
 
-class _DayCompletionIndicator extends StatelessWidget {
+class _DayCompletionIndicator extends ConsumerStatefulWidget {
   const _DayCompletionIndicator({required this.modules});
   final List<HabitModule> modules;
+
+  @override
+  ConsumerState<_DayCompletionIndicator> createState() =>
+      _DayCompletionIndicatorState();
+}
+
+class _DayCompletionIndicatorState
+    extends ConsumerState<_DayCompletionIndicator> {
+  @override
+  void initState() {
+    super.initState();
+    // One check per mount (matches WeeklyQuestResetHandler's cold-start/
+    // resume cadence in spirit) — dayStatus data this widget's own build
+    // already fetches is what ComboDetector reads, so this piggybacks on
+    // the same call rather than a separate poll (plan's "Lazy loading"
+    // performance note).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkCombo());
+  }
+
+  Future<void> _checkCombo() async {
+    final emitter = ComboEventEmitter(
+      comboDetector: const ComboDetector(),
+      modules: widget.modules,
+      xpRepository: ref.read(xpRepositoryProvider),
+    );
+    final event = await emitter.checkAndEmit(now: clock.now());
+    if (event == null || !mounted) return;
+    await showComboCelebration(context, xpBonus: XpValues.comboBonus);
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<int>>(
       future: Future.wait(
-        modules.map((m) async {
+        widget.modules.map((m) async {
           final today = localDayKey(DateTime.now());
           final status = await m.dayStatus(
             DateRange(start: today, end: today),
@@ -161,9 +195,30 @@ class _DayCompletionIndicator extends StatelessWidget {
       ),
       builder: (context, snapshot) {
         final completed = snapshot.data?.fold<int>(0, (a, b) => a + b) ?? 0;
-        return LinearProgressIndicator(
-          value: modules.isEmpty ? 0 : completed / modules.length,
-          minHeight: 8,
+        final isCombo =
+            widget.modules.length >= 2 && completed == widget.modules.length;
+        return Row(
+          children: [
+            Expanded(
+              child: LinearProgressIndicator(
+                value: widget.modules.isEmpty
+                    ? 0
+                    : completed / widget.modules.length,
+                minHeight: 8,
+              ),
+            ),
+            if (isCombo) ...[
+              const SizedBox(width: 8),
+              Tooltip(
+                message: AppLocalizations.of(context)!.comboIndicatorLabel,
+                child: const Icon(
+                  Icons.auto_awesome,
+                  size: 18,
+                  color: Colors.orange,
+                ),
+              ),
+            ],
+          ],
         );
       },
     );
