@@ -8,16 +8,25 @@ import 'package:habit_tracker/core/gamification/quests/quest_definition.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_repository.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/weekly_quest_list.dart';
 
-QuestDefinition _def(String key, {int target = 5}) => QuestDefinition(
-  questKey: key,
-  moduleId: 'water',
-  titleKey: 'title',
-  descriptionKey: 'desc',
-  target: target,
-  progressEvaluator: () async => 0,
-);
+QuestDefinition _def(String key, {int target = 5, String moduleId = 'water'}) =>
+    QuestDefinition(
+      questKey: key,
+      moduleId: moduleId,
+      titleKey: 'title',
+      descriptionKey: 'desc',
+      target: target,
+      progressEvaluator: () async => 0,
+    );
+
+class _FakeModule extends Fake implements HabitModule {
+  _FakeModule(this.id);
+  @override
+  final String id;
+}
 
 void main() {
   late AppDatabase db;
@@ -199,4 +208,48 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  testWidgets(
+    "a quest for a module no longer in the active module list doesn't "
+    'render (PR #77 review finding)',
+    (tester) async {
+      final repository = QuestRepository(db);
+      await repository.ensureCurrentWeekQuests(
+        definitions: [
+          _def('water_goal_5_of_7'),
+          _def('medicine_perfect_week', target: 7, moduleId: 'medicine'),
+        ],
+        now: now,
+      );
+
+      // Only 'medicine' is in the active module list — 'water' isn't.
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            currentWeekQuestsProvider.overrideWith(
+              (ref) => ref
+                  .watch(questRepositoryProvider)
+                  .watchCurrentWeek(weekKey: '2026-W32'),
+            ),
+            habitModulesProvider.overrideWith(
+              (ref) => [_FakeModule('medicine')],
+            ),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: WeeklyQuestList()),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Meet your water goal 5 of 7 days'), findsNothing);
+      expect(find.text('Take all doses every day this week'), findsOneWidget);
+
+      await disposeTree(tester);
+    },
+  );
 }

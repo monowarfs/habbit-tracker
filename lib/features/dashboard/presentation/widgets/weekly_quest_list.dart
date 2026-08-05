@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_completion_celebration.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/modules/module_registry.dart';
 
 /// Dashboard card showing the current week's quests, one progress bar per
 /// quest, with a claim button once a quest is complete (Task 7). Renders
@@ -17,7 +18,18 @@ class WeeklyQuestList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quests = ref.watch(currentWeekQuestsProvider).value ?? const [];
+    // Drops a stale row for a module `QuestEngine` no longer generates
+    // for (e.g. `buildHabitModules(enabledModules: ...)` excluding it) —
+    // `watchCurrentWeek` has no module-list awareness of its own, so a
+    // disabled module's already-created row would otherwise stay stuck
+    // on the dashboard forever (PR #77 review finding).
+    final activeModuleIds = ref
+        .watch(habitModulesProvider)
+        .map((m) => m.id)
+        .toSet();
+    final quests = (ref.watch(currentWeekQuestsProvider).value ?? const [])
+        .where((q) => activeModuleIds.contains(q.moduleId))
+        .toList();
     if (quests.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     return Card(
