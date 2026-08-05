@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -95,6 +96,9 @@ class MedicineController extends _$MedicineController {
       return;
     }
     await ref.read(achievementEngineProvider).evaluate('medicine');
+    await ref
+        .read(questEngineProvider)
+        .evaluateModule('medicine', now: clock.now());
   }
 
   /// Marks a dose skipped (FR-M-07).

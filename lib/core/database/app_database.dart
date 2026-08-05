@@ -14,6 +14,7 @@ import 'package:habit_tracker/core/database/tables/onboarding_progress_table.dar
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
 import 'package:habit_tracker/core/database/tables/recalibration_markers_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
+import 'package:habit_tracker/core/database/tables/weekly_quests_table.dart';
 import 'package:habit_tracker/core/premium/entitlement_table.dart';
 import 'package:habit_tracker/features/blood_pressure/data/tables/bp_logs_table.dart';
 import 'package:habit_tracker/features/exercise/data/tables/exercise_logs_table.dart';
@@ -71,6 +72,7 @@ part 'app_database.g.dart';
     BpLogsTable,
     MoodLogsTable,
     ExerciseLogsTable,
+    WeeklyQuestsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -79,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 26;
+  int get schemaVersion => 27;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -296,6 +298,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 26) {
         await m.createTable(moodLogsTable);
+      }
+      if (from < 27) {
+        await m.createTable(weeklyQuestsTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
