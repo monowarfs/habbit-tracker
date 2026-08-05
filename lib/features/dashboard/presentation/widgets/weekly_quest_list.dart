@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_completion_celebration.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 
@@ -129,13 +131,11 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
   Future<void> _claim() async {
     if (_claiming) return;
     setState(() => _claiming = true);
+    final now = clock.now();
     await ref
         .read(questRepositoryProvider)
-        .claimReward(
-          widget.quest.questKey,
-          widget.quest.weekKey,
-          now: clock.now(),
-        );
+        .claimReward(widget.quest.questKey, widget.quest.weekKey, now: now);
+    await _awardXp(now);
     if (!mounted) return;
     // Deliberately not resetting `_claiming` back to false here: the
     // claim celebration overlay doesn't block input (`streak_celebration
@@ -145,7 +145,32 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
     // exact double-tap window this guard exists to close (PR #77
     // second-review finding). `claimReward` is a no-op past this point
     // either way, so there's nothing a second tap could still do.
-    await showQuestCompletionCelebration(context);
+    final l10n = AppLocalizations.of(context)!;
+    await showQuestCompletionCelebration(
+      context,
+      title: l10n.weeklyQuestClaimed(XpValues.weeklyQuestComplete),
+    );
+  }
+
+  /// Awards the weekly-quest-complete XP once per (questKey, weekKey) —
+  /// `hasAwarded` guards against a stale/duplicate claim re-triggering
+  /// this (defense in depth alongside the `_claiming` reentrancy guard).
+  Future<void> _awardXp(DateTime now) async {
+    final xpRepository = ref.read(xpRepositoryProvider);
+    final sourceId = '${widget.quest.questKey}_${widget.quest.weekKey}';
+    final alreadyAwarded = await xpRepository.hasAwarded(
+      moduleId: widget.quest.moduleId,
+      eventType: 'weekly_quest_complete',
+      sourceId: sourceId,
+    );
+    if (alreadyAwarded) return;
+    await xpRepository.awardXp(
+      moduleId: widget.quest.moduleId,
+      eventType: 'weekly_quest_complete',
+      amount: XpValues.weeklyQuestComplete,
+      now: now,
+      sourceId: sourceId,
+    );
   }
 
   String _questTitle(AppLocalizations l10n, String questKey) {

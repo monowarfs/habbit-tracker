@@ -2536,8 +2536,13 @@
   "@weeklyQuestReset": {"description": "Explains the weekly quest reset cadence."},
   "weeklyQuestClaimButton": "Claim Reward",
   "@weeklyQuestClaimButton": {"description": "Button to claim a completed weekly quest's reward."},
-  "weeklyQuestClaimed": "Reward claimed",
-  "@weeklyQuestClaimed": {"description": "Shown after a weekly quest's reward has been claimed."},
+  "weeklyQuestClaimed": "Reward claimed! +{amount} XP",
+  "@weeklyQuestClaimed": {
+    "description": "Shown after a weekly quest's reward has been claimed.",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
   "questWater5of7": "Meet your water goal 5 of 7 days",
   "@questWater5of7": {"description": "Weekly quest: hit the water goal 5 of 7 days."},
   "questWaterNoSkip": "Log water every day this week",
@@ -2566,8 +2571,13 @@
       "days": {"type": "int"}
     }
   },
-  "bossChallengeCleared": "Boss Cleared!",
-  "@bossChallengeCleared": {"description": "Shown after the boss challenge's reward has been claimed."},
+  "bossChallengeCleared": "Boss Cleared! +{amount} XP",
+  "@bossChallengeCleared": {
+    "description": "Shown after the boss challenge's reward has been claimed.",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
   "bossChallengeFailed": "Boss escaped... try again next week!",
   "@bossChallengeFailed": {"description": "Would describe an expired, uncompleted boss challenge (no UI surface currently shows this — a missed boss expires silently, same as a regular quest)."},
   "bossQuestWater6of7": "Hit water goal 6 of 7 days",
