@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
+import 'package:habit_tracker/core/gamification/level_up_celebration.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_completion_celebration.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_providers.dart';
@@ -135,7 +136,7 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
     await ref
         .read(questRepositoryProvider)
         .claimReward(widget.quest.questKey, widget.quest.weekKey, now: now);
-    await _awardXp(now);
+    final leveledUpTo = await _awardXp(now);
     if (!mounted) return;
     // Deliberately not resetting `_claiming` back to false here: the
     // claim celebration overlay doesn't block input (`streak_celebration
@@ -150,12 +151,16 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
       context,
       title: l10n.weeklyQuestClaimed(XpValues.weeklyQuestComplete),
     );
+    if (leveledUpTo != null && mounted) {
+      await showLevelUpCelebration(context, newLevel: leveledUpTo);
+    }
   }
 
   /// Awards the weekly-quest-complete XP once per (questKey, weekKey) —
   /// `hasAwarded` guards against a stale/duplicate claim re-triggering
   /// this (defense in depth alongside the `_claiming` reentrancy guard).
-  Future<void> _awardXp(DateTime now) async {
+  /// Returns the new level if this award crossed a level threshold.
+  Future<int?> _awardXp(DateTime now) async {
     final xpRepository = ref.read(xpRepositoryProvider);
     final sourceId = '${widget.quest.questKey}_${widget.quest.weekKey}';
     final alreadyAwarded = await xpRepository.hasAwarded(
@@ -163,14 +168,15 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
       eventType: 'weekly_quest_complete',
       sourceId: sourceId,
     );
-    if (alreadyAwarded) return;
-    await xpRepository.awardXp(
+    if (alreadyAwarded) return null;
+    final result = await xpRepository.awardXp(
       moduleId: widget.quest.moduleId,
       eventType: 'weekly_quest_complete',
       amount: XpValues.weeklyQuestComplete,
       now: now,
       sourceId: sourceId,
     );
+    return result.leveledUpTo;
   }
 
   String _questTitle(AppLocalizations l10n, String questKey) {

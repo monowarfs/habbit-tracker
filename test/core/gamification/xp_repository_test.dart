@@ -141,4 +141,61 @@ void main() {
     expect(ledger.first.xpAmount, 2); // most recent first.
     expect(ledger.last.xpAmount, 1);
   });
+
+  group('awardXp AwardResult', () {
+    test('leveledUpTo is null when the award stays within the level', () async {
+      final result = await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 50,
+        now: now,
+      );
+      expect(result.totalXp, 50);
+      expect(result.leveledUpTo, isNull);
+    });
+
+    test('leveledUpTo is the new level when a threshold is crossed', () async {
+      // Level 2 starts at 100 XP.
+      final result = await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 100,
+        now: now,
+      );
+      expect(result.totalXp, 100);
+      expect(result.leveledUpTo, 2);
+    });
+
+    test('leveledUpTo is null once already past the threshold', () async {
+      await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 150,
+        now: now,
+      );
+      final result = await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 10,
+        now: now,
+      );
+      expect(result.totalXp, 160);
+      expect(result.leveledUpTo, isNull);
+    });
+
+    test(
+      'leveledUpTo reflects the highest level reached across a jump',
+      () async {
+        // Level 3 starts at 300 XP — a single big award (e.g. boss_cleared)
+        // can jump straight past level 2's threshold too.
+        final result = await repo.awardXp(
+          moduleId: 'water',
+          eventType: 'boss_cleared',
+          amount: 350,
+          now: now,
+        );
+        expect(result.leveledUpTo, 3);
+      },
+    );
+  });
 }
