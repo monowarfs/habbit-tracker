@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/audio/chime_player.dart';
+import 'package:habit_tracker/core/gamification/xp_toast.dart';
+import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
@@ -166,6 +168,7 @@ Future<void> _markDoneAndCelebrate(
     );
   }
   if (wasUndone || !context.mounted) return;
+  showXpGainToast(context, amount: XpValues.medicineAction);
 
   final after = await repository.watchByModule('medicine').first;
   final newlyUnlocked = after.where(

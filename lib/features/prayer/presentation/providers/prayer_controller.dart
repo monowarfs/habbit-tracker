@@ -3,6 +3,7 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_award_helper.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
@@ -40,6 +41,15 @@ class PrayerController extends _$PrayerController {
     await ref
         .read(questEngineProvider)
         .evaluateModule('prayer', now: clock.now());
+    // Only the mark-prayed direction is a new action — un-marking is a
+    // correction, not something to award. actionSourceId: recordId
+    // additionally dedupes so a mark/unmark/mark cycle on the *same*
+    // prayer record can't re-earn action XP either (PR #79 review
+    // finding) — the direction guard alone only stopped the unmark step
+    // itself from awarding, not a later re-mark of the same record.
+    if (!currentlyPrayed) {
+      await awardActionXp(ref, moduleId: 'prayer', actionSourceId: recordId);
+    }
     final db = ref.read(databaseProvider);
     await refreshWidgetsForModule(db, 'prayer');
   }

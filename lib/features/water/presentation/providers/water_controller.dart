@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_award_helper.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -84,6 +85,12 @@ class WaterController extends _$WaterController {
     await ref
         .read(questEngineProvider)
         .evaluateModule('water', now: clock.now());
+    // No actionSourceId: unlike medicine's dose id / prayer's record id,
+    // a water entry gets a fresh id every log, so there's no stable id
+    // to dedupe a log/delete/log cycle against — closing that needs real
+    // XP reversal on delete, not dedup (known, accepted limitation for
+    // this size of change, PR #79 review finding).
+    await awardActionXp(ref, moduleId: 'water');
   }
 
   /// Updates an existing entry (FR-W-09). See [unsetWaterNotes] for

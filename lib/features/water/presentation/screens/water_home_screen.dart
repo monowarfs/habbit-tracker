@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
+import 'package:habit_tracker/core/gamification/xp_toast.dart';
+import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
@@ -223,6 +225,9 @@ Future<void> _logQuickAddAndCelebrate(
 
   await ref.read(waterControllerProvider.notifier).logQuickAdd(amountMl);
   await HapticFeedbackHelper.lightImpact();
+  if (context.mounted) {
+    showXpGainToast(context, amount: XpValues.waterAction);
+  }
 
   final after = await repository.watchByModule('water').first;
   final newlyUnlocked = after.where(
