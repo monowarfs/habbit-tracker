@@ -14,6 +14,7 @@ import 'package:habit_tracker/core/cosmetics/cosmetic_unlock_engine.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/gamification/quests/weekly_quest_reset_handler.dart';
+import 'package:habit_tracker/core/gamification/xp_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/notifications/notification_bootstrap.dart';
@@ -140,6 +141,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
         unawaited(_maybeShowWhatsNew());
         unawaited(ref.read(entitlementProvider.notifier).refresh());
         unawaited(checkAndResetWeeklyQuests(ref));
+        ref.read(xpAwardListenerProvider);
       });
     }
     // Registers the 3 static home-screen/app-shortcut items
@@ -210,6 +212,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
       unawaited(_checkCosmeticUnlocks(ref.read(databaseProvider)));
       unawaited(ref.read(entitlementProvider.notifier).refresh());
       unawaited(checkAndResetWeeklyQuests(ref));
+      ref.read(xpAwardListenerProvider);
     }
     // PIN resume-timeout reference point (`strategies/security.md`) —
     // records "now" every time the app leaves the foreground, so
