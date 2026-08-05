@@ -44,6 +44,18 @@ Future<void> _pump(
   List<HabitModule> modules,
   AppDatabase db,
 ) async {
+  // A tall, fixed viewport so the dashboard's growing list of cards
+  // (VirtualCompanion/WeeklyQuestList/BossChallengeCard/XpLevelDisplay/...)
+  // never scrolls a later module's dashboardSummary() card past
+  // ListView's sliver cache extent — past that point it's simply never
+  // built, and find.text can't see content that was never mounted, no
+  // matter how much the test scrolls or settles (found while adding
+  // XpLevelDisplay: the default 800x600 test surface was already close
+  // to this edge before that card, tipped over by it).
+  tester.view.physicalSize = const Size(800, 3000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
