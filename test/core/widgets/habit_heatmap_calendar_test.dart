@@ -244,5 +244,57 @@ void main() {
       );
       semanticsHandle.dispose();
     });
+
+    testWidgets(
+      'a paused-cell has a Semantics label distinct from a no-data cell, '
+      'matching its own non-color icon',
+      (tester) async {
+        final semanticsHandle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: HabitHeatmapCalendar(
+                month: const LocalDate(2026, 6, 1),
+                today: const LocalDate(2026, 6, 15),
+                dayStatus: {
+                  const LocalDate(2026, 6, 5): const ModuleDayStatus(
+                    kind: ModuleDayStatusKind.paused,
+                    value: 0,
+                  ),
+                },
+                accentColor: Colors.blue,
+                maxValue: 1,
+                onDayTap: (_) {},
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Distinct wording from a genuinely empty day (`heatmapCellNoData
+        // Semantics`) — a paused module day is a known state, not an
+        // absence of data.
+        expect(find.bySemanticsLabel('2026-06-05, paused'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('2026-06-05, no data'),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: find
+                .ancestor(
+                  of: find.text('5'),
+                  matching: find.byType(Container),
+                )
+                .first,
+            matching: find.byIcon(Icons.horizontal_rule),
+          ),
+          findsOneWidget,
+        );
+        semanticsHandle.dispose();
+      },
+    );
   });
 }
