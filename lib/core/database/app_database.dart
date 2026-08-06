@@ -14,6 +14,7 @@ import 'package:habit_tracker/core/database/tables/onboarding_progress_table.dar
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
 import 'package:habit_tracker/core/database/tables/recalibration_markers_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
+import 'package:habit_tracker/core/database/tables/shop_unlocks_table.dart';
 import 'package:habit_tracker/core/database/tables/weekly_quests_table.dart';
 import 'package:habit_tracker/core/database/tables/xp_balance_table.dart';
 import 'package:habit_tracker/core/database/tables/xp_ledger_table.dart';
@@ -77,6 +78,7 @@ part 'app_database.g.dart';
     WeeklyQuestsTable,
     XpLedgerTable,
     XpBalanceTable,
+    ShopUnlocksTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -85,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -312,6 +314,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 29) {
         await m.createTable(xpLedgerTable);
         await m.createTable(xpBalanceTable);
+      }
+      if (from < 30) {
+        await m.createTable(shopUnlocksTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
