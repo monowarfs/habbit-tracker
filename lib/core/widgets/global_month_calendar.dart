@@ -68,25 +68,36 @@ class GlobalMonthCalendar extends StatelessWidget {
 
   /// A small non-color status glyph — hue alone must never be the only
   /// way a day's combined status is legible.
+  ///
+  /// `paused` returns null: [combinedDayStatusKind] never actually
+  /// produces `paused` (a lone or all-`paused` day falls into its
+  /// `partial` fallback branch, since `paused` isn't one of the two
+  /// `every()` checks) — rendering an icon for a value this method can't
+  /// return would be dead code that never draws, so the case is listed
+  /// explicitly (for switch exhaustiveness) but deliberately maps to
+  /// nothing rather than the unreachable `Icons.horizontal_rule`
+  /// `HabitHeatmapCalendar` uses for the same status
+  /// (`03-palette-audit-results.md`).
   IconData? _iconFor(ModuleDayStatusKind kind) {
     return switch (kind) {
       ModuleDayStatusKind.complete => Icons.check,
       ModuleDayStatusKind.missed => Icons.close,
       ModuleDayStatusKind.partial => Icons.remove,
-      ModuleDayStatusKind.paused => Icons.horizontal_rule,
+      ModuleDayStatusKind.paused => null,
       ModuleDayStatusKind.none => null,
     };
   }
 
   /// Screen-reader label for [kind], reusing the same ARB keys as the
-  /// icon glyphs (`03-palette-audit-results.md`). `null` for `none` — no
-  /// status to announce beyond the day number already read from `Text`.
+  /// icon glyphs (`03-palette-audit-results.md`). `null` for `none` and
+  /// `paused` — see [_iconFor]'s doc comment for why `paused` can't
+  /// actually reach this widget via [combinedDayStatusKind].
   String? _statusLabel(AppLocalizations l10n, ModuleDayStatusKind kind) {
     return switch (kind) {
       ModuleDayStatusKind.complete => l10n.calendarStatusDoneLabel,
       ModuleDayStatusKind.missed => l10n.calendarStatusMissedLabel,
       ModuleDayStatusKind.partial => l10n.calendarStatusPartialLabel,
-      ModuleDayStatusKind.paused => l10n.calendarStatusSkippedLabel,
+      ModuleDayStatusKind.paused => null,
       ModuleDayStatusKind.none => null,
     };
   }
@@ -135,15 +146,14 @@ class GlobalMonthCalendar extends StatelessWidget {
             ],
           ),
         );
-        return InkWell(
-          onTap: () => onDayTap(day),
-          child: statusLabel == null
-              ? cell
-              : Semantics(
-                  label: '${day.toIso()}, $statusLabel',
-                  excludeSemantics: true,
-                  child: cell,
-                ),
+        final tappableCell = InkWell(onTap: () => onDayTap(day), child: cell);
+        if (statusLabel == null) return tappableCell;
+        // Semantics wraps InkWell (not the reverse) to match
+        // HabitHeatmapCalendar's convention for the same job.
+        return Semantics(
+          label: '${day.toIso()}, $statusLabel',
+          excludeSemantics: true,
+          child: tappableCell,
         );
       },
     );

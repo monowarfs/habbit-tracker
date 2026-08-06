@@ -63,9 +63,14 @@ cell content).
 
 **Fix:** `AppSemanticColors` gained a `missed` field (orange, not a hue
 rotation of `colors.error`); `GlobalMonthCalendar._colorFor` now returns
-`semantic.missed` for the `missed` case. Added a corner icon per status
-(check/close/remove/horizontal_rule) and a `Semantics` label per cell
-(`"{date}, {status}"`) using the new `calendarStatus*Label` ARB keys.
+`semantic.missed` for the `missed` case. Added a corner icon
+(check/close/remove) and a `Semantics` label per cell (`"{date},
+{status}"`) using the new `calendarStatus*Label` ARB keys, for every
+status this widget's `combinedDayStatusKind` can actually produce —
+`complete`/`missed`/`partial`/`none`. `paused` deliberately maps to no
+icon and no label here (see "Correction from code review" below):
+`combinedDayStatusKind` can never return `paused`, so an icon/label
+branch for it would never draw.
 
 ### Failure #2 (confirmed, module-specific): `HabitHeatmapCalendar`'s `missed` cell
 
@@ -86,6 +91,50 @@ red-green axis.
 existing `complete` checkmark icon convention was extended to `missed`
 (✕), `partial` (—), and `paused` (⎯) so every status also carries a
 non-color cue, independent of what a given module's accent color does.
+Unlike `GlobalMonthCalendar`, `paused` genuinely reaches this widget (a
+single module's own `dayStatus()` map, not a cross-module combine), so
+it also got its own `heatmapCellPausedSemantics` ARB key/Semantics label
+— see "Correction from code review" below.
+
+## Correction from code review
+
+A first review pass on this PR found two real gaps in the `paused`
+status specifically, both fixed before merge:
+
+1. **`GlobalMonthCalendar`'s `paused` icon/label branches were dead
+   code.** The first draft added an `Icons.horizontal_rule` icon and a
+   `calendarStatusSkippedLabel` Semantics label for `paused`, mirroring
+   `HabitHeatmapCalendar`. But `combinedDayStatusKind` (pre-existing,
+   unchanged by this spec) only ever returns `complete`, `missed`,
+   `partial`, or `none` — a day where every module reports `paused`
+   still falls through to `partial` (its `every()` checks only match
+   `complete` or `missed`). The icon/label would never draw. Fixed by
+   making both `_iconFor`/`_statusLabel` return `null` for `paused` in
+   this widget, with a comment explaining why, rather than leaving
+   unreachable code that looked handled but wasn't.
+2. **`HabitHeatmapCalendar`'s new `paused` icon had no matching
+   accessible label.** `_semanticsLabel` still routed `paused` to
+   `heatmapCellNoDataSemantics` ("{date}, no data") — identical wording
+   to a genuinely untracked day, even though a sighted user now saw a
+   distinct dash icon. A screen reader user got no equivalent signal.
+   Fixed by adding a new `heatmapCellPausedSemantics` ARB key
+   ("{date}, paused") and wiring it into the `paused` branch, with a new
+   test (`habit_heatmap_calendar_test.dart`) asserting the label is
+   distinct from the no-data one and lines up with the icon.
+
+Also aligned `GlobalMonthCalendar`'s cell structure to
+`HabitHeatmapCalendar`'s existing `Semantics(excludeSemantics: true)`
+wrapping `InkWell` convention (the first draft had it the other way
+around) for consistency between the two widgets doing the same job.
+
+Not changed: `paused` still maps to the `calendarStatusSkippedLabel`
+wording only where it was already reachable before this correction
+(nowhere, currently — `GlobalMonthCalendar` no longer uses that key for
+`paused` at all, and `HabitHeatmapCalendar` uses the new, more accurate
+`heatmapCellPausedSemantics` instead). The `calendarStatusSkippedLabel`
+ARB key itself is left in place as a currently-unused-but-correctly-named
+key for a future caller that has a real "skipped" (as opposed to
+"paused") concept.
 
 ### Non-finding: `partial` did not need a new semantic color
 

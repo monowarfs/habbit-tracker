@@ -288,6 +288,13 @@
       "value": {"type": "String"}
     }
   },
+  "heatmapCellPausedSemantics": "{date}, paused",
+  "@heatmapCellPausedSemantics": {
+    "description": "Screen-reader label for a paused day (module was paused, e.g. a life-event pause) in the per-habit heatmap calendar — distinct from a day with no data at all.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "waterSettingsTitle": "Water settings",
   "@waterSettingsTitle": {
     "description": "AppBar title for the water module's own settings screen."

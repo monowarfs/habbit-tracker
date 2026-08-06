@@ -148,7 +148,10 @@ class HabitHeatmapCalendar extends StatelessWidget {
         date,
         value,
       ),
-      ModuleDayStatusKind.paused => l10n.heatmapCellNoDataSemantics(date),
+      // Distinct from `none`'s "no data" — a paused module day is a known
+      // state, not an absence of data (matches the new `horizontal_rule`
+      // icon this status also gets, above).
+      ModuleDayStatusKind.paused => l10n.heatmapCellPausedSemantics(date),
       ModuleDayStatusKind.none => l10n.heatmapCellNoDataSemantics(date),
     };
   }
