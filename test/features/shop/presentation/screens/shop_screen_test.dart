@@ -30,10 +30,22 @@ void main() {
     ),
   );
 
+  // Unmounts the widget tree before `tearDown`'s `db.close()` runs, so
+  // every card's live Drift `watch()` subscription (currentXpBalance +
+  // unlockedShopItems, per card) cancels cleanly first — mirrors
+  // `dashboard_screen_test.dart`'s `disposeTree`, needed here for the
+  // same reason (multiple concurrent stream-watching widgets in one
+  // tree) and skipped by simpler single-stream screen tests elsewhere.
+  Future<void> disposeTree(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 1));
+  }
+
   testWidgets('renders one card per catalog item', (tester) async {
     await pump(tester);
     await tester.pumpAndSettle();
     expect(find.byType(ShopItemCard), findsNWidgets(shopCatalog.length));
+    await disposeTree(tester);
   });
 
   testWidgets('buy button is disabled when XP balance is insufficient', (
@@ -49,6 +61,7 @@ void main() {
       ),
     );
     expect(buyButton.onPressed, isNull);
+    await disposeTree(tester);
   });
 
   testWidgets('shows Owned instead of a Buy button for a purchased item', (
@@ -78,5 +91,6 @@ void main() {
 
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
     expect(find.text(l10n.shopOwnedLabel), findsOneWidget);
+    await disposeTree(tester);
   });
 }
