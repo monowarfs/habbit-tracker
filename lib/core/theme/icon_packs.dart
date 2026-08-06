@@ -42,4 +42,8 @@ const iconPacks = [
     iosIconName: 'SunsetIcon',
     isPremium: true,
   ),
+  // Point-shop icon — gated by `unlockedShopItemsProvider`, not
+  // `isPremium`. No native activity-alias yet since `IconSwitcher.setIcon`
+  // is already a no-op for every pack (see its own doc comment).
+  IconPack(id: 'minimal_icon', displayNameKey: 'shopItemMinimalIcon'),
 ];

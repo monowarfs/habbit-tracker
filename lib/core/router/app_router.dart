@@ -37,6 +37,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/ramadan_set
 import 'package:habit_tracker/features/settings/presentation/screens/settings_home_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/theme_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/unlocks_screen.dart';
+import 'package:habit_tracker/features/shop/presentation/screens/shop_screen.dart';
 import 'package:habit_tracker/features/sleep/presentation/screens/sleep_add_entry_screen.dart';
 import 'package:habit_tracker/features/sleep/presentation/screens/sleep_home_screen.dart';
 import 'package:habit_tracker/features/sleep/presentation/screens/sleep_stats_screen.dart';
@@ -104,6 +105,9 @@ class AppRoutes {
 
   /// Avatar customization screen.
   static const String settingsAvatar = '/settings/avatar';
+
+  /// Point-shop screen.
+  static const String settingsShop = '/settings/shop';
 
   /// Sleep module home screen (premium-gated; no permanent bottom-nav
   /// tab — see `SleepModule`'s doc comment).
@@ -287,6 +291,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'avatar',
                     builder: (context, state) => const AvatarCustomizeScreen(),
+                  ),
+                  GoRoute(
+                    path: 'shop',
+                    builder: (context, state) => const ShopScreen(),
                   ),
                   GoRoute(
                     path: 'sleep',
