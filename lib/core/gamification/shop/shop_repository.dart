@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_catalog.dart';
 import 'package:habit_tracker/core/gamification/xp_repository.dart';
