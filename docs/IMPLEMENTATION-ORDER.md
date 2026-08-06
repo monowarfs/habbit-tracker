@@ -1,7 +1,10 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-06 — #47 (08-point-shop-cosmetic-unlocks, PR #82)
+**Updated:** 2026-08-06 — #29 (03-colorblind-safe-streak-heatmap, PR #81)
+removed: merged to dev. Palette-agnostic streak/heatmap indicators
+(shape/pattern, not color-only) verified against AppSemanticColors.
+Prior update 2026-08-06 — #47 (08-point-shop-cosmetic-unlocks, PR #82)
 removed: merged to dev. XP-purchase cosmetic shop; extended
 `palettePacks`/`iconPacks` with the 4 shop items so a purchase can
 actually apply through the existing theme-selection pipeline.
@@ -19,7 +22,7 @@ Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 32
+**Remaining specs:** 31
 
 ---
 
@@ -45,7 +48,6 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | 24 | 01-streak-freeze-grace-token | 06-gamification | 2 days | Streak calculators |
 | 27 | 07-milestone-certificate-image | 06-gamification | 2 days | Image renderer |
 | 28 | 01-talkback-voiceover-navigation-audit | 07-accessibility | 2 days | All screens complete |
-| 29 | 03-colorblind-safe-streak-heatmap | 07-accessibility | 0.5 day | AppSemanticColors |
 | 30 | 05-dynamic-text-scaling-stress-test | 07-accessibility | 1 day | All screens complete |
 | 31 | 08-audio-cue-alternative-notification-actions | 07-accessibility | 1 day | Notification handler |
 | 32 | 01-adherence-heatmap | 08-analytics | 2 days | dayStatus() per module |
@@ -96,7 +98,7 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 
 ## Implementation Sequence (recommended)
 
-**Wave 2 (18 specs):** premium/community/gamification/accessibility/analytics
+**Wave 2 (17 specs):** premium/community/gamification/accessibility/analytics
 features depending only on Wave 0-1 foundations, which are already live.
 
 **Wave 3 (6 specs):** depends on Wave 2 items landing first (notably specs 01
