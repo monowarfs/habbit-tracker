@@ -67,6 +67,7 @@
   "heatmapCellCompleteSemantics": "{date}, সম্পন্ন, {value}",
   "heatmapCellPartialSemantics": "{date}, আংশিক, {value}",
   "heatmapCellMissedSemantics": "{date}, মিস হয়েছে, {value}",
+  "heatmapCellPausedSemantics": "{date}, বিরতি দেওয়া হয়েছে",
   "waterSettingsTitle": "পানি সেটিংস",
   "waterSettingsGoalLabel": "দৈনিক লক্ষ্য (মিলি)",
   "waterSettingsQuickAddLabel": "দ্রুত-যোগ পরিমাণ (মিলি)",
@@ -752,5 +753,9 @@
   "comboCelebrationBody": "আজ সব মডিউল সম্পন্ন হয়েছে!",
   "comboXpBonus": "+{amount} XP কম্বো বোনাস",
   "comboIndicatorLabel": "আজ সব মডিউল সম্পন্ন",
-  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন"
+  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন",
+  "calendarStatusDoneLabel": "সম্পন্ন",
+  "calendarStatusMissedLabel": "মিস হয়েছে",
+  "calendarStatusPartialLabel": "আংশিক",
+  "calendarStatusSkippedLabel": "বাদ দিয়েছে"
 }

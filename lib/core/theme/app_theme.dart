@@ -92,27 +92,47 @@ class SeasonalAccent {
 /// M3 has no built-in "success" role; every module needs one consistent
 /// "done/on-time" green, so it's added via Flutter's own `ThemeExtension`
 /// mechanism rather than overloading an existing role.
+///
+/// Colorblind-safe palette note (`docs/superpowers/specs/07-accessibility/
+/// 03-palette-audit-results.md`): [success] (green) and [missed] (orange)
+/// were deliberately chosen so red/green — the single most common
+/// deuteranopia/protanopia failure mode — never carries the done/missed
+/// distinction on its own; calendar cells also carry a non-color icon cue
+/// (see `habit_heatmap_calendar.dart`/`global_month_calendar.dart`). Any
+/// new status color added here must keep that hue separation and be
+/// checked against a deuteranopia/protanopia simulation before merge.
 @immutable
 class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// Creates a set of app-specific semantic colors.
-  const AppSemanticColors({required this.success});
+  const AppSemanticColors({required this.success, required this.missed});
 
   /// "Done" / "Prayed" / "on-time" state color, shared across all modules.
   final Color success;
 
+  /// "Missed" state color, shared across all modules. Orange rather than
+  /// the M3 `error` red so it stays distinguishable from [success] under
+  /// deuteranopia/protanopia simulation, where red and green desaturate
+  /// toward the same muddy hue.
+  final Color missed;
+
   /// Semantic colors tuned for the light theme.
   static const AppSemanticColors light = AppSemanticColors(
     success: Color(0xFF2E7D32),
+    missed: Color(0xFFBF360C),
   );
 
   /// Semantic colors tuned for the dark theme.
   static const AppSemanticColors dark = AppSemanticColors(
     success: Color(0xFF81C784),
+    missed: Color(0xFFFFAB91),
   );
 
   @override
-  AppSemanticColors copyWith({Color? success}) {
-    return AppSemanticColors(success: success ?? this.success);
+  AppSemanticColors copyWith({Color? success, Color? missed}) {
+    return AppSemanticColors(
+      success: success ?? this.success,
+      missed: missed ?? this.missed,
+    );
   }
 
   @override
@@ -120,6 +140,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     if (other is! AppSemanticColors) return this;
     return AppSemanticColors(
       success: Color.lerp(success, other.success, t) ?? success,
+      missed: Color.lerp(missed, other.missed, t) ?? missed,
     );
   }
 }
