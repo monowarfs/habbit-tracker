@@ -154,6 +154,13 @@ class SettingsHomeScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.storefront_outlined),
+            title: Text(l10n.shopTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/shop'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.bedtime_outlined),
             title: Text(l10n.sleepHomeTitle),
             trailing: ref.watch(isPremiumUserProvider)

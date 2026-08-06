@@ -2651,6 +2651,60 @@
   "@comboIndicatorLabel": {"description": "Accessibility/tooltip label for the dashboard's combo indicator icon."},
   "comboMinModules": "Enable 2+ modules for combo bonuses",
   "@comboMinModules": {"description": "Explains why a single-module user doesn't see combo bonuses (no UI surface currently shows this — the combo indicator is simply absent for single-module users, not replaced by explanatory text)."},
+  "shopTitle": "Point Shop",
+  "@shopTitle": {"description": "Title of the XP point-shop screen."},
+  "shopCurrentBalance": "{balance} XP",
+  "@shopCurrentBalance": {
+    "description": "The user's current spendable XP balance, shown in the shop screen's app bar.",
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "shopBuyButton": "Buy for {cost} XP",
+  "@shopBuyButton": {
+    "description": "Buy button label showing an item's XP cost.",
+    "placeholders": {
+      "cost": {"type": "int"}
+    }
+  },
+  "shopOwnedLabel": "Owned",
+  "@shopOwnedLabel": {"description": "Shown on a shop item card once purchased."},
+  "shopInsufficientXp": "Not enough XP ({current}/{needed})",
+  "@shopInsufficientXp": {
+    "description": "Shown when the user's XP balance is below an item's cost.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "needed": {"type": "int"}
+    }
+  },
+  "shopConfirmPurchase": "Buy {item} for {cost} XP?",
+  "@shopConfirmPurchase": {
+    "description": "Purchase confirmation dialog body.",
+    "placeholders": {
+      "item": {"type": "String"},
+      "cost": {"type": "int"}
+    }
+  },
+  "shopConfirmButton": "Buy",
+  "@shopConfirmButton": {"description": "Confirm button in the purchase confirmation dialog."},
+  "shopCancelButton": "Cancel",
+  "@shopCancelButton": {"description": "Cancel button in the purchase confirmation dialog."},
+  "shopItemOceanPalette": "Ocean Palette",
+  "@shopItemOceanPalette": {"description": "Shop item name."},
+  "shopItemOceanPaletteDesc": "Cool blue and teal tones",
+  "@shopItemOceanPaletteDesc": {"description": "Shop item description."},
+  "shopItemForestPalette": "Forest Palette",
+  "@shopItemForestPalette": {"description": "Shop item name."},
+  "shopItemForestPaletteDesc": "Natural green accents",
+  "@shopItemForestPaletteDesc": {"description": "Shop item description."},
+  "shopItemSunsetPalette": "Sunset Palette",
+  "@shopItemSunsetPalette": {"description": "Shop item name."},
+  "shopItemSunsetPaletteDesc": "Warm orange and gold tones",
+  "@shopItemSunsetPaletteDesc": {"description": "Shop item description."},
+  "shopItemMinimalIcon": "Minimal Icons",
+  "@shopItemMinimalIcon": {"description": "Shop item name."},
+  "shopItemMinimalIconDesc": "Clean, simplified icon set",
+  "@shopItemMinimalIconDesc": {"description": "Shop item description."},
   "calendarStatusDoneLabel": "Completed",
   "@calendarStatusDoneLabel": {"description": "Colorblind-safe icon label and screen-reader label for a completed day in a calendar cell (heatmap or the dashboard's global month calendar)."},
   "calendarStatusMissedLabel": "Missed",

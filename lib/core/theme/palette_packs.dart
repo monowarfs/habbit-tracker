@@ -78,4 +78,23 @@ const palettePacks = [
       'prayer': Color(0xFF37474F),
     },
   ),
+  // Point-shop palettes — gated by `unlockedShopItemsProvider`, not
+  // `isPremium` (a distinct XP-purchase unlock, not a subscription one).
+  // `ThemeSettingsScreen` checks `shopCatalog` membership to apply the
+  // right lock check for these ids.
+  PalettePack(
+    id: 'ocean_palette',
+    displayNameKey: 'shopItemOceanPalette',
+    seedColor: Color(0xFF00838F),
+  ),
+  PalettePack(
+    id: 'forest_palette',
+    displayNameKey: 'shopItemForestPalette',
+    seedColor: Color(0xFF2E7D32),
+  ),
+  PalettePack(
+    id: 'sunset_palette',
+    displayNameKey: 'shopItemSunsetPalette',
+    seedColor: Color(0xFFEF6C00),
+  ),
 ];

@@ -115,6 +115,52 @@ class XpRepository {
     });
   }
 
+  /// Deducts [amount] XP from the balance (shop purchases). Records a
+  /// negative-`xpAmount` ledger row under `moduleId: 'system'`,
+  /// `eventType: 'shop_purchase'` — same ledger table `awardXp` writes to,
+  /// just a negative amount, so the XP-history screen shows purchases
+  /// alongside awards with no separate read path.
+  ///
+  /// Throws a [StateError] if the current balance is less than [amount].
+  Future<void> deductXp({
+    required int amount,
+    required DateTime now,
+    required String reason,
+  }) async {
+    final nowMillis = now.millisecondsSinceEpoch;
+    await _db.transaction(() async {
+      await _ensureSeeded(nowMillis);
+      final balance = await (_db.select(
+        _db.xpBalanceTable,
+      )..where((t) => t.id.equals(_singletonId))).getSingle();
+      if (balance.totalXp < amount) {
+        throw StateError(
+          'Insufficient XP: have ${balance.totalXp}, need $amount',
+        );
+      }
+      await _db
+          .into(_db.xpLedgerTable)
+          .insert(
+            XpLedgerTableCompanion.insert(
+              id: generateId(),
+              moduleId: 'system',
+              eventType: 'shop_purchase',
+              xpAmount: -amount,
+              sourceId: Value(reason),
+              createdAt: nowMillis,
+            ),
+          );
+      await (_db.update(
+        _db.xpBalanceTable,
+      )..where((t) => t.id.equals(_singletonId))).write(
+        XpBalanceTableCompanion(
+          totalXp: Value(balance.totalXp - amount),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+    });
+  }
+
   /// Most recent [limit] ledger rows, newest first — the XP-history
   /// screen's source, paginated rather than loading the whole ledger.
   Future<List<XpLedgerRow>> recentLedger({int limit = 50}) {

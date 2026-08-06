@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/gamification/shop/shop_catalog.dart';
+import 'package:habit_tracker/core/gamification/shop/shop_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/theme/icon_pack_provider.dart';
@@ -11,6 +13,10 @@ import 'package:habit_tracker/core/theme/palette_packs.dart';
 import 'package:habit_tracker/core/theme/palette_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/theme_controller.dart';
+
+/// True when [id] is a point-shop item — these are gated by
+/// `unlockedShopItemsProvider`, not `isPremiumUserProvider`.
+bool _isShopItemId(String id) => shopCatalog.any((item) => item.id == id);
 
 /// Theme mode picker, extracted from the old flat Settings home screen.
 class ThemeSettingsScreen extends ConsumerWidget {
@@ -97,6 +103,7 @@ class _PaletteSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activePalette = ref.watch(activePaletteProvider);
     final isPremium = ref.watch(isPremiumUserProvider);
+    final shopUnlocked = ref.watch(unlockedShopItemsProvider).value ?? const {};
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -112,14 +119,23 @@ class _PaletteSelector extends ConsumerWidget {
             itemBuilder: (context, index) {
               final palette = palettePacks[index];
               final isSelected = palette.id == activePalette.id;
-              final locked = palette.isPremium && !isPremium;
+              final isShopItem = _isShopItemId(palette.id);
+              final locked = isShopItem
+                  ? !shopUnlocked.contains(palette.id)
+                  : palette.isPremium && !isPremium;
 
               return Column(
                 children: [
                   GestureDetector(
                     onTap: () {
                       if (locked) {
-                        unawaited(context.push('/settings/purchase'));
+                        unawaited(
+                          context.push(
+                            isShopItem
+                                ? '/settings/shop'
+                                : '/settings/purchase',
+                          ),
+                        );
                       } else {
                         unawaited(
                           ref
@@ -177,6 +193,9 @@ class _PaletteSelector extends ConsumerWidget {
         'sunset' => l10n.palettePackSunset,
         'lavender' => l10n.palettePackLavender,
         'midnight' => l10n.palettePackMidnight,
+        'ocean_palette' => l10n.shopItemOceanPalette,
+        'forest_palette' => l10n.shopItemForestPalette,
+        'sunset_palette' => l10n.shopItemSunsetPalette,
         _ => id,
       };
 }
@@ -186,6 +205,7 @@ class _IconPackSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activeIconPack = ref.watch(activeIconPackProvider);
     final isPremium = ref.watch(isPremiumUserProvider);
+    final shopUnlocked = ref.watch(unlockedShopItemsProvider).value ?? const {};
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -201,14 +221,23 @@ class _IconPackSelector extends ConsumerWidget {
             itemBuilder: (context, index) {
               final pack = iconPacks[index];
               final isSelected = pack.id == activeIconPack.id;
-              final locked = pack.isPremium && !isPremium;
+              final isShopItem = _isShopItemId(pack.id);
+              final locked = isShopItem
+                  ? !shopUnlocked.contains(pack.id)
+                  : pack.isPremium && !isPremium;
 
               return Column(
                 children: [
                   GestureDetector(
                     onTap: () {
                       if (locked) {
-                        unawaited(context.push('/settings/purchase'));
+                        unawaited(
+                          context.push(
+                            isShopItem
+                                ? '/settings/shop'
+                                : '/settings/purchase',
+                          ),
+                        );
                       } else {
                         unawaited(
                           ref
@@ -287,6 +316,7 @@ class _IconPackSelector extends ConsumerWidget {
         'default' => l10n.iconPackDefault,
         'ocean' => l10n.iconPackOcean,
         'sunset' => l10n.iconPackSunset,
+        'minimal_icon' => l10n.shopItemMinimalIcon,
         _ => id,
       };
 }
