@@ -1,7 +1,11 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-05 — #26 (06-same-day-multi-module-combo-bonus, PR
+**Updated:** 2026-08-06 — #47 (08-point-shop-cosmetic-unlocks, PR #82)
+removed: merged to dev. XP-purchase cosmetic shop; extended
+`palettePacks`/`iconPacks` with the 4 shop items so a purchase can
+actually apply through the existing theme-selection pipeline.
+Prior update 2026-08-05 — #26 (06-same-day-multi-module-combo-bonus, PR
 #80) removed: merged to dev. Uses `XpValues.comboBonus`, reserved by
 spec 02 since PR #79.
 Prior update 2026-08-05 — #25 (02-cross-module-xp-level-system, PR #79)
@@ -15,7 +19,7 @@ Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 33
+**Remaining specs:** 32
 
 ---
 
@@ -66,7 +70,6 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | # | Spec | Directory | Effort | Dependencies |
 |---|---|---|---|---|
 | 46 | 03-family-multi-profile | 04-premium | 8-10 days | Spec 02 (sync) |
-| 47 | 08-point-shop-cosmetic-unlocks | 06-gamification | 2 days | Spec 02 (XP system) — done, PR #79 |
 
 ---
 
