@@ -198,4 +198,41 @@ void main() {
       },
     );
   });
+
+  group('deductXp', () {
+    test('deducts from the balance and records a negative ledger row', () async {
+      await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 500,
+        now: now,
+      );
+      await repo.deductXp(
+        amount: 300,
+        now: now.add(const Duration(minutes: 1)),
+        reason: 'shop_purchase_x',
+      );
+      expect(await repo.totalXp(), 200);
+
+      final ledger = await repo.recentLedger();
+      expect(ledger.first.moduleId, 'system');
+      expect(ledger.first.eventType, 'shop_purchase');
+      expect(ledger.first.xpAmount, -300);
+      expect(ledger.first.sourceId, 'shop_purchase_x');
+    });
+
+    test('throws when balance is less than the deduction amount', () async {
+      await repo.awardXp(
+        moduleId: 'water',
+        eventType: 'action',
+        amount: 100,
+        now: now,
+      );
+      await expectLater(
+        repo.deductXp(amount: 200, now: now, reason: 'shop_purchase_x'),
+        throwsStateError,
+      );
+      expect(await repo.totalXp(), 100);
+    });
+  });
 }
