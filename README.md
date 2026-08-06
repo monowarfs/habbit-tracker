@@ -1,17 +1,17 @@
 # Habit Tracker
 
-An offline-first, multi-module habit tracker for Android and iOS. Track water intake, manage medication schedules, and monitor daily prayers — all with a clean Material 3 interface, smart reminders, and full Bengali/English localization.
+An offline-first, multi-module habit tracker for Android and iOS. Track water intake, medication, prayers, sleep, blood pressure, mood, and exercise — with gamified XP/quests, a clean Material 3 interface, smart reminders, and full Bengali/English localization.
 
 ## Features
 
 ### Core
 
-- **3 Habit Modules** — Water, Medicine, Prayer — each with full domain/data/presentation slices
+- **7 Habit Modules** — Water, Medicine, Prayer, Sleep, Blood Pressure, Mood, Exercise — each with full domain/data/presentation slices behind the shared `HabitModule` plugin contract
 - **Material 3 Design** — light/dark/system theme, teal seed color, per-module accent colors, `AppSemanticColors` extension
 - **Seasonal Accent Colors** — automatic Pohela Boishakh (Bengali New Year) theme accent with opt-out toggle
 - **Bengali & English** — full bilingual UI via `gen_l10n`, including Bangla line-height adjustments
-- **Bottom Navigation** — GoRouter `StatefulShellRoute` with 5 tabs: Dashboard, Water, Medicine, Prayer, Settings
-- **Offline-First** — Drift (SQLite) database, no backend required, all data lives on device
+- **Bottom Navigation** — GoRouter `StatefulShellRoute` with tabs: Dashboard, Water, Medicine, Prayer, Settings (Sleep/BP/Mood/Exercise reachable from the dashboard)
+- **Offline-First** — Drift (SQLite) database, no backend required, all data lives on device; optional Google Drive cloud backup
 
 ### Water
 
@@ -45,6 +45,41 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - **Ramadan mode** — Hijri-calendar detection, Sehri/Iftar countdown chips, fasting-aware reminder relabeling
 - **Prayer countdown widget** — Android home screen widget showing time until next prayer
 - **Gentle no-guilt copy** — "Due for Qadha" framing replaces "Missed" verdict
+
+### Sleep, Blood Pressure, Mood, Exercise
+
+- Four additional modules (`04-additional-habit-modules-pack`) on the same `HabitModule` contract as Water/Medicine/Prayer
+- Sleep — duration/quality logging
+- Blood Pressure — systolic/diastolic logging with classification (normal/elevated/hypertensive)
+- Mood — daily mood check-in log
+- Exercise — activity/duration logging
+- Each contributes its own dashboard day-status, quests, and achievements like the original 3 modules
+
+### Gamification
+
+- **XP & levels** — cross-module XP economy (`XpValues`, `level_curve.dart`), toast + level-up celebration on award
+- **Weekly quests** — per-module quest chains (Water/Medicine/Prayer), weekly reset handler
+- **Boss challenges** — rotating weekly/monthly milestone boss quests
+- **Combo bonus** — same-day multi-module completion detector with celebration animation
+- **Companion** — mood-reactive companion widget driven by recent adherence
+- **Avatar** — equippable cosmetic piece catalog + repository
+- **Point shop** — spend XP on cosmetic unlocks (theme palettes, icon packs), wired into existing theme-selection pipeline
+
+### Premium & Cloud Backup
+
+- `in_app_purchase`-backed entitlement service + purchase screen
+- Premium gate widget for entitlement-locked features
+- Google Drive backup/restore (Google Sign-In, `googleapis`) alongside local file export/import
+- Scheduled backup reminders
+
+### Community
+
+- External Telegram community channel + feedback board links (settings entry point)
+
+### Analytics
+
+- Notification effectiveness (opened/acted-on rate per module)
+- Goal-attainment and weekday-breakdown use cases powering the Reports screen
 
 ### Notifications & Reminders
 
@@ -149,18 +184,22 @@ Feature-first, Clean Architecture (`domain` / `data` / `presentation`) per modul
 lib/
 ├── core/                        # Shared infrastructure
 │   ├── achievements/            # Achievement engine + repository + tenure evaluator
+│   ├── analytics/                # Notification effectiveness, goal-attainment use cases
 │   ├── audio/                   # ChimePlayer (dose-done sound)
-│   ├── backup/                  # Export/import orchestrator
+│   ├── backup/                  # Export/import orchestrator + Google Drive backup target
 │   ├── changelog/               # What's New data + presentation
 │   ├── cosmetics/               # Cosmetic unlock engine + repository
-│   ├── database/                # Drift database, tables, migrations (v17)
+│   ├── database/                # Drift database, tables, migrations (v30)
+│   ├── dev/                     # Seed-data generator (debug builds)
 │   ├── error/                   # AppException / Result<T> taxonomy
+│   ├── gamification/             # XP, quests, boss challenges, combo, companion, avatar, shop
 │   ├── l10n/                    # ARB files (en/bn), generated localizations
 │   ├── logging/                 # Rotating-file logger
 │   ├── modules/                 # HabitModule contract + registry + module settings
 │   ├── notifications/           # Reminder engine, planner, ledger, actions
 │   ├── nudges/                  # Re-engagement nudge (trigger, builder, lifecycle)
 │   ├── pauses/                  # Life-event pause (repository, service, UI)
+│   ├── premium/                  # Entitlement service + purchase screen + premium gate
 │   ├── recalibration/           # Quarterly goal recalibration (trigger, service, card)
 │   ├── recaps/                  # Yearly wrapped recap (generator, trigger, providers)
 │   ├── reports/                 # Aggregate reports + streaks
@@ -173,13 +212,21 @@ lib/
 │   ├── wearable/                # Wear OS MethodChannel bridge
 │   └── widgets/                 # Shared widgets, illustrations, responsive breakpoints
 ├── features/
-│   ├── dashboard/               # Dashboard screen + greeting + stacking suggestions
+│   ├── achievements/             # Achievement gallery screen
+│   ├── avatar/                   # Avatar equip screen + piece icons
+│   ├── blood_pressure/           # Blood Pressure module (domain/data/presentation)
+│   ├── community/                 # Community/feedback links
+│   ├── dashboard/                # Dashboard screen + greeting + stacking suggestions
+│   ├── exercise/                  # Exercise module (domain/data/presentation)
 │   ├── medicine/                # Medicine module (domain/data/presentation)
-│   ├── onboarding/              # Progressive module unlock onboarding flow
-│   ├── prayer/                  # Prayer module + Ramadan framing
-│   ├── reports/                 # Reports screen + yearly recap + shareable card
-│   ├── settings/                # Settings (domain/data/presentation)
-│   └── water/                   # Water module + weather client
+│   ├── mood/                      # Mood module (domain/data/presentation)
+│   ├── onboarding/               # Progressive module unlock onboarding flow
+│   ├── prayer/                   # Prayer module + Ramadan framing
+│   ├── reports/                  # Reports screen + yearly recap + shareable card
+│   ├── settings/                 # Settings (domain/data/presentation)
+│   ├── shop/                      # Point-shop cosmetic unlock screen
+│   ├── sleep/                     # Sleep module (domain/data/presentation)
+│   └── water/                    # Water module + weather client
 └── main.dart                    # Entry point, ProviderContainer, lifecycle hooks
 ```
 
@@ -264,6 +311,9 @@ dart run flutter_native_splash:create
 | Hijri Calendar | hijri (Ramadan detection) |
 | Location | geolocator (GPS for weather/prayer) |
 | Sharing | share_plus (recap card sharing) |
+| In-App Purchase | in_app_purchase (premium entitlements) |
+| Cloud Backup | google_sign_in, googleapis (Google Drive) |
+| PDF/Export | pdf, printing (milestone certificates) |
 
 ## Testing
 
@@ -273,7 +323,7 @@ flutter test --coverage        # with coverage report
 ```
 
 Tests cover:
-- Domain use cases (streak calculation, dose status, prayer times, stock adjustment)
+- Domain use cases (streak calculation, dose status, prayer times, stock adjustment, XP/quest logic)
 - Repository implementations (Drift-backed, round-trip)
 - Notification planner (window/cap/diff logic, quiet hours)
 - Security (PIN hashing, backoff, lock screen, settings toggles)
@@ -301,12 +351,22 @@ assets/
   data/                   # Bundled data (prayer cities)
 docs/
   engineering/            # Coding standards, phases, DB design
+  product/roadmap.md      # Product roadmap
+  IMPLEMENTATION-ORDER.md # Remaining-spec dependency graph/sequencing
   strategies/             # Architecture decisions (notifications, security, backup)
   superpowers/specs/      # Feature specifications
   technical/              # Architecture docs, folder structure
 lib/                      # Dart source (see Architecture section)
 test/                     # Test files mirroring lib/ structure
 ```
+
+## Roadmap
+
+25 of 57 planned specs shipped so far (Wave 0-1 complete, plus a chunk of
+Wave 2-3 — gamification, additional modules, point shop, accessibility).
+32 remaining specs (premium, community, deeper accessibility/analytics,
+multi-device sync, family profiles) are sequenced in
+`docs/IMPLEMENTATION-ORDER.md`.
 
 ## Contributing
 
