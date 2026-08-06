@@ -76,16 +76,27 @@ class _ShopItemCardState extends ConsumerState<ShopItemCard> {
     if (!mounted || confirmed != true) return;
 
     setState(() => _purchasing = true);
-    await ref
-        .read(shopRepositoryProvider)
-        .purchaseItem(item: item, now: clock.now());
-    // Deliberately not resetting `_purchasing` back to false: the
-    // stream-driven `owned` rebuild that hides the Buy button entirely
-    // lags a beat behind this write completing (same reasoning as
-    // `_QuestTile._claim`'s own doc comment) — re-enabling in between
-    // reopens the exact double-tap window this guard exists to close.
-    // `purchaseItem` is a no-op past this point either way (already
-    // owned).
+    try {
+      await ref
+          .read(shopRepositoryProvider)
+          .purchaseItem(item: item, now: clock.now());
+      // Deliberately not resetting `_purchasing` back to false on
+      // success: the stream-driven `owned` rebuild that hides the Buy
+      // button entirely lags a beat behind this write completing (same
+      // reasoning as `_QuestTile._claim`'s own doc comment) —
+      // re-enabling in between reopens the exact double-tap window this
+      // guard exists to close.
+      // ignore: avoid_catching_errors
+    } on StateError {
+      // `StateError` is this layer's established domain-error type (see
+      // `XpRepository.deductXp`/`ShopRepository.purchaseItem`'s own doc
+      // comments) rather than a programmer bug here. Unlike
+      // `claimReward`, `purchaseItem` throws on a repeat/stale call
+      // (e.g. balance drained by a near-simultaneous purchase) rather
+      // than no-op'ing — reset so the button doesn't get stuck disabled
+      // after a failed attempt.
+      if (mounted) setState(() => _purchasing = false);
+    }
   }
 
   String _itemName(AppLocalizations l10n, String key) => switch (key) {
