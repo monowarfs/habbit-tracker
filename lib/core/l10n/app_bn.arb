@@ -752,5 +752,20 @@
   "comboCelebrationBody": "আজ সব মডিউল সম্পন্ন হয়েছে!",
   "comboXpBonus": "+{amount} XP কম্বো বোনাস",
   "comboIndicatorLabel": "আজ সব মডিউল সম্পন্ন",
-  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন"
+  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন",
+  "shopTitle": "পয়েন্ট শপ",
+  "shopBuyButton": "{cost} XP দিয়ে কিনুন",
+  "shopOwnedLabel": "মালিকানাধীন",
+  "shopInsufficientXp": "পর্যাপ্ত XP নেই ({current}/{needed})",
+  "shopConfirmPurchase": "{cost} XP দিয়ে {item} কিনবেন?",
+  "shopConfirmButton": "কিনুন",
+  "shopCancelButton": "বাতিল",
+  "shopItemOceanPalette": "সমুদ্র প্যালেট",
+  "shopItemOceanPaletteDesc": "শীতল নীল ও টিল টোন",
+  "shopItemForestPalette": "বন প্যালেট",
+  "shopItemForestPaletteDesc": "প্রাকৃতিক সবুজ রঙ",
+  "shopItemSunsetPalette": "সূর্যাস্ত প্যালেট",
+  "shopItemSunsetPaletteDesc": "উষ্ণ কমলা ও সোনালি টোন",
+  "shopItemMinimalIcon": "মিনিমাল আইকন",
+  "shopItemMinimalIconDesc": "পরিষ্কার, সরলীকৃত আইকন সেট"
 }
