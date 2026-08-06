@@ -2646,6 +2646,13 @@
   "@comboMinModules": {"description": "Explains why a single-module user doesn't see combo bonuses (no UI surface currently shows this — the combo indicator is simply absent for single-module users, not replaced by explanatory text)."},
   "shopTitle": "Point Shop",
   "@shopTitle": {"description": "Title of the XP point-shop screen."},
+  "shopCurrentBalance": "{balance} XP",
+  "@shopCurrentBalance": {
+    "description": "The user's current spendable XP balance, shown in the shop screen's app bar.",
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
   "shopBuyButton": "Buy for {cost} XP",
   "@shopBuyButton": {
     "description": "Buy button label showing an item's XP cost.",

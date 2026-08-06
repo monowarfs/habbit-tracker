@@ -18,9 +18,12 @@ class ShopRepository {
 
   /// Reactive stream of unlocked item ids, for reactive UI.
   Stream<Set<String>> watchUnlockedItems() {
-    return _db.select(_db.shopUnlocksTable).watch().map(
-      (rows) => rows.map((r) => r.itemId).toSet(),
-    );
+    return _db
+        .select(_db.shopUnlocksTable)
+        .watch()
+        .map(
+          (rows) => rows.map((r) => r.itemId).toSet(),
+        );
   }
 
   /// Purchases [item]: deducts its cost from the XP balance and records

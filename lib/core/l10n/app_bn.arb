@@ -754,6 +754,7 @@
   "comboIndicatorLabel": "আজ সব মডিউল সম্পন্ন",
   "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন",
   "shopTitle": "পয়েন্ট শপ",
+  "shopCurrentBalance": "{balance} XP",
   "shopBuyButton": "{cost} XP দিয়ে কিনুন",
   "shopOwnedLabel": "মালিকানাধীন",
   "shopInsufficientXp": "পর্যাপ্ত XP নেই ({current}/{needed})",
