@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -53,7 +54,11 @@ class GlobalMonthCalendar extends StatelessWidget {
       case ModuleDayStatusKind.partial:
         return colors.tertiary;
       case ModuleDayStatusKind.missed:
-        return colors.error;
+        // AppSemanticColors.missed (orange), not colors.error (red) — see
+        // docs/superpowers/specs/07-accessibility/
+        // 03-palette-audit-results.md: red vs. green (`complete`) is the
+        // single most common deuteranopia/protanopia failure mode.
+        return semantic.missed;
       case ModuleDayStatusKind.paused:
         return colors.surfaceContainerHighest;
       case ModuleDayStatusKind.none:
@@ -61,8 +66,34 @@ class GlobalMonthCalendar extends StatelessWidget {
     }
   }
 
+  /// A small non-color status glyph — hue alone must never be the only
+  /// way a day's combined status is legible.
+  IconData? _iconFor(ModuleDayStatusKind kind) {
+    return switch (kind) {
+      ModuleDayStatusKind.complete => Icons.check,
+      ModuleDayStatusKind.missed => Icons.close,
+      ModuleDayStatusKind.partial => Icons.remove,
+      ModuleDayStatusKind.paused => Icons.horizontal_rule,
+      ModuleDayStatusKind.none => null,
+    };
+  }
+
+  /// Screen-reader label for [kind], reusing the same ARB keys as the
+  /// icon glyphs (`03-palette-audit-results.md`). `null` for `none` — no
+  /// status to announce beyond the day number already read from `Text`.
+  String? _statusLabel(AppLocalizations l10n, ModuleDayStatusKind kind) {
+    return switch (kind) {
+      ModuleDayStatusKind.complete => l10n.calendarStatusDoneLabel,
+      ModuleDayStatusKind.missed => l10n.calendarStatusMissedLabel,
+      ModuleDayStatusKind.partial => l10n.calendarStatusPartialLabel,
+      ModuleDayStatusKind.paused => l10n.calendarStatusSkippedLabel,
+      ModuleDayStatusKind.none => null,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dayCount = _daysInMonth();
     return GridView.builder(
       shrinkWrap: true,
@@ -77,17 +108,42 @@ class GlobalMonthCalendar extends StatelessWidget {
             statuses[day]?.kind ?? ModuleDayStatusKind.none,
         ];
         final combined = combinedDayStatusKind(kinds);
+        final icon = _iconFor(combined);
+        final statusLabel = _statusLabel(l10n, combined);
+        final cell = Container(
+          margin: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: _colorFor(context, combined),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          alignment: Alignment.center,
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: [
+              Center(child: Text('${day.day}')),
+              if (icon != null)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Icon(
+                    icon,
+                    size: 10,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+            ],
+          ),
+        );
         return InkWell(
           onTap: () => onDayTap(day),
-          child: Container(
-            margin: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: _colorFor(context, combined),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            alignment: Alignment.center,
-            child: Text('${day.day}'),
-          ),
+          child: statusLabel == null
+              ? cell
+              : Semantics(
+                  label: '${day.toIso()}, $statusLabel',
+                  excludeSemantics: true,
+                  child: cell,
+                ),
         );
       },
     );

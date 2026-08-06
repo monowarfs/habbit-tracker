@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
+import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
 /// Pure, unit-testable: no `BuildContext`, no `Theme` lookup. `kind` gates
@@ -88,8 +89,18 @@ class HabitHeatmapCalendar extends StatelessWidget {
       return colors.surfaceContainerHighest;
     }
     if (status.kind == ModuleDayStatusKind.missed) {
-      // matches PrayerHistoryScreen's existing choice
-      return colors.errorContainer;
+      // AppSemanticColors.missed (orange), not colors.errorContainer (red)
+      // — red/green is the most common CVD failure mode and `complete`
+      // cells are colored by the module's own (often warm) accentColor,
+      // so "missed" must not default to red
+      // (docs/superpowers/specs/07-accessibility/
+      // 03-palette-audit-results.md). Alpha-blended like the bands below
+      // to match this calendar's pale-fill visual style.
+      final semantic = Theme.of(context).semanticColors;
+      return Color.alphaBlend(
+        semantic.missed.withValues(alpha: 0.3),
+        colors.surface,
+      );
     }
     final alpha = heatmapAlphaFor(status, maxValue);
     // alphaBlend against the theme's own surface, not translucent paint
@@ -99,6 +110,19 @@ class HabitHeatmapCalendar extends StatelessWidget {
       accentColor.withValues(alpha: alpha),
       colors.surface,
     );
+  }
+
+  /// A small non-color status glyph overlaid in the cell's corner — hue
+  /// alone (module accent vs. the missed/partial bands) must never be the
+  /// only way a status is legible (`03-palette-audit-results.md`).
+  IconData? _iconFor(ModuleDayStatusKind kind) {
+    return switch (kind) {
+      ModuleDayStatusKind.complete => Icons.check,
+      ModuleDayStatusKind.missed => Icons.close,
+      ModuleDayStatusKind.partial => Icons.remove,
+      ModuleDayStatusKind.paused => Icons.horizontal_rule,
+      ModuleDayStatusKind.none => null,
+    };
   }
 
   String _semanticsLabel(
@@ -207,16 +231,16 @@ class HabitHeatmapCalendar extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
-                      // A non-color cue for `complete` — never rely on
+                      // A non-color cue per status kind — never rely on
                       // hue/alpha alone (colorblind users, low-contrast
                       // displays) — overlaid on, not replacing, the day
                       // number.
-                      if (status?.kind == ModuleDayStatusKind.complete)
+                      if (status != null && _iconFor(status.kind) != null)
                         Positioned(
                           right: 0,
                           bottom: 0,
                           child: Icon(
-                            Icons.check,
+                            _iconFor(status.kind),
                             size: 8,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),

@@ -752,5 +752,9 @@
   "comboCelebrationBody": "আজ সব মডিউল সম্পন্ন হয়েছে!",
   "comboXpBonus": "+{amount} XP কম্বো বোনাস",
   "comboIndicatorLabel": "আজ সব মডিউল সম্পন্ন",
-  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন"
+  "comboMinModules": "কম্বো বোনাসের জন্য ২+ মডিউল চালু করুন",
+  "calendarStatusDoneLabel": "সম্পন্ন",
+  "calendarStatusMissedLabel": "মিস হয়েছে",
+  "calendarStatusPartialLabel": "আংশিক",
+  "calendarStatusSkippedLabel": "বাদ দিয়েছে"
 }
