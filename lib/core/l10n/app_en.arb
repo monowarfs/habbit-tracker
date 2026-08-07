@@ -1983,6 +1983,29 @@
   "@goalAttainmentEmpty": {
     "description": "Shown when the selected period has no active days to compute attainment from."
   },
+  "consistencyScoreTitle": "Consistency Score",
+  "@consistencyScoreTitle": {
+    "description": "Title for the dashboard's composite consistency score display."
+  },
+  "consistencyScoreValue": "{score}/100",
+  "@consistencyScoreValue": {
+    "description": "The consistency score value out of 100.",
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "consistencyScoreExcellent": "Excellent!",
+  "@consistencyScoreExcellent": {
+    "description": "Label shown for a high consistency score."
+  },
+  "consistencyScoreGood": "Good",
+  "@consistencyScoreGood": {
+    "description": "Label shown for a moderate consistency score."
+  },
+  "consistencyScoreNeedsWork": "Keep going!",
+  "@consistencyScoreNeedsWork": {
+    "description": "Label shown for a low consistency score."
+  },
   "unlocksTitle": "Unlocks",
   "@unlocksTitle": {
     "description": "Title of the unlocks screen."
