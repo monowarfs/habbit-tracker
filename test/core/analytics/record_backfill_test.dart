@@ -64,27 +64,67 @@ void main() {
     expect(record!.recordValue, 6);
   });
 
-  test('is a no-op for a module that already has a record', () async {
-    await repo.setRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-      value: 99,
-    );
-    final module = _FakeModule('water', {
-      const LocalDate(2026, 6, 1): const ModuleDayStatus(
-        kind: ModuleDayStatusKind.complete,
-        value: 1,
-      ),
-    });
+  test(
+    'does not lower an existing record when the scanned history is '
+    'smaller (e.g. the persisted record predates a broken streak)',
+    () async {
+      await repo.setRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        value: 99,
+      );
+      final module = _FakeModule('water', {
+        const LocalDate(2026, 6, 1): const ModuleDayStatus(
+          kind: ModuleDayStatusKind.complete,
+          value: 1,
+        ),
+      });
 
-    await backfillPersonalRecords(modules: [module], repo: repo, range: range);
+      await backfillPersonalRecords(
+        modules: [module],
+        repo: repo,
+        range: range,
+      );
 
-    final record = await repo.getRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-    );
-    expect(record!.recordValue, 99);
-  });
+      final record = await repo.getRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+      );
+      expect(record!.recordValue, 99);
+    },
+  );
+
+  test(
+    'raises an existing record that undercounted the true history — the '
+    'race a live per-screen check (created from just the current streak)'
+    ' can leave behind before this ever ran',
+    () async {
+      await repo.setRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        value: 3,
+      );
+      final module = _FakeModule('water', {
+        for (var d = 1; d <= 10; d++)
+          LocalDate(2026, 6, d): const ModuleDayStatus(
+            kind: ModuleDayStatusKind.complete,
+            value: 1,
+          ),
+      });
+
+      await backfillPersonalRecords(
+        modules: [module],
+        repo: repo,
+        range: range,
+      );
+
+      final record = await repo.getRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+      );
+      expect(record!.recordValue, 10);
+    },
+  );
 
   test('does not create a record when history has no complete days', () async {
     final module = _FakeModule('medicine', {

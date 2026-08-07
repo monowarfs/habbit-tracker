@@ -11,34 +11,37 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 /// (the design doc's schema table only enumerates these three).
 const personalRecordModuleIds = {'water', 'medicine', 'prayer'};
 
-/// One-time seed of `personal_records` from full history (Task 6,
+/// Seeds `personal_records` from full history (Task 6,
 /// `docs/superpowers/specs/08-analytics/
 /// 02-personal-record-tracking-IMPLEMENTATION-PLAN.md`): for each of
-/// [modules] that doesn't have a `longest_streak` record yet, scans its
-/// entire [range] and persists the true all-time longest streak.
+/// [modules], scans its entire [range] and raises its `longest_streak`
+/// record to the true all-time value if the scan beats what's currently
+/// persisted.
 ///
-/// A no-op for any module that already has a record — [repo]'s
-/// `getRecord` returning non-null is the "already backfilled" marker,
-/// so this is cheap (and safe) to call on every app resume rather than
-/// needing a dedicated one-shot flag.
+/// Deliberately uses [PersonalRecordRepository.checkAndUpdate] (compare
+/// -and-raise), not a "skip if a record already exists" guard: a stats
+/// screen's own live check (`personal_record_providers.dart`) can create
+/// a record from just the *current* streak before this ever runs (it's
+/// `unawaited` from an app-resume hook, so ordering against UI builds
+/// isn't guaranteed) — if this early-exited on "a row exists", that
+/// live-created, possibly-lower value would permanently shadow the true
+/// historical max. Comparing instead of skipping makes the result
+/// correct regardless of run order, at the cost of one dayStatus scan
+/// per module on every resume (still far cheaper than a stats-screen
+/// load, which is what the design doc's "no re-scanning" goal is about).
 Future<void> backfillPersonalRecords({
   required List<HabitModule> modules,
   required PersonalRecordRepository repo,
   required DateRange range,
 }) async {
   for (final module in modules) {
-    final existing = await repo.getRecord(
-      moduleId: module.id,
-      recordType: 'longest_streak',
-    );
-    if (existing != null) continue;
     final dayStatus = await module.dayStatus(range);
     final longest = longestStreak(dayStatus);
     if (longest > 0) {
-      await repo.setRecord(
+      await repo.checkAndUpdate(
         moduleId: module.id,
         recordType: 'longest_streak',
-        value: longest,
+        newValue: longest,
       );
     }
   }
