@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
@@ -56,6 +58,23 @@ void main() {
       completes,
     );
   });
+
+  test(
+    'times out and swallows a play() call that never responds, instead of '
+    'wedging the queue open forever (background-isolate constraint)',
+    () async {
+      when(() => player.play(any())).thenAnswer(
+        (_) => Completer<void>().future, // never completes
+      );
+      final service = AudioCueService(player: player);
+
+      await expectLater(
+        service.playEarcon(NotificationActionType.done),
+        completes,
+      );
+    },
+    timeout: const Timeout(Duration(seconds: 10)),
+  );
 
   test('queues rapid successive calls instead of overlapping', () async {
     final service = AudioCueService(player: player);

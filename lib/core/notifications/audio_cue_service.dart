@@ -54,8 +54,18 @@ class AudioCueService {
     final path = _assetPaths[action];
     if (path == null) return;
     try {
-      await _player.setAudioContext(_context);
-      await _player.play(AssetSource(path));
+      // Bounded, not just try/caught: on Android, `handleNotificationAction`
+      // can run in a fresh background isolate (a fully-closed-app
+      // notification tap, `notification_background_handler.dart`) where
+      // this plugin's platform channel may never have been registered —
+      // in that case the platform call doesn't necessarily throw, it can
+      // simply never respond. Without a timeout that would wedge this
+      // service's serial queue open forever, silently blocking every
+      // later earcon for the rest of the process's life.
+      await _player
+          .setAudioContext(_context)
+          .timeout(const Duration(seconds: 2));
+      await _player.play(AssetSource(path)).timeout(const Duration(seconds: 2));
       // ponytail: the earcons are fixed, short (<=250ms) synthesized
       // tones, so a flat delay stands in for "playback finished" instead
       // of listening on `onPlayerComplete` — cheap to test (no stream
@@ -64,7 +74,9 @@ class AudioCueService {
       // ever added.
       await Future<void>.delayed(const Duration(milliseconds: 300));
     } on Object {
-      // Deliberately silent — see the class doc comment.
+      // Deliberately silent — see the class doc comment. Covers both an
+      // outright playback failure and the above timeout (background-
+      // isolate restriction) identically: a missed earcon either way.
     }
   }
 }
