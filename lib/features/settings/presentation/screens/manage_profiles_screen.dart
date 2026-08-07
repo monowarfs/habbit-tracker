@@ -120,6 +120,17 @@ class _ProfileTile extends ConsumerWidget {
           children: [
             if (isActive) const Icon(Icons.check_circle),
             IconButton(
+              icon: Icon(
+                profile.leaderboardOptedOut
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+              ),
+              tooltip: profile.leaderboardOptedOut
+                  ? l10n.leaderboardOptIn
+                  : l10n.leaderboardOptOut,
+              onPressed: () => _onToggleLeaderboardOptOut(ref),
+            ),
+            IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: l10n.editProfileAction,
               onPressed: () => _onEdit(context, ref),
@@ -133,6 +144,16 @@ class _ProfileTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onToggleLeaderboardOptOut(WidgetRef ref) async {
+    await ref
+        .read(profileRepositoryProvider)
+        .setLeaderboardOptedOut(
+          profile.id,
+          optedOut: !profile.leaderboardOptedOut,
+        );
+    ref.invalidate(profileListProvider);
   }
 
   Future<void> _onEdit(BuildContext context, WidgetRef ref) async {

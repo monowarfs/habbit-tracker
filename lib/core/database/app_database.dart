@@ -91,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 33;
+  int get schemaVersion => 34;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -420,6 +420,14 @@ class AppDatabase extends _$AppDatabase {
         await customUpdate(
           "UPDATE app_settings SET active_profile_id = 'system' "
           'WHERE active_profile_id IS NULL',
+        );
+      }
+      if (from < 34) {
+        // Household leaderboard privacy opt-out (`docs/superpowers/specs/
+        // 06-gamification/12-household-leaderboard-IMPLEMENTATION-PLAN.md`).
+        await m.addColumn(
+          profilesTable,
+          profilesTable.leaderboardOptedOut,
         );
       }
       // Seam: when schemaVersion increments further, add

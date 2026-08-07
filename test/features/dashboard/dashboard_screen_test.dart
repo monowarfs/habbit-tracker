@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/profile_repository.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -35,15 +36,20 @@ class _FakeModule extends Fake implements HabitModule {
   List<Widget> quickActions(WidgetRef ref) => const [];
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async =>
-      {};
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {};
 }
 
 class _CompleteTodayModule extends _FakeModule {
   _CompleteTodayModule(super.id);
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async => {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {
     range.start: const ModuleDayStatus(
       kind: ModuleDayStatusKind.complete,
       value: 1,
@@ -122,6 +128,25 @@ void main() {
     expect(find.text('prayer summary'), findsOneWidget);
     await disposeTree(tester);
   });
+
+  testWidgets(
+    'household leaderboard card is hidden with only one profile',
+    (tester) async {
+      await _pump(tester, [_FakeModule('water')], db);
+      expect(find.text('Household Leaderboard'), findsNothing);
+      await disposeTree(tester);
+    },
+  );
+
+  testWidgets(
+    'household leaderboard card appears once a second profile exists',
+    (tester) async {
+      await ProfileRepository(db).createProfile('Kid', 'blue');
+      await _pump(tester, [_FakeModule('water')], db);
+      expect(find.text('Household Leaderboard'), findsOneWidget);
+      await disposeTree(tester);
+    },
+  );
 
   testWidgets(
     'shows the consistency score section once a module reports today '

@@ -19,8 +19,10 @@ class _FakeModule extends Fake implements HabitModule {
   );
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async =>
-      _byDay;
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => _byDay;
 }
 
 const _weekRange = DateRange(

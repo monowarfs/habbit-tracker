@@ -363,15 +363,19 @@ class WaterModule implements HabitModule {
   }
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
+    final effectiveProfileId = profileId ?? _fixedProfileId;
     final entries = await _repository
         .watchEntriesInRange(
           range.start,
           range.end,
-          profileId: _fixedProfileId,
+          profileId: effectiveProfileId,
         )
         .first;
-    final goals = await _repository.allGoals(profileId: _fixedProfileId);
+    final goals = await _repository.allGoals(profileId: effectiveProfileId);
     final totalsByDay = <LocalDate, int>{};
     for (final entry in entries) {
       final day = localDayKey(entry.loggedAt);
@@ -383,7 +387,7 @@ class WaterModule implements HabitModule {
     // archived all goals, the module is paused. If they never set any,
     // the module is simply inactive (none).
     final hasAnyGoals = await _repository.hasAnyGoals(
-      profileId: _fixedProfileId,
+      profileId: effectiveProfileId,
     );
     final isArchived = hasAnyGoals && goals.isEmpty;
     // Fetch pause-aware days for this module.
@@ -392,7 +396,7 @@ class WaterModule implements HabitModule {
         ? await pauseSvc.pausedDaysInRange(
             moduleId: 'water',
             range: range,
-            profileId: _fixedProfileId,
+            profileId: effectiveProfileId,
           )
         : <LocalDate>{};
     var day = range.start;

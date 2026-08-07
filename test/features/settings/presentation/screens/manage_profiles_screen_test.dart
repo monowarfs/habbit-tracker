@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
 import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
+import 'package:habit_tracker/core/profiles/profile_repository.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/manage_profiles_screen.dart';
 
 void main() {
@@ -61,6 +62,47 @@ void main() {
     );
     expect(deleteButton.onPressed, isNull);
   });
+
+  testWidgets(
+    'tapping the visibility icon toggles leaderboardOptedOut',
+    (tester) async {
+      await pumpScreen(tester);
+
+      expect(
+        find.byIcon(Icons.visibility_outlined),
+        findsOneWidget,
+      );
+
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.visibility_outlined),
+            )
+            .tooltip,
+        'Hide from leaderboard',
+      );
+
+      await tester.tap(find.byIcon(Icons.visibility_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+      final profiles = await ProfileRepository(db).listProfiles();
+      expect(profiles.single.leaderboardOptedOut, isTrue);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.visibility_off_outlined),
+            )
+            .tooltip,
+        'Show on leaderboard',
+      );
+
+      await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+    },
+  );
 
   testWidgets('tapping Add Profile as a non-premium user opens the '
       'purchase screen instead of the dialog', (tester) async {

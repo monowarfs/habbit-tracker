@@ -18,6 +18,7 @@ import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_add_entry_screen.dart';
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_home_screen.dart';
 import 'package:habit_tracker/features/exercise/presentation/screens/exercise_stats_screen.dart';
+import 'package:habit_tracker/features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import 'package:habit_tracker/features/mood/presentation/screens/mood_home_screen.dart';
 import 'package:habit_tracker/features/mood/presentation/screens/mood_stats_screen.dart';
 import 'package:habit_tracker/features/onboarding/presentation/screens/onboarding_complete_screen.dart';
@@ -71,6 +72,10 @@ class AppRoutes {
 
   /// Achievement gallery screen path (Run 15).
   static const String achievements = '/achievements';
+
+  /// Household leaderboard screen path (`docs/superpowers/specs/
+  /// 06-gamification/12-household-leaderboard-IMPLEMENTATION-PLAN.md`).
+  static const String leaderboard = '/leaderboard';
 
   /// PIN lock settings screen.
   static const String settingsPin = '/settings/pin';
@@ -233,6 +238,10 @@ GoRouter buildAppRouter(
                     path: 'achievements',
                     builder: (context, state) =>
                         const AchievementGalleryScreen(),
+                  ),
+                  GoRoute(
+                    path: 'leaderboard',
+                    builder: (context, state) => const LeaderboardScreen(),
                   ),
                 ],
               ),

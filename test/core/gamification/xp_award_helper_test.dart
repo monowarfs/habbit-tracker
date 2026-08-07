@@ -20,7 +20,10 @@ class _FakeModule extends Fake implements HabitModule {
   final ModuleDayStatusKind _kind;
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async => {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {
     for (var d = range.start; d.compareTo(range.end) <= 0; d = d.addDays(1))
       d: ModuleDayStatus(kind: _kind, value: 0),
   };

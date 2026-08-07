@@ -74,6 +74,7 @@ class ProfileRepository {
       displayName: name,
       avatarColor: color,
       createdAt: now,
+      leaderboardOptedOut: false,
     );
     await _db.into(_db.profilesTable).insert(row);
     return row.toDomain();
@@ -88,6 +89,16 @@ class ProfileRepository {
         displayName: name != null ? Value(name) : const Value.absent(),
         avatarColor: color != null ? Value(color) : const Value.absent(),
       ),
+    );
+  }
+
+  /// Sets [id]'s household-leaderboard visibility. `optedOut: true` hides
+  /// the profile from leaderboard rankings.
+  Future<void> setLeaderboardOptedOut(String id, {required bool optedOut}) {
+    return (_db.update(
+      _db.profilesTable,
+    )..where((t) => t.id.equals(id))).write(
+      ProfilesTableCompanion(leaderboardOptedOut: Value(optedOut)),
     );
   }
 
