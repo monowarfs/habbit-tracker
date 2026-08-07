@@ -846,5 +846,9 @@
   "leaderboardMetricStreak": "বর্তমান ধারা",
   "leaderboardMetricWeekly": "সাপ্তাহিক সম্পূর্ণতা",
   "leaderboardMetricLevel": "লেভেল",
-  "leaderboardTied": "সমান"
+  "leaderboardTied": "সমান",
+  "comparisonTitle": "গত বছরের তুলনায়",
+  "comparisonCurrentLabel": "এই {period}",
+  "comparisonPastLabel": "গত বছর",
+  "comparisonEmptyState": "এখনও পর্যাপ্ত ইতিহাস নেই (১ বছর প্রয়োজন)"
 }
