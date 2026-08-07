@@ -13,6 +13,7 @@ class Profile {
     required this.displayName,
     required this.avatarColor,
     required this.createdAt,
+    this.leaderboardOptedOut = false,
   });
 
   /// `'system'` for the pre-migration default profile; a generated uuid
@@ -28,6 +29,10 @@ class Profile {
 
   /// UTC epoch millis.
   final int createdAt;
+
+  /// Household leaderboard privacy opt-out — hides this profile from
+  /// leaderboard rankings when true.
+  final bool leaderboardOptedOut;
 }
 
 /// Maps a Drift row to the domain type.
@@ -38,5 +43,6 @@ extension ProfileRowMapping on ProfileRow {
     displayName: displayName,
     avatarColor: avatarColor,
     createdAt: createdAt,
+    leaderboardOptedOut: leaderboardOptedOut,
   );
 }

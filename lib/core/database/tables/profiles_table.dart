@@ -29,6 +29,12 @@ class ProfilesTable extends Table {
   /// profile itself.
   IntColumn get deletedAt => integer().nullable()();
 
+  /// Household leaderboard privacy opt-out (`docs/superpowers/specs/
+  /// 06-gamification/12-household-leaderboard-design.md`). Defaults to
+  /// visible.
+  BoolColumn get leaderboardOptedOut =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

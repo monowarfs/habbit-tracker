@@ -130,4 +130,24 @@ void main() {
       expect(systemRow.deletedAt, isNot(null));
     },
   );
+
+  test(
+    'setLeaderboardOptedOut defaults to false and can be toggled',
+    () async {
+      final profile = (await repo.listProfiles()).single;
+      expect(profile.leaderboardOptedOut, isFalse);
+
+      await repo.setLeaderboardOptedOut(profile.id, optedOut: true);
+      expect(
+        (await repo.listProfiles()).single.leaderboardOptedOut,
+        isTrue,
+      );
+
+      await repo.setLeaderboardOptedOut(profile.id, optedOut: false);
+      expect(
+        (await repo.listProfiles()).single.leaderboardOptedOut,
+        isFalse,
+      );
+    },
+  );
 }
