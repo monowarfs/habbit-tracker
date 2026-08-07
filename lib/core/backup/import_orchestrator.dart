@@ -180,6 +180,8 @@ Future<Result<void>> applyImport({
             screenPrivacyEnabled:
                 appSettingsJson['screenPrivacyEnabled'] as bool? ?? false,
             soundEnabled: appSettingsJson['soundEnabled'] as bool? ?? false,
+            audioCuesEnabled:
+                appSettingsJson['audioCuesEnabled'] as bool? ?? true,
             quietHoursEnabled:
                 appSettingsJson['quietHoursEnabled'] as bool? ?? false,
             quietHoursStart: LocalTime.parse(

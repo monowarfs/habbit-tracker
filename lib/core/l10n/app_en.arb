@@ -1392,6 +1392,14 @@
   "@settingsSoundToggle": {
     "description": "Switch label enabling/disabling the dose-done completion chime."
   },
+  "settingsAudioCuesLabel": "Notification action sounds",
+  "@settingsAudioCuesLabel": {
+    "description": "Switch label enabling/disabling the earcon played after a Done/Snooze/Skip notification action."
+  },
+  "settingsAudioCuesDescription": "Play a short sound confirming Done, Snooze, or Skip on a notification",
+  "@settingsAudioCuesDescription": {
+    "description": "Switch subtitle explaining the notification-action earcon toggle."
+  },
   "settingsRamadanMode": "Ramadan mode",
   "@settingsRamadanMode": {
     "description": "Settings-home nav entry linking to the Ramadan mode settings screen."

@@ -87,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -317,6 +317,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 30) {
         await m.createTable(shopUnlocksTable);
+      }
+      if (from < 31) {
+        // Audio-cue-alternative notification actions (`docs/superpowers/
+        // specs/07-accessibility/
+        // 08-AUDIO-CUE-ALTERNATIVE-NOTIFICATION-ACTIONS-IMPLEMENTATION-
+        // PLAN.md`) — default `true`, matching the column's own default
+        // for fresh installs.
+        await m.addColumn(appSettingsTable, appSettingsTable.audioCuesEnabled);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

@@ -37,6 +37,7 @@ void main() {
     expect(firstRead.screenPrivacyEnabled, isFalse);
     expect(firstRead.displayName, isNull);
     expect(firstRead.soundEnabled, isFalse);
+    expect(firstRead.audioCuesEnabled, isTrue);
 
     expect(firstRead.seasonalAccentsEnabled, isTrue);
 
@@ -62,6 +63,10 @@ void main() {
     expect(displayNameResult, isA<Success<void>>());
     final soundResult = await repo1.updateSoundEnabled(enabled: true);
     expect(soundResult, isA<Success<void>>());
+    final audioCuesResult = await repo1.updateAudioCuesEnabled(
+      enabled: false,
+    );
+    expect(audioCuesResult, isA<Success<void>>());
 
     final seasonalResult = await repo1.updateSeasonalAccentsEnabled(
       enabled: false,
@@ -99,6 +104,7 @@ void main() {
     expect(afterRestart.screenPrivacyEnabled, isTrue);
     expect(afterRestart.displayName, 'Nadia');
     expect(afterRestart.soundEnabled, isTrue);
+    expect(afterRestart.audioCuesEnabled, isFalse);
 
     expect(afterRestart.seasonalAccentsEnabled, isFalse);
 

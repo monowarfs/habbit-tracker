@@ -51,6 +51,7 @@ sealed class AppSettings with _$AppSettings {
     required bool biometricEnabled,
     required bool screenPrivacyEnabled,
     required bool soundEnabled,
+    @Default(true) bool audioCuesEnabled,
     required bool quietHoursEnabled,
     required LocalTime quietHoursStart,
     required LocalTime quietHoursEnd,

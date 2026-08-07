@@ -446,6 +446,8 @@
   "prayerCountdownFormatHoursMinutes": "{hours}ঘ {minutes}মি",
   "settingsSound": "শব্দ",
   "settingsSoundToggle": "ডোজ সম্পন্ন হিসেবে চিহ্নিত হলে একটি সুর বাজান",
+  "settingsAudioCuesLabel": "বিজ্ঞপ্তি অ্যাকশনের শব্দ",
+  "settingsAudioCuesDescription": "বিজ্ঞপ্তিতে সম্পন্ন, স্নুজ বা বাদ দেওয়া নিশ্চিত করতে একটি ছোট শব্দ বাজান",
   "settingsRamadanMode": "রমজান মোড",
   "adaptiveReminderTitle": "অভিযোজিত রিমাইন্ডার",
   "adaptiveReminderDescription": "আপনি সাধারণত কখন উত্তর দেন তার ভিত্তিতে রিমাইন্ডার সময় স্বয়ংক্রিয়ভাবে সামঞ্জস্য করুন।",

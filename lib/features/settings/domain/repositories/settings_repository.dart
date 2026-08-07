@@ -35,6 +35,9 @@ abstract class SettingsRepository {
   /// Enables or disables the in-app dose-done completion chime.
   Future<Result<void>> updateSoundEnabled({required bool enabled});
 
+  /// Enables or disables the Done/Snooze/Skip notification-action earcon.
+  Future<Result<void>> updateAudioCuesEnabled({required bool enabled});
+
   /// Records the app version the user last saw the changelog for.
   Future<Result<void>> updateLastSeenAppVersion(String version);
 
