@@ -14,28 +14,32 @@ class _FakeModule extends Fake implements HabitModule {
   final ModuleDayStatusKind todayKind;
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async =>
-      {range.start: ModuleDayStatus(kind: todayKind, value: 0)};
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async => {
+    range.start: ModuleDayStatus(kind: todayKind, value: 0),
+  };
 }
 
 void main() {
-  test('composes the score from every visible module\'s today status', () async {
-    final container = ProviderContainer(
-      overrides: [
-        habitModulesProvider.overrideWith(
-          (ref) => [
-            _FakeModule('water', ModuleDayStatusKind.complete),
-            _FakeModule('medicine', ModuleDayStatusKind.complete),
-          ],
-        ),
-        isPremiumUserProvider.overrideWith((ref) => true),
-      ],
-    );
-    addTearDown(container.dispose);
+  test(
+    'composes the score from every visible module\'s today status',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          habitModulesProvider.overrideWith(
+            (ref) => [
+              _FakeModule('water', ModuleDayStatusKind.complete),
+              _FakeModule('medicine', ModuleDayStatusKind.complete),
+            ],
+          ),
+          isPremiumUserProvider.overrideWith((ref) => true),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final score = await container.read(consistencyScoreProvider.future);
-    expect(score, 100);
-  });
+      final score = await container.read(consistencyScoreProvider.future);
+      expect(score, 100);
+    },
+  );
 
   test('excludes premium-gated modules the user can\'t see', () async {
     final container = ProviderContainer(
