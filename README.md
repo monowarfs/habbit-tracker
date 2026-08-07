@@ -64,6 +64,7 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 - **Companion** — mood-reactive companion widget driven by recent adherence
 - **Avatar** — equippable cosmetic piece catalog + repository
 - **Point shop** — spend XP on cosmetic unlocks (theme palettes, icon packs), wired into existing theme-selection pipeline
+- **Milestone certificates** — shareable off-screen-rendered PNG certificate on streak/achievement milestones, cached and shared via OS share sheet
 
 ### Premium & Cloud Backup
 
@@ -80,6 +81,16 @@ An offline-first, multi-module habit tracker for Android and iOS. Track water in
 
 - Notification effectiveness (opened/acted-on rate per module)
 - Goal-attainment and weekday-breakdown use cases powering the Reports screen
+- **Year-at-a-Glance heatmap** — GitHub-style 52/53-week colorblind-safe grid per module, with a tap-tooltip
+- **Personal-record tracking** — longest-streak "current record" per module, "New Record!" badge + celebration on a break, full-history backfill on app resume
+- **Consistency score** — single weighted composite score across all visible modules, shown on the dashboard
+
+### Accessibility
+
+- TalkBack/VoiceOver semantic labels across Dashboard, Water, Medicine, Prayer, and Settings screens
+- Live-region announcements for XP-gain toasts
+- Dynamic text-scaling support verified up to 2.0x across all screens
+- **Audio cues** — optional earcon confirming a Done/Snooze/Skip notification action, opt-out toggle in Settings
 
 ### Notifications & Reminders
 
@@ -362,11 +373,10 @@ test/                     # Test files mirroring lib/ structure
 
 ## Roadmap
 
-25 of 57 planned specs shipped so far (Wave 0-1 complete, plus a chunk of
-Wave 2-3 — gamification, additional modules, point shop, accessibility).
-32 remaining specs (premium, community, deeper accessibility/analytics,
-multi-device sync, family profiles) are sequenced in
-`docs/IMPLEMENTATION-ORDER.md`.
+32 of 57 planned specs shipped so far (Wave 0-1 complete, plus a chunk of
+Wave 2-3 — gamification, additional modules, point shop, accessibility,
+analytics). 25 remaining specs (premium, community, multi-device sync,
+family profiles) are sequenced in `docs/IMPLEMENTATION-ORDER.md`.
 
 ## Contributing
 

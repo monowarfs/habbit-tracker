@@ -1,7 +1,20 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-06 — #29 (03-colorblind-safe-streak-heatmap, PR #81)
+**Updated:** 2026-08-07 — 7 specs removed, merged to dev in parallel (PRs
+#83-#89): #35 (05-consistency-score), #31 (08-audio-cue-alternative-
+notification-actions), #32 (01-adherence-heatmap), #33 (02-personal-
+record-tracking), #28 (01-talkback-voiceover-navigation-audit), #27
+(07-milestone-certificate-image), #30 (05-dynamic-text-scaling-stress-
+test). Several agents found and fixed real bugs along the way: a race
+between the personal-record live check and its resume-time backfill, an
+orphaned duplicate PNG in the certificate cache, two hardcoded-English
+accessibility strings (Medicine's Skip/Done tooltips, Prayer's unlabeled
+toggle button), and 5 layout-overflow bugs at 2.0x text scale (Water's
+add-entry form, `PeriodBarChart` axis labels, `streak_card`, `TrendArrow`,
+and the personal-record "New Record!" chip). `app_database.dart` schema
+now at v32 (`personal_records` + `audio_cues_enabled` added this batch).
+Prior update 2026-08-06 — #29 (03-colorblind-safe-streak-heatmap, PR #81)
 removed: merged to dev. Palette-agnostic streak/heatmap indicators
 (shape/pattern, not color-only) verified against AppSemanticColors.
 Prior update 2026-08-06 — #47 (08-point-shop-cosmetic-unlocks, PR #82)
@@ -22,7 +35,7 @@ Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 31
+**Remaining specs:** 24
 
 ---
 
@@ -46,14 +59,7 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 | 22 | 08-community-habit-template-marketplace | 05-community | 1 day | Module creation forms |
 | 23 | 05-mosque-finder-jamaah-times | 05-community | 2 days | Prayer location resolver |
 | 24 | 01-streak-freeze-grace-token | 06-gamification | 2 days | Streak calculators |
-| 27 | 07-milestone-certificate-image | 06-gamification | 2 days | Image renderer |
-| 28 | 01-talkback-voiceover-navigation-audit | 07-accessibility | 2 days | All screens complete |
-| 30 | 05-dynamic-text-scaling-stress-test | 07-accessibility | 1 day | All screens complete |
-| 31 | 08-audio-cue-alternative-notification-actions | 07-accessibility | 1 day | Notification handler |
-| 32 | 01-adherence-heatmap | 08-analytics | 2 days | dayStatus() per module |
-| 33 | 02-personal-record-tracking | 08-analytics | 1 day | longestStreak() |
 | 34 | 08-adherence-by-medicine | 08-analytics | 1 day | calculateAdherence |
-| 35 | 05-consistency-score | 08-analytics | 2 days | dayStatus() per module |
 
 ---
 
@@ -98,11 +104,13 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 
 ## Implementation Sequence (recommended)
 
-**Wave 2 (17 specs):** premium/community/gamification/accessibility/analytics
-features depending only on Wave 0-1 foundations, which are already live.
+**Wave 2 (8 specs):** premium/community/gamification/analytics features
+depending only on Wave 0-1 foundations, which are already live.
 
-**Wave 3 (6 specs):** depends on Wave 2 items landing first (notably specs 01
-TalkBack audit and 01 Drive backup).
+**Wave 3 (5 specs):** depends on Wave 2 items landing first. Specs 42/43
+(chart-data-table-fallback, focus-order-keyboard-navigation-pass) are now
+unblocked — spec 01 TalkBack audit landed 2026-08-07 — and can start any
+time; 44 (simple-mode) still needs specs 03/05 too.
 
 **Wave 4-5 (5 specs):** depends on multi-device sync (#37) and family
 multi-profile (#46) — the two heaviest remaining specs (8-10 days each).
