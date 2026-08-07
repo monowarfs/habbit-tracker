@@ -16,6 +16,7 @@ import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/profiles/profile_switcher.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
+import 'package:habit_tracker/core/theme/simple_mode_constants.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/greeting.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -49,6 +50,7 @@ class DashboardScreen extends ConsumerWidget {
     // advertise themselves on the dashboard before purchase — see
     // visibleHabitModulesProvider's doc comment.
     final modules = ref.watch(visibleHabitModulesProvider);
+    final simpleMode = ref.watch(simpleModeEnabledProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navDashboard),
@@ -90,49 +92,82 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: modules.isEmpty
           ? Center(child: Text(l10n.emptyDashboardMessage))
-          : MaxContentWidth(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  const ModuleSuggestionCard(),
-                  Row(
-                    children: [
-                      const Expanded(child: _DashboardGreeting()),
-                      const SizedBox(width: 12),
-                      Semantics(
-                        button: true,
-                        child: GestureDetector(
-                          onTap: () => context.push(AppRoutes.settingsAvatar),
-                          child: const AvatarDisplay(),
+          : _SimpleModeScaler(
+              enabled: simpleMode,
+              child: MaxContentWidth(
+                child: ListView(
+                  // Already single-column/full-width regardless of Simple
+                  // Mode — only the padding and text scale change.
+                  padding: simpleMode
+                      ? simpleModePadding
+                      : const EdgeInsets.all(16),
+                  children: [
+                    const ModuleSuggestionCard(),
+                    Row(
+                      children: [
+                        const Expanded(child: _DashboardGreeting()),
+                        const SizedBox(width: 12),
+                        Semantics(
+                          button: true,
+                          child: GestureDetector(
+                            onTap: () => context.push(AppRoutes.settingsAvatar),
+                            child: const AvatarDisplay(),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _DayCompletionIndicator(modules: modules),
-                  const SizedBox(height: 16),
-                  _ConsistencyScoreSection(modules: modules),
-                  const SizedBox(height: 16),
-                  const XpLevelDisplay(),
-                  const SizedBox(height: 16),
-                  const HouseholdLeaderboardCard(),
-                  const SizedBox(height: 16),
-                  const VirtualCompanion(),
-                  const SizedBox(height: 16),
-                  const WeeklyQuestList(),
-                  const SizedBox(height: 16),
-                  const BossChallengeCard(),
-                  const SizedBox(height: 16),
-                  _UpcomingStrip(modules: modules),
-                  const SizedBox(height: 16),
-                  const HabitStackSuggestionCard(),
-                  const SizedBox(height: 16),
-                  _QuickActionsRow(modules: modules),
-                  const SizedBox(height: 16),
-                  for (final module in modules) module.dashboardSummary(ref),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _DayCompletionIndicator(modules: modules),
+                    const SizedBox(height: 16),
+                    _ConsistencyScoreSection(modules: modules),
+                    const SizedBox(height: 16),
+                    const XpLevelDisplay(),
+                    const SizedBox(height: 16),
+                    const HouseholdLeaderboardCard(),
+                    const SizedBox(height: 16),
+                    const VirtualCompanion(),
+                    const SizedBox(height: 16),
+                    const WeeklyQuestList(),
+                    const SizedBox(height: 16),
+                    const BossChallengeCard(),
+                    const SizedBox(height: 16),
+                    _UpcomingStrip(modules: modules),
+                    const SizedBox(height: 16),
+                    const HabitStackSuggestionCard(),
+                    const SizedBox(height: 16),
+                    _QuickActionsRow(modules: modules),
+                    const SizedBox(height: 16),
+                    for (final module in modules) module.dashboardSummary(ref),
+                  ],
+                ),
               ),
             ),
+    );
+  }
+}
+
+/// Applies [simpleModeTextScaleMultiplier] on top of the ambient text
+/// scale (never replacing it — a user relying on both Simple Mode and a
+/// large OS/accessibility text size keeps both effects, Edge Case 2 of
+/// the Simple Mode spec) when [enabled]; otherwise passes [child] through
+/// unchanged.
+class _SimpleModeScaler extends StatelessWidget {
+  const _SimpleModeScaler({required this.enabled, required this.child});
+
+  final bool enabled;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!enabled) return child;
+    final ambient = MediaQuery.textScalerOf(context);
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(
+          ambient.scale(1) * simpleModeTextScaleMultiplier,
+        ),
+      ),
+      child: child,
     );
   }
 }
