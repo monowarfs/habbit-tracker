@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
+import 'package:habit_tracker/core/widgets/chart_data_table.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
 import 'package:habit_tracker/core/widgets/personal_record_section.dart';
@@ -110,10 +111,10 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        PeriodBarChart(
+        ChartDataTableToggle(
           points: points,
           color: Theme.of(context).moduleAccents.medicine,
-          semanticsLabel: l10n.semanticMedicineStatsChart,
+          chartSemanticsLabel: l10n.semanticMedicineStatsChart,
         ),
         if (currentStreakDayStatus != null)
           Padding(
