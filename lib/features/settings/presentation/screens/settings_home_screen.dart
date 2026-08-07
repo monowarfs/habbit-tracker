@@ -69,6 +69,18 @@ class SettingsHomeScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/settings/language'),
           ),
+          Semantics(
+            label: l10n.settingsSimpleModeToggleHint,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.touch_app_outlined),
+              title: Text(l10n.settingsSimpleModeLabel),
+              subtitle: Text(l10n.settingsSimpleModeDescription),
+              value: ref.watch(simpleModeEnabledProvider),
+              onChanged: (value) => ref
+                  .read(settingsRepositoryProvider)
+                  .updateSimpleModeEnabled(enabled: value),
+            ),
+          ),
           const Divider(),
           FutureBuilder<bool>(
             future: NotificationService.instance.exactAlarmsAllowed(),

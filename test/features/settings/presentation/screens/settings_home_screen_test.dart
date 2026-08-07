@@ -21,6 +21,14 @@ Future<void> _pumpSettingsHome(
   AppDatabase db,
   SettingsRepository repo,
 ) async {
+  // A tall, fixed viewport so the settings list — which keeps growing as
+  // more toggles land — never scrolls a later tile (e.g. "Adaptive
+  // Reminders") past ListView's sliver cache extent, same fix as
+  // `dashboard_screen_test.dart`'s `_pump` helper.
+  tester.view.physicalSize = const Size(800, 2400);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -171,10 +179,45 @@ void main() {
   );
 
   testWidgets(
+    'the Simple Mode toggle defaults off and persists when switched on',
+    (tester) async {
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+      await _pumpSettingsHome(tester, db, repo);
+      await tester.pumpAndSettle();
+
+      final tile = find.widgetWithText(
+        SwitchListTile,
+        l10n.settingsSimpleModeLabel,
+      );
+      expect(tile, findsOneWidget);
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+
+      // Drive the switch directly via its callback — same fix as the
+      // sound/audio-cues toggles above (scroll position is fragile).
+      tester.widget<SwitchListTile>(tile).onChanged!(true);
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 1));
+    },
+  );
+
+  testWidgets(
     'the adaptive reminder toggle defaults off and persists when switched '
     'on',
     (tester) async {
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+      // A tall, fixed viewport so this tile — pushed further down by the
+      // Simple Mode toggle added above it — stays within ListView's
+      // sliver cache extent (same fix as `_pumpSettingsHome`).
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       await tester.pumpWidget(
         ProviderScope(
