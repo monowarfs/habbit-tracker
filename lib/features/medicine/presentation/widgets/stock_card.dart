@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 
@@ -20,17 +21,22 @@ class StockCard extends StatelessWidget {
     final low =
         medicine.stockThreshold != null &&
         (medicine.stockCount ?? 0) <= medicine.stockThreshold!;
-    return Card(
-      color: low ? Theme.of(context).colorScheme.errorContainer : null,
-      child: ListTile(
-        leading: const Icon(Icons.inventory_2_outlined),
-        title: Text(
-          l10n.medicineDetailStockRemaining(medicine.stockCount ?? 0),
-        ),
-        subtitle: low ? Text(l10n.medicineDetailLowStockWarning) : null,
-        trailing: TextButton(
-          onPressed: () => _showRefillDialog(context),
-          child: Text(l10n.medicineDetailRefillButton),
+    return SemanticLabels.wrap(
+      label:
+          '${l10n.semanticMedicineStockIndicator}: '
+          '${l10n.medicineDetailStockRemaining(medicine.stockCount ?? 0)}',
+      child: Card(
+        color: low ? Theme.of(context).colorScheme.errorContainer : null,
+        child: ListTile(
+          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(
+            l10n.medicineDetailStockRemaining(medicine.stockCount ?? 0),
+          ),
+          subtitle: low ? Text(l10n.medicineDetailLowStockWarning) : null,
+          trailing: TextButton(
+            onPressed: () => _showRefillDialog(context),
+            child: Text(l10n.medicineDetailRefillButton),
+          ),
         ),
       ),
     );

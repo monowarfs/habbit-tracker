@@ -113,6 +113,7 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
         PeriodBarChart(
           points: points,
           color: Theme.of(context).moduleAccents.medicine,
+          semanticsLabel: l10n.semanticMedicineStatsChart,
         ),
         if (currentStreakDayStatus != null)
           Padding(
@@ -177,12 +178,14 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
+                tooltip: l10n.commonPreviousMonth,
                 onPressed: () =>
                     setState(() => _historyMonth = monthStart.addMonths(-1)),
               ),
               Text('${monthStart.year}-${monthStart.month}'),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
+                tooltip: l10n.commonNextMonth,
                 onPressed: () =>
                     setState(() => _historyMonth = monthStart.addMonths(1)),
               ),

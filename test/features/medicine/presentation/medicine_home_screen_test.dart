@@ -272,7 +272,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Done'));
+        // Was `find.byTooltip('Done')` — the TalkBack/VoiceOver audit
+        // fixed a real bug here: the button's tooltip was hardcoded
+        // English (dose_tile.dart), never localized to bn.
+        await tester.tap(find.byTooltip('Mark dose done'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 750));
         await tester.pump(const Duration(seconds: 4));

@@ -55,6 +55,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/medicine/new'),
+        tooltip: l10n.medicineHomeAddButton,
         child: const Icon(Icons.add),
       ),
     );
