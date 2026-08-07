@@ -1,20 +1,30 @@
+import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_home_screen.dart';
+import 'package:habit_tracker/features/prayer/data/repositories/prayer_repository_impl.dart';
+import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_home_screen.dart';
 import 'package:habit_tracker/features/prayer/presentation/screens/prayer_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
 
 import 'text_scale_test_helper.dart';
+
+const _profileId = 'system';
 
 /// Simple Mode compound scenarios (spec 06, Task 9): the large-button
 /// layout combined with 2.0x text scale, plus toggling and fallback
@@ -69,11 +79,31 @@ void main() {
     (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       useTallSurface(tester);
-      await pumpAtTextScale(
-        tester,
-        simpleModeApp(db, const MedicineHomeScreen()),
-        2,
-      );
+      // Seed one due dose — an empty dose list renders the trivial
+      // "no doses" center text regardless of Simple Mode, which wouldn't
+      // actually exercise `_SimpleDoseCard`'s layout at all.
+      final now = DateTime.utc(2026, 6, 1, 8);
+      await withClock(Clock.fixed(now), () async {
+        final repo = MedicineRepositoryImpl(db);
+        final medicine = await repo.createMedicine(
+          name: 'Amoxicillin',
+          stockEnabled: false,
+          profileId: _profileId,
+        );
+        await repo.createSchedule(
+          medicineId: (medicine as Success<Medicine>).value.id,
+          rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
+          startDate: const LocalDate(2026, 6, 1),
+          profileId: _profileId,
+        );
+        await repo.materializeDoses(clock.now(), profileId: _profileId);
+
+        await pumpAtTextScale(
+          tester,
+          simpleModeApp(db, const MedicineHomeScreen()),
+          2,
+        );
+      });
       await disposeTree(tester);
       await db.close();
     },
@@ -84,11 +114,29 @@ void main() {
     (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       useTallSurface(tester);
-      await pumpAtTextScale(
-        tester,
-        simpleModeApp(db, const PrayerHomeScreen()),
-        2,
-      );
+      // Seed one today-dated record — an empty record list renders the
+      // trivial "no prayers" empty state regardless of Simple Mode, which
+      // wouldn't actually exercise `_SimplePrayerCard`'s layout at all.
+      const today = LocalDate(2026, 6, 1);
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 6)), () async {
+        final repo = PrayerRepositoryImpl(db);
+        await repo.restoreRecord(
+          PrayerRecord(
+            id: '',
+            prayerDate: today,
+            prayerName: PrayerName.fajr,
+            scheduledFor: DateTime.utc(2026, 6, 1, 5),
+            storedStatus: PrayerStatus.due,
+          ),
+          profileId: _profileId,
+        );
+
+        await pumpAtTextScale(
+          tester,
+          simpleModeApp(db, const PrayerHomeScreen()),
+          2,
+        );
+      });
       await disposeTree(tester);
       await db.close();
     },
