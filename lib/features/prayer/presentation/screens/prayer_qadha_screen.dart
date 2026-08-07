@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/widgets/dismissible_hint_card.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_qadha_counter.dart';
@@ -31,31 +32,37 @@ class PrayerQadhaScreen extends ConsumerWidget {
                   .markPrayerQadhaHintSeen(),
             ),
           for (final counter in counters)
-            ListTile(
-              title: Text(_labelFor(l10n, counter.prayerName)),
-              subtitle: Text(l10n.prayerQadhaCountLabel(counter.count)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    tooltip: l10n.prayerQadhaMakeupButton,
-                    onPressed: counter.count == 0
-                        ? null
-                        : () => ref
-                              .read(prayerControllerProvider.notifier)
-                              .markQadhaMakeup(counter.prayerName),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: l10n.prayerQadhaEditButton,
-                    onPressed: () => _showEditDialog(
-                      context,
-                      ref,
-                      counter,
+            SemanticLabels.wrap(
+              label:
+                  '${l10n.semanticPrayerQadhaCounter}: '
+                  '${_labelFor(l10n, counter.prayerName)}, '
+                  '${l10n.prayerQadhaCountLabel(counter.count)}',
+              child: ListTile(
+                title: Text(_labelFor(l10n, counter.prayerName)),
+                subtitle: Text(l10n.prayerQadhaCountLabel(counter.count)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      tooltip: l10n.prayerQadhaMakeupButton,
+                      onPressed: counter.count == 0
+                          ? null
+                          : () => ref
+                                .read(prayerControllerProvider.notifier)
+                                .markQadhaMakeup(counter.prayerName),
                     ),
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: l10n.prayerQadhaEditButton,
+                      onPressed: () => _showEditDialog(
+                        context,
+                        ref,
+                        counter,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

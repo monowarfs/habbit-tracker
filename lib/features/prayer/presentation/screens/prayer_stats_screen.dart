@@ -72,6 +72,7 @@ class PrayerStatsScreen extends ConsumerWidget {
                 points: points,
                 color: Theme.of(context).moduleAccents.prayer,
                 targetLine: 5,
+                semanticsLabel: l10n.semanticPrayerStatsChart,
               ),
               const SizedBox(height: 16),
               Text(l10n.prayerStatsQadhaSummaryLabel),

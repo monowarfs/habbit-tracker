@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
@@ -42,40 +43,45 @@ class PrayerTile extends StatelessWidget {
         ? l10n.prayerNameJumuah
         : _labelFor(l10n, view.record.prayerName);
     final canToggle = view.effectiveStatus != PrayerStatus.missed;
-    return Card(
-      color: highlighted ? theme.colorScheme.primaryContainer : null,
-      child: ListTile(
-        title: Row(
-          children: [
-            Expanded(child: Text(label)),
-            IconButton(
-              icon: Icon(
-                view.record.notes != null
-                    ? Icons.sticky_note_2
-                    : Icons.sticky_note_2_outlined,
-              ),
-              tooltip: l10n.logNotesSheetTitle,
-              onPressed: onNoteTap,
-            ),
-          ],
-        ),
-        subtitle: Text(
-          '${DateFormat.jm().format(view.record.scheduledFor.toLocal())} · '
-          '${_statusLabel(l10n, view.effectiveStatus)}',
-        ),
-        trailing: canToggle
-            ? IconButton(
+    final statusLabel = _statusLabel(l10n, view.effectiveStatus);
+    return SemanticLabels.wrap(
+      label: '$label — $statusLabel',
+      child: Card(
+        color: highlighted ? theme.colorScheme.primaryContainer : null,
+        child: ListTile(
+          title: Row(
+            children: [
+              Expanded(child: Text(label)),
+              IconButton(
                 icon: Icon(
-                  view.effectiveStatus == PrayerStatus.prayed
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color: view.effectiveStatus == PrayerStatus.prayed
-                      ? success
-                      : null,
+                  view.record.notes != null
+                      ? Icons.sticky_note_2
+                      : Icons.sticky_note_2_outlined,
                 ),
-                onPressed: onToggle,
-              )
-            : const Icon(Icons.cancel_outlined),
+                tooltip: l10n.logNotesSheetTitle,
+                onPressed: onNoteTap,
+              ),
+            ],
+          ),
+          subtitle: Text(
+            '${DateFormat.jm().format(view.record.scheduledFor.toLocal())} · '
+            '$statusLabel',
+          ),
+          trailing: canToggle
+              ? IconButton(
+                  icon: Icon(
+                    view.effectiveStatus == PrayerStatus.prayed
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color: view.effectiveStatus == PrayerStatus.prayed
+                        ? success
+                        : null,
+                  ),
+                  tooltip: l10n.semanticPrayerChecklistToggle,
+                  onPressed: onToggle,
+                )
+              : const Icon(Icons.cancel_outlined),
+        ),
       ),
     );
   }
@@ -97,8 +103,8 @@ class PrayerTile extends StatelessWidget {
       switch (status) {
         PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
         PrayerStatus.due => l10n.prayerStatusDue,
-        PrayerStatus.prayed || PrayerStatus.prayedLate =>
-          l10n.prayerStatusPrayed,
+        PrayerStatus.prayed ||
+        PrayerStatus.prayedLate => l10n.prayerStatusPrayed,
         PrayerStatus.missed => l10n.prayerStatusMissedDue,
       };
 }

@@ -75,6 +75,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left),
+                    tooltip: l10n.commonPreviousMonth,
                     onPressed: () => setState(() {
                       _visibleMonth = DateTime(
                         _visibleMonth.year,
@@ -85,6 +86,7 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
                   Text('${monthStart.year}-${monthStart.month}'),
                   IconButton(
                     icon: const Icon(Icons.chevron_right),
+                    tooltip: l10n.commonNextMonth,
                     onPressed: () => setState(() {
                       _visibleMonth = DateTime(
                         _visibleMonth.year,

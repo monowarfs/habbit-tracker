@@ -122,4 +122,40 @@ void main() {
 
     expect(find.text('Fajr'), findsOneWidget);
   });
+
+  testWidgets(
+    'a11y: the mark-prayed toggle icon button has a screen-reader label '
+    '(TalkBack/VoiceOver audit — this button was previously unlabeled)',
+    (tester) async {
+      final records = [
+        PrayerRecord(
+          id: 'r1',
+          prayerDate: const LocalDate(2026, 6, 1),
+          prayerName: PrayerName.fajr,
+          scheduledFor: DateTime.utc(2026, 6),
+          storedStatus: PrayerStatus.upcoming,
+        ),
+      ];
+      when(
+        () => repo.watchRecordsForDay(any()),
+      ).thenAnswer((_) => Stream.value(records));
+      when(
+        () => repo.watchSettings(),
+      ).thenAnswer((_) => Stream.value(settings));
+
+      await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
+        await tester.pumpWidget(buildApp());
+        await tester.pumpAndSettle();
+      });
+
+      final toggle = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byIcon(Icons.radio_button_unchecked),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(toggle.tooltip, isNotNull);
+      expect(toggle.tooltip, isNotEmpty);
+    },
+  );
 }
