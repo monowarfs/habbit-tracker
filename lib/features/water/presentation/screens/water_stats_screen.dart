@@ -12,6 +12,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/goal_attainment_display.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
+import 'package:habit_tracker/core/widgets/personal_record_section.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
 import 'package:habit_tracker/core/widgets/trend_arrow.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
@@ -154,6 +155,15 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
           ),
         const SizedBox(height: 16),
         if (streak != null) StreakCard(streak: streak),
+        if (streak != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: PersonalRecordSection(
+              moduleId: 'water',
+              currentStreak: streak.current,
+              accentColor: Theme.of(context).moduleAccents.water,
+            ),
+          ),
         if (attainment != null)
           Padding(
             padding: const EdgeInsets.only(top: 16),
