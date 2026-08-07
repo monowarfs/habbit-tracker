@@ -88,4 +88,63 @@ void main() {
     final periodHeaderSemantics = tester.getSemantics(find.text('Period'));
     expect(periodHeaderSemantics.hasFlag(SemanticsFlag.isHeader), isTrue);
   });
+
+  group('ChartDataTableToggle', () {
+    testWidgets('shows the chart by default, table hidden', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ChartDataTableToggle(
+            points: points,
+            color: Colors.blue,
+            chartSemanticsLabel: 'Test chart',
+          ),
+        ),
+      );
+
+      expect(find.byType(PeriodBarChart), findsOneWidget);
+      expect(find.text('Period'), findsNothing);
+    });
+
+    testWidgets('toggling swaps the chart for the data table', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ChartDataTableToggle(
+            points: points,
+            color: Colors.blue,
+            chartSemanticsLabel: 'Test chart',
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PeriodBarChart), findsNothing);
+      expect(find.byType(ChartDataTable), findsOneWidget);
+      expect(find.text('Period'), findsOneWidget);
+    });
+
+    testWidgets('toggle button announces its toggled state', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ChartDataTableToggle(
+            points: points,
+            color: Colors.blue,
+            chartSemanticsLabel: 'Test chart',
+          ),
+        ),
+      );
+
+      final before = tester.getSemantics(find.byType(IconButton));
+      expect(before.hasFlag(SemanticsFlag.isToggled), isFalse);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+
+      final after = tester.getSemantics(find.byType(IconButton));
+      expect(after.hasFlag(SemanticsFlag.isToggled), isTrue);
+    });
+  });
 }

@@ -100,3 +100,89 @@ class ChartDataTable extends StatelessWidget {
     );
   }
 }
+
+/// Wraps a [PeriodBarChart] with a toggle that swaps it for the
+/// equivalent [ChartDataTable] — the accessible fallback a stats screen
+/// wires in place of a bare [PeriodBarChart].
+class ChartDataTableToggle extends StatefulWidget {
+  /// Creates a chart that can be toggled to its [ChartDataTable]
+  /// equivalent, over the same [points]/[color]/[targetLine] a bare
+  /// [PeriodBarChart] would take.
+  const ChartDataTableToggle({
+    required this.points,
+    required this.color,
+    required this.chartSemanticsLabel,
+    this.targetLine,
+    this.goalLabel,
+    super.key,
+  });
+
+  /// The bars' underlying data, in the same order the chart renders them.
+  final List<BarChartPoint> points;
+
+  /// The bar (and target-line) color, forwarded to [PeriodBarChart].
+  final Color color;
+
+  /// [PeriodBarChart.semanticsLabel] for the chart view.
+  final String chartSemanticsLabel;
+
+  /// An optional horizontal reference line (e.g. a goal), forwarded to
+  /// both [PeriodBarChart] and [ChartDataTable].
+  final double? targetLine;
+
+  /// [ChartDataTable.goalLabel], forwarded through unchanged.
+  final String? goalLabel;
+
+  @override
+  State<ChartDataTableToggle> createState() => _ChartDataTableToggleState();
+}
+
+class _ChartDataTableToggleState extends State<ChartDataTableToggle> {
+  // Per-screen view preference, not a persisted setting — resets on
+  // route pop, same as any other transient widget state.
+  final ValueNotifier<bool> _showTable = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    _showTable.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: _showTable,
+      builder: (context, showTable, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Semantics(
+            button: true,
+            toggled: showTable,
+            label: l10n.chartTableToggleLabel,
+            excludeSemantics: true,
+            child: IconButton(
+              icon: Icon(showTable ? Icons.bar_chart : Icons.table_chart),
+              tooltip: l10n.chartTableToggleLabel,
+              onPressed: () => _showTable.value = !showTable,
+            ),
+          ),
+          if (showTable)
+            ChartDataTable(
+              points: widget.points,
+              goalLabel: widget.goalLabel,
+              targetValue: widget.targetLine,
+            )
+          else
+            PeriodBarChart(
+              points: widget.points,
+              color: widget.color,
+              targetLine: widget.targetLine,
+              semanticsLabel: widget.chartSemanticsLabel,
+            ),
+        ],
+      ),
+    );
+  }
+}
