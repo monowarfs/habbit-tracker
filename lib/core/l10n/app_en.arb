@@ -2915,5 +2915,16 @@
   "leaderboardMetricLevel": "Level",
   "@leaderboardMetricLevel": {"description": "Leaderboard ranking-metric selector option: XP level."},
   "leaderboardTied": "Tied",
-  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."}
+  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."},
+  "comparisonTitle": "vs. Last Year",
+  "@comparisonTitle": {"description": "Title of the comparison-to-past-self screen."},
+  "comparisonCurrentLabel": "This {period}",
+  "@comparisonCurrentLabel": {
+    "description": "Legend label for the current-period series on the comparison chart, e.g. 'This Month'.",
+    "placeholders": {"period": {"type": "String"}}
+  },
+  "comparisonPastLabel": "Last year",
+  "@comparisonPastLabel": {"description": "Legend label for the same-period-last-year series on the comparison chart."},
+  "comparisonEmptyState": "Not enough history yet (need 1 year)",
+  "@comparisonEmptyState": {"description": "Shown instead of the comparison chart when the user has less than a year of app history."}
 }

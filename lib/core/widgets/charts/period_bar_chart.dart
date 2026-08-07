@@ -25,6 +25,8 @@ class PeriodBarChart extends StatelessWidget {
     required this.points,
     required this.color,
     this.targetLine,
+    this.overlayPoints,
+    this.overlayLabel,
     this.height = 200,
     this.semanticsLabel,
     super.key,
@@ -38,6 +40,23 @@ class PeriodBarChart extends StatelessWidget {
 
   /// An optional horizontal reference line (e.g. the goal).
   final double? targetLine;
+
+  /// A second series (e.g. the same period one year prior) rendered as
+  /// wider, lighter bars positioned behind [points]' own bars — the
+  /// comparison-to-past-self chart (`docs/superpowers/specs/
+  /// 08-analytics/06-comparison-to-past-self-design.md`) reusing this
+  /// widget instead of a second chart type. Index-aligned with [points];
+  /// if the lists differ in length only the overlapping indices get an
+  /// overlay bar (callers doing a year-over-year comparison already clip
+  /// both series to the same length themselves — see
+  /// `YearComparisonUseCase`).
+  final List<BarChartPoint>? overlayPoints;
+
+  /// Short description of what [overlayPoints] represents (e.g. "Last
+  /// year"), folded into [semanticsLabel] for screen readers — this
+  /// widget draws no visual legend of its own, so a caller wanting one
+  /// builds it alongside the chart.
+  final String? overlayLabel;
 
   /// The chart's height.
   final double height;
@@ -53,9 +72,11 @@ class PeriodBarChart extends StatelessWidget {
     if (points.isEmpty) {
       return SizedBox(height: height);
     }
-    final maxValue = points
-        .map((p) => p.value)
-        .fold<double>(targetLine ?? 0, (a, b) => a > b ? a : b);
+    final overlay = overlayPoints;
+    final maxValue = [
+      ...points.map((p) => p.value),
+      if (overlay != null) ...overlay.map((p) => p.value),
+    ].fold<double>(targetLine ?? 0, (a, b) => a > b ? a : b);
 
     final chart = SizedBox(
       height: height,
@@ -112,7 +133,23 @@ class PeriodBarChart extends StatelessWidget {
                   ],
                 ),
           barGroups: [
-            for (final (index, point) in points.indexed)
+            for (final (index, point) in points.indexed) ...[
+              // A same-x, wider, lighter group painted first so it sits
+              // visually behind the main bar drawn right after it —
+              // `BarChart` paints groups in list order, so "behind" is
+              // just "earlier in this list", no z-index needed.
+              if (overlay != null && index < overlay.length)
+                BarChartGroupData(
+                  x: index,
+                  barRods: [
+                    BarChartRodData(
+                      toY: overlay[index].value,
+                      color: color.withValues(alpha: 0.3),
+                      width: 20,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ],
+                ),
               BarChartGroupData(
                 x: index,
                 barRods: [
@@ -124,13 +161,22 @@ class PeriodBarChart extends StatelessWidget {
                   ),
                 ],
               ),
+            ],
           ],
         ),
       ),
     );
-    if (semanticsLabel == null) return chart;
+    final combinedLabel = switch ((semanticsLabel, overlayLabel)) {
+      (null, _) => null,
+      (final label?, null) => label,
+      // Named distinctly from the `overlay` (List<BarChartPoint>?) local
+      // above - same word, unrelated type, kept apart to avoid a
+      // confusing shadow.
+      (final label?, final overlayText?) => '$label $overlayText',
+    };
+    if (combinedLabel == null) return chart;
     return SemanticLabels.wrap(
-      label: semanticsLabel!,
+      label: combinedLabel,
       excludeSemantics: true,
       child: chart,
     );

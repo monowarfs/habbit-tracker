@@ -70,7 +70,7 @@ class AggregateReportUseCase {
         moduleId: module.id,
         displayName: module.metadata.displayName,
         accentColor: module.metadata.accentColor,
-        points: _bucketPoints(dayStatus, period, range),
+        points: bucketPoints(dayStatus, period, range),
         longestStreak: longestStreak(dayStatus),
       ));
     }
@@ -125,7 +125,13 @@ class AggregateReportUseCase {
     'D',
   ];
 
-  List<BarChartPoint> _bucketPoints(
+  /// Buckets [dayStatus] into one [BarChartPoint] per period slot (a day
+  /// for week/month, a month for year, month/quarter/year for custom/
+  /// all-time spans depending on how wide [range] is). Exposed (not
+  /// private) so other report-shaped consumers — e.g.
+  /// `YearComparisonUseCase`'s "same period last year" series — reuse the
+  /// exact same bucketing instead of re-deriving it.
+  List<BarChartPoint> bucketPoints(
     Map<LocalDate, ModuleDayStatus> dayStatus,
     ReportPeriod period,
     DateRange range,
