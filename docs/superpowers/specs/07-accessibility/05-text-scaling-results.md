@@ -75,6 +75,15 @@ Same shape as #3, one child: a centered `Row` wrapping `TrendArrow`
 directly, overflowing by 60px at 2.0x. **Fix:** wrap `TrendArrow` in
 `Flexible`.
 
+### 5. `PersonalRecordSection` — trailing `Chip`, no flex
+
+Found on a re-run after rebasing onto `dev`, which brought in this new
+shared widget (Water/Medicine/Prayer stats screens) from a parallel PR.
+Its `Row` wraps the label column in `Expanded` but not the trailing
+"New Record!" `Chip`, which sits directly in the `Row`; at 2.0x the
+`Chip`'s label overflowed by 43px. **Fix:** wrap the `Chip` in
+`Flexible`, same pattern as #3/#4.
+
 ## Test infrastructure note (not a UI bug)
 
 `WaterStatsScreen`'s text-scale test was intermittently very slow to
@@ -82,12 +91,20 @@ finish under `flutter test` in this development environment — which runs
 many concurrent `flutter test` processes across parallel work at once —
 sometimes settling in under a second, sometimes taking the full 10-minute
 per-test timeout, independent of whether the underlying overflow bugs
-were fixed. Isolated reproduction of the exact same widget tree (same
-scale, same viewport, same theme), pumped with manual `tester.pump()`
-calls and instrumented with `tester.binding.hasScheduledFrame`, never
-showed a genuinely stuck frame loop across a 200-virtual-second window —
-consistent with contention rather than an actual infinite layout/build
-loop in the widget code. One real, narrower finding along the way:
+were fixed — observed both before and after fix #5 above, including on
+a run with zero overflow bugs present at all. Isolated reproduction of
+the exact same widget tree (same scale, same viewport, same theme),
+pumped with manual `tester.pump()` calls and instrumented with
+`tester.binding.hasScheduledFrame`, never showed a genuinely stuck frame
+loop across a 200-virtual-second window — consistent with contention
+rather than an actual infinite layout/build loop in the widget code.
+When the assertion *does* have something to catch (an overflow is
+present), it reliably fires in under a second of test-internal time
+regardless of how long the surrounding process takes to exit — seen
+directly in this implementation's own overflow reproductions (both the
+original 2-exceptions and the fix #5 43px-overflow cases resolved in
+1 second of test-internal time each). One real, narrower finding along
+the way:
 disposing this screen can leave a pending zero-duration `Timer` behind —
 Drift's `QueryStream._onCancelOrPause` schedules one to close its
 stream-query bookkeeping when a `StreamProvider` watching a Drift stream
