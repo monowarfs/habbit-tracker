@@ -474,16 +474,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
       final now = clock.now();
       final nowMillis = now.toUtc().millisecondsSinceEpoch;
 
-      await (_db.update(
-        _db.medicineDosesTable,
-      )..where((t) => t.id.equals(dose.id))).write(
-        MedicineDosesTableCompanion(
-          status: const Value('done'),
-          statusChangedAt: Value(nowMillis),
-          stockDeltaApplied: Value(adjustment.stockDelta),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.medicineDosesTable)..where(
+            (t) => t.id.equals(dose.id) & t.profileId.equals(profileId),
+          ))
+          .write(
+            MedicineDosesTableCompanion(
+              status: const Value('done'),
+              statusChangedAt: Value(nowMillis),
+              stockDeltaApplied: Value(adjustment.stockDelta),
+              updatedAt: Value(nowMillis),
+            ),
+          );
       await _applyStockAdjustment(
         medicine: medicine,
         dose: dose,
@@ -506,15 +507,16 @@ class MedicineRepositoryImpl implements MedicineRepository {
     profileId: profileId,
     resolve: (medicine, dose) async {
       final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.medicineDosesTable,
-      )..where((t) => t.id.equals(dose.id))).write(
-        MedicineDosesTableCompanion(
-          status: const Value('skipped'),
-          statusChangedAt: Value(nowMillis),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.medicineDosesTable)..where(
+            (t) => t.id.equals(dose.id) & t.profileId.equals(profileId),
+          ))
+          .write(
+            MedicineDosesTableCompanion(
+              status: const Value('skipped'),
+              statusChangedAt: Value(nowMillis),
+              updatedAt: Value(nowMillis),
+            ),
+          );
     },
   );
 
@@ -530,16 +532,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
           );
           final now = clock.now();
           final nowMillis = now.toUtc().millisecondsSinceEpoch;
-          await (_db.update(
-            _db.medicineDosesTable,
-          )..where((t) => t.id.equals(dose.id))).write(
-            MedicineDosesTableCompanion(
-              status: const Value('upcoming'),
-              statusChangedAt: const Value(null),
-              stockDeltaApplied: const Value(0),
-              updatedAt: Value(nowMillis),
-            ),
-          );
+          await (_db.update(_db.medicineDosesTable)..where(
+                (t) => t.id.equals(dose.id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                MedicineDosesTableCompanion(
+                  status: const Value('upcoming'),
+                  statusChangedAt: const Value(null),
+                  stockDeltaApplied: const Value(0),
+                  updatedAt: Value(nowMillis),
+                ),
+              );
           if (adjustment.stockDelta != 0) {
             await _applyStockAdjustment(
               medicine: medicine,
@@ -565,14 +568,15 @@ class MedicineRepositoryImpl implements MedicineRepository {
     profileId: profileId,
     resolve: (medicine, dose) async {
       final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.medicineDosesTable,
-      )..where((t) => t.id.equals(dose.id))).write(
-        MedicineDosesTableCompanion(
-          notes: Value(notes),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.medicineDosesTable)..where(
+            (t) => t.id.equals(dose.id) & t.profileId.equals(profileId),
+          ))
+          .write(
+            MedicineDosesTableCompanion(
+              notes: Value(notes),
+              updatedAt: Value(nowMillis),
+            ),
+          );
     },
   );
 

@@ -22,13 +22,21 @@ class ProfileRepository {
   /// Max profiles per device (design doc's review checklist).
   static const maxProfiles = 5;
 
+  /// Guarantees at least one *live* profile exists — checks for any
+  /// non-deleted row, not specifically `'system'`, so deliberately
+  /// deleting the `'system'` profile while another profile remains
+  /// doesn't resurrect a phantom "Me" profile on the next read. Only
+  /// actually seeds `'system'` on a truly fresh install (createAll, not
+  /// a migration — the Task 2 migration seeds this row itself for
+  /// upgrading users) or the never-reachable-in-practice case of zero
+  /// live profiles ([deleteProfile] itself refuses to drop the last one).
   Future<void> _ensureSystemProfile() async {
-    final existing = await (_db.select(
-      _db.profilesTable,
-    )..where((t) => t.id.equals(_systemProfileId))).getSingleOrNull();
-    if (existing != null) return;
-    // Only reached on a truly fresh install (createAll, not a migration —
-    // the Task 2 migration seeds this row itself for upgrading users).
+    final anyLive =
+        await (_db.select(_db.profilesTable)
+              ..where((t) => t.deletedAt.isNull())
+              ..limit(1))
+            .getSingleOrNull();
+    if (anyLive != null) return;
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
         .into(_db.profilesTable)
@@ -38,6 +46,7 @@ class ProfileRepository {
             displayName: 'Me',
             avatarColor: 'teal',
             createdAt: now,
+            deletedAt: const Value(null),
           ),
         );
   }
@@ -234,8 +243,9 @@ class ProfileRepository {
     });
   }
 
-  /// The currently active profile, seeding/falling back to the system
-  /// profile if the active pointer is unset or stale.
+  /// The currently active profile, falling back to the oldest live
+  /// profile if the active pointer is unset or stale (pointing at a
+  /// deleted or nonexistent profile).
   Future<Profile> getActiveProfile() async {
     await _ensureSystemProfile();
     final settings = await (_db.select(
@@ -248,9 +258,16 @@ class ProfileRepository {
             ))
             .getSingleOrNull();
     if (row != null) return row.toDomain();
-    final fallback = await (_db.select(
-      _db.profilesTable,
-    )..where((t) => t.id.equals(_systemProfileId))).getSingle();
+    // _ensureSystemProfile() above guarantees at least one live profile
+    // exists by this point — fall back to the oldest one, not
+    // specifically 'system' (which may itself be the deleted profile
+    // that made activeId stale in the first place).
+    final fallback =
+        await (_db.select(_db.profilesTable)
+              ..where((t) => t.deletedAt.isNull())
+              ..orderBy([(t) => OrderingTerm(expression: t.createdAt)])
+              ..limit(1))
+            .getSingle();
     return fallback.toDomain();
   }
 

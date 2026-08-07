@@ -100,4 +100,34 @@ void main() {
       expect(profiles.map((p) => p.id), isNot(contains(kid.id)));
     },
   );
+
+  test(
+    "deleting the 'system' profile while another remains doesn't "
+    'resurrect a phantom one, and getActiveProfile falls back to the '
+    'remaining live profile instead of the soft-deleted row',
+    () async {
+      final kid = await repo.createProfile('Kid', 'blue');
+
+      await repo.deleteProfile('system');
+
+      // listProfiles() (and its own _ensureSystemProfile() call) must
+      // not bring 'system' back just because it's the one that got
+      // deleted — a live profile (kid) still exists.
+      final profiles = await repo.listProfiles();
+      expect(profiles.map((p) => p.id), isNot(contains('system')));
+      expect(profiles.map((p) => p.id), [kid.id]);
+
+      // No app_settings row exists in this test's fresh in-memory db, so
+      // activeId defaults to the literal 'system' id, which is now
+      // deleted — getActiveProfile must fall back to the remaining live
+      // profile (kid), not resolve/resurrect the deleted 'system' row.
+      final active = await repo.getActiveProfile();
+      expect(active.id, kid.id);
+
+      final systemRow = await (db.select(
+        db.profilesTable,
+      )..where((t) => t.id.equals('system'))).getSingle();
+      expect(systemRow.deletedAt, isNot(null));
+    },
+  );
 }
