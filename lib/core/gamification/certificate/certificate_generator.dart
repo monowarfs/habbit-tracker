@@ -63,14 +63,24 @@ class CertificateGenerator {
       l10n: l10n,
       userName: userName,
     );
-    final path = await ImageRenderer.renderToFile(
+    // Rendered to a throwaway file first (ImageRenderer.renderToFile
+    // writes to the documents root, not the cache dir directly), then
+    // moved into the cache and discarded — otherwise this loose file
+    // would sit in the documents root forever, unseen by
+    // CertificateCache.pruneOldEntries (which only ever scans its own
+    // certificates/ subfolder).
+    final renderedPath = await ImageRenderer.renderToFile(
       context,
       widget,
       fileName: '$cacheKey.png',
       size: const Size(1080, 1080),
     );
-    cache.cache(cacheKey, path);
-    return path;
+    cache.cache(cacheKey, renderedPath);
+    final cachedPath = cache.getCached(cacheKey)!;
+    if (renderedPath != cachedPath) {
+      await File(renderedPath).delete();
+    }
+    return cachedPath;
   }
 
   String _cacheKeyFor(String achievementKey, DateTime date) {
