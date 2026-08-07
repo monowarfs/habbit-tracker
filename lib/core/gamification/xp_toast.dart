@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 
 /// Shows a brief "+{amount} XP" snackbar after an action-level XP award.
@@ -14,12 +15,18 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 /// (`XpValues.forEvent(moduleId, 'action')`), so the widget layer can
 /// compute it independently without the controller needing to report
 /// anything back.
+///
+/// This is the single call site backing the TalkBack/VoiceOver audit's
+/// Task 7 ("water log, dose marked done, prayer checked" — its own
+/// wording, matching this doc comment above): [SnackBar] already marks
+/// itself a live region (`liveRegion: true` in Flutter's own
+/// implementation), but that behavior isn't reliable on every platform,
+/// so this also pushes an explicit announcement.
 void showXpGainToast(BuildContext context, {required int amount}) {
   final l10n = AppLocalizations.of(context)!;
+  final message = l10n.xpGainToast(amount);
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(l10n.xpGainToast(amount)),
-      duration: const Duration(seconds: 2),
-    ),
+    SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
   );
+  SemanticLabels.announce(context, message);
 }

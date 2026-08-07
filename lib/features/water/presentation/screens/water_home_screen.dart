@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_toast.dart';
@@ -162,10 +163,13 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
                         onTap: () =>
                             _logQuickAddAndCelebrate(context, ref, amount),
                       ),
-                    OutlinedButton.icon(
-                      onPressed: () => context.push('/water/add'),
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.waterHomeCustomAddButton),
+                    SemanticLabels.wrap(
+                      label: l10n.semanticWaterCustomLogButton,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/water/add'),
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.waterHomeCustomAddButton),
+                      ),
                     ),
                   ],
                 ),

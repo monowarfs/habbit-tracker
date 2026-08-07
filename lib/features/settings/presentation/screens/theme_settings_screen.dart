@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_catalog.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
@@ -34,25 +35,28 @@ class ThemeSettingsScreen extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SegmentedButton<ThemeMode>(
-              segments: [
-                ButtonSegment(
-                  value: ThemeMode.system,
-                  label: Text(l10n.themeModeSystem),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.light,
-                  label: Text(l10n.themeModeLight),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.dark,
-                  label: Text(l10n.themeModeDark),
-                ),
-              ],
-              selected: {themeMode},
-              onSelectionChanged: (selection) => ref
-                  .read(themeControllerProvider.notifier)
-                  .updateThemeMode(selection.first),
+            child: SemanticLabels.wrap(
+              label: l10n.semanticThemeToggle,
+              child: SegmentedButton<ThemeMode>(
+                segments: [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    label: Text(l10n.themeModeSystem),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    label: Text(l10n.themeModeLight),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    label: Text(l10n.themeModeDark),
+                  ),
+                ],
+                selected: {themeMode},
+                onSelectionChanged: (selection) => ref
+                    .read(themeControllerProvider.notifier)
+                    .updateThemeMode(selection.first),
+              ),
             ),
           ),
           const Divider(),

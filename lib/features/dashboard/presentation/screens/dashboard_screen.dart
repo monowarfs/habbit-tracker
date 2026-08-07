@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/gamification/combo/combo_celebration.dart';
 import 'package:habit_tracker/core/gamification/combo/combo_detector.dart';
 import 'package:habit_tracker/core/gamification/combo/combo_event_emitter.dart';
@@ -51,6 +52,7 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
+            tooltip: l10n.searchPrompt,
             onPressed: modules.isEmpty
                 ? null
                 : () => showSearch(
@@ -60,14 +62,17 @@ class DashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.emoji_events_outlined),
+            tooltip: l10n.achievementsTitle,
             onPressed: () => context.push('/achievements'),
           ),
           IconButton(
             icon: const Icon(Icons.calendar_month_outlined),
+            tooltip: l10n.reportsTitle,
             onPressed: () => context.push('/reports'),
           ),
           IconButton(
             icon: const Icon(Icons.calendar_view_month),
+            tooltip: l10n.semanticGlobalCalendarButton,
             onPressed: modules.isEmpty
                 ? null
                 : () => showModalBottomSheet<void>(
@@ -201,28 +206,35 @@ class _DayCompletionIndicatorState
         final completed = snapshot.data?.fold<int>(0, (a, b) => a + b) ?? 0;
         final isCombo =
             widget.modules.length >= 2 && completed == widget.modules.length;
-        return Row(
-          children: [
-            Expanded(
-              child: LinearProgressIndicator(
-                value: widget.modules.isEmpty
-                    ? 0
-                    : completed / widget.modules.length,
-                minHeight: 8,
-              ),
-            ),
-            if (isCombo) ...[
-              const SizedBox(width: 8),
-              Tooltip(
-                message: AppLocalizations.of(context)!.comboIndicatorLabel,
-                child: const Icon(
-                  Icons.auto_awesome,
-                  size: 18,
-                  color: Colors.orange,
+        final l10n = AppLocalizations.of(context)!;
+        return SemanticLabels.wrap(
+          label:
+              '${l10n.semanticDayCompletionIndicator}: '
+              '$completed/${widget.modules.length}',
+          excludeSemantics: true,
+          child: Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: widget.modules.isEmpty
+                      ? 0
+                      : completed / widget.modules.length,
+                  minHeight: 8,
                 ),
               ),
+              if (isCombo) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: l10n.comboIndicatorLabel,
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    size: 18,
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         );
       },
     );
@@ -282,13 +294,16 @@ class _UpcomingStrip extends StatelessWidget {
           for (final module in modules) ?module.nextUpcoming(ref),
         ];
         if (chips.isEmpty) return const SizedBox.shrink();
-        return SizedBox(
-          height: 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: chips.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (context, index) => chips[index],
+        return SemanticLabels.wrap(
+          label: AppLocalizations.of(context)!.semanticUpcomingStrip,
+          child: SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: chips.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, index) => chips[index],
+            ),
           ),
         );
       },
@@ -308,7 +323,10 @@ class _QuickActionsRow extends StatelessWidget {
           for (final module in modules) ...module.quickActions(ref),
         ];
         if (actions.isEmpty) return const SizedBox.shrink();
-        return Wrap(spacing: 8, runSpacing: 8, children: actions);
+        return SemanticLabels.wrap(
+          label: AppLocalizations.of(context)!.semanticQuickActionsSection,
+          child: Wrap(spacing: 8, runSpacing: 8, children: actions),
+        );
       },
     );
   }

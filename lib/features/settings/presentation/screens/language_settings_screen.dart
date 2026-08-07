@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 
@@ -16,15 +17,18 @@ class LanguageSettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.settingsLanguage)),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SegmentedButton<Locale>(
-          segments: const [
-            ButtonSegment(value: Locale('en'), label: Text('English')),
-            ButtonSegment(value: Locale('bn'), label: Text('বাংলা')),
-          ],
-          selected: {locale},
-          onSelectionChanged: (selection) => ref
-              .read(localeControllerProvider.notifier)
-              .updateLocale(selection.first),
+        child: SemanticLabels.wrap(
+          label: l10n.semanticLocaleToggle,
+          child: SegmentedButton<Locale>(
+            segments: const [
+              ButtonSegment(value: Locale('en'), label: Text('English')),
+              ButtonSegment(value: Locale('bn'), label: Text('বাংলা')),
+            ],
+            selected: {locale},
+            onSelectionChanged: (selection) => ref
+                .read(localeControllerProvider.notifier)
+                .updateLocale(selection.first),
+          ),
         ),
       ),
     );

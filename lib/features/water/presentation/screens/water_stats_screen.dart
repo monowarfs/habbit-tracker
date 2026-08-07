@@ -138,6 +138,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             ],
             color: Theme.of(context).moduleAccents.water,
             targetLine: goal?.goalMl.toDouble(),
+            semanticsLabel: l10n.semanticWaterStatsChart,
           ),
         if (series != null && series.length >= 2)
           Padding(
@@ -212,6 +213,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.chevron_left),
+              tooltip: l10n.commonPreviousMonth,
               onPressed: () => setState(() {
                 _historyMonth = monthStart.addMonths(-1);
                 _selectedDay = null;
@@ -220,6 +222,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             Text('${monthStart.year}-${monthStart.month}'),
             IconButton(
               icon: const Icon(Icons.chevron_right),
+              tooltip: l10n.commonNextMonth,
               onPressed: () => setState(() {
                 _historyMonth = monthStart.addMonths(1);
                 _selectedDay = null;

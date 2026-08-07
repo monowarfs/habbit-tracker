@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 
 /// One bar in a [PeriodBarChart].
 class BarChartPoint {
@@ -25,6 +26,7 @@ class PeriodBarChart extends StatelessWidget {
     required this.color,
     this.targetLine,
     this.height = 200,
+    this.semanticsLabel,
     super.key,
   });
 
@@ -40,6 +42,12 @@ class PeriodBarChart extends StatelessWidget {
   /// The chart's height.
   final double height;
 
+  /// An optional screen-reader summary label. `fl_chart`'s [BarChart]
+  /// exposes no accessibility tree of its own (edge case #2 of the
+  /// TalkBack/VoiceOver audit), so callers pass a short description of
+  /// what the chart shows.
+  final String? semanticsLabel;
+
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
@@ -49,7 +57,7 @@ class PeriodBarChart extends StatelessWidget {
         .map((p) => p.value)
         .fold<double>(targetLine ?? 0, (a, b) => a > b ? a : b);
 
-    return SizedBox(
+    final chart = SizedBox(
       height: height,
       child: BarChart(
         BarChartData(
@@ -108,6 +116,12 @@ class PeriodBarChart extends StatelessWidget {
           ],
         ),
       ),
+    );
+    if (semanticsLabel == null) return chart;
+    return SemanticLabels.wrap(
+      label: semanticsLabel!,
+      excludeSemantics: true,
+      child: chart,
     );
   }
 }

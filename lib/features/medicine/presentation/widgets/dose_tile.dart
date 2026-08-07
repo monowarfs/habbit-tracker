@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
@@ -73,59 +74,63 @@ class DoseTile extends StatelessWidget {
         view.effectiveStatus == MedicineDoseStatus.done ||
         view.effectiveStatus == MedicineDoseStatus.skipped;
 
-    return Card(
-      color: highlighted ? theme.colorScheme.primaryContainer : null,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Icon(Icons.medication, color: color),
-        ),
-        title: Row(
-          children: [
-            Expanded(child: Text(view.medicine.name)),
-            IconButton(
-              icon: Icon(
-                view.dose.notes != null
-                    ? Icons.sticky_note_2
-                    : Icons.sticky_note_2_outlined,
+    return SemanticLabels.wrap(
+      label: '${view.medicine.name} — $label',
+      child: Card(
+        color: highlighted ? theme.colorScheme.primaryContainer : null,
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: color.withValues(alpha: 0.15),
+            child: Icon(Icons.medication, color: color),
+          ),
+          title: Row(
+            children: [
+              Expanded(child: Text(view.medicine.name)),
+              IconButton(
+                icon: Icon(
+                  view.dose.notes != null
+                      ? Icons.sticky_note_2
+                      : Icons.sticky_note_2_outlined,
+                ),
+                tooltip: l10n.logNotesSheetTitle,
+                onPressed: onNoteTap,
               ),
-              tooltip: l10n.logNotesSheetTitle,
-              onPressed: onNoteTap,
-            ),
-          ],
-        ),
-        // Two `Text`s, not one interpolated string: the status half needs
-        // its own color to actually read as "visually distinct" (FR-M-06)
-        // — a missed dose isn't just an icon-colored variant, the label
-        // itself is red — and `find.text('Missed')` (testing.md suite 10)
-        // needs the status isolated as its own widget to match on.
-        subtitle: Row(
-          children: [
-            Text(DateFormat.jm().format(view.dose.scheduledFor.toLocal())),
-            const Text(' · '),
-            Text(
-              label,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        trailing: resolved
-            ? null
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: 'Skip',
-                    onPressed: onSkip,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.check_circle_outline),
-                    tooltip: 'Done',
-                    onPressed: onDone,
-                  ),
-                ],
+            ],
+          ),
+          // Two `Text`s, not one interpolated string: the status half
+          // needs its own color to actually read as "visually distinct"
+          // (FR-M-06) — a missed dose isn't just an icon-colored variant,
+          // the label itself is red — and `find.text('Missed')`
+          // (testing.md suite 10) needs the status isolated as its own
+          // widget to match on.
+          subtitle: Row(
+            children: [
+              Text(DateFormat.jm().format(view.dose.scheduledFor.toLocal())),
+              const Text(' · '),
+              Text(
+                label,
+                style: TextStyle(color: color, fontWeight: FontWeight.w600),
               ),
+            ],
+          ),
+          trailing: resolved
+              ? null
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.semanticMedicineDoseSkipButton,
+                      onPressed: onSkip,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.check_circle_outline),
+                      tooltip: l10n.semanticMedicineDoseDoneButton,
+                      onPressed: onDone,
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
