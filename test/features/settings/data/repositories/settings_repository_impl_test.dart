@@ -49,6 +49,8 @@ void main() {
 
     expect(firstRead.adaptiveReminderEnabled, isFalse);
 
+    expect(firstRead.simpleModeEnabled, isFalse);
+
     final updateResult = await repo1.updateThemeMode(AppThemeMode.dark);
     expect(updateResult, isA<Success<void>>());
     final biometricResult = await repo1.updateBiometricEnabled(
@@ -92,6 +94,11 @@ void main() {
     );
     expect(adaptiveReminderResult, isA<Success<void>>());
 
+    final simpleModeResult = await repo1.updateSimpleModeEnabled(
+      enabled: true,
+    );
+    expect(simpleModeResult, isA<Success<void>>());
+
     await db1.close();
 
     final db2 = AppDatabase(NativeDatabase(dbFile));
@@ -115,6 +122,8 @@ void main() {
     expect(afterRestart.ramadanModeManualOverride, isTrue);
 
     expect(afterRestart.adaptiveReminderEnabled, isTrue);
+
+    expect(afterRestart.simpleModeEnabled, isTrue);
 
     await db2.close();
   });

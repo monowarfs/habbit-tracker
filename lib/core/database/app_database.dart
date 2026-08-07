@@ -91,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -428,6 +428,15 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           profilesTable,
           profilesTable.leaderboardOptedOut,
+        );
+      }
+      if (from < 35) {
+        // Simple Mode large-button layout opt-in (`docs/superpowers/
+        // specs/07-accessibility/
+        // 06-SIMPLE-MODE-LARGE-BUTTON-LAYOUT-IMPLEMENTATION-PLAN.md`).
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.simpleModeEnabled,
         );
       }
       // Seam: when schemaVersion increments further, add

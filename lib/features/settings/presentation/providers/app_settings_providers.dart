@@ -18,3 +18,14 @@ SettingsRepository settingsRepository(Ref ref) {
 Stream<AppSettings> appSettings(Ref ref) {
   return ref.watch(settingsRepositoryProvider).watchSettings();
 }
+
+/// Whether Simple Mode (large-button, single-column layout, `docs/
+/// superpowers/specs/07-accessibility/
+/// 06-SIMPLE-MODE-LARGE-BUTTON-LAYOUT-IMPLEMENTATION-PLAN.md`) is active —
+/// derived from [appSettingsProvider] and exposed as a plain `bool` so
+/// screen `build()` methods can branch on it directly instead of
+/// unwrapping an `AsyncValue` themselves.
+@riverpod
+bool simpleModeEnabled(Ref ref) {
+  return ref.watch(appSettingsProvider).value?.simpleModeEnabled ?? false;
+}

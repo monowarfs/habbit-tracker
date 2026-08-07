@@ -159,6 +159,14 @@ class AppSettingsTable extends Table {
   TextColumn get activeIconPackId =>
       text().withDefault(const Constant('default'))();
 
+  /// "Simple Mode" — a single-column, large-touch-target, larger-text
+  /// alternate layout for Dashboard/Water/Medicine/Prayer
+  /// (`docs/superpowers/specs/07-accessibility/
+  /// 06-SIMPLE-MODE-LARGE-BUTTON-LAYOUT-IMPLEMENTATION-PLAN.md`) —
+  /// default `false`, opt-in.
+  BoolColumn get simpleModeEnabled =>
+      boolean().withDefault(const Constant(false))();
+
   /// The currently active profile's id (`core/profiles/`). Settings
   /// themselves stay device-level/global, not per-profile — this column
   /// is just the pointer to which profile's data every other table's
