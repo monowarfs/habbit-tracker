@@ -65,6 +65,27 @@ void main() {
       },
     );
 
+    test(
+      'anchoring on the leap day itself does not crash - Feb 29 has no '
+      'literal same-day-last-year (a raw LocalDate(year-1, 2, 29) would '
+      'be an invalid calendar date)',
+      () async {
+        final module = _FakeModule((range) => _everyDay(range, 1));
+        final result = await useCase.fetch(
+          module: module,
+          periodAnchor: const LocalDate(2024, 2, 29),
+          period: ReportPeriod.week,
+        );
+
+        // Both weeks still resolve to exactly 7 days - the invalid
+        // Feb 29 2023 anchor normalizes (via DateTime.utc's own
+        // overflow rounding, same mechanism LocalDate.addMonths relies
+        // on) rather than throwing.
+        expect(result.currentPoints.length, 7);
+        expect(result.lastYearPoints.length, 7);
+      },
+    );
+
     test('a year period has no length mismatch to clip', () async {
       final module = _FakeModule((range) => _everyDay(range, 1));
       final result = await useCase.fetch(
