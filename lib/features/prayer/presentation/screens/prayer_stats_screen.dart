@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/chart_data_table.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/personal_record_section.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
@@ -68,11 +69,11 @@ class PrayerStatsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(l10n.prayerStatsLast7DaysLabel),
-              PeriodBarChart(
+              ChartDataTableToggle(
                 points: points,
                 color: Theme.of(context).moduleAccents.prayer,
                 targetLine: 5,
-                semanticsLabel: l10n.semanticPrayerStatsChart,
+                chartSemanticsLabel: l10n.semanticPrayerStatsChart,
               ),
               const SizedBox(height: 16),
               Text(l10n.prayerStatsQadhaSummaryLabel),
