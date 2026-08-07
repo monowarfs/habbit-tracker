@@ -46,6 +46,14 @@ class AppSettingsTable extends Table {
   /// 10-optional-sound-design-pass-design.md`) — default `false`, opt-in.
   BoolColumn get soundEnabled => boolean().withDefault(const Constant(false))();
 
+  /// Whether a short earcon plays confirming a Done/Snooze/Skip
+  /// notification action (`docs/superpowers/specs/07-accessibility/
+  /// 08-AUDIO-CUE-ALTERNATIVE-NOTIFICATION-ACTIONS-IMPLEMENTATION-PLAN.md`)
+  /// — an accessibility affordance, not a decorative sound effect like
+  /// [soundEnabled], so it defaults `true` (opt-out) rather than opt-in.
+  BoolColumn get audioCuesEnabled =>
+      boolean().withDefault(const Constant(true))();
+
   /// Manual override: `true`/`false` pins Ramadan mode; `null` (default)
   /// means "follow `isRamadan(today)` automatically"
   /// (`docs/superpowers/specs/02-delightful/01-ramadan-mode-design.md`).

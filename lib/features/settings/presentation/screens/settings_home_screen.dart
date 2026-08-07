@@ -145,6 +145,20 @@ class SettingsHomeScreen extends ConsumerWidget {
                 .read(settingsRepositoryProvider)
                 .updateSoundEnabled(enabled: value),
           ),
+          Semantics(
+            label: l10n.settingsAudioCuesLabel,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.hearing_outlined),
+              title: Text(l10n.settingsAudioCuesLabel),
+              subtitle: Text(l10n.settingsAudioCuesDescription),
+              value:
+                  ref.watch(appSettingsProvider).value?.audioCuesEnabled ??
+                  true,
+              onChanged: (value) => ref
+                  .read(settingsRepositoryProvider)
+                  .updateAudioCuesEnabled(enabled: value),
+            ),
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.face_retouching_natural_outlined),

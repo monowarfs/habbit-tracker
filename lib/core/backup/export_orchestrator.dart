@@ -45,6 +45,7 @@ Map<String, Object?> _appSettingsToJson(AppSettings settings) => {
   'biometricEnabled': settings.biometricEnabled,
   'screenPrivacyEnabled': settings.screenPrivacyEnabled,
   'soundEnabled': settings.soundEnabled,
+  'audioCuesEnabled': settings.audioCuesEnabled,
   'quietHoursEnabled': settings.quietHoursEnabled,
   'quietHoursStart': settings.quietHoursStart.format(),
   'quietHoursEnd': settings.quietHoursEnd.format(),

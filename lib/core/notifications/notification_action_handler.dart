@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/notifications/audio_cue_service.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 import 'package:habit_tracker/core/notifications/notification_planner.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 
 /// Processes a Done/Snooze/Skip action tapped on a notification
 /// (`../../strategies/notifications.md`). Runs both from the foreground
@@ -81,7 +82,16 @@ Future<void> handleNotificationAction({
         return;
     }
 
-    await audioCue.playEarcon(actionTaken);
+    // Gated on AppSettings.audioCuesEnabled (`docs/superpowers/specs/
+    // 07-accessibility/
+    // 08-AUDIO-CUE-ALTERNATIVE-NOTIFICATION-ACTIONS-IMPLEMENTATION-
+    // PLAN.md`'s "AudioCueService checks this setting before playing" —
+    // done here, not inside AudioCueService itself, since that class has
+    // no DB/settings access of its own).
+    final settings = await SettingsRepositoryImpl(db).watchSettings().first;
+    if (settings.audioCuesEnabled) {
+      await audioCue.playEarcon(actionTaken);
+    }
 
     // Conveyor belt (`../../strategies/notifications.md` trigger 2): a
     // Done/Skip removed a row from "pending", so re-running the planner
