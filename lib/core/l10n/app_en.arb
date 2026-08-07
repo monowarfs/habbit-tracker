@@ -2915,5 +2915,17 @@
   "leaderboardMetricLevel": "Level",
   "@leaderboardMetricLevel": {"description": "Leaderboard ranking-metric selector option: XP level."},
   "leaderboardTied": "Tied",
-  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."}
+  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."},
+  "chartTableToggleLabel": "Show data table",
+  "@chartTableToggleLabel": {"description": "Semantics label and tooltip for the icon button that toggles a stats chart between its visual bar-chart view and an accessible data-table view."},
+  "chartTablePeriodHeader": "Period",
+  "@chartTablePeriodHeader": {"description": "Column header for the period/date column in a chart's data-table fallback."},
+  "chartTableValueHeader": "Value",
+  "@chartTableValueHeader": {"description": "Column header for the value column in a chart's data-table fallback."},
+  "chartTableGoalHeader": "Goal",
+  "@chartTableGoalHeader": {"description": "Default column header for the goal-status column in a chart's data-table fallback, used when the caller doesn't supply a module-specific goal label."},
+  "chartTableStatusHeader": "Chart data table",
+  "@chartTableStatusHeader": {"description": "Accessible label announced for a chart's data-table fallback as a whole (the Semantics container wrapping the table), not a visible column header."},
+  "chartTableEmptyState": "No data for this period",
+  "@chartTableEmptyState": {"description": "Empty-state message shown in a chart's data-table fallback when there are no points to display."}
 }

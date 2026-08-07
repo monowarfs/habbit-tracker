@@ -846,5 +846,11 @@
   "leaderboardMetricStreak": "বর্তমান ধারা",
   "leaderboardMetricWeekly": "সাপ্তাহিক সম্পূর্ণতা",
   "leaderboardMetricLevel": "লেভেল",
-  "leaderboardTied": "সমান"
+  "leaderboardTied": "সমান",
+  "chartTableToggleLabel": "ডেটা টেবিল দেখুন",
+  "chartTablePeriodHeader": "সময়কাল",
+  "chartTableValueHeader": "মান",
+  "chartTableGoalHeader": "লক্ষ্য",
+  "chartTableStatusHeader": "চার্ট ডেটা টেবিল",
+  "chartTableEmptyState": "এই সময়ের জন্য কোনো তথ্য নেই"
 }
