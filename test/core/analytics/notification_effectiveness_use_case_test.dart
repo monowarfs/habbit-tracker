@@ -24,6 +24,7 @@ NotificationLedgerRow _row({
     deepLinkRoute: '/water',
     createdAt: scheduledFor.millisecondsSinceEpoch,
     updatedAt: scheduledFor.millisecondsSinceEpoch,
+    profileId: 'system',
   );
 }
 

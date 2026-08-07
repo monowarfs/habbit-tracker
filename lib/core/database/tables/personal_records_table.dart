@@ -28,6 +28,11 @@ class PersonalRecordsTable extends Table {
   /// UTC epoch millis when this record was set.
   IntColumn get achievedAt => integer()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

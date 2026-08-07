@@ -47,6 +47,9 @@ class PauseService {
         startDate: startDate.toIso(),
         endDate: endDate.toIso(),
         createdAt: now,
+        // Task 4 threads the real active profile through; 'system' is the
+        // only profile that can exist before Tasks 3/5-7 ship.
+        profileId: 'system',
       ),
     );
 

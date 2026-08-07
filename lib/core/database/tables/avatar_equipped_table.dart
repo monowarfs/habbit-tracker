@@ -27,6 +27,12 @@ class AvatarEquippedTable extends Table {
   /// UTC epoch millis of the last equip change.
   IntColumn get updatedAt => integer()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support. Part of the primary key since
+  /// [id] is always `'singleton'` — each profile needs its own row.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
-  Set<Column> get primaryKey => {id};
+  Set<Column> get primaryKey => {id, profileId};
 }

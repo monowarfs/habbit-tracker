@@ -159,6 +159,13 @@ class AppSettingsTable extends Table {
   TextColumn get activeIconPackId =>
       text().withDefault(const Constant('default'))();
 
+  /// The currently active profile's id (`core/profiles/`). Settings
+  /// themselves stay device-level/global, not per-profile — this column
+  /// is just the pointer to which profile's data every other table's
+  /// `profile_id` should be filtered/written against. Null only
+  /// transiently before the Task 2 migration seeds it to `'system'`.
+  TextColumn get activeProfileId => text().nullable()();
+
   /// UTC epoch millis.
   IntColumn get createdAt => integer()();
 

@@ -31,6 +31,11 @@ class WaterGoalsTable extends Table {
   /// active views and excluded from streak calculations.
   IntColumn get archivedAt => integer().nullable()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

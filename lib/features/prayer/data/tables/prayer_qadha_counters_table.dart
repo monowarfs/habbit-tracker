@@ -20,11 +20,16 @@ class PrayerQadhaCountersTable extends Table {
   /// UTC epoch millis.
   IntColumn get updatedAt => integer()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
   Set<Column> get primaryKey => {id};
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {prayerName},
+    {prayerName, profileId},
   ];
 }

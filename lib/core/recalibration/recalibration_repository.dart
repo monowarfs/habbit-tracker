@@ -32,6 +32,9 @@ class RecalibrationRepository {
       lastShownAt: installAt,
       lastGoalEditedAt: installAt,
       consecutiveDismissals: 0,
+      // Task 4 threads the real active profile through; 'system' is the
+      // only profile that can exist before Tasks 3/5-7 ship.
+      profileId: 'system',
     );
     await _db.into(_db.recalibrationMarkersTable).insert(seeded);
     return seeded;

@@ -28,6 +28,7 @@ NotificationLedgerRow _ledgerRow(String id, DateTime scheduledFor) =>
       deepLinkRoute: '/water',
       createdAt: scheduledFor.millisecondsSinceEpoch,
       updatedAt: scheduledFor.millisecondsSinceEpoch,
+      profileId: 'system',
     );
 
 void main() {
