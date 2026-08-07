@@ -1,7 +1,20 @@
 # Implementation Order: Remaining Specs
 
 **Created:** 2026-07-25
-**Updated:** 2026-08-07 — 7 specs removed, merged to dev in parallel (PRs
+**Updated:** 2026-08-07 — 3 specs removed: #46 (03-family-multi-profile,
+PR #90) merged to dev — profiles table + profile_id scoping across every
+module/core repository, active-profile provider, profile switcher +
+Manage Profiles screen. #49 (04-household-shared-device-leaderboard,
+05-community) and #50 (12-household-leaderboard, 06-gamification) were
+the same feature described twice at different paths with colliding ARB
+keys; merged into one implementation (PR #91) taking #50's superset
+scope (3 ranking metrics, tie handling, module-overlap detection) plus
+#49's dashboard-card entry point. Found and fixed a real gap along the
+way: `HabitModule.dayStatus()` was hardcoded to a fixed `'system'`
+profile in all 7 modules despite #46 landing — added an optional
+`profileId` param, scoped to just that method. `app_database.dart`
+schema now at v34 (`profiles.leaderboard_opted_out` added this batch).
+Prior update 2026-08-07 — 7 specs removed, merged to dev in parallel (PRs
 #83-#89): #35 (05-consistency-score), #31 (08-audio-cue-alternative-
 notification-actions), #32 (01-adherence-heatmap), #33 (02-personal-
 record-tracking), #28 (01-talkback-voiceover-navigation-audit), #27
@@ -35,7 +48,7 @@ Prior update 2026-08-04 — 20 of 57 done: Wave 0, Wave 1 in full, plus
 #14-17/36/38/40/41 from Wave 2-3 (see git log `--merges` and direct
 commits, PRs #54-76), including `04-additional-habit-modules-pack`
 (Sleep/BP/Mood/Exercise modules, PRs #73-76).
-**Remaining specs:** 24
+**Remaining specs:** 20
 
 ---
 
@@ -74,21 +87,6 @@ commits, PRs #54-76), including `04-additional-habit-modules-pack`
 
 ---
 
-### Wave 4: Depends on Wave 3
-| # | Spec | Directory | Effort | Dependencies |
-|---|---|---|---|---|
-| 46 | 03-family-multi-profile | 04-premium | 8-10 days | Spec 02 (sync) |
-
----
-
-### Wave 5: Depends on Wave 4
-| # | Spec | Directory | Effort | Dependencies |
-|---|---|---|---|---|
-| 49 | 04-household-shared-device-leaderboard | 05-community | 2 days | Multi-profile (04-premium/03) |
-| 50 | 12-household-leaderboard | 06-gamification | 2 days | Multi-profile (04-premium/03) |
-
----
-
 ### Blocked (requires external decisions)
 | # | Spec | Directory | Blocker |
 |---|---|---|---|
@@ -111,9 +109,6 @@ depending only on Wave 0-1 foundations, which are already live.
 (chart-data-table-fallback, focus-order-keyboard-navigation-pass) are now
 unblocked — spec 01 TalkBack audit landed 2026-08-07 — and can start any
 time; 44 (simple-mode) still needs specs 03/05 too.
-
-**Wave 4-5 (5 specs):** depends on multi-device sync (#37) and family
-multi-profile (#46) — the two heaviest remaining specs (8-10 days each).
 
 **Blocked (7 specs):** deferred until backend/account/legal decisions clear.
 
