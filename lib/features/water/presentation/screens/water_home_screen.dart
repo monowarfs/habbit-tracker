@@ -103,8 +103,14 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
     final unit =
         ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
     final simpleMode = ref.watch(simpleModeEnabledProvider);
-    final quickAddAmounts =
-        settings?.quickAddAmountsMl ?? const [250, 500, 750];
+    final settingsAmounts = settings?.quickAddAmountsMl;
+    // Same empty-list guard as `water_module.dart`'s quick-add call
+    // sites — the settings screen doesn't expose a way to shrink this
+    // list today, but nothing stops a future one (or a restored backup)
+    // from persisting an empty list.
+    final quickAddAmounts = settingsAmounts == null || settingsAmounts.isEmpty
+        ? const [250, 500, 750]
+        : settingsAmounts;
 
     return Scaffold(
       appBar: AppBar(
