@@ -47,7 +47,7 @@ void main() {
           home: const WaterStatsScreen(),
         ),
       ),
-      2.0,
+      2,
     );
 
     await tester.pumpWidget(const SizedBox.shrink());

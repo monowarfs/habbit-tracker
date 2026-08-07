@@ -21,7 +21,7 @@ class _FakeModule extends Fake implements HabitModule {
 
 void main() {
   test(
-    'composes the score from every visible module\'s today status',
+    "composes the score from every visible module's today status",
     () async {
       final container = ProviderContainer(
         overrides: [
@@ -41,7 +41,7 @@ void main() {
     },
   );
 
-  test('excludes premium-gated modules the user can\'t see', () async {
+  test("excludes premium-gated modules the user can't see", () async {
     final container = ProviderContainer(
       overrides: [
         habitModulesProvider.overrideWith(

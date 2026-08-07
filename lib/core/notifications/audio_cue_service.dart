@@ -35,7 +35,7 @@ class AudioCueService {
     ),
   );
 
-  static const _assetPaths = {
+  static const Map<NotificationActionType, String> _assetPaths = {
     NotificationActionType.done: 'audio/earcon_done.mp3',
     NotificationActionType.snooze: 'audio/earcon_snooze.mp3',
     NotificationActionType.skip: 'audio/earcon_skip.mp3',

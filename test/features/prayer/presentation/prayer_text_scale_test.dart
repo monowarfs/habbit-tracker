@@ -42,7 +42,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await pumpAtTextScale(tester, app(const PrayerHomeScreen()), 2.0);
+      await pumpAtTextScale(tester, app(const PrayerHomeScreen()), 2);
       await disposeTree(tester);
     },
   );
@@ -53,17 +53,17 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await pumpAtTextScale(tester, app(const PrayerStatsScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const PrayerStatsScreen()), 2);
     await disposeTree(tester);
   });
 
   testWidgets('PrayerQadhaScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const PrayerQadhaScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const PrayerQadhaScreen()), 2);
     await disposeTree(tester);
   });
 
   testWidgets('PrayerSettingsScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const PrayerSettingsScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const PrayerSettingsScreen()), 2);
     await disposeTree(tester);
   });
 }

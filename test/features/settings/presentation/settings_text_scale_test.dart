@@ -55,7 +55,7 @@ void main() {
           home: const SettingsHomeScreen(),
         ),
       ),
-      2.0,
+      2,
     );
 
     await tester.pumpWidget(const SizedBox.shrink());

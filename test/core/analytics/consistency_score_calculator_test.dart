@@ -10,7 +10,7 @@ void main() {
     expect(ConsistencyScoreCalculator.calculate(moduleStatuses: const {}), 0);
   });
 
-  test('single module reduces to that module\'s own raw percentage', () {
+  test("single module reduces to that module's own raw percentage", () {
     final complete = ConsistencyScoreCalculator.calculate(
       moduleStatuses: {'water': _s(ModuleDayStatusKind.complete)},
     );

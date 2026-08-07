@@ -43,16 +43,16 @@ void main() {
     final cache = CertificateCache(tempDir);
     final source = File('${tempDir.path}/source.png')
       ..writeAsBytesSync([1, 2, 3]);
-    cache.cache('old_entry', source.path);
-    cache.cache('fresh_entry', source.path);
+    cache
+      ..cache('old_entry', source.path)
+      ..cache('fresh_entry', source.path);
 
     final cachedDir = Directory('${tempDir.path}/certificates');
-    final oldFile = File('${cachedDir.path}/old_entry.png');
     // Backdate the "old" entry past the 30-day prune threshold; leave
     // the "fresh" one at its just-written mtime.
-    oldFile.setLastModifiedSync(
-      DateTime.now().subtract(const Duration(days: 45)),
-    );
+    File(
+      '${cachedDir.path}/old_entry.png',
+    ).setLastModifiedSync(DateTime.now().subtract(const Duration(days: 45)));
 
     await withClock(Clock.fixed(DateTime.now()), () async {
       await cache.pruneOldEntries();

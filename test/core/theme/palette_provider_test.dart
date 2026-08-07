@@ -25,6 +25,7 @@ void main() {
             biometricEnabled: true,
             screenPrivacyEnabled: false,
             soundEnabled: false,
+            audioCuesEnabled: true,
             ramadanAutoDetectEnabled: true,
             adaptiveReminderEnabled: false,
             quietHoursEnabled: false,

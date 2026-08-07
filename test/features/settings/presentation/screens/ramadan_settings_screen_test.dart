@@ -59,6 +59,10 @@ class _FakeSettingsRepo implements SettingsRepository {
       Future.value(const Result.success(null));
 
   @override
+  Future<Result<void>> updateAudioCuesEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
+
+  @override
   Future<Result<void>> updateLastSeenAppVersion(String version) =>
       Future.value(const Result.success(null));
 

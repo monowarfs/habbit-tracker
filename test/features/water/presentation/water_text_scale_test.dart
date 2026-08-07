@@ -34,17 +34,17 @@ void main() {
   );
 
   testWidgets('WaterHomeScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const WaterHomeScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const WaterHomeScreen()), 2);
     await disposeTree(tester);
   });
 
   testWidgets('WaterAddEntryScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const WaterAddEntryScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const WaterAddEntryScreen()), 2);
     await disposeTree(tester);
   });
 
   testWidgets('WaterSettingsScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const WaterSettingsScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const WaterSettingsScreen()), 2);
     await disposeTree(tester);
   });
 }

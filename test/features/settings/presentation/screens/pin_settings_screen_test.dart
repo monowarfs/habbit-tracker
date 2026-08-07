@@ -182,6 +182,12 @@ class _ReactiveSettingsRepo implements SettingsRepository {
   }
 
   @override
+  Future<Result<void>> updateAudioCuesEnabled({required bool enabled}) async {
+    await _update((s) => s.copyWith(audioCuesEnabled: enabled));
+    return const Result.success(null);
+  }
+
+  @override
   Future<Result<void>> updatePinLockTimeoutSeconds(int seconds) async {
     await _update((s) => s.copyWith(pinLockTimeoutSeconds: seconds));
     return const Result.success(null);

@@ -40,7 +40,7 @@ void main() {
   );
 
   testWidgets('MedicineHomeScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const MedicineHomeScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const MedicineHomeScreen()), 2);
     await disposeTree(tester);
   });
 
@@ -57,7 +57,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await pumpAtTextScale(tester, app(const MedicineListScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const MedicineListScreen()), 2);
     await disposeTree(tester);
   });
 
@@ -84,13 +84,13 @@ void main() {
     await pumpAtTextScale(
       tester,
       app(MedicineDetailScreen(medicineId: medicineId)),
-      2.0,
+      2,
     );
     await disposeTree(tester);
   });
 
   testWidgets('MedicineStatsScreen at 2.0x: no overflow', (tester) async {
-    await pumpAtTextScale(tester, app(const MedicineStatsScreen()), 2.0);
+    await pumpAtTextScale(tester, app(const MedicineStatsScreen()), 2);
     await disposeTree(tester);
   });
 }

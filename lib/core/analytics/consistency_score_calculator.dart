@@ -33,15 +33,15 @@ class ConsistencyScoreCalculator {
   static double _scoreForStatus(ModuleDayStatusKind kind) {
     switch (kind) {
       case ModuleDayStatusKind.complete:
-        return 1.0;
+        return 1;
       case ModuleDayStatusKind.partial:
         return 0.5;
       case ModuleDayStatusKind.missed:
-        return 0.0;
+        return 0;
       case ModuleDayStatusKind.none:
-        return 0.0;
+        return 0;
       case ModuleDayStatusKind.paused:
-        return 0.0;
+        return 0;
     }
   }
 }
