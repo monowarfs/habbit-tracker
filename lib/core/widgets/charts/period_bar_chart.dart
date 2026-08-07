@@ -169,7 +169,10 @@ class PeriodBarChart extends StatelessWidget {
     final combinedLabel = switch ((semanticsLabel, overlayLabel)) {
       (null, _) => null,
       (final label?, null) => label,
-      (final label?, final overlay?) => '$label $overlay',
+      // Named distinctly from the `overlay` (List<BarChartPoint>?) local
+      // above - same word, unrelated type, kept apart to avoid a
+      // confusing shadow.
+      (final label?, final overlayText?) => '$label $overlayText',
     };
     if (combinedLabel == null) return chart;
     return SemanticLabels.wrap(

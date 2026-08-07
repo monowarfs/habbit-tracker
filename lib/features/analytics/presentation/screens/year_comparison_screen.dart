@@ -34,11 +34,17 @@ class _YearComparisonScreenState extends ConsumerState<YearComparisonScreen> {
     setState(() {
       _anchor = switch (_period) {
         ReportPeriod.week => _anchor.addDays(7 * direction),
+        // addMonths (not raw `LocalDate(year, month + direction, 1)`)
+        // so a December -> next-month tap normalizes into next January
+        // via DateTime's own overflow rounding, rather than leaving an
+        // invalid `month: 13` sitting in state (see LocalDate.addMonths'
+        // own doc comment for the exact "dead history screen" bug this
+        // avoids).
         ReportPeriod.month => LocalDate(
           _anchor.year,
-          _anchor.month + direction,
+          _anchor.month,
           1,
-        ),
+        ).addMonths(direction),
         ReportPeriod.year => LocalDate(
           _anchor.year + direction,
           _anchor.month,
@@ -116,8 +122,9 @@ class _YearComparisonScreenState extends ConsumerState<YearComparisonScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      for (final module
-                          in ref.watch(visibleHabitModulesProvider))
+                      for (final module in ref.watch(
+                        visibleHabitModulesProvider,
+                      ))
                         _ModuleComparisonCard(
                           moduleId: module.id,
                           displayName: module.metadata.displayName,
