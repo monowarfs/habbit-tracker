@@ -83,9 +83,11 @@ class PersonalRecordSection extends ConsumerWidget {
               ),
             ),
             if (data.isNewRecord)
-              Chip(
-                label: Text(l10n.personalRecordNewRecord),
-                backgroundColor: accentColor.withValues(alpha: 0.15),
+              Flexible(
+                child: Chip(
+                  label: Text(l10n.personalRecordNewRecord),
+                  backgroundColor: accentColor.withValues(alpha: 0.15),
+                ),
               ),
           ],
         ),
