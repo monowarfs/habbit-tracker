@@ -27,10 +27,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(db)],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WaterAddEntryScreen(),
+          home: WaterAddEntryScreen(),
         ),
       ),
     );
@@ -98,8 +98,8 @@ void main() {
 
       // Move focus elsewhere first so we can tell requestFocus() actually
       // moved it, rather than it never having left.
-      final notesNode = textFieldNode(tester, find.byType(TextField).at(1));
-      notesNode.requestFocus();
+      final notesNode = textFieldNode(tester, find.byType(TextField).at(1))
+        ..requestFocus();
       await tester.pump();
       expect(notesNode.hasFocus, isTrue);
 

@@ -99,11 +99,8 @@ void main() {
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle();
 
-      final switchTileNode = textOwnerNode(
-        tester,
-        find.byType(SwitchListTile),
-      );
-      switchTileNode.requestFocus();
+      final switchTileNode = textOwnerNode(tester, find.byType(SwitchListTile))
+        ..requestFocus();
       await tester.pump();
       expect(switchTileNode.hasFocus, isTrue);
 
@@ -144,8 +141,8 @@ void main() {
 
       // Move focus elsewhere first so we can tell requestFocus() actually
       // moved it.
-      final dosageNode = textFieldNode(tester, find.byType(TextField).at(1));
-      dosageNode.requestFocus();
+      final dosageNode = textFieldNode(tester, find.byType(TextField).at(1))
+        ..requestFocus();
       await tester.pump();
       expect(dosageNode.hasFocus, isTrue);
 
