@@ -225,6 +225,13 @@ class SettingsHomeScreen extends ConsumerWidget {
             },
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.manage_accounts_outlined),
+            title: Text(l10n.manageProfilesTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/profiles'),
+          ),
+          const Divider(),
           _SectionHeader(l10n.settingsSecurity),
           ListTile(
             leading: const Icon(Icons.lock_outline),

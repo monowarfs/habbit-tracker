@@ -14,6 +14,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
+import 'package:habit_tracker/core/profiles/profile_switcher.dart';
 import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/greeting.dart';
@@ -51,6 +52,7 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navDashboard),
         actions: [
+          const ProfileSwitcher(),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: l10n.searchPrompt,

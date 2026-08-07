@@ -32,3 +32,10 @@ Future<Profile> activeProfile(Ref ref) {
 Future<List<Profile>> profileList(Ref ref) {
   return ref.watch(profileRepositoryProvider).listProfiles();
 }
+
+/// Approximate data volume for [profileId], for the manage-profiles
+/// screen's "N items" label.
+@riverpod
+Future<int> profileDataItemCount(Ref ref, String profileId) {
+  return ref.watch(profileRepositoryProvider).dataItemCount(profileId);
+}

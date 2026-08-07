@@ -254,6 +254,46 @@ class ProfileRepository {
     return fallback.toDomain();
   }
 
+  /// Approximate data volume for [id] — counts rows across each module's
+  /// main per-entry table (Water logs, Medicine doses, Prayer records).
+  /// Not an exhaustive byte-accurate total (that would mean summing all
+  /// 28 profile-scoped tables for a number nobody reads that precisely);
+  /// good enough for the manage-profiles screen's "N items" label.
+  Future<int> dataItemCount(String id) async {
+    final waterLogs =
+        await (_db.selectOnly(_db.waterLogsTable)
+              ..addColumns([_db.waterLogsTable.id.count()])
+              ..where(
+                _db.waterLogsTable.profileId.equals(id) &
+                    _db.waterLogsTable.deletedAt.isNull(),
+              ))
+            .getSingle();
+    final medicineDoses =
+        await (_db.selectOnly(_db.medicineDosesTable)
+              ..addColumns([_db.medicineDosesTable.id.count()])
+              ..where(
+                _db.medicineDosesTable.profileId.equals(id) &
+                    _db.medicineDosesTable.deletedAt.isNull(),
+              ))
+            .getSingle();
+    final prayerRecords =
+        await (_db.selectOnly(_db.prayerRecordsTable)
+              ..addColumns([_db.prayerRecordsTable.id.count()])
+              ..where(
+                _db.prayerRecordsTable.profileId.equals(id) &
+                    _db.prayerRecordsTable.deletedAt.isNull(),
+              ))
+            .getSingle();
+    final waterCount = waterLogs.read(_db.waterLogsTable.id.count())!;
+    final medicineCount = medicineDoses.read(
+      _db.medicineDosesTable.id.count(),
+    )!;
+    final prayerCount = prayerRecords.read(
+      _db.prayerRecordsTable.id.count(),
+    )!;
+    return waterCount + medicineCount + prayerCount;
+  }
+
   /// Switches the active profile to [id]. No-ops if the `app_settings`
   /// singleton row doesn't exist yet — safe in practice since app boot
   /// always seeds it (`SettingsRepositoryImpl._ensureSeeded`) before any
