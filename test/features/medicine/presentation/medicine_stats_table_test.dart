@@ -13,10 +13,12 @@ import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/features/medicine/presentation/screens/medicine_stats_screen.dart';
 
 void main() {
-  late AppDatabase db;
-
-  setUp(() async {
-    db = AppDatabase(NativeDatabase.memory());
+  testWidgets('toggling the chart shows the data-table fallback', (
+    tester,
+  ) async {
+    // Database is created/closed inline (not via setUp/tearDown) — see
+    // water_stats_table_test.dart.
+    final db = AppDatabase(NativeDatabase.memory());
     // See water_stats_table_test.dart: pre-seed a personal record so a
     // fresh (0-day) streak doesn't trigger a full-screen streak
     // -celebration overlay that would swallow this test's own tap.
@@ -26,12 +28,7 @@ void main() {
       value: 0,
       profileId: 'system',
     );
-  });
-  tearDown(() => db.close());
 
-  testWidgets('toggling the chart shows the data-table fallback', (
-    tester,
-  ) async {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 8)), () async {
       await tester.pumpWidget(
         ProviderScope(
@@ -63,5 +60,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pump(const Duration(milliseconds: 1));
     });
+
+    await db.close();
   });
 }

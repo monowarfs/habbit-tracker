@@ -12,10 +12,13 @@ import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_stats_screen.dart';
 
 void main() {
-  late AppDatabase db;
-
-  setUp(() async {
-    db = AppDatabase(NativeDatabase.memory());
+  testWidgets('toggling the chart shows the data-table fallback', (
+    tester,
+  ) async {
+    // Database is created/closed inline (not via setUp/tearDown) —
+    // empirically the reliable pattern for this screen's real-DB widget
+    // tests in this environment.
+    final db = AppDatabase(NativeDatabase.memory());
     // Pre-seed a personal record so a fresh (0-day) streak doesn't read
     // as "breaking" the (nonexistent) record — PersonalRecordRepository
     // .checkAndUpdate treats any value as a new record when no row
@@ -28,12 +31,7 @@ void main() {
       value: 0,
       profileId: 'system',
     );
-  });
-  tearDown(() => db.close());
 
-  testWidgets('toggling the chart shows the data-table fallback', (
-    tester,
-  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(db)],
@@ -71,5 +69,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pump(const Duration(milliseconds: 1));
+
+    await db.close();
   });
 }
