@@ -33,6 +33,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   int _step = 0;
 
   final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
+  String? _nameError;
   final _dosageController = TextEditingController();
   bool _stockEnabled = false;
   final _stockCountController = TextEditingController();
@@ -49,6 +51,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _nameFocusNode.dispose();
     _dosageController.dispose();
     _stockCountController.dispose();
     _stockThresholdController.dispose();
@@ -56,7 +59,13 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 
   void _nextStep() {
-    if (_step == 1 && _nameController.text.trim().isEmpty) return;
+    if (_step == 1 && _nameController.text.trim().isEmpty) {
+      setState(() {
+        _nameError = AppLocalizations.of(context)!.profileNameRequiredError;
+      });
+      _nameFocusNode.requestFocus();
+      return;
+    }
     setState(() => _step += 1);
     unawaited(
       _pageController.nextPage(
@@ -116,6 +125,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           ),
           _DetailsStep(
             nameController: _nameController,
+            nameFocusNode: _nameFocusNode,
+            nameError: _nameError,
+            onNameChanged: _nameError == null
+                ? null
+                : (_) => setState(() => _nameError = null),
             dosageController: _dosageController,
           ),
           _StockStep(
@@ -206,10 +220,16 @@ String _presetDescription(
 class _DetailsStep extends StatelessWidget {
   const _DetailsStep({
     required this.nameController,
+    required this.nameFocusNode,
+    required this.nameError,
+    required this.onNameChanged,
     required this.dosageController,
   });
 
   final TextEditingController nameController;
+  final FocusNode nameFocusNode;
+  final String? nameError;
+  final ValueChanged<String>? onNameChanged;
   final TextEditingController dosageController;
 
   @override
@@ -221,7 +241,12 @@ class _DetailsStep extends StatelessWidget {
         children: [
           TextField(
             controller: nameController,
-            decoration: InputDecoration(labelText: l10n.medicineFormNameLabel),
+            focusNode: nameFocusNode,
+            onChanged: onNameChanged,
+            decoration: InputDecoration(
+              labelText: l10n.medicineFormNameLabel,
+              errorText: nameError,
+            ),
           ),
           const SizedBox(height: 16),
           TextField(

@@ -852,5 +852,9 @@
   "chartTableValueHeader": "মান",
   "chartTableGoalHeader": "লক্ষ্য",
   "chartTableStatusHeader": "চার্ট ডেটা টেবিল",
-  "chartTableEmptyState": "এই সময়ের জন্য কোনো তথ্য নেই"
+  "chartTableEmptyState": "এই সময়ের জন্য কোনো তথ্য নেই",
+  "comparisonTitle": "গত বছরের তুলনায়",
+  "comparisonCurrentLabel": "এই {period}",
+  "comparisonPastLabel": "গত বছর",
+  "comparisonEmptyState": "এখনও পর্যাপ্ত ইতিহাস নেই (১ বছর প্রয়োজন)"
 }

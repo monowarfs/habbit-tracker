@@ -2927,5 +2927,16 @@
   "chartTableStatusHeader": "Chart data table",
   "@chartTableStatusHeader": {"description": "Accessible label announced for a chart's data-table fallback as a whole (the Semantics container wrapping the table), not a visible column header."},
   "chartTableEmptyState": "No data for this period",
-  "@chartTableEmptyState": {"description": "Empty-state message shown in a chart's data-table fallback when there are no points to display."}
+  "@chartTableEmptyState": {"description": "Empty-state message shown in a chart's data-table fallback when there are no points to display."},
+  "comparisonTitle": "vs. Last Year",
+  "@comparisonTitle": {"description": "Title of the comparison-to-past-self screen."},
+  "comparisonCurrentLabel": "This {period}",
+  "@comparisonCurrentLabel": {
+    "description": "Legend label for the current-period series on the comparison chart, e.g. 'This Month'.",
+    "placeholders": {"period": {"type": "String"}}
+  },
+  "comparisonPastLabel": "Last year",
+  "@comparisonPastLabel": {"description": "Legend label for the same-period-last-year series on the comparison chart."},
+  "comparisonEmptyState": "Not enough history yet (need 1 year)",
+  "@comparisonEmptyState": {"description": "Shown instead of the comparison chart when the user has less than a year of app history."}
 }
