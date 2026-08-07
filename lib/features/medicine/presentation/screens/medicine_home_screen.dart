@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/achievements/achievement_kind.dart';
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/audio/chime_player.dart';
@@ -14,11 +15,13 @@ import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
 import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
+import 'package:habit_tracker/core/theme/simple_mode_constants.dart';
 import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/note_editor_sheet.dart';
 import 'package:habit_tracker/core/widgets/streak_celebration_overlay.dart';
 import 'package:habit_tracker/core/widgets/undo_snackbar.dart';
 import 'package:habit_tracker/features/achievements/presentation/achievement_localization.dart';
+import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_controller.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:habit_tracker/features/medicine/presentation/widgets/dose_tile.dart';
@@ -51,6 +54,7 @@ class MedicineHomeScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final views = ref.watch(todaysDoseViewsProvider);
     final controller = ref.read(medicineControllerProvider.notifier);
+    final simpleMode = ref.watch(simpleModeEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -77,40 +81,129 @@ class MedicineHomeScreen extends ConsumerWidget {
           ? const Center(child: CircularProgressIndicator())
           : views.isEmpty
           ? Center(child: Text(l10n.medicineHomeEmpty))
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const _RecalibrationCheck(moduleId: 'medicine'),
-                const ActivePausesCard(moduleId: 'medicine'),
-                for (final view in views)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: DoseTile(
-                      view: view,
-                      highlighted: view.dose.id == highlightDoseId,
-                      onDone: () => _markDoneAndCelebrate(
-                        context,
-                        ref,
-                        view.dose.id,
-                        chimePlayer ?? ChimePlayer.instance,
-                      ),
-                      onSkip: () => _skipWithUndo(context, ref, view.dose.id),
-                      onNoteTap: () async {
-                        final result = await showNoteEditorSheet(
-                          context,
-                          initialNotes: view.dose.notes,
-                        );
-                        if (context.mounted) {
-                          await controller.updateDoseNotes(
-                            view.dose.id,
-                            result,
-                          );
-                        }
-                      },
+          : MediaQuery(
+              // Composes on top of the ambient text scale rather than
+              // replacing it, so OS-level accessibility scaling and
+              // Simple Mode's own bump both apply (spec's Edge Case 2).
+              data: MediaQuery.of(context).copyWith(
+                textScaler: simpleMode
+                    ? TextScaler.linear(
+                        MediaQuery.textScalerOf(context).scale(1) *
+                            simpleModeTextScaleMultiplier,
+                      )
+                    : MediaQuery.textScalerOf(context),
+              ),
+              child: ListView(
+                padding: simpleMode
+                    ? simpleModePadding
+                    : const EdgeInsets.all(16),
+                children: [
+                  const _RecalibrationCheck(moduleId: 'medicine'),
+                  const ActivePausesCard(moduleId: 'medicine'),
+                  for (final view in views)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: simpleMode
+                          ? _SimpleDoseCard(
+                              view: view,
+                              onDone: () => _markDoneAndCelebrate(
+                                context,
+                                ref,
+                                view.dose.id,
+                                chimePlayer ?? ChimePlayer.instance,
+                              ),
+                              onSkip: () =>
+                                  _skipWithUndo(context, ref, view.dose.id),
+                            )
+                          : DoseTile(
+                              view: view,
+                              highlighted: view.dose.id == highlightDoseId,
+                              onDone: () => _markDoneAndCelebrate(
+                                context,
+                                ref,
+                                view.dose.id,
+                                chimePlayer ?? ChimePlayer.instance,
+                              ),
+                              onSkip: () =>
+                                  _skipWithUndo(context, ref, view.dose.id),
+                              onNoteTap: () async {
+                                final result = await showNoteEditorSheet(
+                                  context,
+                                  initialNotes: view.dose.notes,
+                                );
+                                if (context.mounted) {
+                                  await controller.updateDoseNotes(
+                                    view.dose.id,
+                                    result,
+                                  );
+                                }
+                              },
+                            ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
+    );
+  }
+}
+
+/// Simple Mode's full-width dose card — the medicine name at larger text,
+/// and (while a dose still needs an action) an oversized "Mark Done"
+/// button plus a plain-text Skip fallback. Notes editing is dropped here
+/// — a deliberately less feature-dense surface, per the spec's "one thing
+/// per screen" framing.
+class _SimpleDoseCard extends StatelessWidget {
+  const _SimpleDoseCard({
+    required this.view,
+    required this.onDone,
+    required this.onSkip,
+  });
+
+  final MedicineDoseView view;
+  final VoidCallback onDone;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final resolved =
+        view.effectiveStatus == MedicineDoseStatus.done ||
+        view.effectiveStatus == MedicineDoseStatus.skipped;
+    return SemanticLabels.wrap(
+      label: view.medicine.name,
+      child: Card(
+        child: Padding(
+          padding: simpleModePadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                view.medicine.name,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              if (!resolved) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: simpleModeButtonHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: onDone,
+                    icon: const Icon(
+                      Icons.check_circle_outline,
+                      size: simpleModeIconSize,
+                    ),
+                    label: Text(l10n.medicineSimpleDoseDoneButton),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: onSkip,
+                  child: Text(l10n.semanticMedicineDoseSkipButton),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
