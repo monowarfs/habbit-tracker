@@ -146,10 +146,12 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TrendArrow(
-                  current: series.last.totalMl.toDouble(),
-                  previous: series[series.length - 2].totalMl.toDouble(),
-                  label: l10n.trendArrowVsPrevious,
+                Flexible(
+                  child: TrendArrow(
+                    current: series.last.totalMl.toDouble(),
+                    previous: series[series.length - 2].totalMl.toDouble(),
+                    label: l10n.trendArrowVsPrevious,
+                  ),
                 ),
               ],
             ),

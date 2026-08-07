@@ -122,7 +122,7 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
           isEdit ? l10n.waterAddEntryTitleEdit : l10n.waterAddEntryTitleNew,
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
