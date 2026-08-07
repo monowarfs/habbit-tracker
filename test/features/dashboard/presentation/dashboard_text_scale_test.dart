@@ -46,7 +46,8 @@ void main() {
                 ],
                 child: MaterialApp(
                   locale: locale,
-                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
                   theme: isDark
                       ? AppTheme.dark(isBangla: locale.languageCode == 'bn')
