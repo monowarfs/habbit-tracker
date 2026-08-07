@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
@@ -39,6 +40,7 @@ class WaterLogTile extends StatelessWidget {
       subtitle: Text(formatWaterLogTime(context, entry.loggedAt)),
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline),
+        tooltip: AppLocalizations.of(context)!.commonDelete,
         onPressed: onDelete,
       ),
     );

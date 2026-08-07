@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/water/domain/usecases/calculate_water_streak.dart';
 
@@ -13,25 +15,32 @@ class StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semanticColors = Theme.of(context).extension<AppSemanticColors>();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _StreakStat(
-              icon: Icons.local_fire_department,
-              iconColor: semanticColors?.success,
-              value: streak.current,
-              label: 'Current streak',
-            ),
-            _StreakStat(
-              icon: Icons.emoji_events,
-              iconColor: Theme.of(context).moduleAccents.water,
-              value: streak.longest,
-              label: 'Longest streak',
-            ),
-          ],
+    final l10n = AppLocalizations.of(context)!;
+    return SemanticLabels.wrap(
+      label:
+          '${l10n.semanticWaterStreakIndicator}: '
+          '${streak.current}, ${streak.longest}',
+      excludeSemantics: true,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _StreakStat(
+                icon: Icons.local_fire_department,
+                iconColor: semanticColors?.success,
+                value: streak.current,
+                label: 'Current streak',
+              ),
+              _StreakStat(
+                icon: Icons.emoji_events,
+                iconColor: Theme.of(context).moduleAccents.water,
+                value: streak.longest,
+                label: 'Longest streak',
+              ),
+            ],
+          ),
         ),
       ),
     );

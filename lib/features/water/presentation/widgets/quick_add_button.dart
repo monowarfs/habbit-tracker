@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
+import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/features/settings/domain/entities/app_settings.dart';
 import 'package:habit_tracker/features/water/presentation/water_amount_formatter.dart';
@@ -25,12 +27,18 @@ class QuickAddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton.tonal(
-      onPressed: onTap,
-      style: FilledButton.styleFrom(
-        foregroundColor: Theme.of(context).moduleAccents.water,
+    final l10n = AppLocalizations.of(context)!;
+    final amountText = formatWaterAmount(context, amountMl, unit);
+    return SemanticLabels.wrap(
+      label: '${l10n.semanticWaterQuickAddButton} $amountText',
+      excludeSemantics: true,
+      child: FilledButton.tonal(
+        onPressed: onTap,
+        style: FilledButton.styleFrom(
+          foregroundColor: Theme.of(context).moduleAccents.water,
+        ),
+        child: Text('+$amountText'),
       ),
-      child: Text('+${formatWaterAmount(context, amountMl, unit)}'),
     );
   }
 }
