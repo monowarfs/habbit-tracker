@@ -28,6 +28,7 @@ import 'package:habit_tracker/features/dashboard/presentation/search/app_search_
 import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_display.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/boss_challenge_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/habit_stack_suggestion_card.dart';
+import 'package:habit_tracker/features/dashboard/presentation/widgets/household_leaderboard_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/module_suggestion_card.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/virtual_companion.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/weekly_quest_list.dart';
@@ -113,6 +114,8 @@ class DashboardScreen extends ConsumerWidget {
                   _ConsistencyScoreSection(modules: modules),
                   const SizedBox(height: 16),
                   const XpLevelDisplay(),
+                  const SizedBox(height: 16),
+                  const HouseholdLeaderboardCard(),
                   const SizedBox(height: 16),
                   const VirtualCompanion(),
                   const SizedBox(height: 16),

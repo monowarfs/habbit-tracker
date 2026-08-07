@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/profile_repository.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -127,6 +128,25 @@ void main() {
     expect(find.text('prayer summary'), findsOneWidget);
     await disposeTree(tester);
   });
+
+  testWidgets(
+    'household leaderboard card is hidden with only one profile',
+    (tester) async {
+      await _pump(tester, [_FakeModule('water')], db);
+      expect(find.text('Household Leaderboard'), findsNothing);
+      await disposeTree(tester);
+    },
+  );
+
+  testWidgets(
+    'household leaderboard card appears once a second profile exists',
+    (tester) async {
+      await ProfileRepository(db).createProfile('Kid', 'blue');
+      await _pump(tester, [_FakeModule('water')], db);
+      expect(find.text('Household Leaderboard'), findsOneWidget);
+      await disposeTree(tester);
+    },
+  );
 
   testWidgets(
     'shows the consistency score section once a module reports today '
