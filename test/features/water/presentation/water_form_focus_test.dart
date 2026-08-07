@@ -9,8 +9,9 @@ import 'package:habit_tracker/features/water/presentation/screens/water_add_entr
 
 /// Spec: docs/superpowers/specs/07-accessibility/
 /// 10-FOCUS-ORDER-KEYBOARD-NAVIGATION-PASS-IMPLEMENTATION-PLAN.md
-/// (Task 1) — tab order across the custom-log form must follow the
-/// visual top-to-bottom layout.
+/// (Tasks 1 and 5) — tab order across the custom-log form must follow
+/// the visual top-to-bottom layout, and a validation failure must move
+/// keyboard focus to the field carrying the error.
 void main() {
   late AppDatabase db;
 
@@ -85,6 +86,29 @@ void main() {
       FocusManager.instance.primaryFocus!.nextFocus();
       await tester.pump();
       expect(saveNode.hasFocus, isTrue);
+
+      await disposeTree(tester);
+    },
+  );
+
+  testWidgets(
+    'saving with an invalid amount moves focus back to the amount field',
+    (tester) async {
+      await pumpForm(tester);
+
+      // Move focus elsewhere first so we can tell requestFocus() actually
+      // moved it, rather than it never having left.
+      final notesNode = textFieldNode(tester, find.byType(TextField).at(1));
+      notesNode.requestFocus();
+      await tester.pump();
+      expect(notesNode.hasFocus, isTrue);
+
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+
+      expect(find.text('Amount must be greater than 0'), findsOneWidget);
+      final amountNode = textFieldNode(tester, find.byType(TextField).at(0));
+      expect(amountNode.hasFocus, isTrue);
 
       await disposeTree(tester);
     },

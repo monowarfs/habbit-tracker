@@ -134,4 +134,29 @@ void main() {
       await disposeTree(tester);
     },
   );
+
+  testWidgets(
+    'tapping Next with an empty name shows an error and moves focus to it',
+    (tester) async {
+      await pumpForm(tester);
+      await tester.tap(find.text('Custom schedule'));
+      await tester.pumpAndSettle();
+
+      // Move focus elsewhere first so we can tell requestFocus() actually
+      // moved it.
+      final dosageNode = textFieldNode(tester, find.byType(TextField).at(1));
+      dosageNode.requestFocus();
+      await tester.pump();
+      expect(dosageNode.hasFocus, isTrue);
+
+      await tester.tap(find.text('Next'));
+      await tester.pump();
+
+      expect(find.text('Enter a name.'), findsOneWidget);
+      final nameNode = textFieldNode(tester, find.byType(TextField).at(0));
+      expect(nameNode.hasFocus, isTrue);
+
+      await disposeTree(tester);
+    },
+  );
 }
