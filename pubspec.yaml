@@ -33,6 +33,7 @@ dependencies:
   hijri: ^3.0.0
   home_widget: ^0.9.3
   http: ^1.2.0
+  image_gallery_saver: ^2.0.3
   in_app_purchase: ^3.2.0
   intl: ^0.20.2
   local_auth: ^3.0.2
