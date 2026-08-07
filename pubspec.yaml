@@ -79,6 +79,9 @@ flutter:
   assets:
     - assets/data/prayer_cities.json
     - assets/sounds/dose_done_chime.mp3
+    - assets/audio/earcon_done.mp3
+    - assets/audio/earcon_snooze.mp3
+    - assets/audio/earcon_skip.mp3
     - assets/icon/icon.png
 
 flutter_launcher_icons:
