@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_tracker/core/accessibility/semantic_labels.dart';
 import 'package:habit_tracker/core/dev/seed_data_generator.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_providers.dart';
@@ -485,21 +486,29 @@ class _ModuleToggleTileState extends ConsumerState<_ModuleToggleTile> {
       future: _future,
       builder: (context, snapshot) {
         final enabled = snapshot.data ?? false;
-        return SwitchListTile(
-          title: Text(widget.label),
-          value: enabled,
-          onChanged: widget.locked
-              ? null
-              : (value) async {
-                  await ref
-                      .read(moduleSettingsRepositoryProvider)
-                      .setEnabled(widget.moduleId, enabled: value);
-                  setState(() {
-                    _future = ref
+        // Switch state (on/off) is already announced natively by
+        // SwitchListTile's own semantics — this wrap only adds the
+        // module-name label, matching this file's existing convention
+        // for the other inline switches above (e.g. recalibration,
+        // reengagement).
+        return SemanticLabels.wrap(
+          label: widget.label,
+          child: SwitchListTile(
+            title: Text(widget.label),
+            value: enabled,
+            onChanged: widget.locked
+                ? null
+                : (value) async {
+                    await ref
                         .read(moduleSettingsRepositoryProvider)
-                        .isEnabled(widget.moduleId);
-                  });
-                },
+                        .setEnabled(widget.moduleId, enabled: value);
+                    setState(() {
+                      _future = ref
+                          .read(moduleSettingsRepositoryProvider)
+                          .isEnabled(widget.moduleId);
+                    });
+                  },
+          ),
         );
       },
     );
