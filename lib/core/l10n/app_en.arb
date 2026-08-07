@@ -295,6 +295,26 @@
       "date": {"type": "String"}
     }
   },
+  "heatmapTitle": "Year at a Glance",
+  "@heatmapTitle": {
+    "description": "AppBar title for the cross-module GitHub-style yearly adherence heatmap screen, and the Reports screen's entry-point button label."
+  },
+  "heatmapTooltipDone": "Completed",
+  "@heatmapTooltipDone": {
+    "description": "Tap tooltip status word for a fully-completed day on the yearly adherence heatmap."
+  },
+  "heatmapTooltipPartial": "Partially completed",
+  "@heatmapTooltipPartial": {
+    "description": "Tap tooltip status word for a partially-completed day on the yearly adherence heatmap."
+  },
+  "heatmapTooltipMissed": "Missed",
+  "@heatmapTooltipMissed": {
+    "description": "Tap tooltip status word for a missed day on the yearly adherence heatmap."
+  },
+  "heatmapTooltipNone": "No data",
+  "@heatmapTooltipNone": {
+    "description": "Tap tooltip status word for a day with no recorded data on the yearly adherence heatmap."
+  },
   "waterSettingsTitle": "Water settings",
   "@waterSettingsTitle": {
     "description": "AppBar title for the water module's own settings screen."
