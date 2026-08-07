@@ -76,9 +76,12 @@ void main() {
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
       await _pumpScreen(
         tester,
-        installDate: DateTime.utc(2026, 1, 1), // ~5 months ago
+        installDate: DateTime.utc(2026), // ~5 months ago
       );
-      expect(find.text('Not enough history yet (need 1 year)'), findsOneWidget);
+      expect(
+        find.text('Not enough history yet (need 1 year)'),
+        findsOneWidget,
+      );
       expect(find.byType(PeriodBarChart), findsNothing);
     });
   });
@@ -89,7 +92,7 @@ void main() {
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
         await _pumpScreen(
           tester,
-          installDate: DateTime.utc(2024, 1, 1), // well over a year
+          installDate: DateTime.utc(2024), // well over a year
         );
         expect(find.text('Water'), findsOneWidget);
         expect(find.byType(PeriodBarChart), findsOneWidget);

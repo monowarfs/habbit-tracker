@@ -49,9 +49,9 @@ class YearComparisonUseCase {
   static const _reportUseCase = AggregateReportUseCase();
 
   /// Fetches [module]'s [period] centered on [periodAnchor], and the same
-  /// period one year prior. Only [ReportPeriod.week]/[month]/[year] have
-  /// a natural "same period last year" — this isn't a general
-  /// compare-any-two-periods tool (design doc's non-goals).
+  /// period one year prior. Only the week/month/year [ReportPeriod]
+  /// values have a natural "same period last year" — this isn't a
+  /// general compare-any-two-periods tool (design doc's non-goals).
   Future<YearComparison> fetch({
     required HabitModule module,
     required LocalDate periodAnchor,

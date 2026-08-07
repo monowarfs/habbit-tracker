@@ -27,7 +27,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         appSettingsProvider.overrideWithValue(
-          AsyncData(_settings(installDate: null)),
+          AsyncData(_settings()),
         ),
       ],
     );
@@ -41,7 +41,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           appSettingsProvider.overrideWithValue(
-            AsyncData(_settings(installDate: DateTime.utc(2025, 1, 1))),
+            AsyncData(_settings(installDate: DateTime.utc(2025))),
           ),
         ],
       );

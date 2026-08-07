@@ -8,8 +8,7 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this._dayStatusFor);
 
-  final Map<LocalDate, ModuleDayStatus> Function(DateRange range)
-  _dayStatusFor;
+  final Map<LocalDate, ModuleDayStatus> Function(DateRange range) _dayStatusFor;
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
@@ -22,7 +21,10 @@ Map<LocalDate, ModuleDayStatus> _everyDay(DateRange range, num value) {
   final map = <LocalDate, ModuleDayStatus>{};
   var day = range.start;
   while (day.compareTo(range.end) <= 0) {
-    map[day] = ModuleDayStatus(kind: ModuleDayStatusKind.complete, value: value);
+    map[day] = ModuleDayStatus(
+      kind: ModuleDayStatusKind.complete,
+      value: value,
+    );
     day = day.addDays(1);
   }
   return map;
@@ -44,7 +46,10 @@ void main() {
       expect(result.lastYearPoints.length, 7);
       // A year prior, computed via the same rangeForPeriod resolution
       // rather than a raw day-count shift.
-      expect(result.lastYearRange.start.year, result.currentRange.start.year - 1);
+      expect(
+        result.lastYearRange.start.year,
+        result.currentRange.start.year - 1,
+      );
     });
 
     test(
@@ -105,7 +110,12 @@ void main() {
         final module = _FakeModule((range) {
           // Only the first day of the range has data - simulates a user
           // whose history for that period is sparse/partial.
-          return {range.start: const ModuleDayStatus(kind: ModuleDayStatusKind.complete, value: 5)};
+          return {
+            range.start: const ModuleDayStatus(
+              kind: ModuleDayStatusKind.complete,
+              value: 5,
+            ),
+          };
         });
         final result = await useCase.fetch(
           module: module,
@@ -134,7 +144,7 @@ void main() {
     test('false when fewer than 365 days have passed', () {
       expect(
         YearComparisonUseCase.isEligible(
-          installDate: DateTime.utc(2025, 1, 1),
+          installDate: DateTime.utc(2025),
           now: DateTime.utc(2025, 12, 31),
         ),
         isFalse,
@@ -144,8 +154,8 @@ void main() {
     test('true at exactly 365 days', () {
       expect(
         YearComparisonUseCase.isEligible(
-          installDate: DateTime.utc(2025, 1, 1),
-          now: DateTime.utc(2026, 1, 1),
+          installDate: DateTime.utc(2025),
+          now: DateTime.utc(2026),
         ),
         isTrue,
       );
