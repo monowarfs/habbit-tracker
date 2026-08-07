@@ -14,6 +14,16 @@ import 'package:home_widget/home_widget.dart';
 /// - The widget's own background tap handler (after dispatching the action)
 ///
 /// No-op on non-Android/iOS platforms (home_widget has no desktop/web impl).
+///
+/// Family/multi-profile (Task 9): every call site here takes `AppDatabase`
+/// directly, no `Ref` — same non-Ref constraint as `notification_planner
+/// .dart`'s `planAndApplyNotifications`. `HabitModule.widgetSummary()`
+/// itself is pinned to the `'system'` profile (each module's own
+/// `_fixedProfileId`), so the OS home-screen widget always reflects that
+/// profile's data regardless of which profile is active in the
+/// foreground app — consistent with every other background/widget entry
+/// point, not yet true per-profile widget data (would need a profile id
+/// threaded through the `HabitModule` contract itself).
 Future<void> refreshWidgetsForModule(
   AppDatabase db,
   String moduleId,
