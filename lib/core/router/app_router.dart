@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/security/lock_screen.dart';
 import 'package:habit_tracker/core/security/pin_lock_controller.dart';
 import 'package:habit_tracker/core/widgets/app_scaffold.dart';
 import 'package:habit_tracker/features/achievements/presentation/screens/achievement_gallery_screen.dart';
+import 'package:habit_tracker/features/analytics/presentation/screens/heatmap_screen.dart';
 import 'package:habit_tracker/features/avatar/presentation/screens/avatar_customize_screen.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_add_entry_screen.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/screens/bp_home_screen.dart';
@@ -131,6 +132,9 @@ class AppRoutes {
   /// Yearly recap full-screen viewer (receives YearSummary via extra).
   static const String recap = '/reports/recap';
 
+  /// Cross-module "Year at a Glance" adherence heatmap screen.
+  static const String heatmap = '/reports/heatmap';
+
   /// PIN entry (top-level redirect target, not a normal pushed route).
   static const String lock = '/lock';
 
@@ -214,6 +218,10 @@ GoRouter buildAppRouter(
                         builder: (context, state) => YearlyRecapScreen(
                           summary: state.extra! as YearSummary,
                         ),
+                      ),
+                      GoRoute(
+                        path: 'heatmap',
+                        builder: (context, state) => const HeatmapScreen(),
                       ),
                     ],
                   ),

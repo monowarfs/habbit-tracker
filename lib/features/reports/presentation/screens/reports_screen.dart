@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
@@ -13,6 +14,7 @@ import 'package:habit_tracker/core/reports/aggregate_report_usecase.dart';
 import 'package:habit_tracker/core/reports/chart_image_renderer.dart';
 import 'package:habit_tracker/core/reports/export_report_use_case.dart';
 import 'package:habit_tracker/core/reports/share_report_helper.dart';
+import 'package:habit_tracker/core/router/app_router.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
@@ -362,6 +364,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => context.push(AppRoutes.heatmap),
+                icon: const Icon(Icons.grid_view),
+                label: Text(l10n.heatmapTitle),
+              ),
+            ),
+          ),
           SegmentedButton<ReportPeriod>(
             segments: [
               ButtonSegment(
