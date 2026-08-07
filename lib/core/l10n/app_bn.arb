@@ -846,5 +846,11 @@
   "leaderboardMetricStreak": "বর্তমান ধারা",
   "leaderboardMetricWeekly": "সাপ্তাহিক সম্পূর্ণতা",
   "leaderboardMetricLevel": "লেভেল",
-  "leaderboardTied": "সমান"
+  "leaderboardTied": "সমান",
+  "settingsSimpleModeLabel": "সহজ মোড",
+  "settingsSimpleModeDescription": "বড় বাটন, বড় লেখা, প্রতি স্ক্রিনে একটি কাজ।",
+  "settingsSimpleModeToggleHint": "পুরো অ্যাপে একটি বড়, সহজ লেআউট চালু করে।",
+  "waterSimpleLogButton": "পানি লগ করুন",
+  "medicineSimpleDoseDoneButton": "সম্পন্ন হয়েছে",
+  "prayerSimpleToggleButton": "নামাজ পড়েছি"
 }

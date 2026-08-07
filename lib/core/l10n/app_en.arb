@@ -2915,5 +2915,17 @@
   "leaderboardMetricLevel": "Level",
   "@leaderboardMetricLevel": {"description": "Leaderboard ranking-metric selector option: XP level."},
   "leaderboardTied": "Tied",
-  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."}
+  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."},
+  "settingsSimpleModeLabel": "Simple Mode",
+  "@settingsSimpleModeLabel": {"description": "Label of the Settings toggle for Simple Mode (large-button, single-column layout)."},
+  "settingsSimpleModeDescription": "Bigger buttons, larger text, one thing per screen.",
+  "@settingsSimpleModeDescription": {"description": "Description under the Simple Mode toggle explaining what it does."},
+  "settingsSimpleModeToggleHint": "Turns on a larger, simpler layout across the app.",
+  "@settingsSimpleModeToggleHint": {"description": "Accessibility Semantics label for the Simple Mode switch."},
+  "waterSimpleLogButton": "Log Water",
+  "@waterSimpleLogButton": {"description": "Label of Water's single large one-tap log button shown in Simple Mode."},
+  "medicineSimpleDoseDoneButton": "Mark Done",
+  "@medicineSimpleDoseDoneButton": {"description": "Label of Medicine's oversized dose-done button shown in Simple Mode."},
+  "prayerSimpleToggleButton": "Mark Prayed",
+  "@prayerSimpleToggleButton": {"description": "Label of Prayer's oversized prayed-toggle button shown in Simple Mode."}
 }
