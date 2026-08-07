@@ -26,6 +26,7 @@ class WaterAddEntryScreen extends ConsumerStatefulWidget {
 class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
+  final _amountFocusNode = FocusNode();
   DateTime _loggedAt = clock.now();
   String? _error;
   bool _prefilled = false;
@@ -34,6 +35,7 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
   void dispose() {
     _amountController.dispose();
     _notesController.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
   }
 
@@ -66,10 +68,12 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
     final amount = int.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       setState(() => _error = l10n.waterAddEntryInvalidAmount);
+      _amountFocusNode.requestFocus();
       return;
     }
     if (_loggedAt.isAfter(clock.now())) {
       setState(() => _error = l10n.waterAddEntryFutureError);
+      _amountFocusNode.requestFocus();
       return;
     }
     final notes = canonicalizeNote(_notesController.text);
@@ -129,6 +133,7 @@ class _WaterAddEntryScreenState extends ConsumerState<WaterAddEntryScreen> {
           children: [
             TextField(
               controller: _amountController,
+              focusNode: _amountFocusNode,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: l10n.waterAddEntryAmountLabel,

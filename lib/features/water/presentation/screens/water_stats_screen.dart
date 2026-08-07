@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/chart_data_table.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/goal_attainment_display.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
@@ -128,7 +129,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
         if (series == null)
           const Center(child: CircularProgressIndicator())
         else
-          PeriodBarChart(
+          ChartDataTableToggle(
             points: [
               for (final point in series)
                 BarChartPoint(
@@ -138,7 +139,7 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             ],
             color: Theme.of(context).moduleAccents.water,
             targetLine: goal?.goalMl.toDouble(),
-            semanticsLabel: l10n.semanticWaterStatsChart,
+            chartSemanticsLabel: l10n.semanticWaterStatsChart,
           ),
         if (series != null && series.length >= 2)
           Padding(
