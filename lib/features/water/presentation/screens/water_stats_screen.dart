@@ -139,7 +139,6 @@ class _WaterStatsScreenState extends ConsumerState<WaterStatsScreen> {
             ],
             color: Theme.of(context).moduleAccents.water,
             targetLine: goal?.goalMl.toDouble(),
-            goalLabel: l10n.waterStatsPeriodWeek,
             chartSemanticsLabel: l10n.semanticWaterStatsChart,
           ),
         if (series != null && series.length >= 2)
