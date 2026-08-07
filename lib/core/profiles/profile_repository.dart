@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
+import 'package:habit_tracker/core/profiles/profile.dart';
 import 'package:habit_tracker/core/utils/uuid.dart';
 
 const _systemProfileId = 'system';
@@ -42,16 +43,18 @@ class ProfileRepository {
   }
 
   /// All non-deleted profiles, oldest first.
-  Future<List<ProfileRow>> listProfiles() async {
+  Future<List<Profile>> listProfiles() async {
     await _ensureSystemProfile();
-    return (_db.select(_db.profilesTable)
-          ..where((t) => t.deletedAt.isNull())
-          ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]))
-        .get();
+    final rows =
+        await (_db.select(_db.profilesTable)
+              ..where((t) => t.deletedAt.isNull())
+              ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]))
+            .get();
+    return rows.map((r) => r.toDomain()).toList();
   }
 
   /// Creates a new profile. Throws [StateError] past [maxProfiles].
-  Future<ProfileRow> createProfile(String name, String color) async {
+  Future<Profile> createProfile(String name, String color) async {
     final existing = await listProfiles();
     if (existing.length >= maxProfiles) {
       throw StateError('Maximum of $maxProfiles profiles reached');
@@ -64,7 +67,7 @@ class ProfileRepository {
       createdAt: now,
     );
     await _db.into(_db.profilesTable).insert(row);
-    return row;
+    return row.toDomain();
   }
 
   /// Updates [id]'s display name and/or avatar color.
@@ -233,7 +236,7 @@ class ProfileRepository {
 
   /// The currently active profile, seeding/falling back to the system
   /// profile if the active pointer is unset or stale.
-  Future<ProfileRow> getActiveProfile() async {
+  Future<Profile> getActiveProfile() async {
     await _ensureSystemProfile();
     final settings = await (_db.select(
       _db.appSettingsTable,
@@ -244,13 +247,17 @@ class ProfileRepository {
               (t) => t.id.equals(activeId) & t.deletedAt.isNull(),
             ))
             .getSingleOrNull();
-    if (row != null) return row;
-    return (_db.select(
+    if (row != null) return row.toDomain();
+    final fallback = await (_db.select(
       _db.profilesTable,
     )..where((t) => t.id.equals(_systemProfileId))).getSingle();
+    return fallback.toDomain();
   }
 
-  /// Switches the active profile to [id].
+  /// Switches the active profile to [id]. No-ops if the `app_settings`
+  /// singleton row doesn't exist yet — safe in practice since app boot
+  /// always seeds it (`SettingsRepositoryImpl._ensureSeeded`) before any
+  /// profile-switching UI is reachable.
   Future<void> setActiveProfile(String id) {
     return (_db.update(_db.appSettingsTable)..where(
           (t) => t.id.equals(_appSettingsSingletonId),
