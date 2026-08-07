@@ -308,11 +308,15 @@ class MedicineModule implements HabitModule {
   }
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
+    final effectiveProfileId = profileId ?? _fixedProfileId;
     final doses = await _repository.dosesInRange(
       range.start,
       range.end,
-      profileId: _fixedProfileId,
+      profileId: effectiveProfileId,
     );
     final now = clock.now();
     final byDay = <LocalDate, List<MedicineDose>>{};
@@ -325,7 +329,7 @@ class MedicineModule implements HabitModule {
         ? await pauseSvc.pausedDaysInRange(
             moduleId: 'medicine',
             range: range,
-            profileId: _fixedProfileId,
+            profileId: effectiveProfileId,
           )
         : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};

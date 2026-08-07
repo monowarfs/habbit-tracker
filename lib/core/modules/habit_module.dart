@@ -256,7 +256,18 @@ abstract class HabitModule {
   /// Per-day status for [range] — used by the global calendar (as-is),
   /// Reports (bucketed by period), and the dashboard's day-completion
   /// indicator (today's entry only). D-17.
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range);
+  ///
+  /// [profileId] defaults to each implementation's own fixed profile id
+  /// when omitted (every other `HabitModule` method still only operates
+  /// on that fixed profile — see e.g. `WaterModule._fixedProfileId`'s doc
+  /// comment). It exists so the household leaderboard (`docs/superpowers/
+  /// specs/06-gamification/12-household-leaderboard-IMPLEMENTATION-PLAN
+  /// .md`) can read another profile's day status without a `Ref`, without
+  /// widening any other method's profile scoping.
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  });
 
   /// The next actionable item this module wants surfaced on the
   /// dashboard's upcoming strip, or `null` if there's nothing upcoming.

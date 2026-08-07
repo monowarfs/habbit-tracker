@@ -20,8 +20,10 @@ class _EmptyModule extends Fake implements HabitModule {
     accentColor: Colors.blue,
   );
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async =>
-      {};
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {};
 }
 
 class _DataModule extends Fake implements HabitModule {
@@ -34,7 +36,10 @@ class _DataModule extends Fake implements HabitModule {
     accentColor: Colors.blue,
   );
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
     final result = <LocalDate, ModuleDayStatus>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {

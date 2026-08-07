@@ -337,11 +337,15 @@ class PrayerModule implements HabitModule {
   }
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
+    final effectiveProfileId = profileId ?? _fixedProfileId;
     final records = await _repository.recordsInRange(
       range.start,
       range.end,
-      profileId: _fixedProfileId,
+      profileId: effectiveProfileId,
     );
     final byDay = <LocalDate, List<PrayerRecord>>{};
     for (final record in records) {
@@ -352,7 +356,7 @@ class PrayerModule implements HabitModule {
         ? await pauseSvc.pausedDaysInRange(
             moduleId: 'prayer',
             range: range,
-            profileId: _fixedProfileId,
+            profileId: effectiveProfileId,
           )
         : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};

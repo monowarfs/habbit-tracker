@@ -53,6 +53,10 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   Future<List<WaterGoal>> allGoals({required String profileId}) async => _goals;
 
   @override
+  Future<bool> hasAnyGoals({required String profileId}) async =>
+      _goals.isNotEmpty;
+
+  @override
   Future<List<WaterEntry>> allEntries({required String profileId}) async =>
       _entries;
 

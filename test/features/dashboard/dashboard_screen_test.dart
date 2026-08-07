@@ -35,15 +35,20 @@ class _FakeModule extends Fake implements HabitModule {
   List<Widget> quickActions(WidgetRef ref) => const [];
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async =>
-      {};
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {};
 }
 
 class _CompleteTodayModule extends _FakeModule {
   _CompleteTodayModule(super.id);
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async => {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async => {
     range.start: const ModuleDayStatus(
       kind: ModuleDayStatusKind.complete,
       value: 1,

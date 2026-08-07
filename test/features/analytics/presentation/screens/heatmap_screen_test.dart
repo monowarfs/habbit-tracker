@@ -21,7 +21,10 @@ class _FakeModule extends Fake implements HabitModule {
   );
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
     return {
       range.start: const ModuleDayStatus(
         kind: ModuleDayStatusKind.complete,
@@ -34,7 +37,9 @@ class _FakeModule extends Fake implements HabitModule {
 Future<void> _pumpScreen(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [habitModulesProvider.overrideWith((ref) => [_FakeModule()])],
+      overrides: [
+        habitModulesProvider.overrideWith((ref) => [_FakeModule()]),
+      ],
       child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

@@ -93,12 +93,15 @@ class ExerciseModule implements HabitModule {
   Future<void> onQuickAction() async {}
 
   @override
-  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(
+    DateRange range, {
+    String? profileId,
+  }) async {
     final logs = await _repository
         .watchLogsInRange(
           range.start,
           range.end,
-          profileId: _fixedProfileId,
+          profileId: profileId ?? _fixedProfileId,
         )
         .first;
     return calculateLoggedDayStatus<ExerciseLog>(
