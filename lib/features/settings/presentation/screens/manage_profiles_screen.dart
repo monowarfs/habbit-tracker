@@ -125,7 +125,9 @@ class _ProfileTile extends ConsumerWidget {
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
               ),
-              tooltip: l10n.leaderboardOptOut,
+              tooltip: profile.leaderboardOptedOut
+                  ? l10n.leaderboardOptIn
+                  : l10n.leaderboardOptOut,
               onPressed: () => _onToggleLeaderboardOptOut(ref),
             ),
             IconButton(

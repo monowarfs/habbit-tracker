@@ -840,6 +840,7 @@
   "leaderboardRank": "র‍্যাঙ্ক #{position}",
   "leaderboardYouLabel": "(আপনি)",
   "leaderboardOptOut": "লিডারবোর্ড থেকে লুকান",
+  "leaderboardOptIn": "লিডারবোর্ডে দেখান",
   "leaderboardSingleProfile": "তুলনা করতে আরেকটি প্রোফাইল যোগ করুন",
   "leaderboardNoOverlap": "তুলনাযোগ্য তথ্য নেই",
   "leaderboardMetricStreak": "বর্তমান ধারা",

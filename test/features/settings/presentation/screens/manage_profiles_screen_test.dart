@@ -73,12 +73,29 @@ void main() {
         findsOneWidget,
       );
 
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.visibility_outlined),
+            )
+            .tooltip,
+        'Hide from leaderboard',
+      );
+
       await tester.tap(find.byIcon(Icons.visibility_outlined));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
       final profiles = await ProfileRepository(db).listProfiles();
       expect(profiles.single.leaderboardOptedOut, isTrue);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.visibility_off_outlined),
+            )
+            .tooltip,
+        'Show on leaderboard',
+      );
 
       await tester.tap(find.byIcon(Icons.visibility_off_outlined));
       await tester.pumpAndSettle();

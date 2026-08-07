@@ -27,6 +27,11 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   final WaterSettings _settings;
   final List<WaterEntry> _entries;
   final List<WaterGoal> _goals;
+
+  /// Every `profileId` a repository method was actually called with —
+  /// asserts `dayStatus`'s `profileId` param reaches the repository
+  /// instead of silently falling back to `_fixedProfileId`.
+  final List<String> capturedProfileIds = [];
   int? capturedAmountMl;
   WaterEntrySource? capturedSource;
   bool wipeAllCalled = false;
@@ -42,19 +47,27 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
     LocalDate start,
     LocalDate end, {
     required String profileId,
-  }) => Stream.value(
-    _entries.where((e) {
-      final day = localDayKey(e.loggedAt);
-      return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
-    }).toList(),
-  );
+  }) {
+    capturedProfileIds.add(profileId);
+    return Stream.value(
+      _entries.where((e) {
+        final day = localDayKey(e.loggedAt);
+        return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
+      }).toList(),
+    );
+  }
 
   @override
-  Future<List<WaterGoal>> allGoals({required String profileId}) async => _goals;
+  Future<List<WaterGoal>> allGoals({required String profileId}) async {
+    capturedProfileIds.add(profileId);
+    return _goals;
+  }
 
   @override
-  Future<bool> hasAnyGoals({required String profileId}) async =>
-      _goals.isNotEmpty;
+  Future<bool> hasAnyGoals({required String profileId}) async {
+    capturedProfileIds.add(profileId);
+    return _goals.isNotEmpty;
+  }
 
   @override
   Future<List<WaterEntry>> allEntries({required String profileId}) async =>
@@ -481,6 +494,35 @@ void main() {
         ModuleDayStatusKind.none,
       );
       expect(status[const LocalDate(2026, 6, 1)]!.value, 2000);
+    },
+  );
+
+  test(
+    "dayStatus's profileId param reaches the repository, not the "
+    "module's fixed 'system' profile",
+    () async {
+      final repository = _FakeWaterRepository(
+        _settings(reminderEnabled: false),
+        goals: [
+          WaterGoal(
+            id: 'g1',
+            goalMl: 2000,
+            effectiveFrom: DateTime.utc(2026, 6),
+          ),
+        ],
+      );
+      final module = WaterModule(repository);
+
+      await module.dayStatus(
+        const DateRange(
+          start: LocalDate(2026, 6, 1),
+          end: LocalDate(2026, 6, 1),
+        ),
+        profileId: 'kid',
+      );
+
+      expect(repository.capturedProfileIds, everyElement('kid'));
+      expect(repository.capturedProfileIds, isNot(contains('system')));
     },
   );
 
