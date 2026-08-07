@@ -2763,5 +2763,19 @@
   "calendarStatusPartialLabel": "Partial",
   "@calendarStatusPartialLabel": {"description": "Colorblind-safe icon label and screen-reader label for a partially-completed day in a calendar cell."},
   "calendarStatusSkippedLabel": "Skipped",
-  "@calendarStatusSkippedLabel": {"description": "Colorblind-safe icon label and screen-reader label for a paused/skipped day in a calendar cell."}
+  "@calendarStatusSkippedLabel": {"description": "Colorblind-safe icon label and screen-reader label for a paused/skipped day in a calendar cell."},
+  "personalRecordTitle": "Personal Record",
+  "@personalRecordTitle": {"description": "Section header for a module's persisted longest-streak record on its stats screen."},
+  "personalRecordLongestStreak": "Longest Streak: {count} days",
+  "@personalRecordLongestStreak": {
+    "description": "The persisted all-time longest-streak record value.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "personalRecordNewRecord": "New Record!",
+  "@personalRecordNewRecord": {"description": "Badge/celebration label shown the moment a module's current streak beats its previous record."},
+  "personalRecordPrevious": "Previous: {count} days",
+  "@personalRecordPrevious": {
+    "description": "The record value that was just broken, shown alongside the New Record badge.",
+    "placeholders": {"count": {"type": "int"}}
+  }
 }

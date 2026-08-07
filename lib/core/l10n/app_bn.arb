@@ -785,5 +785,9 @@
   "calendarStatusDoneLabel": "সম্পন্ন",
   "calendarStatusMissedLabel": "মিস হয়েছে",
   "calendarStatusPartialLabel": "আংশিক",
-  "calendarStatusSkippedLabel": "বাদ দিয়েছে"
+  "calendarStatusSkippedLabel": "বাদ দিয়েছে",
+  "personalRecordTitle": "ব্যক্তিগত রেকর্ড",
+  "personalRecordLongestStreak": "দীর্ঘতম ধারাবাহিকতা: {count} দিন",
+  "personalRecordNewRecord": "নতুন রেকর্ড!",
+  "personalRecordPrevious": "পূর্ববর্তী: {count} দিন"
 }
