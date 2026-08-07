@@ -236,6 +236,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
   );
 
   @override
+  Future<Result<void>> updateSimpleModeEnabled({required bool enabled}) =>
+      _update(AppSettingsTableCompanion(simpleModeEnabled: Value(enabled)));
+
+  @override
   Future<Result<void>> restoreSettings(AppSettings settings) async {
     try {
       await _ensureSeeded();
@@ -272,6 +276,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ),
           activePaletteId: Value(settings.activePaletteId),
           activeIconPackId: Value(settings.activeIconPackId),
+          simpleModeEnabled: Value(settings.simpleModeEnabled),
 
           updatedAt: Value(now),
         ),
@@ -348,6 +353,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     driveBackupReminderEnabled: row.driveBackupReminderEnabled,
     activePaletteId: row.activePaletteId,
     activeIconPackId: row.activeIconPackId,
+    simpleModeEnabled: row.simpleModeEnabled,
   );
 }
 

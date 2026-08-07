@@ -75,5 +75,6 @@ sealed class AppSettings with _$AppSettings {
     @Default(false) bool driveBackupReminderEnabled,
     @Default('teal') String activePaletteId,
     @Default('default') String activeIconPackId,
+    @Default(false) bool simpleModeEnabled,
   }) = _AppSettings;
 }

@@ -113,6 +113,10 @@ abstract class SettingsRepository {
   /// Updates the active launcher icon pack ID.
   Future<Result<void>> updateActiveIconPackId(String iconPackId);
 
+  /// Enables or disables Simple Mode (large-button, single-column
+  /// alternate layout).
+  Future<Result<void>> updateSimpleModeEnabled({required bool enabled});
+
   /// Restores locale/theme/water-unit/PIN-enabled/PIN-timeout wholesale
   /// — import's replace step (`core/backup/import_orchestrator.dart`).
   /// PIN hash/salt are never part of this — those live outside the DB

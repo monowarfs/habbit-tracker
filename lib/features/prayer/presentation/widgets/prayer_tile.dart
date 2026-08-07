@@ -94,17 +94,22 @@ class PrayerTile extends StatelessWidget {
     PrayerName.isha => l10n.prayerNameIsha,
   };
 
-  // `prayedLate` folds into the same "Prayed" label here — the checklist
-  // isn't where the on-time/late split is surfaced (that's the stats
-  // screen); it's only reachable if a caller opts into passing
-  // `statusChangedAt` to `effectivePrayerStatus`, which this tile's data
-  // source doesn't.
   String _statusLabel(AppLocalizations l10n, PrayerStatus status) =>
-      switch (status) {
-        PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
-        PrayerStatus.due => l10n.prayerStatusDue,
-        PrayerStatus.prayed ||
-        PrayerStatus.prayedLate => l10n.prayerStatusPrayed,
-        PrayerStatus.missed => l10n.prayerStatusMissedDue,
-      };
+      prayerStatusLabel(l10n, status);
 }
+
+/// The localized status text for [status] — shared by [PrayerTile] and
+/// Simple Mode's own prayer card so both surfaces agree on wording.
+///
+/// `prayedLate` folds into the same "Prayed" label here — the checklist
+/// isn't where the on-time/late split is surfaced (that's the stats
+/// screen); it's only reachable if a caller opts into passing
+/// `statusChangedAt` to `effectivePrayerStatus`, which this data source
+/// doesn't.
+String prayerStatusLabel(AppLocalizations l10n, PrayerStatus status) =>
+    switch (status) {
+      PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
+      PrayerStatus.due => l10n.prayerStatusDue,
+      PrayerStatus.prayed || PrayerStatus.prayedLate => l10n.prayerStatusPrayed,
+      PrayerStatus.missed => l10n.prayerStatusMissedDue,
+    };

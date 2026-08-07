@@ -46,6 +46,7 @@ void main() {
             driveBackupReminderEnabled: false,
             activePaletteId: 'teal',
             activeIconPackId: 'default',
+            simpleModeEnabled: false,
             lastRecapYear: 0,
             createdAt: now,
             updatedAt: now,
