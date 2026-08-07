@@ -17,8 +17,10 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/greeting.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
+import 'package:habit_tracker/core/widgets/consistency_score_display.dart';
 import 'package:habit_tracker/core/widgets/global_month_calendar.dart';
 import 'package:habit_tracker/core/widgets/responsive_breakpoints.dart';
+import 'package:habit_tracker/features/analytics/presentation/providers/consistency_provider.dart';
 import 'package:habit_tracker/features/dashboard/presentation/search/app_search_delegate.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_display.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/boss_challenge_card.dart';
@@ -99,6 +101,8 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   _DayCompletionIndicator(modules: modules),
+                  const SizedBox(height: 16),
+                  _ConsistencyScoreSection(modules: modules),
                   const SizedBox(height: 16),
                   const XpLevelDisplay(),
                   const SizedBox(height: 16),
@@ -222,6 +226,47 @@ class _DayCompletionIndicatorState
         );
       },
     );
+  }
+}
+
+/// Wraps [ConsistencyScoreDisplay] with real data: the composite score
+/// from [consistencyScoreProvider], plus a per-module breakdown computed
+/// the same way [_DayCompletionIndicator] computes its own today status
+/// (D-17's `dayStatus`, no dedicated provider needed for a per-mount
+/// lookup this cheap). Hidden while loading/erroring rather than
+/// flashing a placeholder card.
+class _ConsistencyScoreSection extends ConsumerWidget {
+  const _ConsistencyScoreSection({required this.modules});
+  final List<HabitModule> modules;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scoreAsync = ref.watch(consistencyScoreProvider);
+    return scoreAsync.maybeWhen(
+      data: (score) => FutureBuilder<Map<String, int>>(
+        future: _loadBreakdown(),
+        builder: (context, snapshot) => ConsistencyScoreDisplay(
+          score: score,
+          breakdown: snapshot.data ?? const {},
+        ),
+      ),
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+
+  Future<Map<String, int>> _loadBreakdown() async {
+    final today = localDayKey(DateTime.now());
+    final range = DateRange(start: today, end: today);
+    final breakdown = <String, int>{};
+    for (final module in modules) {
+      final status = await module.dayStatus(range);
+      breakdown[module.metadata.displayName] = switch (status[today]?.kind) {
+        ModuleDayStatusKind.complete => 100,
+        ModuleDayStatusKind.partial => 50,
+        _ => 0,
+      };
+    }
+    return breakdown;
   }
 }
 

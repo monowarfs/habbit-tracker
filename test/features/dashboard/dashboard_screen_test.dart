@@ -39,6 +39,18 @@ class _FakeModule extends Fake implements HabitModule {
       {};
 }
 
+class _CompleteTodayModule extends _FakeModule {
+  _CompleteTodayModule(super.id);
+
+  @override
+  Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async => {
+    range.start: const ModuleDayStatus(
+      kind: ModuleDayStatusKind.complete,
+      value: 1,
+    ),
+  };
+}
+
 Future<void> _pump(
   WidgetTester tester,
   List<HabitModule> modules,
@@ -110,6 +122,17 @@ void main() {
     expect(find.text('prayer summary'), findsOneWidget);
     await disposeTree(tester);
   });
+
+  testWidgets(
+    'shows the consistency score section once a module reports today '
+    'complete',
+    (tester) async {
+      await _pump(tester, [_CompleteTodayModule('water')], db);
+      expect(find.text('Consistency Score'), findsOneWidget);
+      expect(find.text('100/100'), findsOneWidget);
+      await disposeTree(tester);
+    },
+  );
 
   group('dashboard greeting', () {
     testWidgets('morning, no display name set: shows the name-less '
