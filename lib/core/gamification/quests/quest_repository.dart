@@ -7,6 +7,11 @@ import 'package:habit_tracker/core/utils/uuid.dart';
 
 /// Drift-backed CRUD over the `weekly_quests` table
 /// (`core/gamification/quests/quest_engine.dart`'s only data dependency).
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — `weekly_quests`'s unique constraint is now
+/// `{questKey, weekKey, profileId}`.
 class QuestRepository {
   /// Creates a repository backed by [_db].
   QuestRepository(this._db);
@@ -21,16 +26,19 @@ class QuestRepository {
   /// .dart`), so a not-yet-generated week's first-ever rows can easily
   /// see two concurrent callers both find a row missing — `insertOrIgnore`
   /// makes the second insert a silent no-op against the `{questKey,
-  /// weekKey}` unique key instead of throwing (PR #77 review finding).
+  /// weekKey, profileId}` unique key instead of throwing (PR #77 review
+  /// finding).
   Future<void> ensureCurrentWeekQuests({
     required List<QuestDefinition> definitions,
     required DateTime now,
+    required String profileId,
   }) async {
     final weekKey = weekKeyForDate(localDayKey(now));
     final nowMillis = now.millisecondsSinceEpoch;
     final existingKeys =
-        await (_db.select(_db.weeklyQuestsTable)
-              ..where((t) => t.weekKey.equals(weekKey)))
+        await (_db.select(_db.weeklyQuestsTable)..where(
+              (t) => t.weekKey.equals(weekKey) & t.profileId.equals(profileId),
+            ))
             .map((row) => row.questKey)
             .get();
     final existingSet = existingKeys.toSet();
@@ -49,6 +57,7 @@ class QuestRepository {
               rewardClaimed: 0,
               createdAt: nowMillis,
               updatedAt: nowMillis,
+              profileId: Value(profileId),
             ),
             mode: InsertMode.insertOrIgnore,
           );
@@ -66,6 +75,7 @@ class QuestRepository {
     QuestDefinition definition, {
     required String weekKey,
     required DateTime now,
+    required String profileId,
   }) async {
     final nowMillis = now.millisecondsSinceEpoch;
     await _db
@@ -82,6 +92,7 @@ class QuestRepository {
             isBoss: const Value(1),
             createdAt: nowMillis,
             updatedAt: nowMillis,
+            profileId: Value(profileId),
           ),
           mode: InsertMode.insertOrIgnore,
         );
@@ -96,8 +107,9 @@ class QuestRepository {
     required String weekKey,
     required int current,
     required DateTime now,
+    required String profileId,
   }) async {
-    final row = await _rowFor(questKey, weekKey);
+    final row = await _rowFor(questKey, weekKey, profileId);
     if (row == null) return;
     final nowMillis = now.millisecondsSinceEpoch;
     final justCompleted =
@@ -119,8 +131,9 @@ class QuestRepository {
     String questKey,
     String weekKey, {
     required DateTime now,
+    required String profileId,
   }) async {
-    final row = await _rowFor(questKey, weekKey);
+    final row = await _rowFor(questKey, weekKey, profileId);
     if (row == null) return;
     await (_db.update(
       _db.weeklyQuestsTable,
@@ -133,15 +146,26 @@ class QuestRepository {
   }
 
   /// All quests for [weekKey], live-updating.
-  Stream<List<WeeklyQuestRow>> watchCurrentWeek({required String weekKey}) {
-    return (_db.select(
-      _db.weeklyQuestsTable,
-    )..where((t) => t.weekKey.equals(weekKey))).watch();
+  Stream<List<WeeklyQuestRow>> watchCurrentWeek({
+    required String weekKey,
+    required String profileId,
+  }) {
+    return (_db.select(_db.weeklyQuestsTable)..where(
+          (t) => t.weekKey.equals(weekKey) & t.profileId.equals(profileId),
+        ))
+        .watch();
   }
 
-  Future<WeeklyQuestRow?> _rowFor(String questKey, String weekKey) {
+  Future<WeeklyQuestRow?> _rowFor(
+    String questKey,
+    String weekKey,
+    String profileId,
+  ) {
     return (_db.select(_db.weeklyQuestsTable)..where(
-          (t) => t.questKey.equals(questKey) & t.weekKey.equals(weekKey),
+          (t) =>
+              t.questKey.equals(questKey) &
+              t.weekKey.equals(weekKey) &
+              t.profileId.equals(profileId),
         ))
         .getSingleOrNull();
   }

@@ -17,22 +17,34 @@ class SleepRepositoryImpl implements SleepRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<SleepLog>> watchLogsForDay(LocalDate day) {
+  Stream<List<SleepLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
-    return _watchLogsBetween(range.startUtc, range.endUtc);
+    return _watchLogsBetween(range.startUtc, range.endUtc, profileId);
   }
 
   @override
-  Stream<List<SleepLog>> watchLogsInRange(LocalDate start, LocalDate end) {
+  Stream<List<SleepLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
-    return _watchLogsBetween(startUtc, endUtc);
+    return _watchLogsBetween(startUtc, endUtc, profileId);
   }
 
-  Stream<List<SleepLog>> _watchLogsBetween(DateTime startUtc, DateTime endUtc) {
+  Stream<List<SleepLog>> _watchLogsBetween(
+    DateTime startUtc,
+    DateTime endUtc,
+    String profileId,
+  ) {
     final query = _db.select(_db.sleepLogsTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.wakeTime.isBiggerOrEqualValue(startUtc.millisecondsSinceEpoch) &
             t.wakeTime.isSmallerThanValue(endUtc.millisecondsSinceEpoch),
@@ -44,17 +56,22 @@ class SleepRepositoryImpl implements SleepRepository {
   }
 
   @override
-  Future<SleepLog?> logById(String id) async {
-    final row = await (_db.select(
-      _db.sleepLogsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<SleepLog?> logById(String id, {required String profileId}) async {
+    final row =
+        await (_db.select(_db.sleepLogsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _logFromRow(row);
   }
 
   @override
-  Future<List<SleepLog>> allLogs() async {
+  Future<List<SleepLog>> allLogs({required String profileId}) async {
     final query = _db.select(_db.sleepLogsTable)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.wakeTime)]);
     final rows = await query.get();
     return rows.map(_logFromRow).toList(growable: false);
@@ -64,6 +81,7 @@ class SleepRepositoryImpl implements SleepRepository {
   Future<Result<SleepLog>> addLog({
     required DateTime bedTime,
     required DateTime wakeTime,
+    required String profileId,
     int? quality,
     String? notes,
   }) async {
@@ -83,6 +101,7 @@ class SleepRepositoryImpl implements SleepRepository {
               notes: Value(notes),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -101,12 +120,18 @@ class SleepRepositoryImpl implements SleepRepository {
   }
 
   @override
-  Future<Result<void>> deleteLog(String id) async {
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
           await (_db.update(_db.sleepLogsTable)..where(
-                (t) => t.id.equals(id) & t.deletedAt.isNull(),
+                (t) =>
+                    t.id.equals(id) &
+                    t.profileId.equals(profileId) &
+                    t.deletedAt.isNull(),
               ))
               .write(
                 SleepLogsTableCompanion(
@@ -124,8 +149,10 @@ class SleepRepositoryImpl implements SleepRepository {
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.sleepLogsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.sleepLogsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   SleepLog _logFromRow(SleepLogRow row) => SleepLog(

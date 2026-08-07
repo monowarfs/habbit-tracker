@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/cosmetics/cosmetic_repository.dart';
 import 'package:habit_tracker/core/cosmetics/cosmetic_unlock_engine.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Screen showing cosmetic unlock options.
 class UnlocksScreen extends ConsumerWidget {
@@ -13,13 +14,21 @@ class UnlocksScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(activeProfileProvider);
+    final profileId = profileAsync.value?.id;
+    if (profileId == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.unlocksTitle)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     final db = ref.read(databaseProvider);
     final repo = CosmeticRepository(db);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.unlocksTitle)),
       body: FutureBuilder<Set<String>>(
-        future: repo.unlockedKeys(),
+        future: repo.unlockedKeys(profileId: profileId),
         builder: (context, snapshot) {
           final unlocked = snapshot.data ?? {};
 

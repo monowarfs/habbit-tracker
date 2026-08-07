@@ -186,7 +186,12 @@ void main() {
     await pumpCard(tester);
     await tester.runAsync(() async {
       await tester.tap(find.text('Not now'));
-      await Future<void>.delayed(Duration.zero);
+      // `_dismiss` now resolves the active profile (a few chained DB
+      // reads) before dismissing — one zero-delay tick no longer
+      // reliably drains that whole chain.
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
     });
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 50));

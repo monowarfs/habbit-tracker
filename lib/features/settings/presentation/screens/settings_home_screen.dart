@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_providers.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/external_link_launcher.dart';
 import 'package:habit_tracker/features/community/community_links.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
@@ -475,9 +476,14 @@ class _ModuleToggleTileState extends ConsumerState<_ModuleToggleTile> {
   @override
   void initState() {
     super.initState();
-    _future = ref
+    _future = _isEnabled();
+  }
+
+  Future<bool> _isEnabled() async {
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
+    return ref
         .read(moduleSettingsRepositoryProvider)
-        .isEnabled(widget.moduleId);
+        .isEnabled(widget.moduleId, profileId: profileId);
   }
 
   @override
@@ -499,13 +505,18 @@ class _ModuleToggleTileState extends ConsumerState<_ModuleToggleTile> {
             onChanged: widget.locked
                 ? null
                 : (value) async {
+                    final profileId = (await ref.read(
+                      activeProfileProvider.future,
+                    )).id;
                     await ref
                         .read(moduleSettingsRepositoryProvider)
-                        .setEnabled(widget.moduleId, enabled: value);
+                        .setEnabled(
+                          widget.moduleId,
+                          enabled: value,
+                          profileId: profileId,
+                        );
                     setState(() {
-                      _future = ref
-                          .read(moduleSettingsRepositoryProvider)
-                          .isEnabled(widget.moduleId);
+                      _future = _isEnabled();
                     });
                   },
           ),

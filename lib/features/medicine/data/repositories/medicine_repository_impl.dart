@@ -29,9 +29,12 @@ class MedicineRepositoryImpl implements MedicineRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<Medicine>> watchMedicines({required bool includeArchived}) {
+  Stream<List<Medicine>> watchMedicines({
+    required bool includeArchived,
+    required String profileId,
+  }) {
     final query = _db.select(_db.medicinesTable)
-      ..where((t) => t.deletedAt.isNull());
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull());
     if (!includeArchived) {
       query.where((t) => t.archivedAt.isNull());
     }
@@ -41,10 +44,18 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Future<Medicine?> medicineById(String id) async {
-    final row = await (_db.select(
-      _db.medicinesTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<Medicine?> medicineById(
+    String id, {
+    required String profileId,
+  }) async {
+    final row =
+        await (_db.select(_db.medicinesTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _medicineFromRow(row);
   }
 
@@ -52,6 +63,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
   Future<Result<Medicine>> createMedicine({
     required String name,
     required bool stockEnabled,
+    required String profileId,
     String? dosageNote,
     int? stockCount,
     int? stockThreshold,
@@ -75,6 +87,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
               consumptionPerDose: Value(consumptionPerDose),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -97,6 +110,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
   @override
   Future<Result<void>> updateMedicine(
     String id, {
+    required String profileId,
     String? name,
     String? dosageNote,
     bool? stockEnabled,
@@ -108,32 +122,33 @@ class MedicineRepositoryImpl implements MedicineRepository {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.medicinesTable,
-          )..where((t) => t.id.equals(id))).write(
-            MedicinesTableCompanion(
-              name: name == null ? const Value.absent() : Value(name),
-              dosageNote: dosageNote == null
-                  ? const Value.absent()
-                  : Value(dosageNote),
-              stockEnabled: stockEnabled == null
-                  ? const Value.absent()
-                  : Value(stockEnabled),
-              stockCount: stockCount == null
-                  ? const Value.absent()
-                  : Value(stockCount),
-              stockThreshold: stockThreshold == null
-                  ? const Value.absent()
-                  : Value(stockThreshold),
-              stopWhenStockDepleted: stopWhenStockDepleted == null
-                  ? const Value.absent()
-                  : Value(stopWhenStockDepleted),
-              consumptionPerDose: consumptionPerDose == null
-                  ? const Value.absent()
-                  : Value(consumptionPerDose),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.medicinesTable)..where(
+                (t) => t.id.equals(id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                MedicinesTableCompanion(
+                  name: name == null ? const Value.absent() : Value(name),
+                  dosageNote: dosageNote == null
+                      ? const Value.absent()
+                      : Value(dosageNote),
+                  stockEnabled: stockEnabled == null
+                      ? const Value.absent()
+                      : Value(stockEnabled),
+                  stockCount: stockCount == null
+                      ? const Value.absent()
+                      : Value(stockCount),
+                  stockThreshold: stockThreshold == null
+                      ? const Value.absent()
+                      : Value(stockThreshold),
+                  stopWhenStockDepleted: stopWhenStockDepleted == null
+                      ? const Value.absent()
+                      : Value(stopWhenStockDepleted),
+                  consumptionPerDose: consumptionPerDose == null
+                      ? const Value.absent()
+                      : Value(consumptionPerDose),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('Medicine', id));
       }
@@ -144,23 +159,34 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Future<Result<void>> archiveMedicine(String id) => _setArchived(id, true);
+  Future<Result<void>> archiveMedicine(
+    String id, {
+    required String profileId,
+  }) => _setArchived(id, true, profileId);
 
   @override
-  Future<Result<void>> restoreMedicine(String id) => _setArchived(id, false);
+  Future<Result<void>> restoreMedicine(
+    String id, {
+    required String profileId,
+  }) => _setArchived(id, false, profileId);
 
-  Future<Result<void>> _setArchived(String id, bool archived) async {
+  Future<Result<void>> _setArchived(
+    String id,
+    bool archived,
+    String profileId,
+  ) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.medicinesTable,
-          )..where((t) => t.id.equals(id))).write(
-            MedicinesTableCompanion(
-              archivedAt: Value(archived ? now : null),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.medicinesTable)..where(
+                (t) => t.id.equals(id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                MedicinesTableCompanion(
+                  archivedAt: Value(archived ? now : null),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('Medicine', id));
       }
@@ -173,6 +199,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
         await (_db.update(_db.medicineDosesTable)..where(
               (t) =>
                   t.medicineId.equals(id) &
+                  t.profileId.equals(profileId) &
                   t.status.equals('upcoming') &
                   t.scheduledFor.isBiggerOrEqualValue(now),
             ))
@@ -185,9 +212,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Stream<List<MedicineSchedule>> watchSchedules(String medicineId) {
+  Stream<List<MedicineSchedule>> watchSchedules(
+    String medicineId, {
+    required String profileId,
+  }) {
     final query = _db.select(_db.medicineSchedulesTable)
-      ..where((t) => t.medicineId.equals(medicineId) & t.deletedAt.isNull());
+      ..where(
+        (t) =>
+            t.medicineId.equals(medicineId) &
+            t.profileId.equals(profileId) &
+            t.deletedAt.isNull(),
+      );
     return query.watch().map(
       (rows) => rows.map(_scheduleFromRow).toList(growable: false),
     );
@@ -198,6 +233,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
     required String medicineId,
     required RepeatRule rule,
     required LocalDate startDate,
+    required String profileId,
     LocalDate? endDate,
     int graceWindowMinutes = 30,
   }) async {
@@ -222,6 +258,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
               graceWindowMinutes: Value(graceWindowMinutes),
               createdAt: nowMillis,
               updatedAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -243,6 +280,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
   @override
   Future<Result<void>> updateSchedule(
     String id, {
+    required String profileId,
     RepeatRule? rule,
     LocalDate? startDate,
     LocalDate? endDate,
@@ -252,38 +290,42 @@ class MedicineRepositoryImpl implements MedicineRepository {
       final now = clock.now();
       final nowMillis = now.toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.medicineSchedulesTable,
-          )..where((t) => t.id.equals(id))).write(
-            MedicineSchedulesTableCompanion(
-              frequencyType: rule == null
-                  ? const Value.absent()
-                  : Value(rule.toDbFrequencyType()),
-              intervalDays: rule == null
-                  ? const Value.absent()
-                  : Value(rule.toDbIntervalDays()),
-              weekdaysMask: rule == null
-                  ? const Value.absent()
-                  : Value(rule.toDbWeekdaysMask()),
-              timesOfDay: rule == null
-                  ? const Value.absent()
-                  : Value(
-                      jsonEncode(
-                        rule.toDbTimesOfDay().map((t) => t.format()).toList(),
-                      ),
-                    ),
-              startDate: startDate == null
-                  ? const Value.absent()
-                  : Value(startDate.toIso()),
-              endDate: endDate == null
-                  ? const Value.absent()
-                  : Value(endDate.toIso()),
-              graceWindowMinutes: graceWindowMinutes == null
-                  ? const Value.absent()
-                  : Value(graceWindowMinutes),
-              updatedAt: Value(nowMillis),
-            ),
-          );
+          await (_db.update(_db.medicineSchedulesTable)..where(
+                (t) => t.id.equals(id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                MedicineSchedulesTableCompanion(
+                  frequencyType: rule == null
+                      ? const Value.absent()
+                      : Value(rule.toDbFrequencyType()),
+                  intervalDays: rule == null
+                      ? const Value.absent()
+                      : Value(rule.toDbIntervalDays()),
+                  weekdaysMask: rule == null
+                      ? const Value.absent()
+                      : Value(rule.toDbWeekdaysMask()),
+                  timesOfDay: rule == null
+                      ? const Value.absent()
+                      : Value(
+                          jsonEncode(
+                            rule
+                                .toDbTimesOfDay()
+                                .map((t) => t.format())
+                                .toList(),
+                          ),
+                        ),
+                  startDate: startDate == null
+                      ? const Value.absent()
+                      : Value(startDate.toIso()),
+                  endDate: endDate == null
+                      ? const Value.absent()
+                      : Value(endDate.toIso()),
+                  graceWindowMinutes: graceWindowMinutes == null
+                      ? const Value.absent()
+                      : Value(graceWindowMinutes),
+                  updatedAt: Value(nowMillis),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('MedicineSchedule', id));
       }
@@ -294,6 +336,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
       await (_db.update(_db.medicineDosesTable)..where(
             (t) =>
                 t.scheduleId.equals(id) &
+                t.profileId.equals(profileId) &
                 t.status.equals('upcoming') &
                 t.scheduledFor.isBiggerOrEqualValue(nowMillis),
           ))
@@ -305,27 +348,37 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Future<Result<void>> endSchedule(String id, {required LocalDate endDate}) =>
-      updateSchedule(id, endDate: endDate);
+  Future<Result<void>> endSchedule(
+    String id, {
+    required LocalDate endDate,
+    required String profileId,
+  }) => updateSchedule(id, endDate: endDate, profileId: profileId);
 
   @override
-  Future<void> materializeDoses(DateTime now) async {
+  Future<void> materializeDoses(
+    DateTime now, {
+    required String profileId,
+  }) async {
     final windowStart = localDayKey(now);
     final windowEnd = windowStart.addDays(_materializationWindowDays);
 
     final medicines =
-        await (_db.select(
-          _db.medicinesTable,
-        )..where((t) => t.deletedAt.isNull())).get().then(
-          (rows) => rows.map(_medicineFromRow).toList(),
-        );
+        await (_db.select(_db.medicinesTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get()
+            .then((rows) => rows.map(_medicineFromRow).toList());
     final schedules =
-        await (_db.select(
-          _db.medicineSchedulesTable,
-        )..where((t) => t.deletedAt.isNull())).get().then(
-          (rows) => rows.map(_scheduleFromRow).toList(),
-        );
-    final existingDoses = await dosesInRange(windowStart, windowEnd);
+        await (_db.select(_db.medicineSchedulesTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get()
+            .then((rows) => rows.map(_scheduleFromRow).toList());
+    final existingDoses = await dosesInRange(
+      windowStart,
+      windowEnd,
+      profileId: profileId,
+    );
 
     final planned = planDoseMaterialization(
       medicines: medicines,
@@ -350,6 +403,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
             graceWindowMinutes: dose.graceWindowMinutes,
             createdAt: nowMillis,
             updatedAt: nowMillis,
+            profileId: Value(profileId),
           ),
         );
       }
@@ -357,11 +411,15 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Stream<List<MedicineDose>> watchDosesForDay(LocalDate day) {
+  Stream<List<MedicineDose>> watchDosesForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
     final query = _db.select(_db.medicineDosesTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.scheduledFor.isBiggerOrEqualValue(
               range.startUtc.millisecondsSinceEpoch,
@@ -379,13 +437,15 @@ class MedicineRepositoryImpl implements MedicineRepository {
   @override
   Future<List<MedicineDose>> dosesInRange(
     LocalDate start,
-    LocalDate end,
-  ) async {
+    LocalDate end, {
+    required String profileId,
+  }) async {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
     final rows =
         await (_db.select(_db.medicineDosesTable)..where(
               (t) =>
+                  t.profileId.equals(profileId) &
                   t.deletedAt.isNull() &
                   t.scheduledFor.isBiggerOrEqualValue(
                     startUtc.millisecondsSinceEpoch,
@@ -402,8 +462,10 @@ class MedicineRepositoryImpl implements MedicineRepository {
   Future<Result<void>> markDoseDone(
     String doseId, {
     required bool fromOtherSource,
+    required String profileId,
   }) => _resolveDose(
     doseId,
+    profileId: profileId,
     resolve: (medicine, dose) async {
       final adjustment = calculateDoseTakenAdjustment(
         medicine: medicine,
@@ -430,13 +492,18 @@ class MedicineRepositoryImpl implements MedicineRepository {
         writesEvent: adjustment.writesEvent,
         reason: MedicineStockEventReason.doseTaken,
         occurredAt: now,
+        profileId: profileId,
       );
     },
   );
 
   @override
-  Future<Result<void>> markDoseSkipped(String doseId) => _resolveDose(
+  Future<Result<void>> markDoseSkipped(
+    String doseId, {
+    required String profileId,
+  }) => _resolveDose(
     doseId,
+    profileId: profileId,
     resolve: (medicine, dose) async {
       final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
       await (_db.update(
@@ -452,74 +519,88 @@ class MedicineRepositoryImpl implements MedicineRepository {
   );
 
   @override
-  Future<Result<void>> undoDose(String doseId) => _resolveDose(
-    doseId,
-    resolve: (medicine, dose) async {
-      final adjustment = calculateDoseUndoneAdjustment(
-        medicine: medicine,
-        stockDeltaApplied: dose.stockDeltaApplied,
-      );
-      final now = clock.now();
-      final nowMillis = now.toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.medicineDosesTable,
-      )..where((t) => t.id.equals(dose.id))).write(
-        MedicineDosesTableCompanion(
-          status: const Value('upcoming'),
-          statusChangedAt: const Value(null),
-          stockDeltaApplied: const Value(0),
-          updatedAt: Value(nowMillis),
-        ),
-      );
-      if (adjustment.stockDelta != 0) {
-        await _applyStockAdjustment(
-          medicine: medicine,
-          dose: dose,
-          newStockCount: adjustment.newStockCount,
-          stockDelta: adjustment.stockDelta,
-          writesEvent: true,
-          reason: MedicineStockEventReason.doseUndone,
-          occurredAt: now,
-        );
-      }
-    },
-  );
-
-  @override
-  Future<Result<void>> updateDoseNotes(String doseId, String? notes) =>
+  Future<Result<void>> undoDose(String doseId, {required String profileId}) =>
       _resolveDose(
         doseId,
+        profileId: profileId,
         resolve: (medicine, dose) async {
-          final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+          final adjustment = calculateDoseUndoneAdjustment(
+            medicine: medicine,
+            stockDeltaApplied: dose.stockDeltaApplied,
+          );
+          final now = clock.now();
+          final nowMillis = now.toUtc().millisecondsSinceEpoch;
           await (_db.update(
             _db.medicineDosesTable,
           )..where((t) => t.id.equals(dose.id))).write(
             MedicineDosesTableCompanion(
-              notes: Value(notes),
+              status: const Value('upcoming'),
+              statusChangedAt: const Value(null),
+              stockDeltaApplied: const Value(0),
               updatedAt: Value(nowMillis),
             ),
           );
+          if (adjustment.stockDelta != 0) {
+            await _applyStockAdjustment(
+              medicine: medicine,
+              dose: dose,
+              newStockCount: adjustment.newStockCount,
+              stockDelta: adjustment.stockDelta,
+              writesEvent: true,
+              reason: MedicineStockEventReason.doseUndone,
+              occurredAt: now,
+              profileId: profileId,
+            );
+          }
         },
       );
+
+  @override
+  Future<Result<void>> updateDoseNotes(
+    String doseId,
+    String? notes, {
+    required String profileId,
+  }) => _resolveDose(
+    doseId,
+    profileId: profileId,
+    resolve: (medicine, dose) async {
+      final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
+      await (_db.update(
+        _db.medicineDosesTable,
+      )..where((t) => t.id.equals(dose.id))).write(
+        MedicineDosesTableCompanion(
+          notes: Value(notes),
+          updatedAt: Value(nowMillis),
+        ),
+      );
+    },
+  );
 
   /// Shared "look up medicine+dose, run [resolve], wrap in `Result`"
   /// skeleton for the three dose-action methods above.
   Future<Result<void>> _resolveDose(
     String doseId, {
+    required String profileId,
     required Future<void> Function(Medicine medicine, MedicineDose dose)
     resolve,
   }) async {
     try {
       final doseRow =
           await (_db.select(_db.medicineDosesTable)..where(
-                (t) => t.id.equals(doseId) & t.deletedAt.isNull(),
+                (t) =>
+                    t.id.equals(doseId) &
+                    t.profileId.equals(profileId) &
+                    t.deletedAt.isNull(),
               ))
               .getSingleOrNull();
       if (doseRow == null) {
         return Result.failure(AppException.notFound('MedicineDose', doseId));
       }
       final dose = _doseFromRow(doseRow);
-      final medicine = await medicineById(dose.medicineId);
+      final medicine = await medicineById(
+        dose.medicineId,
+        profileId: profileId,
+      );
       if (medicine == null) {
         return Result.failure(
           AppException.notFound('Medicine', dose.medicineId),
@@ -543,6 +624,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
     required bool writesEvent,
     required MedicineStockEventReason reason,
     required DateTime occurredAt,
+    required String profileId,
   }) async {
     final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
     final isAtOrBelowThreshold =
@@ -567,19 +649,20 @@ class MedicineRepositoryImpl implements MedicineRepository {
     // (refill or an undo that restores stock) caused the rise.
     final justCleared = isAboveThreshold && medicine.lowStockNotifiedAt != null;
 
-    await (_db.update(
-      _db.medicinesTable,
-    )..where((t) => t.id.equals(medicine.id))).write(
-      MedicinesTableCompanion(
-        stockCount: Value(newStockCount),
-        lowStockNotifiedAt: justCrossed
-            ? Value(nowMillis)
-            : justCleared
-            ? const Value(null)
-            : const Value.absent(),
-        updatedAt: Value(nowMillis),
-      ),
-    );
+    await (_db.update(_db.medicinesTable)..where(
+          (t) => t.id.equals(medicine.id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          MedicinesTableCompanion(
+            stockCount: Value(newStockCount),
+            lowStockNotifiedAt: justCrossed
+                ? Value(nowMillis)
+                : justCleared
+                ? const Value(null)
+                : const Value.absent(),
+            updatedAt: Value(nowMillis),
+          ),
+        );
 
     if (writesEvent) {
       await _db
@@ -594,15 +677,20 @@ class MedicineRepositoryImpl implements MedicineRepository {
               occurredAt: occurredAt.toUtc().millisecondsSinceEpoch,
               createdAt: nowMillis,
               updatedAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
     }
   }
 
   @override
-  Future<Result<void>> refillStock(String medicineId, int amount) async {
+  Future<Result<void>> refillStock(
+    String medicineId,
+    int amount, {
+    required String profileId,
+  }) async {
     try {
-      final medicine = await medicineById(medicineId);
+      final medicine = await medicineById(medicineId, profileId: profileId);
       if (medicine == null) {
         return Result.failure(AppException.notFound('Medicine', medicineId));
       }
@@ -613,17 +701,18 @@ class MedicineRepositoryImpl implements MedicineRepository {
           medicine.stockThreshold == null ||
           newCount > medicine.stockThreshold!;
 
-      await (_db.update(
-        _db.medicinesTable,
-      )..where((t) => t.id.equals(medicineId))).write(
-        MedicinesTableCompanion(
-          stockCount: Value(newCount),
-          lowStockNotifiedAt: clearsLowStock
-              ? const Value(null)
-              : const Value.absent(),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.medicinesTable)..where(
+            (t) => t.id.equals(medicineId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            MedicinesTableCompanion(
+              stockCount: Value(newCount),
+              lowStockNotifiedAt: clearsLowStock
+                  ? const Value(null)
+                  : const Value.absent(),
+              updatedAt: Value(nowMillis),
+            ),
+          );
       await _db
           .into(_db.medicineStockEventsTable)
           .insert(
@@ -635,6 +724,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
               occurredAt: now.toUtc().millisecondsSinceEpoch,
               createdAt: nowMillis,
               updatedAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
       return const Result.success(null);
@@ -644,10 +734,13 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Future<List<Medicine>> medicinesNeedingLowStockAlert() async {
+  Future<List<Medicine>> medicinesNeedingLowStockAlert({
+    required String profileId,
+  }) async {
     final rows =
         await (_db.select(_db.medicinesTable)..where(
               (t) =>
+                  t.profileId.equals(profileId) &
                   t.deletedAt.isNull() &
                   t.archivedAt.isNull() &
                   t.lowStockNotifiedAt.isNotNull(),
@@ -657,39 +750,54 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
-  Future<List<Medicine>> allMedicines() async {
-    final rows = await (_db.select(
-      _db.medicinesTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<Medicine>> allMedicines({required String profileId}) async {
+    final rows =
+        await (_db.select(_db.medicinesTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get();
     return rows.map(_medicineFromRow).toList(growable: false);
   }
 
   @override
-  Future<List<MedicineSchedule>> allSchedules() async {
-    final rows = await (_db.select(
-      _db.medicineSchedulesTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<MedicineSchedule>> allSchedules({
+    required String profileId,
+  }) async {
+    final rows =
+        await (_db.select(_db.medicineSchedulesTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get();
     return rows.map(_scheduleFromRow).toList(growable: false);
   }
 
   @override
-  Future<List<MedicineDose>> allDoses() async {
-    final rows = await (_db.select(
-      _db.medicineDosesTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<MedicineDose>> allDoses({required String profileId}) async {
+    final rows =
+        await (_db.select(_db.medicineDosesTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get();
     return rows.map(_doseFromRow).toList(growable: false);
   }
 
   @override
-  Future<List<MedicineStockEvent>> allStockEvents() async {
-    final rows = await (_db.select(
-      _db.medicineStockEventsTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<MedicineStockEvent>> allStockEvents({
+    required String profileId,
+  }) async {
+    final rows =
+        await (_db.select(_db.medicineStockEventsTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get();
     return rows.map(_stockEventFromRow).toList(growable: false);
   }
 
   @override
-  Future<String> restoreDose(MedicineDose dose) async {
+  Future<String> restoreDose(
+    MedicineDose dose, {
+    required String profileId,
+  }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     final id = generateId();
     await _db
@@ -709,13 +817,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
             notes: Value(dose.notes),
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
     return id;
   }
 
   @override
-  Future<void> restoreStockEvent(MedicineStockEvent event) async {
+  Future<void> restoreStockEvent(
+    MedicineStockEvent event, {
+    required String profileId,
+  }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
         .into(_db.medicineStockEventsTable)
@@ -729,16 +841,25 @@ class MedicineRepositoryImpl implements MedicineRepository {
             occurredAt: event.occurredAt.toUtc().millisecondsSinceEpoch,
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.medicineStockEventsTable).go();
-    await _db.delete(_db.medicineDosesTable).go();
-    await _db.delete(_db.medicineSchedulesTable).go();
-    await _db.delete(_db.medicinesTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.medicineStockEventsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.medicineDosesTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.medicineSchedulesTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.medicinesTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   Medicine _medicineFromRow(MedicineRow row) => Medicine(

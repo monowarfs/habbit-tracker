@@ -27,6 +27,7 @@ void main() {
       systolic: 118,
       diastolic: 76,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
 
     final status = await module.dayStatus(
@@ -62,14 +63,15 @@ void main() {
       diastolic: 95,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
       pulse: 72,
+      profileId: 'system',
     );
     final export = await module.exportData();
 
-    await repository.wipeAll();
-    expect(await repository.allLogs(), isEmpty);
+    await repository.wipeAll(profileId: 'system');
+    expect(await repository.allLogs(profileId: 'system'), isEmpty);
 
     await module.importData(export);
-    final logs = await repository.allLogs();
+    final logs = await repository.allLogs(profileId: 'system');
     expect(logs, hasLength(1));
     expect(logs.first.pulse, 72);
   });
@@ -90,6 +92,6 @@ void main() {
 
     await module.importData(malformedExport);
 
-    expect(await repository.allLogs(), isEmpty);
+    expect(await repository.allLogs(profileId: 'system'), isEmpty);
   });
 }

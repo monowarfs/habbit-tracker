@@ -26,12 +26,14 @@ class PauseService {
     required String moduleId,
     required LocalDate startDate,
     required LocalDate endDate,
+    required String profileId,
   }) async {
     // Validate no overlaps.
     final overlaps = await pauseRepository.overlapping(
       moduleId: moduleId,
       start: startDate,
       end: endDate,
+      profileId: profileId,
     );
     if (overlaps.isNotEmpty) {
       throw StateError('Pause overlaps with existing pause');
@@ -47,14 +49,12 @@ class PauseService {
         startDate: startDate.toIso(),
         endDate: endDate.toIso(),
         createdAt: now,
-        // Task 4 threads the real active profile through; 'system' is the
-        // only profile that can exist before Tasks 3/5-7 ship.
-        profileId: 'system',
+        profileId: profileId,
       ),
     );
 
     // Suppress pending notifications for this module during the pause.
-    final pending = await notificationLedger.pendingRows();
+    final pending = await notificationLedger.pendingRows(profileId: profileId);
     final modulePending = pending.where(
       (row) => row.moduleId == moduleId,
     );
@@ -65,23 +65,27 @@ class PauseService {
       if (scheduledDate.compareTo(startDate) >= 0 &&
           scheduledDate.compareTo(endDate) <= 0) {
         await NotificationService.instance.cancel(row.id);
-        await notificationLedger.cancel(row.id);
+        await notificationLedger.cancel(row.id, profileId: profileId);
       }
     }
   }
 
   /// Cancels a pause, re-enables notifications (re-planner handles
   /// re-scheduling on next app resume).
-  Future<void> cancelPause(String pauseId) async {
-    await pauseRepository.cancel(pauseId);
+  Future<void> cancelPause(String pauseId, {required String profileId}) async {
+    await pauseRepository.cancel(pauseId, profileId: profileId);
   }
 
   /// Returns the set of paused days for [moduleId] within [range].
   Future<Set<LocalDate>> pausedDaysInRange({
     required String moduleId,
     required DateRange range,
+    required String profileId,
   }) async {
-    final pauses = await pauseRepository.activeForModule(moduleId);
+    final pauses = await pauseRepository.activeForModule(
+      moduleId,
+      profileId: profileId,
+    );
     final pausedDays = <LocalDate>{};
     for (final pause in pauses) {
       final pauseStart = LocalDate.parse(pause.startDate);
@@ -103,7 +107,10 @@ class PauseService {
   }
 
   /// All active pause ranges for [moduleId].
-  Future<List<PauseRangeRow>> activePauses(String moduleId) async {
-    return pauseRepository.activeForModule(moduleId);
+  Future<List<PauseRangeRow>> activePauses(
+    String moduleId, {
+    required String profileId,
+  }) {
+    return pauseRepository.activeForModule(moduleId, profileId: profileId);
   }
 }

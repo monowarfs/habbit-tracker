@@ -11,6 +11,7 @@ import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
@@ -220,8 +221,11 @@ Future<void> _logQuickAddAndCelebrate(
   WidgetRef ref,
   int amountMl,
 ) async {
+  final profileId = (await ref.read(activeProfileProvider.future)).id;
   final repository = ref.read(achievementRepositoryProvider);
-  final before = await repository.watchByModule('water').first;
+  final before = await repository
+      .watchByModule('water', profileId: profileId)
+      .first;
   final unlockedBefore = before
       .where((r) => r.unlockedAt != null)
       .map((r) => r.key)
@@ -233,7 +237,9 @@ Future<void> _logQuickAddAndCelebrate(
     showXpGainToast(context, amount: XpValues.waterAction);
   }
 
-  final after = await repository.watchByModule('water').first;
+  final after = await repository
+      .watchByModule('water', profileId: profileId)
+      .first;
   final newlyUnlocked = after.where(
     (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
   );

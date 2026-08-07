@@ -108,7 +108,8 @@ class _FakePrayerRepository extends Fake implements PrayerRepository {
   final PrayerSettings _settings;
 
   @override
-  Future<PrayerSettings> getSettings() async => _settings;
+  Future<PrayerSettings> getSettings({required String profileId}) async =>
+      _settings;
 }
 
 class _FakeSettingsRepository extends Fake implements SettingsRepository {

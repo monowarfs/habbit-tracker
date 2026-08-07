@@ -1,6 +1,7 @@
 import 'package:habit_tracker/core/cosmetics/cosmetic_repository.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/gamification/avatar/avatar_equipped_repository.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'avatar_providers.g.dart';
@@ -14,14 +15,20 @@ AvatarEquippedRepository avatarEquippedRepository(Ref ref) {
 /// Reactive stream of the currently equipped avatar pieces.
 @riverpod
 Stream<EquippedAvatarPieces> avatarEquipped(Ref ref) {
-  return ref.watch(avatarEquippedRepositoryProvider).watchEquipped();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(avatarEquippedRepositoryProvider)
+      .watchEquipped(profileId: profileId);
 }
 
 /// Reactive stream of unlocked avatar piece ids (excludes non-avatar
 /// cosmetics like theme accents).
 @riverpod
 Stream<Set<String>> unlockedAvatarPieceIds(Ref ref) {
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
   return CosmeticRepository(
     ref.watch(databaseProvider),
-  ).watchUnlockedAvatarPieceIds();
+  ).watchUnlockedAvatarPieceIds(profileId: profileId);
 }

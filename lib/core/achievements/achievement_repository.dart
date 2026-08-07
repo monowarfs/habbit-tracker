@@ -5,6 +5,11 @@ import 'package:habit_tracker/core/utils/uuid.dart';
 
 /// Drift-backed CRUD over the `achievements` table
 /// (`core/achievements/achievement_engine.dart`'s only data dependency).
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — callers pass whatever `activeProfileProvider`
+/// currently resolves to.
 class AchievementRepository {
   /// Creates a repository backed by [_db].
   AchievementRepository(this._db);
@@ -13,23 +18,30 @@ class AchievementRepository {
 
   /// Looks up a single achievement row by its stable [key], or `null` if
   /// it has never been evaluated.
-  Future<AchievementRow?> byKey(String key) {
-    return (_db.select(
-      _db.achievementsTable,
-    )..where((t) => t.key.equals(key))).getSingleOrNull();
+  Future<AchievementRow?> byKey(String key, {required String profileId}) {
+    return (_db.select(_db.achievementsTable)..where(
+          (t) => t.key.equals(key) & t.profileId.equals(profileId),
+        ))
+        .getSingleOrNull();
   }
 
   /// Every achievement row for [moduleId], live-updating.
-  Stream<List<AchievementRow>> watchByModule(String moduleId) {
-    return (_db.select(
-      _db.achievementsTable,
-    )..where((t) => t.moduleId.equals(moduleId))).watch();
+  Stream<List<AchievementRow>> watchByModule(
+    String moduleId, {
+    required String profileId,
+  }) {
+    return (_db.select(_db.achievementsTable)..where(
+          (t) => t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+        ))
+        .watch();
   }
 
   /// Every achievement row across every module, live-updating — the
   /// badge gallery's source.
-  Stream<List<AchievementRow>> watchAll() =>
-      _db.select(_db.achievementsTable).watch();
+  Stream<List<AchievementRow>> watchAll({required String profileId}) =>
+      (_db.select(
+        _db.achievementsTable,
+      )..where((t) => t.profileId.equals(profileId))).watch();
 
   /// Creates or updates [key]'s progress row. Once `unlockedAt` is set it
   /// is never cleared or overwritten by a later, lower [current] — an
@@ -40,9 +52,10 @@ class AchievementRepository {
     required int current,
     required int target,
     required DateTime now,
+    required String profileId,
   }) async {
     final nowMillis = now.millisecondsSinceEpoch;
-    final existing = await byKey(key);
+    final existing = await byKey(key, profileId: profileId);
     if (existing == null) {
       await _db
           .into(_db.achievementsTable)
@@ -56,6 +69,7 @@ class AchievementRepository {
               unlockedAt: Value(current >= target ? nowMillis : null),
               createdAt: nowMillis,
               updatedAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
       return;
@@ -82,6 +96,7 @@ class AchievementRepository {
     required String key,
     required int progressCurrent,
     required int progressTarget,
+    required String profileId,
     DateTime? unlockedAt,
   }) async {
     final now = clock.now().millisecondsSinceEpoch;
@@ -97,6 +112,7 @@ class AchievementRepository {
             unlockedAt: Value(unlockedAt?.millisecondsSinceEpoch),
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }

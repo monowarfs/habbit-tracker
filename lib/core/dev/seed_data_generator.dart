@@ -51,9 +51,9 @@ Future<void> generateSeedData({
   final startDate = today.addDays(-totalDays);
   final pattern = generateAdherencePattern(totalDays + 1, random);
 
-  await waterRepository.wipeAll();
-  await medicineRepository.wipeAll();
-  await prayerRepository.wipeAll();
+  await waterRepository.wipeAll(profileId: 'system');
+  await medicineRepository.wipeAll(profileId: 'system');
+  await prayerRepository.wipeAll(profileId: 'system');
 
   await _seedWater(waterRepository, startDate, totalDays, now, pattern, random);
   await _seedMedicine(
@@ -76,7 +76,11 @@ Future<void> _seedWater(
   Random random,
 ) async {
   final goalMl = 2000 + random.nextInt(1001);
-  await repository.setGoal(goalMl, effectiveFrom: startDate.toDateTimeUtc());
+  await repository.setGoal(
+    goalMl,
+    effectiveFrom: startDate.toDateTimeUtc(),
+    profileId: 'system',
+  );
 
   for (var i = 0; i <= totalDays; i++) {
     final day = startDate.addDays(i);
@@ -98,6 +102,7 @@ Future<void> _seedWater(
         amountMl: amountMl,
         loggedAt: loggedAt,
         source: WaterEntrySource.quick,
+        profileId: 'system',
       );
     }
   }
@@ -126,6 +131,7 @@ Future<void> _seedMedicine(
       stockEnabled: true,
       stockCount: 60 + random.nextInt(90),
       stockThreshold: 10,
+      profileId: 'system',
     );
     if (medicineResult is! Success<Medicine>) continue;
     final medicine = medicineResult.value;
@@ -137,6 +143,7 @@ Future<void> _seedMedicine(
       medicineId: medicine.id,
       rule: RepeatRule.fixedDaily(timesOfDay: timesOfDay),
       startDate: startDate,
+      profileId: 'system',
     );
     if (scheduleResult is! Success<MedicineSchedule>) continue;
     final schedule = scheduleResult.value;
@@ -173,6 +180,7 @@ Future<void> _seedMedicine(
           graceWindowMinutes: schedule.graceWindowMinutes,
           statusChangedAt: statusChangedAt,
         ),
+        profileId: 'system',
       );
     }
   }
@@ -186,7 +194,7 @@ Future<void> _seedPrayer(
   List<bool> pattern,
   Random random,
 ) async {
-  final settings = await repository.getSettings();
+  final settings = await repository.getSettings(profileId: 'system');
   final locationResult = await resolveLocation(settings);
   if (locationResult is! Success<ResolvedLocation>) return;
   final location = locationResult.value;
@@ -230,10 +238,15 @@ Future<void> _seedPrayer(
         storedStatus: status,
         statusChangedAt: statusChangedAt,
       ),
+      profileId: 'system',
     );
   }
 
   for (final entry in missedCounts.entries) {
-    await repository.setQadhaBalance(entry.key, entry.value);
+    await repository.setQadhaBalance(
+      entry.key,
+      entry.value,
+      profileId: 'system',
+    );
   }
 }

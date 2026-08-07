@@ -55,6 +55,17 @@ class PrayerModule implements HabitModule {
   final SettingsRepository? _settingsRepository;
   final PauseService? _pauseService;
 
+  /// `HabitModule` contract methods take no `Ref`
+  /// (`core/modules/habit_module.dart`'s doc comment), so they can't read
+  /// `activeProfileProvider` — they run from background isolates,
+  /// WorkManager, and the notification engine, none of which have a
+  /// widget tree. Family/multi-profile's Task 8/9 give the notification
+  /// planner and widget refresher their own profile-aware entry points;
+  /// everything else here (export/import/wipe/dashboard aggregation)
+  /// still operates on the system profile only until a later pass thread
+  /// a profile id through the `HabitModule` contract itself.
+  static const _fixedProfileId = 'system';
+
   @override
   String get id => 'prayer';
 
@@ -146,15 +157,27 @@ class PrayerModule implements HabitModule {
   @override
   Future<List<PendingNotification>> pendingNotifications() async {
     final now = clock.now();
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(
+          profileId: _fixedProfileId,
+        )
+        .first;
     final locationResult = await resolveLocation(settings);
     if (locationResult case Failure()) {
       return const [];
     }
     final location = (locationResult as Success<ResolvedLocation>).value;
 
-    await _repository.sweepMissedPrayers(now, location);
-    await _repository.materializeRecords(now, location);
+    await _repository.sweepMissedPrayers(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
+    await _repository.materializeRecords(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
 
     if (!settings.notificationsEnabled) return const [];
 
@@ -162,6 +185,7 @@ class PrayerModule implements HabitModule {
     final records = await _repository.recordsInRange(
       localDayKey(now),
       windowEnd,
+      profileId: _fixedProfileId,
     );
     final appSettings = _settingsRepository == null
         ? null
@@ -248,9 +272,16 @@ class PrayerModule implements HabitModule {
         // The notification fired at the scheduled time, so a Done tap
         // is always on time regardless of how late the user acts on it
         // (08-analytics/10-prayer-on-time-vs-late).
-        await _repository.markPrayed(recordId, forceOnTime: true);
+        await _repository.markPrayed(
+          recordId,
+          forceOnTime: true,
+          profileId: _fixedProfileId,
+        );
       case NotificationActionType.skip:
-        await _repository.markMissedBySkip(recordId);
+        await _repository.markMissedBySkip(
+          recordId,
+          profileId: _fixedProfileId,
+        );
       case NotificationActionType.snooze:
         break;
     }
@@ -258,16 +289,32 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<void> onQuickAction() async {
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(
+          profileId: _fixedProfileId,
+        )
+        .first;
     final locationResult = await resolveLocation(settings);
     if (locationResult case Failure()) return;
     final location = (locationResult as Success<ResolvedLocation>).value;
 
     final now = clock.now();
-    await _repository.sweepMissedPrayers(now, location);
-    await _repository.materializeRecords(now, location);
+    await _repository.sweepMissedPrayers(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
+    await _repository.materializeRecords(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
     final today = localDayKey(now);
-    final records = await _repository.recordsInRange(today, today);
+    final records = await _repository.recordsInRange(
+      today,
+      today,
+      profileId: _fixedProfileId,
+    );
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     for (final record in records) {
       final cutoff = cutoffForPrayer(
@@ -283,7 +330,7 @@ class PrayerModule implements HabitModule {
         now: now,
       );
       if (status == PrayerStatus.due) {
-        await _repository.markPrayed(record.id);
+        await _repository.markPrayed(record.id, profileId: _fixedProfileId);
         return;
       }
     }
@@ -291,7 +338,11 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
-    final records = await _repository.recordsInRange(range.start, range.end);
+    final records = await _repository.recordsInRange(
+      range.start,
+      range.end,
+      profileId: _fixedProfileId,
+    );
     final byDay = <LocalDate, List<PrayerRecord>>{};
     for (final record in records) {
       (byDay[record.prayerDate] ??= []).add(record);
@@ -301,6 +352,7 @@ class PrayerModule implements HabitModule {
         ? await pauseSvc.pausedDaysInRange(
             moduleId: 'prayer',
             range: range,
+            profileId: _fixedProfileId,
           )
         : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};
@@ -425,6 +477,7 @@ class PrayerModule implements HabitModule {
         final records = await _repository.recordsInRange(
           const LocalDate(2000, 1, 1),
           today,
+          profileId: _fixedProfileId,
         );
         return records.any((r) => r.storedStatus == PrayerStatus.prayed)
             ? 1
@@ -473,6 +526,7 @@ class PrayerModule implements HabitModule {
     final records = await _repository.recordsInRange(
       today.addDays(-100),
       today,
+      profileId: _fixedProfileId,
     );
     final byDay = <LocalDate, List<PrayerRecord>>{};
     for (final record in records) {
@@ -499,9 +553,15 @@ class PrayerModule implements HabitModule {
 
   @override
   Future<ModuleExport> exportData() async {
-    final settings = await _repository.watchSettings().first;
-    final records = await _repository.allRecords();
-    final qadhaCounters = await _repository.allQadhaCounters();
+    final settings = await _repository
+        .watchSettings(
+          profileId: _fixedProfileId,
+        )
+        .first;
+    final records = await _repository.allRecords(profileId: _fixedProfileId);
+    final qadhaCounters = await _repository.allQadhaCounters(
+      profileId: _fixedProfileId,
+    );
     return ModuleExport({
       'settings': _settingsToJson(settings),
       'records': records.map(_recordToJson).toList(),
@@ -514,6 +574,7 @@ class PrayerModule implements HabitModule {
     final settingsJson = data.payload['settings'] as Map<String, dynamic>?;
     if (settingsJson != null) {
       await _repository.updateSettings(
+        profileId: _fixedProfileId,
         calculationMethod: CalculationMethodDb.fromDb(
           settingsJson['calculationMethod'] as String,
         ),
@@ -545,6 +606,7 @@ class PrayerModule implements HabitModule {
               : DateTime.parse(json['statusChangedAt'] as String),
           notes: json['notes'] as String?,
         ),
+        profileId: _fixedProfileId,
       );
     }
 
@@ -555,25 +617,42 @@ class PrayerModule implements HabitModule {
       await _repository.setQadhaBalance(
         PrayerNameDb.fromDb(json['prayerName'] as String),
         json['count'] as int,
+        profileId: _fixedProfileId,
       );
     }
   }
 
   @override
-  Future<void> wipeData() => _repository.wipeAll();
+  Future<void> wipeData() => _repository.wipeAll(profileId: _fixedProfileId);
 
   @override
   Future<WidgetSummaryData?> widgetSummary() async {
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(
+          profileId: _fixedProfileId,
+        )
+        .first;
     final locationResult = await resolveLocation(settings);
     if (locationResult case Failure()) return null;
     final location = (locationResult as Success<ResolvedLocation>).value;
     final now = clock.now();
-    await _repository.sweepMissedPrayers(now, location);
-    await _repository.materializeRecords(now, location);
+    await _repository.sweepMissedPrayers(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
+    await _repository.materializeRecords(
+      now,
+      location,
+      profileId: _fixedProfileId,
+    );
     final today = localDayKey(now);
     // First try today's records only.
-    var records = await _repository.recordsInRange(today, today);
+    var records = await _repository.recordsInRange(
+      today,
+      today,
+      profileId: _fixedProfileId,
+    );
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     var pendingCount = 0;
     PrayerRecord? firstPending;
@@ -598,8 +677,13 @@ class PrayerModule implements HabitModule {
     // Midnight rollover: if no pending today, widen to tomorrow.
     if (firstPending == null) {
       final tomorrow = today.addDays(1);
-      records = await _repository.recordsInRange(today, tomorrow)
-        ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+      records =
+          await _repository.recordsInRange(
+              today,
+              tomorrow,
+              profileId: _fixedProfileId,
+            )
+            ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
       for (final record in records) {
         final cutoff = cutoffForPrayer(
           record: record,
@@ -662,6 +746,7 @@ class PrayerModule implements HabitModule {
     final records = await _repository.recordsInRange(
       yearRange.start,
       yearRange.end,
+      profileId: _fixedProfileId,
     );
     if (records.isEmpty) return null;
 

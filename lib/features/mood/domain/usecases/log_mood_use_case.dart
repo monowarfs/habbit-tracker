@@ -15,6 +15,7 @@ class LogMoodUseCase {
   /// Logs [moodValue] (1-5) at [loggedAt] (defaults to now).
   Future<Result<MoodLog>> execute({
     required int moodValue,
+    required String profileId,
     DateTime? loggedAt,
     String? notes,
   }) async {
@@ -29,6 +30,11 @@ class LogMoodUseCase {
         AppException.validation('loggedAt', 'Cannot log a future check-in'),
       );
     }
-    return _repository.addLog(moodValue: moodValue, loggedAt: at, notes: notes);
+    return _repository.addLog(
+      moodValue: moodValue,
+      loggedAt: at,
+      profileId: profileId,
+      notes: notes,
+    );
   }
 }

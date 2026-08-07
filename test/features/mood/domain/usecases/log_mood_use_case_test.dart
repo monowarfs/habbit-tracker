@@ -13,6 +13,7 @@ class _FakeMoodRepository implements MoodRepository {
   Future<Result<MoodLog>> addLog({
     required int moodValue,
     required DateTime loggedAt,
+    required String profileId,
     String? notes,
   }) async {
     capturedMoodValue = moodValue;
@@ -22,23 +23,33 @@ class _FakeMoodRepository implements MoodRepository {
   }
 
   @override
-  Future<List<MoodLog>> allLogs() async => [];
+  Future<List<MoodLog>> allLogs({required String profileId}) async => [];
 
   @override
-  Future<Result<void>> deleteLog(String id) async => const Result.success(null);
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async => const Result.success(null);
 
   @override
-  Future<MoodLog?> logById(String id) async => null;
+  Future<MoodLog?> logById(String id, {required String profileId}) async =>
+      null;
 
   @override
-  Stream<List<MoodLog>> watchLogsForDay(LocalDate day) => const Stream.empty();
+  Stream<List<MoodLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Stream<List<MoodLog>> watchLogsInRange(LocalDate start, LocalDate end) =>
-      const Stream.empty();
+  Stream<List<MoodLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Future<void> wipeAll() async {}
+  Future<void> wipeAll({required String profileId}) async {}
 }
 
 void main() {
@@ -47,7 +58,7 @@ void main() {
   test('rejects a mood value below 1', () async {
     final useCase = LogMoodUseCase(_FakeMoodRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(moodValue: 0);
+      return useCase.execute(moodValue: 0, profileId: 'system');
     });
     expect(result, isA<Failure<MoodLog>>());
   });
@@ -55,7 +66,7 @@ void main() {
   test('rejects a mood value above 5', () async {
     final useCase = LogMoodUseCase(_FakeMoodRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(moodValue: 6);
+      return useCase.execute(moodValue: 6, profileId: 'system');
     });
     expect(result, isA<Failure<MoodLog>>());
   });
@@ -66,6 +77,7 @@ void main() {
       return useCase.execute(
         moodValue: 3,
         loggedAt: fixedNow.add(const Duration(hours: 1)),
+        profileId: 'system',
       );
     });
     expect(result, isA<Failure<MoodLog>>());
@@ -75,7 +87,7 @@ void main() {
     final repository = _FakeMoodRepository();
     final useCase = LogMoodUseCase(repository);
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(moodValue: 4);
+      return useCase.execute(moodValue: 4, profileId: 'system');
     });
     expect(result, isA<Success<MoodLog>>());
     expect(repository.capturedMoodValue, 4);

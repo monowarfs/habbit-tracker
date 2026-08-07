@@ -11,6 +11,7 @@ class AchievementEvent {
     required this.moduleId,
     required this.key,
     required this.justUnlocked,
+    required this.profileId,
   });
 
   /// The module that owns this achievement.
@@ -21,6 +22,11 @@ class AchievementEvent {
 
   /// Whether this was a fresh unlock (not just a progress update).
   final bool justUnlocked;
+
+  /// The profile this evaluation ran for (family/multi-profile) — consumers
+  /// like `XpAwardListener` use this rather than re-resolving the active
+  /// profile themselves, since it can race a profile switch otherwise.
+  final String profileId;
 }
 
 /// Evaluates one module's [HabitModule.achievementDefinitions] against
@@ -44,13 +50,16 @@ class AchievementEngine {
   /// Stream of achievement events.
   Stream<AchievementEvent> get events => _eventController.stream;
 
-  /// Re-evaluates every achievement [moduleId] contributes.
-  Future<void> evaluate(String moduleId) async {
+  /// Re-evaluates every achievement [moduleId] contributes, for [profileId].
+  Future<void> evaluate(String moduleId, {required String profileId}) async {
     final module = modules.firstWhere((m) => m.id == moduleId);
     final now = clock.now();
     for (final definition in module.achievementDefinitions) {
       final progress = await definition.currentProgress();
-      final existing = await repository.byKey(definition.key);
+      final existing = await repository.byKey(
+        definition.key,
+        profileId: profileId,
+      );
       final wasAlreadyUnlocked = existing?.unlockedAt != null;
       await repository.upsertProgress(
         moduleId: moduleId,
@@ -58,6 +67,7 @@ class AchievementEngine {
         current: progress.clamp(0, definition.target),
         target: definition.target,
         now: now,
+        profileId: profileId,
       );
       final justUnlocked = !wasAlreadyUnlocked && progress >= definition.target;
       if (justUnlocked) {
@@ -66,6 +76,7 @@ class AchievementEngine {
             moduleId: moduleId,
             key: definition.key,
             justUnlocked: true,
+            profileId: profileId,
           ),
         );
       }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recaps/recap_providers.dart';
 import 'package:habit_tracker/core/recaps/recap_trigger.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -31,6 +32,11 @@ Future<void> checkAndShowYearlyRecap(WidgetRef ref) async {
   if (triggerResult.action == RecapTriggerAction.showRecap &&
       triggerResult.yearNumber != null) {
     final today = LocalDate.fromDateTime(DateTime.now());
-    await generator.execute(triggerResult.yearNumber!, today: today);
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
+    await generator.execute(
+      triggerResult.yearNumber!,
+      today: today,
+      profileId: profileId,
+    );
   }
 }

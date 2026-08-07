@@ -33,6 +33,7 @@ Future<void> backfillPersonalRecords({
   required List<HabitModule> modules,
   required PersonalRecordRepository repo,
   required DateRange range,
+  required String profileId,
 }) async {
   for (final module in modules) {
     final dayStatus = await module.dayStatus(range);
@@ -42,6 +43,7 @@ Future<void> backfillPersonalRecords({
         moduleId: module.id,
         recordType: 'longest_streak',
         newValue: longest,
+        profileId: profileId,
       );
     }
   }
@@ -68,9 +70,13 @@ Future<void> runPersonalRecordBackfill(AppDatabase db) async {
     db,
   ).where((m) => personalRecordModuleIds.contains(m.id)).toList();
 
+  // App-resume trigger, no Ref — pinned to the 'system' profile for the
+  // same reason as `achievements/tenure_check.dart`'s `evaluateTenureBadges`.
+  const profileId = 'system';
   await backfillPersonalRecords(
     modules: modules,
     repo: PersonalRecordRepository(db),
     range: DateRange(start: installDate, end: today),
+    profileId: profileId,
   );
 }

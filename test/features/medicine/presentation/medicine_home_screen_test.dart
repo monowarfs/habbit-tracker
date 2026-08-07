@@ -19,6 +19,8 @@ import 'package:habit_tracker/features/medicine/presentation/screens/medicine_ho
 import 'package:habit_tracker/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:mocktail/mocktail.dart';
 
+const _profileId = 'system';
+
 class _MockChimePlayer extends Mock implements ChimePlayer {}
 
 Future<void> _pumpMedicineHome(
@@ -67,14 +69,16 @@ void main() {
     final medicine = await repo.createMedicine(
       name: 'Amoxicillin',
       stockEnabled: false,
+      profileId: _profileId,
     );
     await repo.createSchedule(
       medicineId: (medicine as Success<Medicine>).value.id,
       rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
       startDate: const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     await withClock(Clock.fixed(now), () async {
-      await repo.materializeDoses(clock.now());
+      await repo.materializeDoses(clock.now(), profileId: _profileId);
     });
 
     await _pumpMedicineHome(tester, db, now: now);
@@ -88,14 +92,16 @@ void main() {
     final medicine = await repo.createMedicine(
       name: 'Ibuprofen',
       stockEnabled: false,
+      profileId: _profileId,
     );
     await repo.createSchedule(
       medicineId: (medicine as Success<Medicine>).value.id,
       rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
       startDate: const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
-      await repo.materializeDoses(clock.now());
+      await repo.materializeDoses(clock.now(), profileId: _profileId);
     });
 
     // Now well past the grace window -> missed.
@@ -114,14 +120,16 @@ void main() {
       final medicine = await repo.createMedicine(
         name: 'Ibuprofen',
         stockEnabled: false,
+        profileId: _profileId,
       );
       await repo.createSchedule(
         medicineId: (medicine as Success<Medicine>).value.id,
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 7)), () async {
-        await repo.materializeDoses(clock.now());
+        await repo.materializeDoses(clock.now(), profileId: _profileId);
       });
 
       // Now well past the grace window -> missed.
@@ -145,14 +153,16 @@ void main() {
       final medicine = await repo.createMedicine(
         name: 'Amoxicillin',
         stockEnabled: false,
+        profileId: _profileId,
       );
       await repo.createSchedule(
         medicineId: (medicine as Success<Medicine>).value.id,
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       await withClock(Clock.fixed(now), () async {
-        await repo.materializeDoses(clock.now());
+        await repo.materializeDoses(clock.now(), profileId: _profileId);
       });
 
       // Seed soundEnabled BEFORE pump.
@@ -179,7 +189,12 @@ void main() {
       });
 
       await tester.tap(find.byIcon(Icons.check_circle_outline));
-      await tester.pump();
+      // `_markDoneAndCelebrate` now resolves the active profile (a few
+      // chained DB reads) before touching the repository — a single
+      // `pump()` no longer reliably drains that whole chain.
+      for (var i = 0; i < 5; i++) {
+        await tester.pump();
+      }
       verify(chime.playDoseDoneChime).called(1);
     },
   );
@@ -193,14 +208,16 @@ void main() {
       final medicine = await repo.createMedicine(
         name: 'Amoxicillin',
         stockEnabled: false,
+        profileId: _profileId,
       );
       await repo.createSchedule(
         medicineId: (medicine as Success<Medicine>).value.id,
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       await withClock(Clock.fixed(now), () async {
-        await repo.materializeDoses(clock.now());
+        await repo.materializeDoses(clock.now(), profileId: _profileId);
       });
 
       final chime = _MockChimePlayer();
@@ -223,12 +240,14 @@ void main() {
       final medicineResult = await repo.createMedicine(
         name: 'Aspirin',
         stockEnabled: false,
+        profileId: _profileId,
       );
       final medicine = (medicineResult as Success<Medicine>).value;
       final scheduleResult = await repo.createSchedule(
         medicineId: medicine.id,
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 5, 20),
+        profileId: _profileId,
       );
       final schedule = (scheduleResult as Success<MedicineSchedule>).value;
 
@@ -239,6 +258,7 @@ void main() {
         current: 1,
         target: 1,
         now: DateTime.utc(2026, 5, 21),
+        profileId: _profileId,
       );
 
       final today = DateTime.utc(2026, 6, 1, 8, 15);
@@ -254,11 +274,12 @@ void main() {
             graceWindowMinutes: 30,
             statusChangedAt: DateTime.utc(day.year, day.month, day.day, 8, 5),
           ),
+          profileId: _profileId,
         );
       }
 
       await withClock(Clock.fixed(today), () async {
-        await repo.materializeDoses(today);
+        await repo.materializeDoses(today, profileId: _profileId);
 
         await tester.pumpWidget(
           ProviderScope(

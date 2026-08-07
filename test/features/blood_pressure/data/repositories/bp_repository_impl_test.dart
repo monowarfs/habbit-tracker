@@ -25,11 +25,12 @@ void main() {
       systolic: 150,
       diastolic: 70,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
     final log = (result as Success<BpLog>).value;
     expect(log.classification, BpClassification.hypertension2);
 
-    final logs = await repository.allLogs();
+    final logs = await repository.allLogs(profileId: 'system');
     expect(logs, hasLength(1));
     expect(logs.first.classification, BpClassification.hypertension2);
   });
@@ -39,15 +40,16 @@ void main() {
       systolic: 118,
       diastolic: 76,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
 
     final logs = await repository
-        .watchLogsForDay(const LocalDate(2026, 6, 15))
+        .watchLogsForDay(const LocalDate(2026, 6, 15), profileId: 'system')
         .first;
     expect(logs, hasLength(1));
 
     final emptyDay = await repository
-        .watchLogsForDay(const LocalDate(2026, 6, 14))
+        .watchLogsForDay(const LocalDate(2026, 6, 14), profileId: 'system')
         .first;
     expect(emptyDay, isEmpty);
   });
@@ -57,28 +59,30 @@ void main() {
       systolic: 118,
       diastolic: 76,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
     final id = (added as Success<BpLog>).value.id;
 
-    final deleteResult = await repository.deleteLog(id);
+    final deleteResult = await repository.deleteLog(id, profileId: 'system');
     expect(deleteResult, isA<Success<void>>());
 
-    expect(await repository.logById(id), isNull);
-    expect(await repository.allLogs(), isEmpty);
+    expect(await repository.logById(id, profileId: 'system'), isNull);
+    expect(await repository.allLogs(profileId: 'system'), isEmpty);
   });
 
   test('deleteLog on an unknown or already-deleted id fails', () async {
-    final result = await repository.deleteLog('nope');
+    final result = await repository.deleteLog('nope', profileId: 'system');
     expect(result, isA<Failure<void>>());
 
     final added = await repository.addLog(
       systolic: 118,
       diastolic: 76,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
     final id = (added as Success<BpLog>).value.id;
-    await repository.deleteLog(id);
-    final secondDelete = await repository.deleteLog(id);
+    await repository.deleteLog(id, profileId: 'system');
+    final secondDelete = await repository.deleteLog(id, profileId: 'system');
     expect(secondDelete, isA<Failure<void>>());
   });
 
@@ -87,9 +91,10 @@ void main() {
       systolic: 118,
       diastolic: 76,
       loggedAt: DateTime.utc(2026, 6, 15, 8),
+      profileId: 'system',
     );
-    await repository.wipeAll();
-    expect(await repository.allLogs(), isEmpty);
+    await repository.wipeAll(profileId: 'system');
+    expect(await repository.allLogs(profileId: 'system'), isEmpty);
   });
 
   test('BpClassificationDb round-trips every value through toDb/fromDb', () {

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/analytics/personal_record_repository.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late PersonalRecordRepository repo;
@@ -16,18 +18,24 @@ void main() {
 
   test('getRecord returns null when no record exists', () async {
     expect(
-      await repo.getRecord(moduleId: 'water', recordType: 'longest_streak'),
+      await repo.getRecord(
+        profileId: _profileId,
+        moduleId: 'water',
+        recordType: 'longest_streak',
+      ),
       isNull,
     );
   });
 
   test('setRecord creates a row when none exists', () async {
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
       value: 5,
     );
     final record = await repo.getRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
     );
@@ -37,11 +45,13 @@ void main() {
 
   test('setRecord overwrites an existing row for the same key', () async {
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
       value: 5,
     );
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
       value: 9,
@@ -55,12 +65,14 @@ void main() {
     'checkAndUpdate creates the record and returns true when none exists',
     () async {
       final updated = await repo.checkAndUpdate(
+        profileId: _profileId,
         moduleId: 'medicine',
         recordType: 'longest_streak',
         newValue: 3,
       );
       expect(updated, isTrue);
       final record = await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'medicine',
         recordType: 'longest_streak',
       );
@@ -71,17 +83,20 @@ void main() {
   test('checkAndUpdate returns false and leaves the record untouched when '
       'newValue does not beat it', () async {
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'prayer',
       recordType: 'longest_streak',
       value: 10,
     );
     final updated = await repo.checkAndUpdate(
+      profileId: _profileId,
       moduleId: 'prayer',
       recordType: 'longest_streak',
       newValue: 7,
     );
     expect(updated, isFalse);
     final record = await repo.getRecord(
+      profileId: _profileId,
       moduleId: 'prayer',
       recordType: 'longest_streak',
     );
@@ -90,11 +105,13 @@ void main() {
 
   test('checkAndUpdate returns false on a tie', () async {
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'prayer',
       recordType: 'longest_streak',
       value: 10,
     );
     final updated = await repo.checkAndUpdate(
+      profileId: _profileId,
       moduleId: 'prayer',
       recordType: 'longest_streak',
       newValue: 10,
@@ -106,17 +123,20 @@ void main() {
     'checkAndUpdate updates and returns true when newValue beats it',
     () async {
       await repo.setRecord(
+        profileId: _profileId,
         moduleId: 'prayer',
         recordType: 'longest_streak',
         value: 10,
       );
       final updated = await repo.checkAndUpdate(
+        profileId: _profileId,
         moduleId: 'prayer',
         recordType: 'longest_streak',
         newValue: 12,
       );
       expect(updated, isTrue);
       final record = await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'prayer',
         recordType: 'longest_streak',
       );
@@ -126,22 +146,26 @@ void main() {
 
   test('records are scoped independently per moduleId/recordType', () async {
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
       value: 5,
     );
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'best_adherence',
       value: 90,
     );
     await repo.setRecord(
+      profileId: _profileId,
       moduleId: 'medicine',
       recordType: 'longest_streak',
       value: 3,
     );
     expect(
       (await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
       ))!.recordValue,
@@ -149,6 +173,7 @@ void main() {
     );
     expect(
       (await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'best_adherence',
       ))!.recordValue,
@@ -156,6 +181,7 @@ void main() {
     );
     expect(
       (await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'medicine',
         recordType: 'longest_streak',
       ))!.recordValue,

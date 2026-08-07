@@ -85,7 +85,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final repo = MedicineRepositoryImpl(db);
-    final schedules = await repo.allSchedules();
+    final schedules = await repo.allSchedules(profileId: 'system');
     expect(schedules, hasLength(1));
     expect(
       schedules.single.rule,
@@ -115,7 +115,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final repo = MedicineRepositoryImpl(db);
-    final schedules = await repo.allSchedules();
+    final schedules = await repo.allSchedules(profileId: 'system');
     expect(schedules, hasLength(1));
     expect(
       schedules.single.rule,

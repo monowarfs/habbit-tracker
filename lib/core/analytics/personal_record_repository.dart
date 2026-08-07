@@ -8,6 +8,11 @@ import 'package:habit_tracker/core/utils/uuid.dart';
 /// 02-personal-record-tracking-IMPLEMENTATION-PLAN.md`) — the source of
 /// truth for each module's all-time record, so stats screens don't need
 /// to re-scan full history on every load.
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — callers pass whatever `activeProfileProvider`
+/// currently resolves to.
 class PersonalRecordRepository {
   /// Creates a repository backed by [_db].
   PersonalRecordRepository(this._db);
@@ -19,9 +24,13 @@ class PersonalRecordRepository {
   Future<PersonalRecord?> getRecord({
     required String moduleId,
     required String recordType,
+    required String profileId,
   }) {
     return (_db.select(_db.personalRecordsTable)..where(
-          (t) => t.moduleId.equals(moduleId) & t.recordType.equals(recordType),
+          (t) =>
+              t.moduleId.equals(moduleId) &
+              t.recordType.equals(recordType) &
+              t.profileId.equals(profileId),
         ))
         .getSingleOrNull();
   }
@@ -32,11 +41,13 @@ class PersonalRecordRepository {
     required String moduleId,
     required String recordType,
     required int value,
+    required String profileId,
   }) async {
     final now = clock.now().millisecondsSinceEpoch;
     final existing = await getRecord(
       moduleId: moduleId,
       recordType: recordType,
+      profileId: profileId,
     );
     if (existing == null) {
       await _db
@@ -48,6 +59,7 @@ class PersonalRecordRepository {
               recordType: recordType,
               recordValue: value,
               achievedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return;
@@ -70,16 +82,19 @@ class PersonalRecordRepository {
     required String moduleId,
     required String recordType,
     required int newValue,
+    required String profileId,
   }) async {
     final existing = await getRecord(
       moduleId: moduleId,
       recordType: recordType,
+      profileId: profileId,
     );
     if (existing != null && newValue <= existing.recordValue) return false;
     await setRecord(
       moduleId: moduleId,
       recordType: recordType,
       value: newValue,
+      profileId: profileId,
     );
     return true;
   }

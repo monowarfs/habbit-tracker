@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/medicine/data/repositories/medicine_repository_impl.dart';
@@ -22,24 +23,36 @@ MedicineRepository medicineRepository(Ref ref) {
 
 LocalDate _today() => localDayKey(clock.now());
 
-/// Every (non-deleted) medicine, optionally including archived ones.
+/// Every (non-deleted) medicine, optionally including archived ones. Empty
+/// (never emitting) until the active profile resolves — Riverpod rebuilds
+/// this automatically once it does, since [activeProfileProvider] is
+/// watched.
 @Riverpod(keepAlive: true)
 Stream<List<Medicine>> medicines(Ref ref, {required bool includeArchived}) {
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
   return ref
       .watch(medicineRepositoryProvider)
-      .watchMedicines(includeArchived: includeArchived);
+      .watchMedicines(includeArchived: includeArchived, profileId: profileId);
 }
 
 /// A single medicine by id, for the detail/edit screens.
 @riverpod
-Future<Medicine?> medicineById(Ref ref, String id) {
-  return ref.watch(medicineRepositoryProvider).medicineById(id);
+Future<Medicine?> medicineById(Ref ref, String id) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
+  return ref
+      .watch(medicineRepositoryProvider)
+      .medicineById(id, profileId: profileId);
 }
 
 /// A medicine's (non-deleted) schedules.
 @riverpod
 Stream<List<MedicineSchedule>> medicineSchedules(Ref ref, String medicineId) {
-  return ref.watch(medicineRepositoryProvider).watchSchedules(medicineId);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(medicineRepositoryProvider)
+      .watchSchedules(medicineId, profileId: profileId);
 }
 
 /// Projected stock-out date for [medicineId]
@@ -56,7 +69,10 @@ Future<StockProjection> stockProjection(Ref ref, String medicineId) async {
       currentStock: 0,
     );
   }
-  final events = await ref.watch(medicineRepositoryProvider).allStockEvents();
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
+  final events = await ref
+      .watch(medicineRepositoryProvider)
+      .allStockEvents(profileId: profileId);
   return const PredictStockOutDateUseCase().execute(
     medicine: medicine,
     stockEvents: events,
@@ -67,7 +83,11 @@ Future<StockProjection> stockProjection(Ref ref, String medicineId) async {
 /// Every dose scheduled today, across every medicine.
 @Riverpod(keepAlive: true)
 Stream<List<MedicineDose>> todaysDoses(Ref ref) {
-  return ref.watch(medicineRepositoryProvider).watchDosesForDay(_today());
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(medicineRepositoryProvider)
+      .watchDosesForDay(_today(), profileId: profileId);
 }
 
 /// An inclusive local-day range, used as a family provider parameter
@@ -82,10 +102,11 @@ typedef MedicineDateRange = ({LocalDate start, LocalDate end});
 Future<List<MedicineDose>> medicineDosesInRange(
   Ref ref,
   MedicineDateRange range,
-) {
+) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   return ref
       .watch(medicineRepositoryProvider)
-      .dosesInRange(range.start, range.end);
+      .dosesInRange(range.start, range.end, profileId: profileId);
 }
 
 /// A dose paired with its medicine and live-derived status — what the

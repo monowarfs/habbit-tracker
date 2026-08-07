@@ -27,6 +27,7 @@ import 'package:habit_tracker/core/utils/local_day.dart';
 Future<void> awardActionXp(
   Ref ref, {
   required String moduleId,
+  required String profileId,
   String? actionSourceId,
 }) async {
   final xpRepository = ref.read(xpRepositoryProvider);
@@ -37,6 +38,7 @@ Future<void> awardActionXp(
         moduleId: moduleId,
         eventType: 'action',
         sourceId: actionSourceId,
+        profileId: profileId,
       );
   if (!actionAlreadyAwarded) {
     await xpRepository.awardXp(
@@ -45,6 +47,7 @@ Future<void> awardActionXp(
       amount: XpValues.forEvent(moduleId, 'action'),
       now: now,
       sourceId: actionSourceId,
+      profileId: profileId,
     );
   }
 
@@ -68,6 +71,7 @@ Future<void> awardActionXp(
     moduleId: moduleId,
     eventType: 'day_complete',
     sourceId: sourceId,
+    profileId: profileId,
   );
   if (alreadyAwarded) return;
   await xpRepository.awardXp(
@@ -76,5 +80,6 @@ Future<void> awardActionXp(
     amount: XpValues.forEvent(moduleId, 'day_complete'),
     now: now,
     sourceId: sourceId,
+    profileId: profileId,
   );
 }

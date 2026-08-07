@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/reports/logged_day_status.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
@@ -19,7 +20,11 @@ ExerciseRepository exerciseRepository(Ref ref) {
 /// Every workout with `loggedAt` on [day].
 @riverpod
 Stream<List<ExerciseLog>> exerciseLogsForDay(Ref ref, LocalDate day) {
-  return ref.watch(exerciseRepositoryProvider).watchLogsForDay(day);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(exerciseRepositoryProvider)
+      .watchLogsForDay(day, profileId: profileId);
 }
 
 /// Every workout with `loggedAt` between [start] and [end] (inclusive).
@@ -29,17 +34,22 @@ Stream<List<ExerciseLog>> exerciseLogsInRange(
   LocalDate start,
   LocalDate end,
 ) {
-  return ref.watch(exerciseRepositoryProvider).watchLogsInRange(start, end);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(exerciseRepositoryProvider)
+      .watchLogsInRange(start, end, profileId: profileId);
 }
 
 /// The most recent workout across the last 2 days (covers a workout just
 /// after midnight not yet reflected in "today").
 @riverpod
 Future<ExerciseLog?> lastExerciseLog(Ref ref) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   final today = localDayKey(clock.now());
   final logs = await ref
       .watch(exerciseRepositoryProvider)
-      .watchLogsInRange(today.addDays(-1), today)
+      .watchLogsInRange(today.addDays(-1), today, profileId: profileId)
       .first;
   if (logs.isEmpty) return null;
   return logs.last;
@@ -47,10 +57,12 @@ Future<ExerciseLog?> lastExerciseLog(Ref ref) async {
 
 /// The current consecutive-days-logged streak, ending today.
 @riverpod
-Future<int> exerciseCurrentStreak(Ref ref) {
+Future<int> exerciseCurrentStreak(Ref ref) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   final today = localDayKey(clock.now());
+  final repository = ref.watch(exerciseRepositoryProvider);
   return currentLoggedStreak<ExerciseLog>(
-    allLogs: ref.watch(exerciseRepositoryProvider).allLogs,
+    allLogs: () => repository.allLogs(profileId: profileId),
     dateOf: (log) => log.loggedAt,
     today: today,
   );

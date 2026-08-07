@@ -271,7 +271,9 @@ class WaterModule implements HabitModule {
     WaterSettings settings,
   ) async {
     final userWindow = _weekdayWindow(day, settings);
-    final prayerSettings = await _prayerRepository!.getSettings();
+    final prayerSettings = await _prayerRepository!.getSettings(
+      profileId: _fixedProfileId,
+    );
     final locationResult = await resolveLocation(prayerSettings);
     if (locationResult case Failure()) return [userWindow];
     final location = (locationResult as Success<ResolvedLocation>).value;
@@ -387,7 +389,11 @@ class WaterModule implements HabitModule {
     // Fetch pause-aware days for this module.
     final pauseSvc = _pauseService;
     final pausedDays = pauseSvc != null
-        ? await pauseSvc.pausedDaysInRange(moduleId: 'water', range: range)
+        ? await pauseSvc.pausedDaysInRange(
+            moduleId: 'water',
+            range: range,
+            profileId: _fixedProfileId,
+          )
         : <LocalDate>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {

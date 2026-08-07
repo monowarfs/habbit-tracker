@@ -63,16 +63,30 @@ void main() {
     );
     const medicine = Medicine(id: 'm1', name: 'X', stockEnabled: false);
 
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
     when(
-      () => repo.dosesInRange(any(), any()),
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => [dose]);
-    when(() => repo.medicineById('m1')).thenAnswer((_) async => medicine);
     when(
-      () => repo.medicinesNeedingLowStockAlert(),
+      () => repo.medicineById('m1', profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => medicine);
+    when(
+      () => repo.medicinesNeedingLowStockAlert(
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => []);
-    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
-    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
+    when(
+      () => repo.allMedicines(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
@@ -100,20 +114,30 @@ void main() {
       archivedAt: DateTime.utc(2026, 5),
     );
 
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
     when(
-      () => repo.dosesInRange(any(), any()),
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => [dose]);
     when(
-      () => repo.medicineById('m1'),
+      () => repo.medicineById('m1', profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => archivedMedicine);
     when(
-      () => repo.medicinesNeedingLowStockAlert(),
+      () => repo.medicinesNeedingLowStockAlert(
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => []);
     when(
-      () => repo.allMedicines(),
+      () => repo.allMedicines(profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => [archivedMedicine]);
-    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
+    when(
+      () => repo.allStockEvents(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
@@ -132,13 +156,27 @@ void main() {
       stockThreshold: 5,
       lowStockNotifiedAt: now,
     );
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
-    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
     when(
-      () => repo.medicinesNeedingLowStockAlert(),
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
+    ).thenAnswer((_) async => []);
+    when(
+      () => repo.medicinesNeedingLowStockAlert(
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => [medicine]);
-    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
-    when(() => repo.allStockEvents()).thenAnswer((_) async => []);
+    when(
+      () => repo.allMedicines(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => []);
 
     await withClock(Clock.fixed(now), () async {
       final notifications = await module.pendingNotifications();
@@ -171,14 +209,26 @@ void main() {
         ),
       );
 
-      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
-      when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
       when(
-        () => repo.medicinesNeedingLowStockAlert(),
+        () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.dosesInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => []);
-      when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
       when(
-        () => repo.allStockEvents(),
+        () => repo.medicinesNeedingLowStockAlert(
+          profileId: any(named: 'profileId'),
+        ),
+      ).thenAnswer((_) async => []);
+      when(
+        () => repo.allMedicines(profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async => [medicine]);
+      when(
+        () => repo.allStockEvents(profileId: any(named: 'profileId')),
       ).thenAnswer((_) async => stockEvents);
 
       await withClock(Clock.fixed(now), () async {
@@ -212,14 +262,26 @@ void main() {
       ),
     );
 
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
-    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
     when(
-      () => repo.medicinesNeedingLowStockAlert(),
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => []);
-    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
     when(
-      () => repo.allStockEvents(),
+      () => repo.medicinesNeedingLowStockAlert(
+        profileId: any(named: 'profileId'),
+      ),
+    ).thenAnswer((_) async => []);
+    when(
+      () => repo.allMedicines(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => stockEvents);
 
     await withClock(Clock.fixed(now), () async {
@@ -250,14 +312,26 @@ void main() {
       ),
     ];
 
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
-    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
     when(
-      () => repo.medicinesNeedingLowStockAlert(),
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => []);
-    when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
     when(
-      () => repo.allStockEvents(),
+      () => repo.medicinesNeedingLowStockAlert(
+        profileId: any(named: 'profileId'),
+      ),
+    ).thenAnswer((_) async => []);
+    when(
+      () => repo.allMedicines(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => [medicine]);
+    when(
+      () => repo.allStockEvents(profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => stockEvents);
 
     await withClock(Clock.fixed(now), () async {
@@ -282,25 +356,32 @@ void main() {
         () => repo.markDoseDone(
           any(),
           fromOtherSource: any(named: 'fromOtherSource'),
+          profileId: any(named: 'profileId'),
         ),
       ).thenAnswer((_) async => const Result.success(null));
 
       await module.onNotificationAction('d1', NotificationActionType.done);
 
       verify(
-        () => repo.markDoseDone('d1', fromOtherSource: false),
+        () => repo.markDoseDone(
+          'd1',
+          fromOtherSource: false,
+          profileId: 'system',
+        ),
       ).called(1);
     },
   );
 
   test('onNotificationAction(skip) marks the dose skipped', () async {
     when(
-      () => repo.markDoseSkipped(any()),
+      () => repo.markDoseSkipped(any(), profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => const Result.success(null));
 
     await module.onNotificationAction('d1', NotificationActionType.skip);
 
-    verify(() => repo.markDoseSkipped('d1')).called(1);
+    verify(
+      () => repo.markDoseSkipped('d1', profileId: 'system'),
+    ).called(1);
   });
 
   test('onNotificationAction(snooze) never mutates dose data', () async {
@@ -309,9 +390,12 @@ void main() {
       () => repo.markDoseDone(
         any(),
         fromOtherSource: any(named: 'fromOtherSource'),
+        profileId: any(named: 'profileId'),
       ),
     );
-    verifyNever(() => repo.markDoseSkipped(any()));
+    verifyNever(
+      () => repo.markDoseSkipped(any(), profileId: any(named: 'profileId')),
+    );
   });
 
   test(
@@ -334,14 +418,21 @@ void main() {
         storedStatus: MedicineDoseStatus.upcoming,
         graceWindowMinutes: 30,
       );
-      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
       when(
-        () => repo.dosesInRange(any(), any()),
+        () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.dosesInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [upcomingDose, dueDose]);
       when(
         () => repo.markDoseDone(
           any(),
           fromOtherSource: any(named: 'fromOtherSource'),
+          profileId: any(named: 'profileId'),
         ),
       ).thenAnswer((_) async => const Result.success(null));
 
@@ -350,20 +441,33 @@ void main() {
       });
 
       verify(
-        () => repo.markDoseDone('d-due', fromOtherSource: false),
+        () => repo.markDoseDone(
+          'd-due',
+          fromOtherSource: false,
+          profileId: 'system',
+        ),
       ).called(1);
       verifyNever(
         () => repo.markDoseDone(
           'd-upcoming',
           fromOtherSource: any(named: 'fromOtherSource'),
+          profileId: any(named: 'profileId'),
         ),
       );
     },
   );
 
   test('onQuickAction no-ops when nothing is due', () async {
-    when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
-    when(() => repo.dosesInRange(any(), any())).thenAnswer((_) async => []);
+    when(
+      () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
+    ).thenAnswer((_) async => []);
 
     await module.onQuickAction();
 
@@ -371,6 +475,7 @@ void main() {
       () => repo.markDoseDone(
         any(),
         fromOtherSource: any(named: 'fromOtherSource'),
+        profileId: any(named: 'profileId'),
       ),
     );
   });
@@ -387,7 +492,11 @@ void main() {
         graceWindowMinutes: 30,
       );
       when(
-        () => repo.dosesInRange(any(), any()),
+        () => repo.dosesInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [dose]);
 
       final status = await module.dayStatus(
@@ -413,7 +522,9 @@ void main() {
         dosageNote: '500mg',
         stockEnabled: false,
       );
-      when(() => repo.allMedicines()).thenAnswer((_) async => [medicine]);
+      when(
+        () => repo.allMedicines(profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async => [medicine]);
 
       final results = await module.search('paracet');
       expect(results, hasLength(1));
@@ -449,6 +560,7 @@ void main() {
           stockThreshold: any(named: 'stockThreshold'),
           stopWhenStockDepleted: any(named: 'stopWhenStockDepleted'),
           consumptionPerDose: any(named: 'consumptionPerDose'),
+          profileId: any(named: 'profileId'),
         ),
       ).thenAnswer((_) async => const Result.success(medicine));
       when(
@@ -458,11 +570,18 @@ void main() {
           startDate: any(named: 'startDate'),
           endDate: any(named: 'endDate'),
           graceWindowMinutes: any(named: 'graceWindowMinutes'),
+          profileId: any(named: 'profileId'),
         ),
       ).thenAnswer((_) async => Result.success(schedule));
-      when(() => repo.restoreDose(any())).thenAnswer((_) async => 'new-dose');
-      when(() => repo.restoreStockEvent(any())).thenAnswer((_) async {});
-      when(() => repo.materializeDoses(any())).thenAnswer((_) async {});
+      when(
+        () => repo.restoreDose(any(), profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async => 'new-dose');
+      when(
+        () => repo.restoreStockEvent(any(), profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.materializeDoses(any(), profileId: any(named: 'profileId')),
+      ).thenAnswer((_) async {});
 
       await module.importData(
         const ModuleExport({
@@ -516,7 +635,10 @@ void main() {
       );
 
       final capturedDoses = verify(
-        () => repo.restoreDose(captureAny()),
+        () => repo.restoreDose(
+          captureAny(),
+          profileId: any(named: 'profileId'),
+        ),
       ).captured;
       expect(capturedDoses, hasLength(1));
       expect(
@@ -524,7 +646,10 @@ void main() {
         MedicineDoseStatus.done,
       );
       final capturedEvents = verify(
-        () => repo.restoreStockEvent(captureAny()),
+        () => repo.restoreStockEvent(
+          captureAny(),
+          profileId: any(named: 'profileId'),
+        ),
       ).captured;
       expect(capturedEvents, hasLength(1));
       expect((capturedEvents.single as MedicineStockEvent).doseId, 'new-dose');
@@ -532,8 +657,10 @@ void main() {
   );
 
   test('wipeData delegates to the repository', () async {
-    when(() => repo.wipeAll()).thenAnswer((_) async {});
+    when(
+      () => repo.wipeAll(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
     await module.wipeData();
-    verify(() => repo.wipeAll()).called(1);
+    verify(() => repo.wipeAll(profileId: 'system')).called(1);
   });
 }

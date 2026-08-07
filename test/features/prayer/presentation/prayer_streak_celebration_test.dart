@@ -35,6 +35,7 @@ void main() {
         current: 1,
         target: 1,
         now: DateTime.utc(2026, 5, 26),
+        profileId: 'system',
       );
       await achievementRepo.upsertProgress(
         moduleId: 'prayer',
@@ -42,6 +43,7 @@ void main() {
         current: 1,
         target: 1,
         now: DateTime.utc(2026, 5, 26),
+        profileId: 'system',
       );
 
       const today = LocalDate(2026, 6, 7);
@@ -64,6 +66,7 @@ void main() {
                 5,
               ),
             ),
+            profileId: 'system',
           );
         }
       }
@@ -79,6 +82,7 @@ void main() {
           storedStatus: PrayerStatus.prayed,
           statusChangedAt: DateTime.utc(2026, 6, 7, 5, 5),
         ),
+        profileId: 'system',
       );
       await repo.restoreRecord(
         PrayerRecord(
@@ -88,6 +92,7 @@ void main() {
           scheduledFor: DateTime.utc(2026, 6, 7, 12),
           storedStatus: PrayerStatus.upcoming,
         ),
+        profileId: 'system',
       );
       await repo.restoreRecord(
         PrayerRecord(
@@ -98,6 +103,7 @@ void main() {
           storedStatus: PrayerStatus.prayed,
           statusChangedAt: DateTime.utc(2026, 6, 7, 15, 35),
         ),
+        profileId: 'system',
       );
       await repo.restoreRecord(
         PrayerRecord(
@@ -108,6 +114,7 @@ void main() {
           storedStatus: PrayerStatus.prayed,
           statusChangedAt: DateTime.utc(2026, 6, 7, 18, 5),
         ),
+        profileId: 'system',
       );
       await repo.restoreRecord(
         PrayerRecord(
@@ -118,6 +125,7 @@ void main() {
           storedStatus: PrayerStatus.prayed,
           statusChangedAt: DateTime.utc(2026, 6, 7, 19, 35),
         ),
+        profileId: 'system',
       );
 
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 7, 13)), () async {

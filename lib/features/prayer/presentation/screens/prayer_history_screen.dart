@@ -158,8 +158,8 @@ class _PrayerHistoryScreenState extends ConsumerState<PrayerHistoryScreen> {
       switch (status) {
         PrayerStatus.upcoming => l10n.prayerStatusUpcoming,
         PrayerStatus.due => l10n.prayerStatusDue,
-        PrayerStatus.prayed || PrayerStatus.prayedLate =>
-          l10n.prayerStatusPrayed,
+        PrayerStatus.prayed ||
+        PrayerStatus.prayedLate => l10n.prayerStatusPrayed,
         PrayerStatus.missed => l10n.prayerStatusMissedDue,
       };
 }

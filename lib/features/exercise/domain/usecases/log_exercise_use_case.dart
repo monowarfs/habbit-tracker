@@ -17,6 +17,7 @@ class LogExerciseUseCase {
   Future<Result<ExerciseLog>> execute({
     required String exerciseType,
     required int durationMinutes,
+    required String profileId,
     DateTime? loggedAt,
     int? calories,
     String? notes,
@@ -52,6 +53,7 @@ class LogExerciseUseCase {
       exerciseType: exerciseType.trim(),
       durationMinutes: durationMinutes,
       loggedAt: at,
+      profileId: profileId,
       calories: calories,
       notes: notes,
     );

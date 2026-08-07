@@ -16,18 +16,31 @@ class NotificationLedgerRepository {
 
   /// Every not-yet-cancelled, not-yet-actioned row — the planner's view of
   /// "what's currently registered with the OS".
-  Future<List<NotificationLedgerRow>> pendingRows() {
-    return (_db.select(
-      _db.notificationLedgerTable,
-    )..where((t) => t.deletedAt.isNull() & t.action.isNull())).get();
+  Future<List<NotificationLedgerRow>> pendingRows({
+    required String profileId,
+  }) {
+    return (_db.select(_db.notificationLedgerTable)..where(
+          (t) =>
+              t.profileId.equals(profileId) &
+              t.deletedAt.isNull() &
+              t.action.isNull(),
+        ))
+        .get();
   }
 
   /// Looks up a single row by id, or `null` if it doesn't exist / was
   /// cancelled.
-  Future<NotificationLedgerRow?> rowById(String id) {
-    return (_db.select(
-      _db.notificationLedgerTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<NotificationLedgerRow?> rowById(
+    String id, {
+    required String profileId,
+  }) {
+    return (_db.select(_db.notificationLedgerTable)..where(
+          (t) =>
+              t.id.equals(id) &
+              t.profileId.equals(profileId) &
+              t.deletedAt.isNull(),
+        ))
+        .getSingleOrNull();
   }
 
   /// Records a newly-scheduled notification. Idempotent by [id] — safe to
@@ -44,6 +57,7 @@ class NotificationLedgerRepository {
     required String body,
     required DateTime scheduledFor,
     required String deepLinkRoute,
+    required String profileId,
     DateTime? originalScheduledFor,
   }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
@@ -64,6 +78,7 @@ class NotificationLedgerRepository {
             ),
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }
@@ -73,17 +88,19 @@ class NotificationLedgerRepository {
     String id, {
     required String action,
     required DateTime actionAt,
+    required String profileId,
   }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await (_db.update(
-      _db.notificationLedgerTable,
-    )..where((t) => t.id.equals(id))).write(
-      NotificationLedgerTableCompanion(
-        action: Value(action),
-        actionAt: Value(actionAt.toUtc().millisecondsSinceEpoch),
-        updatedAt: Value(now),
-      ),
-    );
+    await (_db.update(_db.notificationLedgerTable)..where(
+          (t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          NotificationLedgerTableCompanion(
+            action: Value(action),
+            actionAt: Value(actionAt.toUtc().millisecondsSinceEpoch),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
   /// Records a Snooze: bumps `snooze_count` and moves `scheduled_for` to
@@ -94,19 +111,21 @@ class NotificationLedgerRepository {
   Future<void> recordSnooze(
     String id, {
     required DateTime rescheduledFor,
+    required String profileId,
   }) async {
-    final row = await rowById(id);
+    final row = await rowById(id, profileId: profileId);
     if (row == null) return;
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await (_db.update(
-      _db.notificationLedgerTable,
-    )..where((t) => t.id.equals(id))).write(
-      NotificationLedgerTableCompanion(
-        scheduledFor: Value(rescheduledFor.toUtc().millisecondsSinceEpoch),
-        snoozeCount: Value(row.snoozeCount + 1),
-        updatedAt: Value(now),
-      ),
-    );
+    await (_db.update(_db.notificationLedgerTable)..where(
+          (t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          NotificationLedgerTableCompanion(
+            scheduledFor: Value(rescheduledFor.toUtc().millisecondsSinceEpoch),
+            snoozeCount: Value(row.snoozeCount + 1),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
   /// Every terminal Done row `actioned` within the last [windowDays],
@@ -115,10 +134,12 @@ class NotificationLedgerRepository {
   Future<List<NotificationLedgerRow>> actionedDoneRows({
     required int windowDays,
     required DateTime now,
+    required String profileId,
   }) async {
     final since = now.subtract(Duration(days: windowDays));
     return (_db.select(_db.notificationLedgerTable)..where(
           (t) =>
+              t.profileId.equals(profileId) &
               t.deletedAt.isNull() &
               t.action.equals('done') &
               t.actionAt.isNotNull() &
@@ -145,11 +166,13 @@ class NotificationLedgerRepository {
   Future<List<NotificationLedgerRow>> firedRows({
     required int windowDays,
     required DateTime now,
+    required String profileId,
   }) async {
     final since = now.subtract(Duration(days: windowDays));
     final nowMillis = now.toUtc().millisecondsSinceEpoch;
     return (_db.select(_db.notificationLedgerTable)..where(
           (t) =>
+              t.profileId.equals(profileId) &
               t.deletedAt.isNull() &
               t.scheduledFor.isBiggerOrEqualValue(
                 since.toUtc().millisecondsSinceEpoch,
@@ -161,20 +184,23 @@ class NotificationLedgerRepository {
 
   /// Soft-deletes (cancels) [id] — used when a source falls out of the
   /// scheduling window (e.g. reminder settings changed).
-  Future<void> cancel(String id) async {
+  Future<void> cancel(String id, {required String profileId}) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await (_db.update(
-      _db.notificationLedgerTable,
-    )..where((t) => t.id.equals(id))).write(
-      NotificationLedgerTableCompanion(
-        deletedAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
+    await (_db.update(_db.notificationLedgerTable)..where(
+          (t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          NotificationLedgerTableCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
-  /// Evicts ledger entries older than [age]. Called periodically to bound
-  /// notification_ledger growth. User-facing data is unaffected.
+  /// Evicts ledger entries older than [age], across every profile —
+  /// housekeeping, not a user-facing query, so it deliberately isn't
+  /// profile-scoped. Called periodically to bound notification_ledger
+  /// growth. User-facing data is unaffected.
   Future<int> cleanupOlderThan(Duration age) async {
     final cutoff = clock.now().subtract(age).toUtc().millisecondsSinceEpoch;
     return (_db.delete(

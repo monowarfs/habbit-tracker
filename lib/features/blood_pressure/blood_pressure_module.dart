@@ -28,6 +28,17 @@ class BloodPressureModule implements HabitModule {
 
   final BpRepository _repository;
 
+  /// `HabitModule` contract methods take no `Ref`
+  /// (`core/modules/habit_module.dart`'s doc comment), so they can't read
+  /// `activeProfileProvider` — they run from background isolates,
+  /// WorkManager, and the notification engine, none of which have a
+  /// widget tree. Family/multi-profile's Task 8/9 give the notification
+  /// planner and widget refresher their own profile-aware entry points;
+  /// everything else here (export/import/wipe/dashboard aggregation)
+  /// still operates on the system profile only until a later pass thread
+  /// a profile id through the `HabitModule` contract itself.
+  static const _fixedProfileId = 'system';
+
   @override
   String get id => 'blood_pressure';
 
@@ -85,7 +96,11 @@ class BloodPressureModule implements HabitModule {
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
     final logs = await _repository
-        .watchLogsInRange(range.start, range.end)
+        .watchLogsInRange(
+          range.start,
+          range.end,
+          profileId: _fixedProfileId,
+        )
         .first;
     return calculateBpDayStatus(logs: logs, range: range);
   }
@@ -113,7 +128,7 @@ class BloodPressureModule implements HabitModule {
         descriptionKey: 'achievementBpFirstLogDescription',
         target: 1,
         currentProgress: () async {
-          final logs = await _repository.allLogs();
+          final logs = await _repository.allLogs(profileId: _fixedProfileId);
           return logs.isEmpty ? 0 : 1;
         },
       ),
@@ -147,12 +162,16 @@ class BloodPressureModule implements HabitModule {
   }
 
   Future<int> _currentBpStreak() {
-    return currentBpStreak(_repository, localDayKey(clock.now()));
+    return currentBpStreak(
+      _repository,
+      localDayKey(clock.now()),
+      profileId: _fixedProfileId,
+    );
   }
 
   @override
   Future<ModuleExport> exportData() async {
-    final logs = await _repository.allLogs();
+    final logs = await _repository.allLogs(profileId: _fixedProfileId);
     return ModuleExport({'logs': logs.map(_logToJson).toList()});
   }
 
@@ -165,6 +184,7 @@ class BloodPressureModule implements HabitModule {
       await logReading.execute(
         systolic: json['systolic'] as int,
         diastolic: json['diastolic'] as int,
+        profileId: _fixedProfileId,
         loggedAt: DateTime.parse(json['loggedAt'] as String),
         pulse: json['pulse'] as int?,
         notes: json['notes'] as String?,
@@ -173,11 +193,11 @@ class BloodPressureModule implements HabitModule {
   }
 
   @override
-  Future<void> wipeData() => _repository.wipeAll();
+  Future<void> wipeData() => _repository.wipeAll(profileId: _fixedProfileId);
 
   @override
   Future<WidgetSummaryData?> widgetSummary() async {
-    final logs = await _repository.allLogs();
+    final logs = await _repository.allLogs(profileId: _fixedProfileId);
     if (logs.isEmpty) return null;
     final last = logs.last;
     return WidgetSummaryData(

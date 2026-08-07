@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_award_helper.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/widget_refresh_helper.dart';
 import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
@@ -23,24 +24,30 @@ class PrayerController extends _$PrayerController {
   @override
   void build() {}
 
+  Future<String> _activeProfileId() =>
+      ref.read(activeProfileProvider.future).then((p) => p.id);
+
   /// Toggles a record's prayed status (FR-P-07 — one-tap toggle, not a
   /// multi-state cycle).
   Future<void> togglePrayed(
     String recordId, {
     required bool currentlyPrayed,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(prayerRepositoryProvider);
     final result = currentlyPrayed
-        ? await repository.unmarkPrayed(recordId)
-        : await repository.markPrayed(recordId);
+        ? await repository.unmarkPrayed(recordId, profileId: profileId)
+        : await repository.markPrayed(recordId, profileId: profileId);
     if (result case Failure(:final error)) {
       logException(error);
       return;
     }
-    await ref.read(achievementEngineProvider).evaluate('prayer');
+    await ref
+        .read(achievementEngineProvider)
+        .evaluate('prayer', profileId: profileId);
     await ref
         .read(questEngineProvider)
-        .evaluateModule('prayer', now: clock.now());
+        .evaluateModule('prayer', now: clock.now(), profileId: profileId);
     // Only the mark-prayed direction is a new action — un-marking is a
     // correction, not something to award. actionSourceId: recordId
     // additionally dedupes so a mark/unmark/mark cycle on the *same*
@@ -48,7 +55,12 @@ class PrayerController extends _$PrayerController {
     // finding) — the direction guard alone only stopped the unmark step
     // itself from awarding, not a later re-mark of the same record.
     if (!currentlyPrayed) {
-      await awardActionXp(ref, moduleId: 'prayer', actionSourceId: recordId);
+      await awardActionXp(
+        ref,
+        moduleId: 'prayer',
+        actionSourceId: recordId,
+        profileId: profileId,
+      );
     }
     final db = ref.read(databaseProvider);
     await refreshWidgetsForModule(db, 'prayer');
@@ -56,9 +68,10 @@ class PrayerController extends _$PrayerController {
 
   /// Applies the "−1" Qadha make-up control (FR-P-05).
   Future<void> markQadhaMakeup(PrayerName prayerName) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(prayerRepositoryProvider)
-        .markQadhaMakeup(prayerName);
+        .markQadhaMakeup(prayerName, profileId: profileId);
     if (result case Failure(:final error)) {
       logException(error);
       return;
@@ -69,9 +82,10 @@ class PrayerController extends _$PrayerController {
 
   /// Sets a Qadha counter directly (FR-P-04's onboarding/Settings entry).
   Future<void> setQadhaBalance(PrayerName prayerName, int count) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(prayerRepositoryProvider)
-        .setQadhaBalance(prayerName, count);
+        .setQadhaBalance(prayerName, count, profileId: profileId);
     if (result case Failure(:final error)) {
       logException(error);
       return;
@@ -82,9 +96,10 @@ class PrayerController extends _$PrayerController {
 
   /// Annotates a record with a free-text note, legal in any status.
   Future<void> updatePrayerNotes(String recordId, String? notes) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(prayerRepositoryProvider)
-        .updatePrayerNotes(recordId, notes);
+        .updatePrayerNotes(recordId, notes, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
@@ -107,8 +122,10 @@ class PrayerController extends _$PrayerController {
     bool? preReminderEnabled,
     int? preReminderOffsetMinutes,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(prayerRepositoryProvider);
     final result = await repository.updateSettings(
+      profileId: profileId,
       calculationMethod: calculationMethod,
       asrMethod: asrMethod,
       observesJumuah: observesJumuah,
@@ -134,10 +151,14 @@ class PrayerController extends _$PrayerController {
     // this method's own, which is accepted as the cost of avoiding the
     // dispose race above.
     ref.invalidate(resolvedPrayerLocationProvider);
-    final settings = await repository.getSettings();
+    final settings = await repository.getSettings(profileId: profileId);
     final locationResult = await resolveLocation(settings);
     if (locationResult case Success(:final value)) {
-      await repository.materializeRecords(clock.now(), value);
+      await repository.materializeRecords(
+        clock.now(),
+        value,
+        profileId: profileId,
+      );
     }
   }
 }

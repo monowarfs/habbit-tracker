@@ -2,6 +2,7 @@ import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/gamification/xp_award_listener.dart';
 import 'package:habit_tracker/core/gamification/xp_repository.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'xp_providers.g.dart';
@@ -31,5 +32,7 @@ XpAwardListener xpAwardListener(Ref ref) {
 /// The current total XP, live-updating.
 @riverpod
 Stream<int> totalXp(Ref ref) {
-  return ref.watch(xpRepositoryProvider).watchTotalXp();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref.watch(xpRepositoryProvider).watchTotalXp(profileId: profileId);
 }

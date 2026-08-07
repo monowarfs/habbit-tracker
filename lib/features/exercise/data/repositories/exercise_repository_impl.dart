@@ -17,25 +17,34 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<ExerciseLog>> watchLogsForDay(LocalDate day) {
+  Stream<List<ExerciseLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
-    return _watchLogsBetween(range.startUtc, range.endUtc);
+    return _watchLogsBetween(range.startUtc, range.endUtc, profileId);
   }
 
   @override
-  Stream<List<ExerciseLog>> watchLogsInRange(LocalDate start, LocalDate end) {
+  Stream<List<ExerciseLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
-    return _watchLogsBetween(startUtc, endUtc);
+    return _watchLogsBetween(startUtc, endUtc, profileId);
   }
 
   Stream<List<ExerciseLog>> _watchLogsBetween(
     DateTime startUtc,
     DateTime endUtc,
+    String profileId,
   ) {
     final query = _db.select(_db.exerciseLogsTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.loggedAt.isBiggerOrEqualValue(startUtc.millisecondsSinceEpoch) &
             t.loggedAt.isSmallerThanValue(endUtc.millisecondsSinceEpoch),
@@ -47,17 +56,22 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   }
 
   @override
-  Future<ExerciseLog?> logById(String id) async {
-    final row = await (_db.select(
-      _db.exerciseLogsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<ExerciseLog?> logById(String id, {required String profileId}) async {
+    final row =
+        await (_db.select(_db.exerciseLogsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _logFromRow(row);
   }
 
   @override
-  Future<List<ExerciseLog>> allLogs() async {
+  Future<List<ExerciseLog>> allLogs({required String profileId}) async {
     final query = _db.select(_db.exerciseLogsTable)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.loggedAt)]);
     final rows = await query.get();
     return rows.map(_logFromRow).toList(growable: false);
@@ -68,6 +82,7 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
     required String exerciseType,
     required int durationMinutes,
     required DateTime loggedAt,
+    required String profileId,
     int? calories,
     String? notes,
   }) async {
@@ -86,6 +101,7 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
               notes: Value(notes),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -104,12 +120,18 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   }
 
   @override
-  Future<Result<void>> deleteLog(String id) async {
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
           await (_db.update(_db.exerciseLogsTable)..where(
-                (t) => t.id.equals(id) & t.deletedAt.isNull(),
+                (t) =>
+                    t.id.equals(id) &
+                    t.profileId.equals(profileId) &
+                    t.deletedAt.isNull(),
               ))
               .write(
                 ExerciseLogsTableCompanion(
@@ -127,8 +149,10 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.exerciseLogsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.exerciseLogsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   ExerciseLog _logFromRow(ExerciseLogRow row) => ExerciseLog(

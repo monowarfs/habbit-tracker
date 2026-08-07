@@ -21,6 +21,7 @@ void main() {
         current: 1,
         target: 1,
         now: DateTime.utc(2026, 6),
+        profileId: 'system',
       );
 
       final result = await buildExport(
@@ -28,6 +29,7 @@ void main() {
         settingsRepository: settingsRepository,
         achievementRepository: achievementRepository,
         appVersion: '1.0.0',
+        profileId: 'system',
       );
 
       expect(

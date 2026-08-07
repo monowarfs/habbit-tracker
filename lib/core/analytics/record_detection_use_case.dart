@@ -36,11 +36,13 @@ class RecordDetectionUseCase {
     required String moduleId,
     required String recordType,
     required int currentValue,
+    required String profileId,
   }) async {
     final broken = await repo.checkAndUpdate(
       moduleId: moduleId,
       recordType: recordType,
       newValue: currentValue,
+      profileId: profileId,
     );
     if (broken) {
       return RecordBrokenEvent(

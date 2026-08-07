@@ -57,7 +57,7 @@ void main() {
           currentWeekQuestsProvider.overrideWith(
             (ref) => ref
                 .watch(questRepositoryProvider)
-                .watchCurrentWeek(weekKey: '2026-W32'),
+                .watchCurrentWeek(weekKey: '2026-W32', profileId: 'system'),
           ),
           habitModulesProvider.overrideWith((ref) => [_FakeModule('water')]),
         ],
@@ -93,12 +93,14 @@ void main() {
         _bossDef('boss_water_6_of_7'),
         weekKey: '2026-W32',
         now: now,
+        profileId: 'system',
       );
       await repository.updateProgress(
         questKey: 'boss_water_6_of_7',
         weekKey: '2026-W32',
         current: 4,
         now: now,
+        profileId: 'system',
       );
 
       await pumpCard(tester);
@@ -130,12 +132,14 @@ void main() {
       _bossDef('boss_water_6_of_7'),
       weekKey: '2026-W32',
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'boss_water_6_of_7',
       weekKey: '2026-W32',
       current: 6,
       now: now,
+      profileId: 'system',
     );
 
     await pumpCard(tester);
@@ -154,14 +158,21 @@ void main() {
       _bossDef('boss_water_6_of_7'),
       weekKey: '2026-W32',
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'boss_water_6_of_7',
       weekKey: '2026-W32',
       current: 6,
       now: now,
+      profileId: 'system',
     );
-    await repository.claimReward('boss_water_6_of_7', '2026-W32', now: now);
+    await repository.claimReward(
+      'boss_water_6_of_7',
+      '2026-W32',
+      now: now,
+      profileId: 'system',
+    );
 
     await pumpCard(tester);
 
@@ -178,6 +189,7 @@ void main() {
       await repository.ensureCurrentWeekQuests(
         definitions: [_bossDef('water_goal_5_of_7', target: 5)],
         now: now,
+        profileId: 'system',
       );
 
       await pumpCard(tester);

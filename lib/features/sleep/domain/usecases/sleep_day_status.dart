@@ -32,9 +32,10 @@ Map<LocalDate, ModuleDayStatus> calculateSleepDayStatus({
 /// The current consecutive-nights-logged streak, ending at [today].
 Future<int> currentSleepStreak(
   SleepRepository repository,
-  LocalDate today,
-) async {
-  final logs = await repository.allLogs();
+  LocalDate today, {
+  required String profileId,
+}) async {
+  final logs = await repository.allLogs(profileId: profileId);
   if (logs.isEmpty) return 0;
   final earliest = logs
       .map((l) => localDayKey(l.wakeTime))

@@ -69,6 +69,7 @@ void main() {
   ) async {
     final item = shopCatalog.first;
     await XpRepository(db).awardXp(
+      profileId: 'system',
       moduleId: 'water',
       eventType: 'action',
       amount: item.costXp,

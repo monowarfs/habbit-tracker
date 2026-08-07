@@ -5,6 +5,7 @@ import 'package:habit_tracker/core/analytics/notification_effectiveness_use_case
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'effectiveness_provider.g.dart';
@@ -30,7 +31,12 @@ Future<Map<String, EffectivenessResult>> notificationEffectiveness(
 
   final db = ref.watch(databaseProvider);
   final repository = NotificationLedgerRepository(db);
-  final rows = await repository.firedRows(windowDays: 90, now: clock.now());
+  final profile = await ref.watch(activeProfileProvider.future);
+  final rows = await repository.firedRows(
+    windowDays: 90,
+    now: clock.now(),
+    profileId: profile.id,
+  );
 
   final byModule = <String, List<NotificationLedgerRow>>{};
   for (final row in rows) {

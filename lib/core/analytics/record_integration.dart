@@ -16,10 +16,12 @@ Future<RecordBrokenEvent?> checkRecordsAfterStreak({
   required RecordDetectionUseCase recordDetectionUseCase,
   required String moduleId,
   required int currentStreak,
+  required String profileId,
 }) {
   return recordDetectionUseCase.checkRecord(
     moduleId: moduleId,
     recordType: 'longest_streak',
     currentValue: currentStreak,
+    profileId: profileId,
   );
 }

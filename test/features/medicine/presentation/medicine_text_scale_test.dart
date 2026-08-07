@@ -48,7 +48,11 @@ void main() {
     tester,
   ) async {
     final repo = MedicineRepositoryImpl(db);
-    await repo.createMedicine(name: 'Amoxicillin', stockEnabled: false);
+    await repo.createMedicine(
+      name: 'Amoxicillin',
+      stockEnabled: false,
+      profileId: 'system',
+    );
 
     // Tall surface so dense dose-timeline rows stay within the sliver
     // cache extent at 2x text.
@@ -68,12 +72,14 @@ void main() {
       stockEnabled: true,
       stockCount: 30,
       stockThreshold: 5,
+      profileId: 'system',
     );
     final medicineId = (created as Success<Medicine>).value.id;
     await repo.createSchedule(
       medicineId: medicineId,
       rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
       startDate: const LocalDate(2026, 6, 1),
+      profileId: 'system',
     );
 
     tester.view.physicalSize = const Size(400, 2400);

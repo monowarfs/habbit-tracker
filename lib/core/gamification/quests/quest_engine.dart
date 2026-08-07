@@ -39,16 +39,25 @@ class QuestEngine {
   /// Generates the current week's quests if they don't already exist.
   /// Safe to call repeatedly — [QuestRepository.ensureCurrentWeekQuests]
   /// is a no-op for quests that already have a row.
-  Future<void> generateWeek({required DateTime now}) async {
+  Future<void> generateWeek({
+    required DateTime now,
+    required String profileId,
+  }) async {
     final weekRange = _weekRangeFor(now);
     await repository.ensureCurrentWeekQuests(
-      definitions: _catalog(weekRange),
+      definitions: _catalog(weekRange, profileId),
       now: now,
+      profileId: profileId,
     );
     final weekKey = weekKeyForDate(localDayKey(now));
     final bossDef = _bossDefinition(weekKey, weekRange);
     if (bossDef != null) {
-      await repository.ensureBossQuest(bossDef, weekKey: weekKey, now: now);
+      await repository.ensureBossQuest(
+        bossDef,
+        weekKey: weekKey,
+        now: now,
+        profileId: profileId,
+      );
     }
   }
 
@@ -56,12 +65,17 @@ class QuestEngine {
   /// the week's quests first if this is the first write since Monday.
   /// Includes the week's boss quest when [moduleId] is this week's
   /// spotlighted boss module.
-  Future<void> evaluateModule(String moduleId, {required DateTime now}) async {
-    await generateWeek(now: now);
+  Future<void> evaluateModule(
+    String moduleId, {
+    required DateTime now,
+    required String profileId,
+  }) async {
+    await generateWeek(now: now, profileId: profileId);
     final weekKey = weekKeyForDate(localDayKey(now));
     final weekRange = _weekRangeFor(now);
     final defs = _catalog(
       weekRange,
+      profileId,
     ).where((d) => d.moduleId == moduleId).toList();
     final bossDef = _bossDefinition(weekKey, weekRange);
     if (bossDef != null && bossDef.moduleId == moduleId) {
@@ -74,6 +88,7 @@ class QuestEngine {
         weekKey: weekKey,
         current: progress.clamp(0, def.target),
         now: now,
+        profileId: profileId,
       );
     }
   }
@@ -94,14 +109,19 @@ class QuestEngine {
     return DateRange(start: monday, end: monday.addDays(6));
   }
 
-  List<QuestDefinition> _catalog(DateRange weekRange) {
+  List<QuestDefinition> _catalog(DateRange weekRange, String profileId) {
     final water = _moduleById('water');
     final medicine = _moduleById('medicine');
     final prayer = _moduleById('prayer');
     return [
       if (water != null) ...waterQuestDefinitions(water, weekRange),
       if (medicine != null)
-        ...medicineQuestDefinitions(medicine, medicineRepository, weekRange),
+        ...medicineQuestDefinitions(
+          medicine,
+          medicineRepository,
+          weekRange,
+          profileId: profileId,
+        ),
       if (prayer != null) ...prayerQuestDefinitions(prayer, weekRange),
     ];
   }

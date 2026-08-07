@@ -41,6 +41,7 @@ void main() {
     body: 'body',
     scheduledFor: DateTime.utc(2026, 6, 1, 8),
     deepLinkRoute: '/water',
+    profileId: 'system',
   );
 
   test('plays the done earcon on a Done action', () async {

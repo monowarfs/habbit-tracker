@@ -14,6 +14,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/premium/premium_status.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -107,6 +108,7 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
     try {
       final db = ref.read(databaseProvider);
       final packageInfo = await PackageInfo.fromPlatform();
+      final profileId = (await ref.read(activeProfileProvider.future)).id;
       final result = await performBackup(
         modules: ref.read(habitModulesProvider),
         settingsRepository: ref.read(settingsRepositoryProvider),
@@ -114,6 +116,7 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
         appVersion: packageInfo.version,
         driveTarget: _driveTarget,
         backupRepository: DriveBackupRepository(db),
+        profileId: profileId,
       );
       if (!mounted) return;
       if (result case Failure(:final error)) {
@@ -146,6 +149,7 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
     try {
       final db = ref.read(databaseProvider);
       final packageInfo = await PackageInfo.fromPlatform();
+      final profileId = (await ref.read(activeProfileProvider.future)).id;
       final result = await applyDriveRestore(
         preview: validated,
         modules: ref.read(habitModulesProvider),
@@ -153,6 +157,7 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
         settingsRepository: ref.read(settingsRepositoryProvider),
         achievementRepository: AchievementRepository(db),
         appVersion: packageInfo.version,
+        profileId: profileId,
       );
       if (!mounted) return;
       if (result case Failure(:final error)) {

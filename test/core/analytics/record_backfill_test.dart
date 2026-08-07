@@ -8,6 +8,8 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
+const _profileId = 'system';
+
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id, this._byDay);
 
@@ -55,9 +57,15 @@ void main() {
         ),
     });
 
-    await backfillPersonalRecords(modules: [module], repo: repo, range: range);
+    await backfillPersonalRecords(
+      profileId: _profileId,
+      modules: [module],
+      repo: repo,
+      range: range,
+    );
 
     final record = await repo.getRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
     );
@@ -69,6 +77,7 @@ void main() {
     'smaller (e.g. the persisted record predates a broken streak)',
     () async {
       await repo.setRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         value: 99,
@@ -81,12 +90,14 @@ void main() {
       });
 
       await backfillPersonalRecords(
+        profileId: _profileId,
         modules: [module],
         repo: repo,
         range: range,
       );
 
       final record = await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
       );
@@ -100,6 +111,7 @@ void main() {
     ' can leave behind before this ever ran',
     () async {
       await repo.setRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         value: 3,
@@ -113,12 +125,14 @@ void main() {
       });
 
       await backfillPersonalRecords(
+        profileId: _profileId,
         modules: [module],
         repo: repo,
         range: range,
       );
 
       final record = await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
       );
@@ -134,10 +148,19 @@ void main() {
       ),
     });
 
-    await backfillPersonalRecords(modules: [module], repo: repo, range: range);
+    await backfillPersonalRecords(
+      profileId: _profileId,
+      modules: [module],
+      repo: repo,
+      range: range,
+    );
 
     expect(
-      await repo.getRecord(moduleId: 'medicine', recordType: 'longest_streak'),
+      await repo.getRecord(
+        profileId: _profileId,
+        moduleId: 'medicine',
+        recordType: 'longest_streak',
+      ),
       isNull,
     );
   });
@@ -158,6 +181,7 @@ void main() {
     });
 
     await backfillPersonalRecords(
+      profileId: _profileId,
       modules: [water, prayer],
       repo: repo,
       range: range,
@@ -165,6 +189,7 @@ void main() {
 
     expect(
       (await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
       ))!.recordValue,
@@ -172,6 +197,7 @@ void main() {
     );
     expect(
       (await repo.getRecord(
+        profileId: _profileId,
         moduleId: 'prayer',
         recordType: 'longest_streak',
       ))!.recordValue,

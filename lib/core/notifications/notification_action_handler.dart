@@ -25,18 +25,27 @@ Future<void> handleNotificationAction({
   AppDatabase? database,
   AudioCueService? audioCueService,
 }) async {
+  // Runs from the foreground or a fresh background isolate, no Ref — same
+  // fixed-profile stopgap as `WaterModule`'s own non-Ref methods
+  // (`notification_planner.dart`'s `planAndApplyNotifications` doc comment).
+  const profileId = 'system';
   final db = database ?? AppDatabase();
   final audioCue = audioCueService ?? AudioCueService.instance;
   try {
     final ledger = NotificationLedgerRepository(db);
-    final row = await ledger.rowById(ledgerId);
+    final row = await ledger.rowById(ledgerId, profileId: profileId);
     if (row == null) return;
     final now = clock.now();
     NotificationActionType? actionTaken;
 
     switch (actionId) {
       case kNotificationActionDone:
-        await ledger.markActioned(ledgerId, action: 'done', actionAt: now);
+        await ledger.markActioned(
+          ledgerId,
+          action: 'done',
+          actionAt: now,
+          profileId: profileId,
+        );
         await _dispatch(
           db,
           moduleId,
@@ -45,7 +54,12 @@ Future<void> handleNotificationAction({
         );
         actionTaken = NotificationActionType.done;
       case kNotificationActionSkip:
-        await ledger.markActioned(ledgerId, action: 'skip', actionAt: now);
+        await ledger.markActioned(
+          ledgerId,
+          action: 'skip',
+          actionAt: now,
+          profileId: profileId,
+        );
         await _dispatch(
           db,
           moduleId,
@@ -63,7 +77,11 @@ Future<void> handleNotificationAction({
         actionTaken = NotificationActionType.snooze;
         if (row.snoozeCount < 3) {
           final rescheduled = now.add(const Duration(minutes: 10));
-          await ledger.recordSnooze(ledgerId, rescheduledFor: rescheduled);
+          await ledger.recordSnooze(
+            ledgerId,
+            rescheduledFor: rescheduled,
+            profileId: profileId,
+          );
           await NotificationService.instance.schedule(
             PendingNotification(
               id: ledgerId,

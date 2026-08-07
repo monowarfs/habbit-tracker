@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_repository.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Suggests enabling a module the user hasn't enabled yet.
 class ModuleSuggestionCard extends ConsumerStatefulWidget {
@@ -26,14 +27,15 @@ class _ModuleSuggestionCardState extends ConsumerState<ModuleSuggestionCard> {
   }
 
   Future<void> _checkSuggestion() async {
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     final db = ref.read(databaseProvider);
     final repo = ModuleSettingsRepository(db);
-    final enabled = await repo.enabledModuleIds();
+    final enabled = await repo.enabledModuleIds(profileId: profileId);
 
     // Suggest the first non-enabled, non-dismissed module.
     for (final moduleId in ['medicine', 'prayer']) {
       if (!enabled.contains(moduleId) &&
-          !await repo.isSuggestionDismissed(moduleId)) {
+          !await repo.isSuggestionDismissed(moduleId, profileId: profileId)) {
         if (mounted) setState(() => _suggestedModule = moduleId);
         return;
       }
@@ -94,16 +96,22 @@ class _ModuleSuggestionCardState extends ConsumerState<ModuleSuggestionCard> {
   }
 
   Future<void> _enableModule() async {
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     final db = ref.read(databaseProvider);
     final repo = ModuleSettingsRepository(db);
-    await repo.setEnabled(_suggestedModule!, enabled: true);
+    await repo.setEnabled(
+      _suggestedModule!,
+      enabled: true,
+      profileId: profileId,
+    );
     setState(() => _suggestedModule = null);
   }
 
   Future<void> _dismiss() async {
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     final db = ref.read(databaseProvider);
     final repo = ModuleSettingsRepository(db);
-    await repo.dismissSuggestion(_suggestedModule!);
+    await repo.dismissSuggestion(_suggestedModule!, profileId: profileId);
     setState(() => _suggestedModule = null);
   }
 }

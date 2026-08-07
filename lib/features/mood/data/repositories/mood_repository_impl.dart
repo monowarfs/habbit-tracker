@@ -17,25 +17,34 @@ class MoodRepositoryImpl implements MoodRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<MoodLog>> watchLogsForDay(LocalDate day) {
+  Stream<List<MoodLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
-    return _watchLogsBetween(range.startUtc, range.endUtc);
+    return _watchLogsBetween(range.startUtc, range.endUtc, profileId);
   }
 
   @override
-  Stream<List<MoodLog>> watchLogsInRange(LocalDate start, LocalDate end) {
+  Stream<List<MoodLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
-    return _watchLogsBetween(startUtc, endUtc);
+    return _watchLogsBetween(startUtc, endUtc, profileId);
   }
 
   Stream<List<MoodLog>> _watchLogsBetween(
     DateTime startUtc,
     DateTime endUtc,
+    String profileId,
   ) {
     final query = _db.select(_db.moodLogsTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.loggedAt.isBiggerOrEqualValue(startUtc.millisecondsSinceEpoch) &
             t.loggedAt.isSmallerThanValue(endUtc.millisecondsSinceEpoch),
@@ -47,17 +56,22 @@ class MoodRepositoryImpl implements MoodRepository {
   }
 
   @override
-  Future<MoodLog?> logById(String id) async {
-    final row = await (_db.select(
-      _db.moodLogsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<MoodLog?> logById(String id, {required String profileId}) async {
+    final row =
+        await (_db.select(_db.moodLogsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _logFromRow(row);
   }
 
   @override
-  Future<List<MoodLog>> allLogs() async {
+  Future<List<MoodLog>> allLogs({required String profileId}) async {
     final query = _db.select(_db.moodLogsTable)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.loggedAt)]);
     final rows = await query.get();
     return rows.map(_logFromRow).toList(growable: false);
@@ -67,6 +81,7 @@ class MoodRepositoryImpl implements MoodRepository {
   Future<Result<MoodLog>> addLog({
     required int moodValue,
     required DateTime loggedAt,
+    required String profileId,
     String? notes,
   }) async {
     try {
@@ -82,6 +97,7 @@ class MoodRepositoryImpl implements MoodRepository {
               notes: Value(notes),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -98,12 +114,15 @@ class MoodRepositoryImpl implements MoodRepository {
   }
 
   @override
-  Future<Result<void>> deleteLog(String id) async {
+  Future<Result<void>> deleteLog(String id, {required String profileId}) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
           await (_db.update(_db.moodLogsTable)..where(
-                (t) => t.id.equals(id) & t.deletedAt.isNull(),
+                (t) =>
+                    t.id.equals(id) &
+                    t.profileId.equals(profileId) &
+                    t.deletedAt.isNull(),
               ))
               .write(
                 MoodLogsTableCompanion(
@@ -121,8 +140,10 @@ class MoodRepositoryImpl implements MoodRepository {
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.moodLogsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.moodLogsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   MoodLog _logFromRow(MoodLogRow row) => MoodLog(

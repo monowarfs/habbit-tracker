@@ -26,6 +26,7 @@ void main() {
     await repository.addLog(
       bedTime: DateTime.utc(2026, 6, 14, 22),
       wakeTime: DateTime.utc(2026, 6, 15, 6),
+      profileId: 'system',
     );
 
     final status = await module.dayStatus(
@@ -60,14 +61,15 @@ void main() {
       bedTime: DateTime.utc(2026, 6, 14, 22),
       wakeTime: DateTime.utc(2026, 6, 15, 6),
       quality: 4,
+      profileId: 'system',
     );
     final export = await module.exportData();
 
-    await repository.wipeAll();
-    expect(await repository.allLogs(), isEmpty);
+    await repository.wipeAll(profileId: 'system');
+    expect(await repository.allLogs(profileId: 'system'), isEmpty);
 
     await module.importData(export);
-    final logs = await repository.allLogs();
+    final logs = await repository.allLogs(profileId: 'system');
     expect(logs, hasLength(1));
     expect(logs.first.quality, 4);
   });

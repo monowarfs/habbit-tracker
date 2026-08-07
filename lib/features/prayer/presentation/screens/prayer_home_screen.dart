@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/illustrations/crescent_mat_painter.dart';
@@ -116,8 +117,11 @@ Future<void> _togglePrayedAndCelebrate(
   String recordId, {
   required bool currentlyPrayed,
 }) async {
+  final profileId = (await ref.read(activeProfileProvider.future)).id;
   final repository = ref.read(achievementRepositoryProvider);
-  final before = await repository.watchByModule('prayer').first;
+  final before = await repository
+      .watchByModule('prayer', profileId: profileId)
+      .first;
   final unlockedBefore = before
       .where((r) => r.unlockedAt != null)
       .map((r) => r.key)
@@ -133,7 +137,9 @@ Future<void> _togglePrayedAndCelebrate(
     showXpGainToast(context, amount: XpValues.prayerAction);
   }
 
-  final after = await repository.watchByModule('prayer').first;
+  final after = await repository
+      .watchByModule('prayer', profileId: profileId)
+      .first;
   final newlyUnlocked = after.where(
     (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
   );

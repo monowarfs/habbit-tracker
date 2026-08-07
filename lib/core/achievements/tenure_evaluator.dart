@@ -26,6 +26,7 @@ class TenureMilestone {
 Future<void> evaluateTenureMilestones({
   required DateTime installDate,
   required AchievementRepository repository,
+  required String profileId,
   DateTime? now,
 }) async {
   final effectiveNow = now ?? clock.now();
@@ -35,7 +36,10 @@ Future<void> evaluateTenureMilestones({
     if (daysSinceInstall < milestone.days) continue;
 
     // Check if already evaluated (even if not unlocked).
-    final existing = await repository.byKey(milestone.key);
+    final existing = await repository.byKey(
+      milestone.key,
+      profileId: profileId,
+    );
     if (existing != null) continue;
 
     // Award the badge immediately (current == target).
@@ -45,6 +49,7 @@ Future<void> evaluateTenureMilestones({
       current: milestone.days,
       target: milestone.days,
       now: effectiveNow,
+      profileId: profileId,
     );
   }
 }

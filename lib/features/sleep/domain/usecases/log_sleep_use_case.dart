@@ -16,6 +16,7 @@ class LogSleepUseCase {
   Future<Result<SleepLog>> execute({
     required DateTime bedTime,
     required DateTime wakeTime,
+    required String profileId,
     int? quality,
     String? notes,
   }) async {
@@ -38,6 +39,7 @@ class LogSleepUseCase {
     return _repository.addLog(
       bedTime: bedTime,
       wakeTime: wakeTime,
+      profileId: profileId,
       quality: quality,
       notes: notes,
     );

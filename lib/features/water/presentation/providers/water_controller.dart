@@ -87,16 +87,18 @@ class WaterController extends _$WaterController {
       logException(error);
       return;
     }
-    await ref.read(achievementEngineProvider).evaluate('water');
+    await ref
+        .read(achievementEngineProvider)
+        .evaluate('water', profileId: profileId);
     await ref
         .read(questEngineProvider)
-        .evaluateModule('water', now: clock.now());
+        .evaluateModule('water', now: clock.now(), profileId: profileId);
     // No actionSourceId: unlike medicine's dose id / prayer's record id,
     // a water entry gets a fresh id every log, so there's no stable id
     // to dedupe a log/delete/log cycle against — closing that needs real
     // XP reversal on delete, not dedup (known, accepted limitation for
     // this size of change, PR #79 review finding).
-    await awardActionXp(ref, moduleId: 'water');
+    await awardActionXp(ref, moduleId: 'water', profileId: profileId);
   }
 
   /// Updates an existing entry (FR-W-09). See [unsetWaterNotes] for

@@ -37,6 +37,7 @@ void main() {
       scheduledFor: scheduledFor,
       deepLinkRoute: '/$moduleId',
       originalScheduledFor: originalScheduledFor,
+      profileId: 'system',
     );
     await ledgerRepo.markActioned(
       id,
@@ -44,11 +45,12 @@ void main() {
       actionAt: (originalScheduledFor ?? scheduledFor).add(
         Duration(minutes: offsetMinutes),
       ),
+      profileId: 'system',
     );
   }
 
   test('empty ledger returns empty list', () async {
-    expect(await useCase.execute(now: now), isEmpty);
+    expect(await useCase.execute(now: now, profileId: 'system'), isEmpty);
   });
 
   test('below minSamples is excluded', () async {
@@ -61,7 +63,7 @@ void main() {
         offsetMinutes: 15,
       );
     }
-    expect(await useCase.execute(now: now), isEmpty);
+    expect(await useCase.execute(now: now, profileId: 'system'), isEmpty);
   });
 
   test('consistent offset with odd sample count -> correct median', () async {
@@ -74,7 +76,7 @@ void main() {
         offsetMinutes: 30,
       );
     }
-    final result = await useCase.execute(now: now);
+    final result = await useCase.execute(now: now, profileId: 'system');
     expect(result, hasLength(1));
     expect(result.single.moduleId, 'water');
     expect(result.single.sourceType, 'water_reminder');
@@ -96,7 +98,7 @@ void main() {
           offsetMinutes: offsets[i],
         );
       }
-      final result = await useCase.execute(now: now);
+      final result = await useCase.execute(now: now, profileId: 'system');
       expect(result.single.offsetMinutes, 15);
     },
   );
@@ -111,7 +113,7 @@ void main() {
         offsetMinutes: 0,
       );
     }
-    final result = await useCase.execute(now: now);
+    final result = await useCase.execute(now: now, profileId: 'system');
     expect(result.single.offsetMinutes, 0);
   });
 
@@ -125,7 +127,7 @@ void main() {
         offsetMinutes: 500,
       );
     }
-    final result = await useCase.execute(now: now);
+    final result = await useCase.execute(now: now, profileId: 'system');
     expect(result.single.offsetMinutes, 120);
   });
 
@@ -139,7 +141,7 @@ void main() {
         offsetMinutes: 5,
       );
     }
-    final result = await useCase.execute(now: now);
+    final result = await useCase.execute(now: now, profileId: 'system');
     expect(result.single.confidence, 'high');
   });
 
@@ -162,7 +164,7 @@ void main() {
         offsetMinutes: -20,
       );
     }
-    final result = await useCase.execute(now: now);
+    final result = await useCase.execute(now: now, profileId: 'system');
     expect(result, hasLength(2));
     final water = result.firstWhere((r) => r.moduleId == 'water');
     final medicine = result.firstWhere((r) => r.moduleId == 'medicine');
@@ -190,7 +192,7 @@ void main() {
           offsetMinutes: 30,
         );
       }
-      final result = await useCase.execute(now: now);
+      final result = await useCase.execute(now: now, profileId: 'system');
       expect(result.single.offsetMinutes, 30);
     },
   );

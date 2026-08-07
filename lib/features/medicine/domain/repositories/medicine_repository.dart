@@ -7,18 +7,27 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_e
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 
 /// Reads and mutates the Medicine module's data.
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md` Task 4) — callers pass whatever
+/// `activeProfileProvider` currently resolves to.
 abstract class MedicineRepository {
   /// Streams every (non-deleted) medicine, optionally including archived
   /// ones (FR-M-10).
-  Stream<List<Medicine>> watchMedicines({required bool includeArchived});
+  Stream<List<Medicine>> watchMedicines({
+    required bool includeArchived,
+    required String profileId,
+  });
 
   /// Looks up a single medicine by id, or `null` if missing/deleted.
-  Future<Medicine?> medicineById(String id);
+  Future<Medicine?> medicineById(String id, {required String profileId});
 
   /// Creates a medicine (FR-M-01).
   Future<Result<Medicine>> createMedicine({
     required String name,
     required bool stockEnabled,
+    required String profileId,
     String? dosageNote,
     int? stockCount,
     int? stockThreshold,
@@ -29,6 +38,7 @@ abstract class MedicineRepository {
   /// Edits a medicine's own fields (not its schedules).
   Future<Result<void>> updateMedicine(
     String id, {
+    required String profileId,
     String? name,
     String? dosageNote,
     bool? stockEnabled,
@@ -40,13 +50,16 @@ abstract class MedicineRepository {
 
   /// Soft-archives a medicine (FR-M-10) — stops generating doses/
   /// notifications, retains history.
-  Future<Result<void>> archiveMedicine(String id);
+  Future<Result<void>> archiveMedicine(String id, {required String profileId});
 
   /// Restores a previously archived medicine.
-  Future<Result<void>> restoreMedicine(String id);
+  Future<Result<void>> restoreMedicine(String id, {required String profileId});
 
   /// Streams a medicine's (non-deleted) schedules.
-  Stream<List<MedicineSchedule>> watchSchedules(String medicineId);
+  Stream<List<MedicineSchedule>> watchSchedules(
+    String medicineId, {
+    required String profileId,
+  });
 
   /// Creates a schedule for [medicineId] (D-02: a medicine may have
   /// several concurrent schedules).
@@ -54,6 +67,7 @@ abstract class MedicineRepository {
     required String medicineId,
     required RepeatRule rule,
     required LocalDate startDate,
+    required String profileId,
     LocalDate? endDate,
     int graceWindowMinutes = 30,
   });
@@ -64,6 +78,7 @@ abstract class MedicineRepository {
   /// skipped doses are never touched).
   Future<Result<void>> updateSchedule(
     String id, {
+    required String profileId,
     RepeatRule? rule,
     LocalDate? startDate,
     LocalDate? endDate,
@@ -71,76 +86,106 @@ abstract class MedicineRepository {
   });
 
   /// Manually ends a schedule as of [endDate] (a user-initiated stop).
-  Future<Result<void>> endSchedule(String id, {required LocalDate endDate});
+  Future<Result<void>> endSchedule(
+    String id, {
+    required LocalDate endDate,
+    required String profileId,
+  });
 
   /// Tops up `medicine_doses` for the D-13 30-day rolling window ahead of
   /// [now]. Idempotent — safe to call from every re-planning trigger.
-  Future<void> materializeDoses(DateTime now);
+  Future<void> materializeDoses(DateTime now, {required String profileId});
 
   /// Streams every (non-deleted) dose scheduled on [day], across every
   /// medicine — the flattened cross-schedule timeline (FR-M-02).
-  Stream<List<MedicineDose>> watchDosesForDay(LocalDate day);
+  Stream<List<MedicineDose>> watchDosesForDay(
+    LocalDate day, {
+    required String profileId,
+  });
 
   /// Every (non-deleted) dose with `scheduledFor` in `[start, end]`
   /// inclusive — for previews/adherence.
-  Future<List<MedicineDose>> dosesInRange(LocalDate start, LocalDate end);
+  Future<List<MedicineDose>> dosesInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  });
 
   /// Marks a dose done (FR-M-07). [fromOtherSource]: true skips stock
   /// decrement (FR-M-05's out-of-stock allowance).
   Future<Result<void>> markDoseDone(
     String doseId, {
     required bool fromOtherSource,
+    required String profileId,
   });
 
   /// Marks a dose explicitly skipped (FR-M-07) — never decrements stock,
   /// never counts as missed.
-  Future<Result<void>> markDoseSkipped(String doseId);
+  Future<Result<void>> markDoseSkipped(
+    String doseId, {
+    required String profileId,
+  });
 
   /// Un-marks a done dose, reversing its stock effect exactly.
-  Future<Result<void>> undoDose(String doseId);
+  Future<Result<void>> undoDose(String doseId, {required String profileId});
 
   /// Annotates a dose with a free-text note, independent of its status
   /// (before, at, or after marking done/skipped) — never bumps
   /// `statusChangedAt` since editing a note isn't a status change.
-  Future<Result<void>> updateDoseNotes(String doseId, String? notes);
+  Future<Result<void>> updateDoseNotes(
+    String doseId,
+    String? notes, {
+    required String profileId,
+  });
 
   /// Manually adds stock (a refill), recording a `manual_refill` event.
   /// Clears `lowStockNotifiedAt` once stock rises back above threshold.
-  Future<Result<void>> refillStock(String medicineId, int amount);
+  Future<Result<void>> refillStock(
+    String medicineId,
+    int amount, {
+    required String profileId,
+  });
 
   /// Medicines currently in a "just crossed below threshold, not yet
   /// cleared" state — the source `MedicineModule.pendingNotifications()`
   /// reads for FR-M-04's one-shot low-stock alert.
-  Future<List<Medicine>> medicinesNeedingLowStockAlert();
+  Future<List<Medicine>> medicinesNeedingLowStockAlert({
+    required String profileId,
+  });
 
   /// Every (non-deleted) medicine, including archived — export groundwork
   /// (`strategies/backup-import-export.md`).
-  Future<List<Medicine>> allMedicines();
+  Future<List<Medicine>> allMedicines({required String profileId});
 
   /// Every (non-deleted) schedule across every medicine — export
   /// groundwork.
-  Future<List<MedicineSchedule>> allSchedules();
+  Future<List<MedicineSchedule>> allSchedules({required String profileId});
 
   /// Every (non-deleted) dose across every medicine, unfiltered by date —
   /// export groundwork.
-  Future<List<MedicineDose>> allDoses();
+  Future<List<MedicineDose>> allDoses({required String profileId});
 
   /// Every (non-deleted) stock event across every medicine — export
   /// groundwork.
-  Future<List<MedicineStockEvent>> allStockEvents();
+  Future<List<MedicineStockEvent>> allStockEvents({
+    required String profileId,
+  });
 
   /// Inserts [dose] exactly as given, with a freshly generated id — used
   /// by import to restore historical doses without going through
   /// `materializeDoses`'s gap-filling logic (which only ever creates
   /// `upcoming` doses). Returns the new id, so the caller can remap
   /// `MedicineStockEvent.doseId` references.
-  Future<String> restoreDose(MedicineDose dose);
+  Future<String> restoreDose(MedicineDose dose, {required String profileId});
 
   /// Inserts [event] exactly as given, with a freshly generated id —
   /// import's restore counterpart to [restoreDose].
-  Future<void> restoreStockEvent(MedicineStockEvent event);
+  Future<void> restoreStockEvent(
+    MedicineStockEvent event, {
+    required String profileId,
+  });
 
   /// Deletes every row this module owns — the wipe half of import's
   /// replace semantics (`HabitModule.wipeData()`).
-  Future<void> wipeAll();
+  Future<void> wipeAll({required String profileId});
 }

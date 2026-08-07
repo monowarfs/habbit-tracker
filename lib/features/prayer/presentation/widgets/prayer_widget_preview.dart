@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/effective_prayer_status.dart';
@@ -40,12 +41,17 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
 
   Future<void> _update() async {
     final repository = ref.read(prayerRepositoryProvider);
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     final settings = await ref.read(prayerSettingsProvider.future);
     final location = await ref.read(resolvedPrayerLocationProvider.future);
     if (location == null) return;
     final now = clock.now();
     final today = localDayKey(now);
-    final records = await repository.recordsInRange(today, today);
+    final records = await repository.recordsInRange(
+      today,
+      today,
+      profileId: profileId,
+    );
     records.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     PrayerRecord? firstPending;
     for (final record in records) {
@@ -68,7 +74,11 @@ class _PrayerWidgetPreviewState extends ConsumerState<PrayerWidgetPreview> {
     // Midnight rollover: if none pending today, look at tomorrow.
     if (firstPending == null) {
       final tomorrow = today.addDays(1);
-      final recordsTomorrow = await repository.recordsInRange(today, tomorrow);
+      final recordsTomorrow = await repository.recordsInRange(
+        today,
+        tomorrow,
+        profileId: profileId,
+      );
       recordsTomorrow.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
       for (final record in recordsTomorrow) {
         final cutoff = cutoffForPrayer(

@@ -40,6 +40,14 @@ class MedicineModule implements HabitModule {
   final MedicineRepository _repository;
   final PauseService? _pauseService;
 
+  /// `HabitModule` contract methods take no `Ref`
+  /// (`core/modules/habit_module.dart`'s doc comment), so they can't read
+  /// `activeProfileProvider` — they run from background isolates,
+  /// WorkManager, and the notification engine, none of which have a
+  /// widget tree. Mirrors `WaterModule._fixedProfileId` exactly — see its
+  /// doc comment for the full rationale.
+  static const _fixedProfileId = 'system';
+
   @override
   String get id => 'medicine';
 
@@ -138,18 +146,22 @@ class MedicineModule implements HabitModule {
   @override
   Future<List<PendingNotification>> pendingNotifications() async {
     final now = clock.now();
-    await _repository.materializeDoses(now);
+    await _repository.materializeDoses(now, profileId: _fixedProfileId);
 
     final windowEnd = localDayKey(now).addDays(_lookaheadDays);
     final doses = await _repository.dosesInRange(
       localDayKey(now),
       windowEnd,
+      profileId: _fixedProfileId,
     );
     final notifications = <PendingNotification>[];
     for (final dose in doses) {
       if (dose.storedStatus != MedicineDoseStatus.upcoming) continue;
       if (!dose.scheduledFor.isAfter(now)) continue;
-      final medicine = await _repository.medicineById(dose.medicineId);
+      final medicine = await _repository.medicineById(
+        dose.medicineId,
+        profileId: _fixedProfileId,
+      );
       if (medicine == null) continue;
       // Defensive re-check (FR-M-10): archiving cascade-deletes future
       // upcoming doses at archive time, but this guards the same
@@ -175,7 +187,9 @@ class MedicineModule implements HabitModule {
       );
     }
 
-    final lowStockMedicines = await _repository.medicinesNeedingLowStockAlert();
+    final lowStockMedicines = await _repository.medicinesNeedingLowStockAlert(
+      profileId: _fixedProfileId,
+    );
     for (final medicine in lowStockMedicines) {
       final crossedAt = medicine.lowStockNotifiedAt;
       if (crossedAt == null) continue;
@@ -204,10 +218,13 @@ class MedicineModule implements HabitModule {
     // event to avoid re-notifying more than once per day while still
     // firing daily for as long as the projection stays inside the window.
     const projectionUseCase = PredictStockOutDateUseCase();
-    final allStockEvents = await _repository.allStockEvents();
-    final projectableMedicines = (await _repository.allMedicines()).where(
-      (m) => m.stockEnabled && m.archivedAt == null,
+    final allStockEvents = await _repository.allStockEvents(
+      profileId: _fixedProfileId,
     );
+    final projectableMedicines =
+        (await _repository.allMedicines(profileId: _fixedProfileId)).where(
+          (m) => m.stockEnabled && m.archivedAt == null,
+        );
     for (final medicine in projectableMedicines) {
       final projection = projectionUseCase.execute(
         medicine: medicine,
@@ -245,9 +262,16 @@ class MedicineModule implements HabitModule {
     }
     switch (action) {
       case NotificationActionType.done:
-        await _repository.markDoseDone(sourceId, fromOtherSource: false);
+        await _repository.markDoseDone(
+          sourceId,
+          fromOtherSource: false,
+          profileId: _fixedProfileId,
+        );
       case NotificationActionType.skip:
-        await _repository.markDoseSkipped(sourceId);
+        await _repository.markDoseSkipped(
+          sourceId,
+          profileId: _fixedProfileId,
+        );
       case NotificationActionType.snooze:
         break; // streak-neutral, same precedent as Water; snooze-count
       // cap enforced by the existing ledger logic, not duplicated here.
@@ -257,9 +281,13 @@ class MedicineModule implements HabitModule {
   @override
   Future<void> onQuickAction() async {
     final now = clock.now();
-    await _repository.materializeDoses(now);
+    await _repository.materializeDoses(now, profileId: _fixedProfileId);
     final today = localDayKey(now);
-    final doses = await _repository.dosesInRange(today, today);
+    final doses = await _repository.dosesInRange(
+      today,
+      today,
+      profileId: _fixedProfileId,
+    );
     doses.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     for (final dose in doses) {
       final status = effectiveDoseStatus(
@@ -269,7 +297,11 @@ class MedicineModule implements HabitModule {
         graceWindowMinutes: dose.graceWindowMinutes,
       );
       if (status == MedicineDoseStatus.due) {
-        await _repository.markDoseDone(dose.id, fromOtherSource: false);
+        await _repository.markDoseDone(
+          dose.id,
+          fromOtherSource: false,
+          profileId: _fixedProfileId,
+        );
         return;
       }
     }
@@ -277,7 +309,11 @@ class MedicineModule implements HabitModule {
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
-    final doses = await _repository.dosesInRange(range.start, range.end);
+    final doses = await _repository.dosesInRange(
+      range.start,
+      range.end,
+      profileId: _fixedProfileId,
+    );
     final now = clock.now();
     final byDay = <LocalDate, List<MedicineDose>>{};
     for (final dose in doses) {
@@ -289,6 +325,7 @@ class MedicineModule implements HabitModule {
         ? await pauseSvc.pausedDaysInRange(
             moduleId: 'medicine',
             range: range,
+            profileId: _fixedProfileId,
           )
         : <LocalDate>{};
     final result = <LocalDate, ModuleDayStatus>{};
@@ -383,7 +420,9 @@ class MedicineModule implements HabitModule {
 
   @override
   Future<List<SearchResult>> search(String query) async {
-    final medicines = await _repository.allMedicines();
+    final medicines = await _repository.allMedicines(
+      profileId: _fixedProfileId,
+    );
     final lowerQuery = query.toLowerCase();
     return [
       for (final medicine in medicines)
@@ -410,6 +449,7 @@ class MedicineModule implements HabitModule {
         final doses = await _repository.dosesInRange(
           const LocalDate(2000, 1, 1),
           today,
+          profileId: _fixedProfileId,
         );
         return doses.any((d) => d.storedStatus == MedicineDoseStatus.done)
             ? 1
@@ -445,10 +485,16 @@ class MedicineModule implements HabitModule {
 
   @override
   Future<ModuleExport> exportData() async {
-    final medicines = await _repository.allMedicines();
-    final schedules = await _repository.allSchedules();
-    final doses = await _repository.allDoses();
-    final stockEvents = await _repository.allStockEvents();
+    final medicines = await _repository.allMedicines(
+      profileId: _fixedProfileId,
+    );
+    final schedules = await _repository.allSchedules(
+      profileId: _fixedProfileId,
+    );
+    final doses = await _repository.allDoses(profileId: _fixedProfileId);
+    final stockEvents = await _repository.allStockEvents(
+      profileId: _fixedProfileId,
+    );
     return ModuleExport({
       'medicines': medicines.map(_medicineToJson).toList(),
       'schedules': schedules.map(_scheduleToJson).toList(),
@@ -471,6 +517,7 @@ class MedicineModule implements HabitModule {
         stockThreshold: json['stockThreshold'] as int?,
         stopWhenStockDepleted: json['stopWhenStockDepleted'] as bool,
         consumptionPerDose: json['consumptionPerDose'] as int,
+        profileId: _fixedProfileId,
       );
       if (result case Success(:final value)) {
         medicineIdMap[json['id'] as String] = value.id;
@@ -491,6 +538,7 @@ class MedicineModule implements HabitModule {
             ? null
             : LocalDate.parse(json['endDate'] as String),
         graceWindowMinutes: json['graceWindowMinutes'] as int,
+        profileId: _fixedProfileId,
       );
       if (result case Success(:final value)) {
         scheduleIdMap[json['id'] as String] = value.id;
@@ -520,6 +568,7 @@ class MedicineModule implements HabitModule {
           stockDeltaApplied: json['stockDeltaApplied'] as int,
           notes: json['notes'] as String?,
         ),
+        profileId: _fixedProfileId,
       );
       doseIdMap[json['id'] as String] = newId;
     }
@@ -539,21 +588,26 @@ class MedicineModule implements HabitModule {
           reason: MedicineStockEventReasonDb.fromDb(json['reason'] as String),
           occurredAt: DateTime.parse(json['occurredAt'] as String),
         ),
+        profileId: _fixedProfileId,
       );
     }
 
-    await _repository.materializeDoses(clock.now());
+    await _repository.materializeDoses(clock.now(), profileId: _fixedProfileId);
   }
 
   @override
-  Future<void> wipeData() => _repository.wipeAll();
+  Future<void> wipeData() => _repository.wipeAll(profileId: _fixedProfileId);
 
   @override
   Future<WidgetSummaryData?> widgetSummary() async {
     final now = clock.now();
-    await _repository.materializeDoses(now);
+    await _repository.materializeDoses(now, profileId: _fixedProfileId);
     final today = localDayKey(now);
-    final doses = await _repository.dosesInRange(today, today);
+    final doses = await _repository.dosesInRange(
+      today,
+      today,
+      profileId: _fixedProfileId,
+    );
     doses.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     var pendingCount = 0;
     MedicineDose? firstDue;
@@ -571,7 +625,10 @@ class MedicineModule implements HabitModule {
       }
     }
     if (firstDue == null) return null;
-    final medicine = await _repository.medicineById(firstDue.medicineId);
+    final medicine = await _repository.medicineById(
+      firstDue.medicineId,
+      profileId: _fixedProfileId,
+    );
     final timeStr =
         '${firstDue.scheduledFor.hour.toString().padLeft(2, '0')}:'
         '${firstDue.scheduledFor.minute.toString().padLeft(2, '0')}';
@@ -663,6 +720,7 @@ class MedicineModule implements HabitModule {
     final doses = await _repository.dosesInRange(
       yearRange.start,
       yearRange.end,
+      profileId: _fixedProfileId,
     );
     if (doses.isEmpty) return null;
 

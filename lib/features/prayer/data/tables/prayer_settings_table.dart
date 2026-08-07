@@ -62,8 +62,7 @@ class PrayerSettingsTable extends Table {
   /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
   /// rows that pre-date profile support. Part of the primary key since
   /// [id] is always `'singleton'` — each profile needs its own settings row.
-  TextColumn get profileId =>
-      text().withDefault(const Constant('system'))();
+  TextColumn get profileId => text().withDefault(const Constant('system'))();
 
   @override
   Set<Column> get primaryKey => {id, profileId};

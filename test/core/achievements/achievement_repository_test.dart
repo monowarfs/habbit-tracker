@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/achievements/achievement_repository.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late AchievementRepository repo;
@@ -21,8 +23,9 @@ void main() {
       current: 1,
       target: 1,
       now: DateTime.utc(2026, 6),
+      profileId: _profileId,
     );
-    final row = await repo.byKey('water_first_log');
+    final row = await repo.byKey('water_first_log', profileId: _profileId);
     expect(row, isNotNull);
     expect(row!.progressCurrent, 1);
     expect(row.unlockedAt, DateTime.utc(2026, 6).millisecondsSinceEpoch);
@@ -37,8 +40,12 @@ void main() {
         current: 7,
         target: 7,
         now: DateTime.utc(2026, 6),
+        profileId: _profileId,
       );
-      final firstUnlock = (await repo.byKey('water_streak_7'))!.unlockedAt;
+      final firstUnlock = (await repo.byKey(
+        'water_streak_7',
+        profileId: _profileId,
+      ))!.unlockedAt;
 
       await repo.upsertProgress(
         moduleId: 'water',
@@ -46,14 +53,15 @@ void main() {
         current: 0,
         target: 7,
         now: DateTime.utc(2026, 6, 2),
+        profileId: _profileId,
       );
-      final row = await repo.byKey('water_streak_7');
+      final row = await repo.byKey('water_streak_7', profileId: _profileId);
       expect(row!.progressCurrent, 0);
       expect(row.unlockedAt, firstUnlock);
     },
   );
 
   test('byKey returns null for an unknown key', () async {
-    expect(await repo.byKey('nope'), isNull);
+    expect(await repo.byKey('nope', profileId: _profileId), isNull);
   });
 }

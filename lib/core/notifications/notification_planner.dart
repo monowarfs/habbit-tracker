@@ -150,9 +150,18 @@ Future<void> planAndApplyNotifications({
   required AppDatabase db,
   DateTime? now,
 }) async {
+  // App-resume/WorkManager trigger, no Ref — every `HabitModule.
+  // pendingNotifications()` this loop calls is itself pinned to the
+  // 'system' profile for the same reason (`WaterModule`'s `_fixedProfileId`
+  // doc comment), so the ledger side of the plan matches it. Family/
+  // multi-profile's Task 8: real per-profile notification planning needs
+  // `pendingNotifications()` to take a profile id, which is a `HabitModule`
+  // contract change affecting every module uniformly — left for a later
+  // pass rather than bundled into this one.
+  const profileId = 'system';
   final modules = buildHabitModules(db);
   final ledger = NotificationLedgerRepository(db);
-  final existingPending = await ledger.pendingRows();
+  final existingPending = await ledger.pendingRows(profileId: profileId);
   final pendingByModule = <String, List<PendingNotification>>{};
   for (final module in modules) {
     pendingByModule[module.id] = await module.pendingNotifications();
@@ -164,7 +173,7 @@ Future<void> planAndApplyNotifications({
   if (settings.adaptiveReminderEnabled) {
     final adjustments = await CalculateAdaptiveOffsetUseCase(
       ledger,
-    ).execute(now: resolvedNow);
+    ).execute(now: resolvedNow, profileId: profileId);
     // Only 'high' confidence (>=20 samples) is acted on automatically —
     // 'medium' is a suggestion-only tier, never auto-applied to real
     // scheduling (`docs/superpowers/specs/03-ai-powered/
@@ -191,7 +200,7 @@ Future<void> planAndApplyNotifications({
   );
   for (final id in plan.toCancel) {
     await NotificationService.instance.cancel(id);
-    await ledger.cancel(id);
+    await ledger.cancel(id, profileId: profileId);
   }
   for (final entry in plan.toSchedule) {
     await ledger.insertScheduled(
@@ -204,6 +213,7 @@ Future<void> planAndApplyNotifications({
       scheduledFor: entry.pending.scheduledAt,
       deepLinkRoute: entry.pending.deepLinkRoute,
       originalScheduledFor: entry.originalScheduledAt,
+      profileId: profileId,
     );
     await NotificationService.instance.schedule(
       entry.pending,
