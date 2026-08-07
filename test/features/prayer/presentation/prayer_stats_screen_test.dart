@@ -1,8 +1,11 @@
 import 'package:clock/clock.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker/core/database/app_database.dart';
+import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -17,6 +20,7 @@ class _MockPrayerRepository extends Mock implements PrayerRepository {}
 
 void main() {
   late _MockPrayerRepository repo;
+  late AppDatabase db;
 
   setUpAll(() {
     ensureTimeZonesInitialized();
@@ -25,10 +29,16 @@ void main() {
 
   setUp(() {
     repo = _MockPrayerRepository();
+    db = AppDatabase(NativeDatabase.memory());
   });
 
+  tearDown(() => db.close());
+
   Widget buildApp() => ProviderScope(
-    overrides: [prayerRepositoryProvider.overrideWithValue(repo)],
+    overrides: [
+      prayerRepositoryProvider.overrideWithValue(repo),
+      databaseProvider.overrideWithValue(db),
+    ],
     child: MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,

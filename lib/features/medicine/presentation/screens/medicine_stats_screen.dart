@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/providers/module_day_status_provider.dart';
+import 'package:habit_tracker/core/reports/day_status_streaks.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:habit_tracker/core/widgets/habit_heatmap_calendar.dart';
+import 'package:habit_tracker/core/widgets/personal_record_section.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.dart';
 import 'package:habit_tracker/features/medicine/domain/usecases/dose_status.dart';
@@ -87,6 +89,19 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
           value: (byDay[start.addDays(i)] ?? 0).toDouble(),
         ),
     ];
+    // A window wide enough to contain any realistic current streak,
+    // without scanning full history on every stats-tab build (the
+    // `personal_records` table, not this, is the true all-time source —
+    // `core/analytics/record_backfill.dart`).
+    final currentStreakRangeStart = today.addDays(-89);
+    final currentStreakDayStatus = ref
+        .watch(
+          moduleDayStatusProvider(
+            'medicine',
+            DateRange(start: currentStreakRangeStart, end: today),
+          ),
+        )
+        .value;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -99,6 +114,15 @@ class _MedicineStatsScreenState extends ConsumerState<MedicineStatsScreen> {
           points: points,
           color: Theme.of(context).moduleAccents.medicine,
         ),
+        if (currentStreakDayStatus != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: PersonalRecordSection(
+              moduleId: 'medicine',
+              currentStreak: currentStreak(currentStreakDayStatus, today),
+              accentColor: Theme.of(context).moduleAccents.medicine,
+            ),
+          ),
         const SizedBox(height: 24),
         Text(
           l10n.medicineStatsMissedDosesLabel,

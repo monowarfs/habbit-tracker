@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/theme/app_theme.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
+import 'package:habit_tracker/core/widgets/personal_record_section.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/calculate_adherence.dart';
 import 'package:habit_tracker/features/prayer/domain/usecases/calculate_prayer_streak.dart';
@@ -59,6 +60,12 @@ class PrayerStatsScreen extends ConsumerWidget {
             children: [
               Text(l10n.prayerStatsCurrentStreak(streak.current)),
               Text(l10n.prayerStatsLongestStreak(streak.longest)),
+              const SizedBox(height: 16),
+              PersonalRecordSection(
+                moduleId: 'prayer',
+                currentStreak: streak.current,
+                accentColor: Theme.of(context).moduleAccents.prayer,
+              ),
               const SizedBox(height: 16),
               Text(l10n.prayerStatsLast7DaysLabel),
               PeriodBarChart(
