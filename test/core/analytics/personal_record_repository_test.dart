@@ -51,19 +51,22 @@ void main() {
     expect(records.single.recordValue, 9);
   });
 
-  test('checkAndUpdate creates the record and returns true when none exists', () async {
-    final updated = await repo.checkAndUpdate(
-      moduleId: 'medicine',
-      recordType: 'longest_streak',
-      newValue: 3,
-    );
-    expect(updated, isTrue);
-    final record = await repo.getRecord(
-      moduleId: 'medicine',
-      recordType: 'longest_streak',
-    );
-    expect(record!.recordValue, 3);
-  });
+  test(
+    'checkAndUpdate creates the record and returns true when none exists',
+    () async {
+      final updated = await repo.checkAndUpdate(
+        moduleId: 'medicine',
+        recordType: 'longest_streak',
+        newValue: 3,
+      );
+      expect(updated, isTrue);
+      final record = await repo.getRecord(
+        moduleId: 'medicine',
+        recordType: 'longest_streak',
+      );
+      expect(record!.recordValue, 3);
+    },
+  );
 
   test('checkAndUpdate returns false and leaves the record untouched when '
       'newValue does not beat it', () async {
@@ -99,24 +102,27 @@ void main() {
     expect(updated, isFalse);
   });
 
-  test('checkAndUpdate updates and returns true when newValue beats it', () async {
-    await repo.setRecord(
-      moduleId: 'prayer',
-      recordType: 'longest_streak',
-      value: 10,
-    );
-    final updated = await repo.checkAndUpdate(
-      moduleId: 'prayer',
-      recordType: 'longest_streak',
-      newValue: 12,
-    );
-    expect(updated, isTrue);
-    final record = await repo.getRecord(
-      moduleId: 'prayer',
-      recordType: 'longest_streak',
-    );
-    expect(record!.recordValue, 12);
-  });
+  test(
+    'checkAndUpdate updates and returns true when newValue beats it',
+    () async {
+      await repo.setRecord(
+        moduleId: 'prayer',
+        recordType: 'longest_streak',
+        value: 10,
+      );
+      final updated = await repo.checkAndUpdate(
+        moduleId: 'prayer',
+        recordType: 'longest_streak',
+        newValue: 12,
+      );
+      expect(updated, isTrue);
+      final record = await repo.getRecord(
+        moduleId: 'prayer',
+        recordType: 'longest_streak',
+      );
+      expect(record!.recordValue, 12);
+    },
+  );
 
   test('records are scoped independently per moduleId/recordType', () async {
     await repo.setRecord(

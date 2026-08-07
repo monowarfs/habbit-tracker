@@ -27,32 +27,38 @@ void main() {
     expect(event.newValue, 14);
   });
 
-  test('checkRecord returns null when the value does not beat the record', () async {
-    await useCase.checkRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-      currentValue: 14,
-    );
-    final event = await useCase.checkRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-      currentValue: 10,
-    );
-    expect(event, isNull);
-  });
+  test(
+    'checkRecord returns null when the value does not beat the record',
+    () async {
+      await useCase.checkRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        currentValue: 14,
+      );
+      final event = await useCase.checkRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        currentValue: 10,
+      );
+      expect(event, isNull);
+    },
+  );
 
-  test('checkRecord returns an event again when a later value beats it', () async {
-    await useCase.checkRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-      currentValue: 14,
-    );
-    final event = await useCase.checkRecord(
-      moduleId: 'water',
-      recordType: 'longest_streak',
-      currentValue: 20,
-    );
-    expect(event, isNotNull);
-    expect(event!.newValue, 20);
-  });
+  test(
+    'checkRecord returns an event again when a later value beats it',
+    () async {
+      await useCase.checkRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        currentValue: 14,
+      );
+      final event = await useCase.checkRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        currentValue: 20,
+      );
+      expect(event, isNotNull);
+      expect(event!.newValue, 20);
+    },
+  );
 }

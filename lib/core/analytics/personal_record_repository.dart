@@ -21,8 +21,7 @@ class PersonalRecordRepository {
     required String recordType,
   }) {
     return (_db.select(_db.personalRecordsTable)..where(
-          (t) =>
-              t.moduleId.equals(moduleId) & t.recordType.equals(recordType),
+          (t) => t.moduleId.equals(moduleId) & t.recordType.equals(recordType),
         ))
         .getSingleOrNull();
   }
