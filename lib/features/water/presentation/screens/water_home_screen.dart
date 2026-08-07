@@ -15,6 +15,7 @@ import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/theme/app_theme.dart';
+import 'package:habit_tracker/core/theme/simple_mode_constants.dart';
 import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
 import 'package:habit_tracker/core/widgets/illustrations/water_drop_painter.dart';
 import 'package:habit_tracker/core/widgets/module_empty_state.dart';
@@ -101,6 +102,9 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
     final settings = ref.watch(waterSettingsProvider).value;
     final unit =
         ref.watch(appSettingsProvider).value?.waterUnit ?? WaterUnit.ml;
+    final simpleMode = ref.watch(simpleModeEnabledProvider);
+    final quickAddAmounts =
+        settings?.quickAddAmountsMl ?? const [250, 500, 750];
 
     return Scaffold(
       appBar: AppBar(
@@ -120,94 +124,142 @@ class _WaterHomeScreenState extends ConsumerState<WaterHomeScreen> {
       ),
       body: progress == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (_showRecalibration)
-                  RecalibrationCard(
-                    onConfirmed: () async {
-                      await ref
-                          .read(recalibrationServiceProvider)
-                          .onConfirmed('water');
-                      setState(() => _showRecalibration = false);
-                    },
-                    onDeferred: () async {
-                      await ref
-                          .read(recalibrationServiceProvider)
-                          .onDeferred('water');
-                      setState(() => _showRecalibration = false);
-                    },
+          : MediaQuery(
+              // Composes on top of the ambient text scale rather than
+              // replacing it, so OS-level accessibility scaling and
+              // Simple Mode's own bump both apply (spec's Edge Case 2).
+              data: MediaQuery.of(context).copyWith(
+                textScaler: simpleMode
+                    ? TextScaler.linear(
+                        MediaQuery.textScalerOf(context).scale(1) *
+                            simpleModeTextScaleMultiplier,
+                      )
+                    : MediaQuery.textScalerOf(context),
+              ),
+              child: ListView(
+                padding: simpleMode
+                    ? simpleModePadding
+                    : const EdgeInsets.all(16),
+                children: [
+                  if (_showRecalibration)
+                    RecalibrationCard(
+                      onConfirmed: () async {
+                        await ref
+                            .read(recalibrationServiceProvider)
+                            .onConfirmed('water');
+                        setState(() => _showRecalibration = false);
+                      },
+                      onDeferred: () async {
+                        await ref
+                            .read(recalibrationServiceProvider)
+                            .onDeferred('water');
+                        setState(() => _showRecalibration = false);
+                      },
+                    ),
+                  const ActivePausesCard(moduleId: 'water'),
+                  Center(
+                    child: WaterProgressRing(
+                      totalMl: progress.totalMl,
+                      goalMl: progress.goalMl,
+                      unit: unit,
+                    ),
                   ),
-                const ActivePausesCard(moduleId: 'water'),
-                Center(
-                  child: WaterProgressRing(
-                    totalMl: progress.totalMl,
-                    goalMl: progress.goalMl,
-                    unit: unit,
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.waterHomeQuickAddLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.waterHomeQuickAddLabel,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final amount
-                        in settings?.quickAddAmountsMl ?? const [250, 500, 750])
-                      QuickAddButton(
-                        amountMl: amount,
-                        unit: unit,
-                        onTap: () =>
-                            _logQuickAddAndCelebrate(context, ref, amount),
+                  const SizedBox(height: 8),
+                  if (simpleMode) ...[
+                    SemanticLabels.wrap(
+                      label: l10n.waterSimpleLogButton,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: simpleModeButtonHeight,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _logQuickAddAndCelebrate(
+                            context,
+                            ref,
+                            quickAddAmounts.first,
+                          ),
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            size: simpleModeIconSize,
+                          ),
+                          label: Text(l10n.waterSimpleLogButton),
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 12),
                     SemanticLabels.wrap(
                       label: l10n.semanticWaterCustomLogButton,
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push('/water/add'),
-                        icon: const Icon(Icons.add),
-                        label: Text(l10n.waterHomeCustomAddButton),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: simpleModeMinTouchTarget,
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push('/water/add'),
+                          icon: const Icon(Icons.add),
+                          label: Text(l10n.waterHomeCustomAddButton),
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                NaturalLanguageQuickAdd(
-                  unit: unit,
-                  onLog: (parsed) => ref
-                      .read(waterControllerProvider.notifier)
-                      .logFromParsedText(parsed),
-                  onEdit: () => context.push('/water/add'),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.waterHomeTodaysLogLabel,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                if (_visibleEntries(progress.entries).isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: ModuleEmptyState(
-                      painter: WaterDropPainter.new,
-                      message: l10n.waterHomeEmptyLogs,
-                      accentColor: Theme.of(context).moduleAccents.water,
+                  ] else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final amount in quickAddAmounts)
+                          QuickAddButton(
+                            amountMl: amount,
+                            unit: unit,
+                            onTap: () =>
+                                _logQuickAddAndCelebrate(context, ref, amount),
+                          ),
+                        SemanticLabels.wrap(
+                          label: l10n.semanticWaterCustomLogButton,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.push('/water/add'),
+                            icon: const Icon(Icons.add),
+                            label: Text(l10n.waterHomeCustomAddButton),
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                else
-                  for (final entry in _visibleEntries(
-                    progress.entries,
-                  ).reversed)
-                    WaterLogTile(
-                      entry: entry,
-                      unit: unit,
-                      onDelete: () => _deleteWithUndo(l10n, entry.id),
-                      onTap: () =>
-                          context.push('/water/entry/${entry.id}/edit'),
-                    ),
-              ],
+                  const SizedBox(height: 12),
+                  NaturalLanguageQuickAdd(
+                    unit: unit,
+                    onLog: (parsed) => ref
+                        .read(waterControllerProvider.notifier)
+                        .logFromParsedText(parsed),
+                    onEdit: () => context.push('/water/add'),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.waterHomeTodaysLogLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (_visibleEntries(progress.entries).isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: ModuleEmptyState(
+                        painter: WaterDropPainter.new,
+                        message: l10n.waterHomeEmptyLogs,
+                        accentColor: Theme.of(context).moduleAccents.water,
+                      ),
+                    )
+                  else
+                    for (final entry in _visibleEntries(
+                      progress.entries,
+                    ).reversed)
+                      WaterLogTile(
+                        entry: entry,
+                        unit: unit,
+                        onDelete: () => _deleteWithUndo(l10n, entry.id),
+                        onTap: () =>
+                            context.push('/water/entry/${entry.id}/edit'),
+                      ),
+                ],
+              ),
             ),
     );
   }
