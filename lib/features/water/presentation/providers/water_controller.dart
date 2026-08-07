@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_award_helper.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/water/domain/entities/parsed_water_entry.dart';
@@ -27,6 +28,9 @@ part 'water_controller.g.dart';
 class WaterController extends _$WaterController {
   @override
   void build() {}
+
+  Future<String> _activeProfileId() =>
+      ref.read(activeProfileProvider.future).then((p) => p.id);
 
   /// Logs a quick-add preset amount (FR-W-03).
   Future<void> logQuickAdd(int amountMl) => _log(
@@ -70,10 +74,12 @@ class WaterController extends _$WaterController {
     DateTime? loggedAt,
     String? notes,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(waterRepositoryProvider);
     final result = await LogWaterEntryUseCase(repository).execute(
       amountMl: amountMl,
       source: source,
+      profileId: profileId,
       loggedAt: loggedAt,
       notes: notes,
     );
@@ -101,9 +107,16 @@ class WaterController extends _$WaterController {
     DateTime? loggedAt,
     Object? notes = unsetWaterNotes,
   }) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(waterRepositoryProvider)
-        .updateEntry(id, amountMl: amountMl, loggedAt: loggedAt, notes: notes);
+        .updateEntry(
+          id,
+          profileId: profileId,
+          amountMl: amountMl,
+          loggedAt: loggedAt,
+          notes: notes,
+        );
     if (result case Failure(:final error)) logException(error);
   }
 
@@ -111,7 +124,10 @@ class WaterController extends _$WaterController {
   /// that deferred the write behind an undo window (see `WaterHomeScreen`)
   /// can restore the optimistically-hidden entry if the write failed.
   Future<bool> deleteEntry(String id) async {
-    final result = await ref.read(waterRepositoryProvider).deleteEntry(id);
+    final profileId = await _activeProfileId();
+    final result = await ref
+        .read(waterRepositoryProvider)
+        .deleteEntry(id, profileId: profileId);
     if (result case Failure(:final error)) {
       logException(error);
       return false;
@@ -121,9 +137,10 @@ class WaterController extends _$WaterController {
 
   /// Records a new goal effective now (FR-W-01/FR-W-04).
   Future<void> updateGoal(int goalMl) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(waterRepositoryProvider)
-        .setGoal(goalMl, effectiveFrom: DateTime.now());
+        .setGoal(goalMl, effectiveFrom: DateTime.now(), profileId: profileId);
     if (result case Success()) {
       await ref.read(recalibrationServiceProvider).onGoalEdited('water');
     }
@@ -132,9 +149,10 @@ class WaterController extends _$WaterController {
 
   /// Updates the quick-add preset amounts (FR-W-03).
   Future<void> updateQuickAddAmounts(List<int> amountsMl) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(waterRepositoryProvider)
-        .updateQuickAddAmounts(amountsMl);
+        .updateQuickAddAmounts(amountsMl, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
@@ -146,6 +164,7 @@ class WaterController extends _$WaterController {
     required LocalTime windowEnd,
     required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
   }) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(waterRepositoryProvider)
         .updateReminderSettings(
@@ -154,6 +173,7 @@ class WaterController extends _$WaterController {
           windowStart: windowStart,
           windowEnd: windowEnd,
           windowOverrides: windowOverrides,
+          profileId: profileId,
         );
     if (result case Failure(:final error)) logException(error);
   }
@@ -162,9 +182,10 @@ class WaterController extends _$WaterController {
   /// (`docs/superpowers/specs/02-delightful/
   /// 07-weather-aware-water-nudge-copy-design.md`).
   Future<void> updateWeatherNudgeEnabled({required bool enabled}) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(waterRepositoryProvider)
-        .updateWeatherNudgeEnabled(enabled: enabled);
+        .updateWeatherNudgeEnabled(enabled: enabled, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 }

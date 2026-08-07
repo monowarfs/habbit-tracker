@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/stacking/habit_stack_suggestion_repository.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
@@ -53,18 +54,22 @@ class HabitStackSuggestionCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _dismiss(WidgetRef ref, String id) => ref
-      .read(habitStackSuggestionRepositoryProvider)
-      .dismiss(id, now: clock.now());
+  Future<void> _dismiss(WidgetRef ref, String id) async {
+    final profile = await ref.read(activeProfileProvider.future);
+    await ref
+        .read(habitStackSuggestionRepositoryProvider)
+        .dismiss(id, now: clock.now(), profileId: profile.id);
+  }
 
   Future<void> _accept(
     WidgetRef ref,
     HabitStackSuggestionRow suggestion,
   ) async {
     final now = clock.now();
+    final profile = await ref.read(activeProfileProvider.future);
     await ref
         .read(habitStackSuggestionRepositoryProvider)
-        .accept(suggestion.id, now: now);
+        .accept(suggestion.id, now: now, profileId: profile.id);
 
     // Applies the nudge to every weekday, not just the weekdays that
     // happened to contribute a qualifying day: `habit_stack_suggestions`
@@ -73,7 +78,9 @@ class HabitStackSuggestionCard extends ConsumerWidget {
     // UI-surface note) reduces to "every weekday" given this table's
     // actual columns (this plan's Global Constraints).
     final waterRepository = ref.read(waterRepositoryProvider);
-    final currentSettings = await waterRepository.watchSettings().first;
+    final currentSettings = await waterRepository
+        .watchSettings(profileId: profile.id)
+        .first;
     final typicalTime = LocalTime.parse(suggestion.typicalSourceTime);
     final overrides = {
       for (var weekday = 1; weekday <= 7; weekday++)
@@ -90,6 +97,7 @@ class HabitStackSuggestionCard extends ConsumerWidget {
       windowStart: currentSettings.reminderWindowStart,
       windowEnd: currentSettings.reminderWindowEnd,
       windowOverrides: overrides,
+      profileId: profile.id,
     );
   }
 }

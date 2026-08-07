@@ -69,6 +69,7 @@ void main() {
           amountMl: 250,
           loggedAt: DateTime.utc(day.year, day.month, day.day, 8, 25),
           source: WaterEntrySource.quick,
+          profileId: 'system',
         );
       }
 
@@ -80,7 +81,7 @@ void main() {
       );
 
       final repository = HabitStackSuggestionRepository(db);
-      final row = await repository.byId('medicine_water');
+      final row = await repository.byId('medicine_water', profileId: 'system');
       expect(row, isNotNull);
       expect(row!.status, 'pending');
       expect(row.sourceModuleId, 'medicine');
@@ -122,6 +123,7 @@ void main() {
           amountMl: 250,
           loggedAt: DateTime.utc(day.year, day.month, day.day, 8, 25),
           source: WaterEntrySource.quick,
+          profileId: 'system',
         );
       }
 
@@ -132,6 +134,7 @@ void main() {
       final repository = HabitStackSuggestionRepository(db);
       final firstEvaluatedAt = (await repository.byId(
         'medicine_water',
+        profileId: 'system',
       ))!.lastEvaluatedAt;
 
       // Adds a same-day water log that would otherwise change the
@@ -140,6 +143,7 @@ void main() {
         amountMl: 100,
         loggedAt: today.add(const Duration(hours: 10)),
         source: WaterEntrySource.quick,
+        profileId: 'system',
       );
       await withClock(
         Clock.fixed(firstRun.add(const Duration(hours: 1))),
@@ -148,7 +152,7 @@ void main() {
         },
       );
 
-      final row = await repository.byId('medicine_water');
+      final row = await repository.byId('medicine_water', profileId: 'system');
       expect(row!.lastEvaluatedAt, firstEvaluatedAt);
     },
   );
@@ -160,7 +164,10 @@ void main() {
     });
 
     final repository = HabitStackSuggestionRepository(db);
-    expect(await repository.byId('medicine_water'), isNull);
-    expect(await repository.byId('prayer_water'), isNull);
+    expect(
+      await repository.byId('medicine_water', profileId: 'system'),
+      isNull,
+    );
+    expect(await repository.byId('prayer_water', profileId: 'system'), isNull);
   });
 }

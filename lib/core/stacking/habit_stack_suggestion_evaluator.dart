@@ -18,6 +18,10 @@ import 'package:habit_tracker/features/water/data/repositories/water_repository_
 /// (`docs/superpowers/specs/02-delightful/
 /// 04-habit-stacking-suggestions-design.md`, "Where it runs").
 Future<void> evaluateStackSuggestions({required AppDatabase db}) async {
+  // Called from the app-resume trigger, no Ref — same fixed-profile
+  // stopgap as `WaterModule`'s own non-Ref methods until a later pass
+  // threads a profile id through that whole background-callback surface.
+  const profileId = 'system';
   final now = clock.now();
   final repository = HabitStackSuggestionRepository(db);
   final today = localDayKey(now);
@@ -25,7 +29,7 @@ Future<void> evaluateStackSuggestions({required AppDatabase db}) async {
 
   final waterEntries = await WaterRepositoryImpl(
     db,
-  ).watchEntriesInRange(windowStart, today).first;
+  ).watchEntriesInRange(windowStart, today, profileId: profileId).first;
   final targetByDay = <LocalDate, List<DateTime>>{};
   for (final entry in waterEntries) {
     (targetByDay[localDayKey(entry.loggedAt)] ??= []).add(entry.loggedAt);
@@ -37,18 +41,25 @@ Future<void> evaluateStackSuggestions({required AppDatabase db}) async {
     sourceModuleId: 'medicine',
     targetModuleId: 'water',
     now: now,
-    sourceByDay: await _medicineDoneByDay(db, windowStart, today),
+    profileId: profileId,
+    sourceByDay: await _medicineDoneByDay(db, windowStart, today, profileId),
     sourceLabel: null,
     targetByDay: targetByDay,
   );
 
-  final prayerSource = await _prayerPrayedByDay(db, windowStart, today);
+  final prayerSource = await _prayerPrayedByDay(
+    db,
+    windowStart,
+    today,
+    profileId,
+  );
   await _evaluatePair(
     repository: repository,
     id: 'prayer_water',
     sourceModuleId: 'prayer',
     targetModuleId: 'water',
     now: now,
+    profileId: profileId,
     sourceByDay: prayerSource.byDay,
     sourceLabel: prayerSource.modeLabel,
     targetByDay: targetByDay,
@@ -61,11 +72,12 @@ Future<void> _evaluatePair({
   required String sourceModuleId,
   required String targetModuleId,
   required DateTime now,
+  required String profileId,
   required Map<LocalDate, DateTime> sourceByDay,
   required String? sourceLabel,
   required Map<LocalDate, List<DateTime>> targetByDay,
 }) async {
-  final existing = await repository.byId(id);
+  final existing = await repository.byId(id, profileId: profileId);
   if (existing != null) {
     if (existing.status == 'accepted') return;
     // Cheap early-exit: a user resuming the app five times a day
@@ -86,6 +98,7 @@ Future<void> _evaluatePair({
     targetModuleId: targetModuleId,
     result: result,
     now: now,
+    profileId: profileId,
     sourceLabel: sourceLabel,
   );
 }
@@ -94,8 +107,11 @@ Future<Map<LocalDate, DateTime>> _medicineDoneByDay(
   AppDatabase db,
   LocalDate start,
   LocalDate end,
+  String profileId,
 ) async {
-  final doses = await MedicineRepositoryImpl(db).dosesInRange(start, end);
+  final doses = await MedicineRepositoryImpl(
+    db,
+  ).dosesInRange(start, end, profileId: profileId);
   final result = <LocalDate, DateTime>{};
   for (final dose in doses) {
     if (dose.storedStatus != MedicineDoseStatus.done) continue;
@@ -116,8 +132,15 @@ Future<Map<LocalDate, DateTime>> _medicineDoneByDay(
 /// already the bucket key (no `localDayKey` needed, unlike Medicine's
 /// `scheduledFor`).
 Future<({Map<LocalDate, DateTime> byDay, String? modeLabel})>
-_prayerPrayedByDay(AppDatabase db, LocalDate start, LocalDate end) async {
-  final records = await PrayerRepositoryImpl(db).recordsInRange(start, end);
+_prayerPrayedByDay(
+  AppDatabase db,
+  LocalDate start,
+  LocalDate end,
+  String profileId,
+) async {
+  final records = await PrayerRepositoryImpl(
+    db,
+  ).recordsInRange(start, end, profileId: profileId);
   final byDay = <LocalDate, DateTime>{};
   final labelByDay = <LocalDate, String>{};
   for (final record in records) {

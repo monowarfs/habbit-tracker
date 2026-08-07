@@ -63,6 +63,7 @@ void main() {
           typicalSourceTime: LocalTime(8, 15),
         ),
         now: DateTime.utc(2026, 7),
+        profileId: 'system',
       );
 
       await pumpCard(tester);
@@ -97,6 +98,7 @@ void main() {
           typicalSourceTime: LocalTime(8, 15),
         ),
         now: DateTime.utc(2026, 7),
+        profileId: 'system',
       );
 
       await pumpCard(tester);
@@ -111,12 +113,18 @@ void main() {
       // the handler performs: accept the suggestion and nudge every
       // weekday's reminder window to the typical source time.
       const typicalTime = LocalTime(8, 15);
-      await repository.accept('medicine_water', now: DateTime.utc(2026, 7, 2));
+      await repository.accept(
+        'medicine_water',
+        now: DateTime.utc(2026, 7, 2),
+        profileId: 'system',
+      );
 
       // watchSettings() is a Drift stream — needs real async cycles.
       await tester.runAsync(() async {
         final waterRepo = WaterRepositoryImpl(db);
-        final currentSettings = await waterRepo.watchSettings().first;
+        final currentSettings = await waterRepo
+            .watchSettings(profileId: 'system')
+            .first;
         final overrides = {
           for (var weekday = 1; weekday <= 7; weekday++)
             weekday: (
@@ -132,16 +140,19 @@ void main() {
           windowStart: currentSettings.reminderWindowStart,
           windowEnd: currentSettings.reminderWindowEnd,
           windowOverrides: overrides,
+          profileId: 'system',
         );
       });
 
       // Verify DB state directly — mirrors what the widget handler does.
-      final row = await repository.byId('medicine_water');
+      final row = await repository.byId('medicine_water', profileId: 'system');
       expect(row!.status, 'accepted');
 
       WaterSettings? waterSettings;
       await tester.runAsync(() async {
-        waterSettings = await WaterRepositoryImpl(db).watchSettings().first;
+        waterSettings = await WaterRepositoryImpl(
+          db,
+        ).watchSettings(profileId: 'system').first;
       });
       for (var weekday = 1; weekday <= 7; weekday++) {
         expect(
@@ -169,6 +180,7 @@ void main() {
         typicalSourceTime: LocalTime(8, 15),
       ),
       now: DateTime.utc(2026, 7),
+      profileId: 'system',
     );
 
     await pumpCard(tester);
@@ -181,7 +193,7 @@ void main() {
     }
 
     expect(find.byType(Card), findsNothing);
-    final row = await repository.byId('medicine_water');
+    final row = await repository.byId('medicine_water', profileId: 'system');
     expect(row!.status, 'dismissed');
 
     await disposeTree(tester);

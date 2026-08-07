@@ -16,6 +16,7 @@ class LogWaterEntryUseCase {
   Future<Result<WaterEntry>> execute({
     required int amountMl,
     required WaterEntrySource source,
+    required String profileId,
     DateTime? loggedAt,
     String? notes,
   }) async {
@@ -34,6 +35,7 @@ class LogWaterEntryUseCase {
       amountMl: amountMl,
       loggedAt: at,
       source: source,
+      profileId: profileId,
       notes: notes,
     );
   }

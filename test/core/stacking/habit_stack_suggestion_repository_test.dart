@@ -30,9 +30,10 @@ void main() {
       targetModuleId: 'water',
       result: result,
       now: DateTime.utc(2026, 7),
+      profileId: 'system',
     );
 
-    final row = await repo.byId('medicine_water');
+    final row = await repo.byId('medicine_water', profileId: 'system');
     expect(row, isNotNull);
     expect(row!.status, 'pending');
     expect(row.qualifyingDays, 6);
@@ -49,8 +50,13 @@ void main() {
         targetModuleId: 'water',
         result: result,
         now: DateTime.utc(2026, 7),
+        profileId: 'system',
       );
-      await repo.accept('medicine_water', now: DateTime.utc(2026, 7, 2));
+      await repo.accept(
+        'medicine_water',
+        now: DateTime.utc(2026, 7, 2),
+        profileId: 'system',
+      );
 
       await repo.upsertEvaluation(
         id: 'medicine_water',
@@ -63,9 +69,10 @@ void main() {
           typicalSourceTime: LocalTime(9, 0),
         ),
         now: DateTime.utc(2026, 7, 10),
+        profileId: 'system',
       );
 
-      final row = await repo.byId('medicine_water');
+      final row = await repo.byId('medicine_water', profileId: 'system');
       expect(row!.status, 'accepted');
       expect(row.qualifyingDays, 6); // unchanged
     },
@@ -82,8 +89,13 @@ void main() {
         result: result,
         sourceLabel: 'Fajr',
         now: DateTime.utc(2026, 7),
+        profileId: 'system',
       );
-      await repo.dismiss('prayer_water', now: DateTime.utc(2026, 7, 2));
+      await repo.dismiss(
+        'prayer_water',
+        now: DateTime.utc(2026, 7, 2),
+        profileId: 'system',
+      );
 
       await repo.upsertEvaluation(
         id: 'prayer_water',
@@ -92,9 +104,10 @@ void main() {
         result: result,
         sourceLabel: 'Fajr',
         now: DateTime.utc(2026, 7, 20), // 18 days after dismissal
+        profileId: 'system',
       );
 
-      final row = await repo.byId('prayer_water');
+      final row = await repo.byId('prayer_water', profileId: 'system');
       expect(row!.status, 'dismissed');
       expect(
         row.lastEvaluatedAt,
@@ -114,8 +127,13 @@ void main() {
         result: result,
         sourceLabel: 'Fajr',
         now: DateTime.utc(2026, 7),
+        profileId: 'system',
       );
-      await repo.dismiss('prayer_water', now: DateTime.utc(2026, 7, 2));
+      await repo.dismiss(
+        'prayer_water',
+        now: DateTime.utc(2026, 7, 2),
+        profileId: 'system',
+      );
 
       await repo.upsertEvaluation(
         id: 'prayer_water',
@@ -124,9 +142,10 @@ void main() {
         result: result,
         sourceLabel: 'Fajr',
         now: DateTime.utc(2026, 9, 5), // 65 days after dismissal
+        profileId: 'system',
       );
 
-      final row = await repo.byId('prayer_water');
+      final row = await repo.byId('prayer_water', profileId: 'system');
       expect(row!.status, 'pending');
       expect(row.respondedAt, isNull);
     },
@@ -139,14 +158,15 @@ void main() {
       targetModuleId: 'water',
       result: result,
       now: DateTime.utc(2026, 7),
+      profileId: 'system',
     );
 
-    final pending = await repo.pendingSuggestion().first;
+    final pending = await repo.pendingSuggestion(profileId: 'system').first;
     expect(pending, isNotNull);
     expect(pending!.id, 'medicine_water');
   });
 
   test('byId returns null for an unknown id', () async {
-    expect(await repo.byId('nope'), isNull);
+    expect(await repo.byId('nope', profileId: 'system'), isNull);
   });
 }

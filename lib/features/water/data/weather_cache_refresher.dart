@@ -33,8 +33,12 @@ Future<void> refreshWeatherCacheIfStale(
   })?
   fetchWeather,
 }) async {
+  // WorkManager callback, no Ref — same fixed-profile stopgap as
+  // WaterModule's own non-Ref methods until a later pass threads a
+  // profile id through the background-callback surface.
+  const profileId = 'system';
   final repository = WaterRepositoryImpl(db);
-  final settings = await repository.watchSettings().first;
+  final settings = await repository.watchSettings(profileId: profileId).first;
   if (!settings.weatherNudgeEnabled) return;
 
   final now = clock.now();
@@ -58,6 +62,7 @@ Future<void> refreshWeatherCacheIfStale(
   await repository.updateWeatherCache(
     temperatureCelsius: weather.temperatureCelsius,
     fetchedAt: weather.fetchedAt,
+    profileId: profileId,
   );
 }
 

@@ -13,6 +13,8 @@ import 'package:habit_tracker/features/water/data/repositories/water_repository_
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 import 'package:habit_tracker/features/water/presentation/screens/water_home_screen.dart';
 
+const _profileId = 'system';
+
 Future<void> _pumpWaterHome(
   WidgetTester tester,
   AppDatabase db, {
@@ -87,6 +89,7 @@ void main() {
       amountMl: 500,
       loggedAt: now,
       source: WaterEntrySource.quick,
+      profileId: _profileId,
     );
 
     await _pumpWaterHome(tester, db, now: now);
@@ -105,6 +108,7 @@ void main() {
       amountMl: 2200,
       loggedAt: now,
       source: WaterEntrySource.custom,
+      profileId: _profileId,
     );
 
     await _pumpWaterHome(tester, db, now: now);
@@ -125,6 +129,7 @@ void main() {
       amountMl: 500,
       loggedAt: now,
       source: WaterEntrySource.quick,
+      profileId: _profileId,
     );
     final entryId = (added as Success<WaterEntry>).value.id;
 
@@ -135,7 +140,10 @@ void main() {
     await tester.pump();
 
     expect(find.byIcon(Icons.delete_outline), findsNothing);
-    expect(await repo.entryById(entryId), isNotNull); // not soft-deleted
+    expect(
+      await repo.entryById(entryId, profileId: _profileId),
+      isNotNull,
+    ); // not soft-deleted
 
     await disposeTree(tester);
   });
@@ -148,6 +156,7 @@ void main() {
       amountMl: 500,
       loggedAt: now,
       source: WaterEntrySource.quick,
+      profileId: _profileId,
     );
     final entryId = (added as Success<WaterEntry>).value.id;
 
@@ -162,7 +171,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-    expect(await repo.entryById(entryId), isNotNull); // not soft-deleted
+    expect(
+      await repo.entryById(entryId, profileId: _profileId),
+      isNotNull,
+    ); // not soft-deleted
 
     await disposeTree(tester);
   });
@@ -176,6 +188,7 @@ void main() {
         amountMl: 500,
         loggedAt: now,
         source: WaterEntrySource.quick,
+        profileId: _profileId,
       );
       final entryId = (added as Success<WaterEntry>).value.id;
 
@@ -190,7 +203,10 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle(const Duration(seconds: 1));
 
-      expect(await repo.entryById(entryId), isNull); // soft-deleted
+      expect(
+        await repo.entryById(entryId, profileId: _profileId),
+        isNull,
+      ); // soft-deleted
 
       await disposeTree(tester);
     },
