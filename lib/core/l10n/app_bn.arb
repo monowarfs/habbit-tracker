@@ -820,5 +820,20 @@
   "semanticLocaleToggle": "ভাষা নির্বাচন",
   "semanticSwipeToDeleteHint": "মুছতে সোয়াইপ করুন",
   "commonPreviousMonth": "আগের মাস",
-  "commonNextMonth": "পরের মাস"
+  "commonNextMonth": "পরের মাস",
+  "profileSwitcherTooltip": "সক্রিয় প্রোফাইল: {name}। পরিবর্তন করতে ট্যাপ করুন।",
+  "switchProfileSheetTitle": "প্রোফাইল পরিবর্তন করুন",
+  "manageProfilesTitle": "প্রোফাইল পরিচালনা করুন",
+  "addProfileAction": "প্রোফাইল যোগ করুন",
+  "editProfileAction": "সম্পাদনা করুন",
+  "deleteProfileAction": "মুছুন",
+  "profileNameLabel": "নাম",
+  "profileColorLabel": "রং",
+  "maxProfilesReachedMessage": "আপনি সর্বোচ্চ {max}টি প্রোফাইলের সীমায় পৌঁছেছেন।",
+  "deleteProfileConfirmTitle": "{name} মুছবেন?",
+  "deleteProfileConfirmBody": "এই প্রোফাইলের তথ্য আর দেখানো হবে না, তবে অন্য প্রোফাইলের তথ্য অপরিবর্তিত থাকবে।",
+  "deleteProfileLastRemainingError": "শেষ প্রোফাইলটি মুছে ফেলা যাবে না।",
+  "profileStorageUsageLabel": "{count}টি আইটেম",
+  "addProfileDialogTitle": "নতুন প্রোফাইল",
+  "profileNameRequiredError": "একটি নাম লিখুন।"
 }

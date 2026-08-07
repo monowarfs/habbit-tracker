@@ -8,6 +8,8 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.da
 import 'package:habit_tracker/features/medicine/domain/entities/medicine_stock_event.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/repeat_rule.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late MedicineRepositoryImpl repo;
@@ -23,6 +25,7 @@ void main() {
     final result = await repo.createMedicine(
       name: 'Vitamin D',
       stockEnabled: false,
+      profileId: _profileId,
     );
     if (result case Success(:final value)) return value.id;
     throw StateError('seed failed: $result');
@@ -36,6 +39,7 @@ void main() {
         medicineId: medicineId,
         rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
         startDate: const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       final String scheduleId;
       if (scheduleResult case Success(:final value)) {
@@ -54,6 +58,7 @@ void main() {
           graceWindowMinutes: 30,
           stockDeltaApplied: -1,
         ),
+        profileId: _profileId,
       );
       expect(newDoseId, isNot('old-id'));
 
@@ -66,12 +71,13 @@ void main() {
           reason: MedicineStockEventReason.doseTaken,
           occurredAt: DateTime.utc(2026, 6, 1, 8),
         ),
+        profileId: _profileId,
       );
 
-      final doses = await repo.allDoses();
+      final doses = await repo.allDoses(profileId: _profileId);
       expect(doses, hasLength(1));
       expect(doses.first.storedStatus, MedicineDoseStatus.done);
-      final events = await repo.allStockEvents();
+      final events = await repo.allStockEvents(profileId: _profileId);
       expect(events, hasLength(1));
       expect(events.first.doseId, newDoseId);
     },
@@ -89,14 +95,15 @@ void main() {
           reason: MedicineStockEventReason.manualRefill,
           occurredAt: DateTime.utc(2026, 6),
         ),
+        profileId: _profileId,
       );
 
-      await repo.wipeAll();
+      await repo.wipeAll(profileId: _profileId);
 
-      expect(await repo.allMedicines(), isEmpty);
-      expect(await repo.allSchedules(), isEmpty);
-      expect(await repo.allDoses(), isEmpty);
-      expect(await repo.allStockEvents(), isEmpty);
+      expect(await repo.allMedicines(profileId: _profileId), isEmpty);
+      expect(await repo.allSchedules(profileId: _profileId), isEmpty);
+      expect(await repo.allDoses(profileId: _profileId), isEmpty);
+      expect(await repo.allStockEvents(profileId: _profileId), isEmpty);
     },
   );
 }

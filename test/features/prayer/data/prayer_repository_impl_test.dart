@@ -9,6 +9,8 @@ import 'package:habit_tracker/features/prayer/data/repositories/prayer_repositor
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_record.dart';
 import 'package:habit_tracker/features/prayer/domain/entities/prayer_settings.dart';
 
+const _profileId = 'system';
+
 void main() {
   setUpAll(ensureTimeZonesInitialized);
 
@@ -27,7 +29,7 @@ void main() {
   tearDown(() => db.close());
 
   test('watchSettings seeds a singleton row on first read', () async {
-    final settings = await repo.watchSettings().first;
+    final settings = await repo.watchSettings(profileId: _profileId).first;
     expect(settings.id, 'singleton');
     expect(settings.calculationMethod, CalculationMethod.karachi);
     expect(settings.asrMethod, AsrMethod.hanafi);
@@ -35,7 +37,7 @@ void main() {
   });
 
   test('watchQadhaCounters seeds exactly 5 rows, one per PrayerName', () async {
-    final counters = await repo.watchQadhaCounters().first;
+    final counters = await repo.watchQadhaCounters(profileId: _profileId).first;
     expect(counters, hasLength(5));
     expect(
       counters.map((c) => c.prayerName).toSet(),
@@ -45,10 +47,13 @@ void main() {
   });
 
   test('updateSettings changes only the given fields', () async {
-    await repo.watchSettings().first; // ensure seeded
-    final result = await repo.updateSettings(observesJumuah: true);
+    await repo.watchSettings(profileId: _profileId).first; // ensure seeded
+    final result = await repo.updateSettings(
+      profileId: _profileId,
+      observesJumuah: true,
+    );
     expect(result, isA<Success<void>>());
-    final settings = await repo.watchSettings().first;
+    final settings = await repo.watchSettings(profileId: _profileId).first;
     expect(settings.observesJumuah, isTrue);
     expect(settings.calculationMethod, CalculationMethod.karachi); // unchanged
   });
@@ -56,12 +61,19 @@ void main() {
   test(
     'markQadhaMakeup decrements the named counter by 1, clamped at 0',
     () async {
-      await repo.watchQadhaCounters().first; // ensure seeded
-      await repo.setQadhaBalance(PrayerName.fajr, 3);
+      await repo
+          .watchQadhaCounters(profileId: _profileId)
+          .first; // ensure seeded
+      await repo.setQadhaBalance(PrayerName.fajr, 3, profileId: _profileId);
 
-      final result = await repo.markQadhaMakeup(PrayerName.fajr);
+      final result = await repo.markQadhaMakeup(
+        PrayerName.fajr,
+        profileId: _profileId,
+      );
       expect(result, isA<Success<void>>());
-      final counters = await repo.watchQadhaCounters().first;
+      final counters = await repo
+          .watchQadhaCounters(profileId: _profileId)
+          .first;
       expect(
         counters.firstWhere((c) => c.prayerName == PrayerName.fajr).count,
         2,
@@ -70,9 +82,9 @@ void main() {
   );
 
   test('setQadhaBalance clamps a negative input at 0', () async {
-    await repo.watchQadhaCounters().first;
-    await repo.setQadhaBalance(PrayerName.dhuhr, -5);
-    final counters = await repo.watchQadhaCounters().first;
+    await repo.watchQadhaCounters(profileId: _profileId).first;
+    await repo.setQadhaBalance(PrayerName.dhuhr, -5, profileId: _profileId);
+    final counters = await repo.watchQadhaCounters(profileId: _profileId).first;
     expect(
       counters.firstWhere((c) => c.prayerName == PrayerName.dhuhr).count,
       0,
@@ -89,20 +101,30 @@ void main() {
         ianaTimezone: 'Asia/Dhaka',
       );
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
       final firstPass = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 30),
+        profileId: _profileId,
       );
       expect(firstPass, hasLength(30 * 5));
 
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
       final secondPass = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 30),
+        profileId: _profileId,
       );
       expect(secondPass, hasLength(30 * 5)); // unchanged, not duplicated
     },
@@ -120,16 +142,28 @@ void main() {
         ianaTimezone: 'Asia/Dhaka',
       );
       await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
         // Any calculation-method change soft-deletes every future
         // `upcoming` record so the next pass recalculates them.
-        await repo.updateSettings(calculationMethod: CalculationMethod.mwl);
-        await repo.materializeRecords(clock.now(), location);
+        await repo.updateSettings(
+          profileId: _profileId,
+          calculationMethod: CalculationMethod.mwl,
+        );
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
 
       final day = await repo
           .watchRecordsForDay(
             const LocalDate(2026, 6, 15),
+            profileId: _profileId,
           )
           .first;
       expect(day, hasLength(5));
@@ -144,10 +178,14 @@ void main() {
       ianaTimezone: 'Asia/Dhaka',
     );
     await withClock(Clock.fixed(DateTime.utc(2026, 6, 1, 1)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
     final records = await repo
-        .watchRecordsForDay(const LocalDate(2026, 6, 1))
+        .watchRecordsForDay(const LocalDate(2026, 6, 1), profileId: _profileId)
         .first;
     expect(records, hasLength(5));
   });
@@ -158,31 +196,42 @@ void main() {
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
       await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
-      await repo.watchQadhaCounters().first; // ensure seeded
+      await repo
+          .watchQadhaCounters(profileId: _profileId)
+          .first; // ensure seeded
 
       // Just past Isha's rollover cutoff on 2026-06-02 (default 00:00),
       // so all 5 records for June 1st sweep to missed, but June 2nd's
       // records are not yet past their cutoffs.
       final farFuture = DateTime.utc(2026, 6, 2, 0, 1);
-      await repo.sweepMissedPrayers(farFuture, location);
+      await repo.sweepMissedPrayers(farFuture, location, profileId: _profileId);
 
       final records = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       expect(
         records.every((r) => r.storedStatus == PrayerStatus.missed),
         isTrue,
       );
 
-      final counters = await repo.watchQadhaCounters().first;
+      final counters = await repo
+          .watchQadhaCounters(profileId: _profileId)
+          .first;
       expect(counters.every((c) => c.count == 1), isTrue);
 
       // Idempotent: sweeping again doesn't double-bump.
-      await repo.sweepMissedPrayers(farFuture, location);
-      final countersAfterSecondSweep = await repo.watchQadhaCounters().first;
+      await repo.sweepMissedPrayers(farFuture, location, profileId: _profileId);
+      final countersAfterSecondSweep = await repo
+          .watchQadhaCounters(profileId: _profileId)
+          .first;
       expect(countersAfterSecondSweep.every((c) => c.count == 1), isTrue);
     },
   );
@@ -190,19 +239,25 @@ void main() {
   test('markPrayed marks a record prayed', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
     await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
     final records = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     final recordId = records.first.id;
 
-    final result = await repo.markPrayed(recordId);
+    final result = await repo.markPrayed(recordId, profileId: _profileId);
     expect(result, isA<Success<void>>());
     final updated = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     expect(
       updated.firstWhere((r) => r.id == recordId).storedStatus,
@@ -216,22 +271,32 @@ void main() {
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
       await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
       final records = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       final record = records.first;
 
       await withClock(
         Clock.fixed(record.scheduledFor.add(const Duration(hours: 2))),
-        () => repo.markPrayed(record.id, forceOnTime: true),
+        () => repo.markPrayed(
+          record.id,
+          forceOnTime: true,
+          profileId: _profileId,
+        ),
       );
 
       final updated = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       expect(
         updated.firstWhere((r) => r.id == record.id).statusChangedAt,
@@ -245,20 +310,26 @@ void main() {
     () async {
       const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
       await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-        await repo.materializeRecords(clock.now(), location);
+        await repo.materializeRecords(
+          clock.now(),
+          location,
+          profileId: _profileId,
+        );
       });
       final records = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       final recordId = records.first.id;
-      await repo.markPrayed(recordId);
+      await repo.markPrayed(recordId, profileId: _profileId);
 
-      final result = await repo.unmarkPrayed(recordId);
+      final result = await repo.unmarkPrayed(recordId, profileId: _profileId);
       expect(result, isA<Success<void>>());
       final updated = await repo.recordsInRange(
         const LocalDate(2026, 6, 1),
         const LocalDate(2026, 6, 1),
+        profileId: _profileId,
       );
       expect(
         updated.firstWhere((r) => r.id == recordId).storedStatus,
@@ -270,35 +341,52 @@ void main() {
   test('markPrayed fails validation on an already-missed record', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
     await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
-    await repo.watchQadhaCounters().first;
-    await repo.sweepMissedPrayers(DateTime.utc(2026, 6, 2, 0, 1), location);
+    await repo.watchQadhaCounters(profileId: _profileId).first;
+    await repo.sweepMissedPrayers(
+      DateTime.utc(2026, 6, 2, 0, 1),
+      location,
+      profileId: _profileId,
+    );
     final records = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     final missedId = records.first.id;
 
-    final result = await repo.markPrayed(missedId);
+    final result = await repo.markPrayed(missedId, profileId: _profileId);
     expect(result, isA<Failure<void>>());
   });
 
   test('markMissedBySkip marks missed and bumps the Qadha counter', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
     await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
-    await repo.watchQadhaCounters().first;
+    await repo.watchQadhaCounters(profileId: _profileId).first;
     final records = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     final fajr = records.firstWhere((r) => r.prayerName == PrayerName.fajr);
 
-    final result = await repo.markMissedBySkip(fajr.id);
+    final result = await repo.markMissedBySkip(
+      fajr.id,
+      profileId: _profileId,
+    );
     expect(result, isA<Success<void>>());
-    final counters = await repo.watchQadhaCounters().first;
+    final counters = await repo.watchQadhaCounters(profileId: _profileId).first;
     expect(
       counters.firstWhere((c) => c.prayerName == PrayerName.fajr).count,
       1,
@@ -308,9 +396,13 @@ void main() {
   test('allRecords returns every non-deleted record', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
     await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
-    final all = await repo.allRecords();
+    final all = await repo.allRecords(profileId: _profileId);
     expect(all, hasLength(30 * 5));
   });
 
@@ -318,13 +410,22 @@ void main() {
       'useful case)', () async {
     const location = (latitude: 0.0, longitude: 0.0, ianaTimezone: 'Etc/UTC');
     await withClock(Clock.fixed(DateTime.utc(2026, 6)), () async {
-      await repo.materializeRecords(clock.now(), location);
+      await repo.materializeRecords(
+        clock.now(),
+        location,
+        profileId: _profileId,
+      );
     });
-    await repo.watchQadhaCounters().first;
-    await repo.sweepMissedPrayers(DateTime.utc(2026, 6, 2, 0, 1), location);
+    await repo.watchQadhaCounters(profileId: _profileId).first;
+    await repo.sweepMissedPrayers(
+      DateTime.utc(2026, 6, 2, 0, 1),
+      location,
+      profileId: _profileId,
+    );
     final records = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     final missed = records.firstWhere(
       (r) => r.storedStatus == PrayerStatus.missed,
@@ -333,12 +434,14 @@ void main() {
     final result = await repo.updatePrayerNotes(
       missed.id,
       'was in a meeting',
+      profileId: _profileId,
     );
     expect(result, isA<Success<void>>());
 
     final updated = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     final updatedRecord = updated.firstWhere((r) => r.id == missed.id);
     expect(updatedRecord.notes, 'was in a meeting');
@@ -348,7 +451,11 @@ void main() {
   test(
     'updatePrayerNotes on an unknown id fails with NotFoundException',
     () async {
-      final result = await repo.updatePrayerNotes('missing', 'x');
+      final result = await repo.updatePrayerNotes(
+        'missing',
+        'x',
+        profileId: _profileId,
+      );
       expect(result, isA<Failure<void>>());
     },
   );
@@ -358,6 +465,7 @@ void main() {
     final records = await repo.recordsInRange(
       const LocalDate(2026, 6, 1),
       const LocalDate(2026, 6, 1),
+      profileId: _profileId,
     );
     expect(records.firstWhere((r) => r.id == newId).notes, 'restored note');
   });
@@ -376,10 +484,12 @@ Future<String> _insertRestoredRecord(
       storedStatus: PrayerStatus.upcoming,
       notes: notes,
     ),
+    profileId: _profileId,
   );
   final records = await repo.recordsInRange(
     const LocalDate(2026, 6, 1),
     const LocalDate(2026, 6, 1),
+    profileId: _profileId,
   );
   return records.first.id;
 }

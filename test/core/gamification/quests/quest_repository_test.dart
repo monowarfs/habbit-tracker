@@ -4,6 +4,8 @@ import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_definition.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_repository.dart';
 
+const _profileId = 'system';
+
 QuestDefinition _def(String key, {int target = 5}) => QuestDefinition(
   questKey: key,
   moduleId: 'water',
@@ -29,13 +31,16 @@ void main() {
     'ensureCurrentWeekQuests inserts a row per missing definition',
     () async {
       await repo.ensureCurrentWeekQuests(
+        profileId: _profileId,
         definitions: [
           _def('water_goal_5_of_7'),
           _def('water_no_skip_week', target: 7),
         ],
         now: now,
       );
-      final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+      final rows = await repo
+          .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+          .first;
       expect(rows, hasLength(2));
       expect(rows.map((r) => r.progressCurrent), everyElement(0));
       expect(rows.map((r) => r.rewardClaimed), everyElement(0));
@@ -52,10 +57,20 @@ void main() {
         _def('water_no_skip_week', target: 7),
       ];
       await Future.wait([
-        repo.ensureCurrentWeekQuests(definitions: defs, now: now),
-        repo.ensureCurrentWeekQuests(definitions: defs, now: now),
+        repo.ensureCurrentWeekQuests(
+          profileId: _profileId,
+          definitions: defs,
+          now: now,
+        ),
+        repo.ensureCurrentWeekQuests(
+          profileId: _profileId,
+          definitions: defs,
+          now: now,
+        ),
       ]);
-      final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+      final rows = await repo
+          .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+          .first;
       expect(rows, hasLength(2));
     },
   );
@@ -64,10 +79,12 @@ void main() {
     'ensureCurrentWeekQuests is idempotent (dedup on questKey+weekKey)',
     () async {
       await repo.ensureCurrentWeekQuests(
+        profileId: _profileId,
         definitions: [_def('water_goal_5_of_7')],
         now: now,
       );
       await repo.updateProgress(
+        profileId: _profileId,
         questKey: 'water_goal_5_of_7',
         weekKey: '2026-W32',
         current: 3,
@@ -75,10 +92,13 @@ void main() {
       );
       // Calling again must not reset the progress already recorded.
       await repo.ensureCurrentWeekQuests(
+        profileId: _profileId,
         definitions: [_def('water_goal_5_of_7')],
         now: now,
       );
-      final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+      final rows = await repo
+          .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+          .first;
       expect(rows, hasLength(1));
       expect(rows.single.progressCurrent, 3);
     },
@@ -86,16 +106,22 @@ void main() {
 
   test('updateProgress sets completedAt once target is reached', () async {
     await repo.ensureCurrentWeekQuests(
+      profileId: _profileId,
       definitions: [_def('water_goal_5_of_7')],
       now: now,
     );
     await repo.updateProgress(
+      profileId: _profileId,
       questKey: 'water_goal_5_of_7',
       weekKey: '2026-W32',
       current: 5,
       now: now,
     );
-    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    final row =
+        (await repo
+                .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                .first)
+            .single;
     expect(row.completedAt, now.millisecondsSinceEpoch);
   });
 
@@ -103,28 +129,36 @@ void main() {
     'updateProgress does not clear completedAt if progress later drops',
     () async {
       await repo.ensureCurrentWeekQuests(
+        profileId: _profileId,
         definitions: [_def('water_goal_5_of_7')],
         now: now,
       );
       await repo.updateProgress(
+        profileId: _profileId,
         questKey: 'water_goal_5_of_7',
         weekKey: '2026-W32',
         current: 5,
         now: now,
       );
       final firstCompletedAt =
-          (await repo.watchCurrentWeek(weekKey: '2026-W32').first)
+          (await repo
+                  .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                  .first)
               .single
               .completedAt;
 
       await repo.updateProgress(
+        profileId: _profileId,
         questKey: 'water_goal_5_of_7',
         weekKey: '2026-W32',
         current: 2,
         now: now.add(const Duration(hours: 1)),
       );
       final row =
-          (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+          (await repo
+                  .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                  .first)
+              .single;
       expect(row.progressCurrent, 2);
       expect(row.completedAt, firstCompletedAt);
     },
@@ -132,75 +166,104 @@ void main() {
 
   test('updateProgress no-ops for an unknown quest', () async {
     await repo.updateProgress(
+      profileId: _profileId,
       questKey: 'nonexistent',
       weekKey: '2026-W32',
       current: 1,
       now: now,
     );
-    final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+    final rows = await repo
+        .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+        .first;
     expect(rows, isEmpty);
   });
 
   test('claimReward marks the row claimed', () async {
     await repo.ensureCurrentWeekQuests(
+      profileId: _profileId,
       definitions: [_def('water_goal_5_of_7')],
       now: now,
     );
-    await repo.claimReward('water_goal_5_of_7', '2026-W32', now: now);
-    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    await repo.claimReward(
+      profileId: _profileId,
+      'water_goal_5_of_7',
+      '2026-W32',
+      now: now,
+    );
+    final row =
+        (await repo
+                .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                .first)
+            .single;
     expect(row.rewardClaimed, 1);
   });
 
   test('watchCurrentWeek only returns rows for the requested week', () async {
     await repo.ensureCurrentWeekQuests(
+      profileId: _profileId,
       definitions: [_def('water_goal_5_of_7')],
       now: now,
     );
     final otherWeekRows = await repo
-        .watchCurrentWeek(weekKey: '2026-W01')
+        .watchCurrentWeek(weekKey: '2026-W01', profileId: _profileId)
         .first;
     expect(otherWeekRows, isEmpty);
   });
 
   test('ensureBossQuest inserts a row flagged isBoss', () async {
     await repo.ensureBossQuest(
+      profileId: _profileId,
       _def('boss_water_6_of_7', target: 6),
       weekKey: '2026-W32',
       now: now,
     );
-    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    final row =
+        (await repo
+                .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                .first)
+            .single;
     expect(row.isBoss, 1);
     expect(row.progressTarget, 6);
   });
 
   test('ensureBossQuest is idempotent (insertOrIgnore)', () async {
     await repo.ensureBossQuest(
+      profileId: _profileId,
       _def('boss_water_6_of_7', target: 6),
       weekKey: '2026-W32',
       now: now,
     );
     await repo.updateProgress(
+      profileId: _profileId,
       questKey: 'boss_water_6_of_7',
       weekKey: '2026-W32',
       current: 3,
       now: now,
     );
     await repo.ensureBossQuest(
+      profileId: _profileId,
       _def('boss_water_6_of_7', target: 6),
       weekKey: '2026-W32',
       now: now,
     );
-    final rows = await repo.watchCurrentWeek(weekKey: '2026-W32').first;
+    final rows = await repo
+        .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+        .first;
     expect(rows, hasLength(1));
     expect(rows.single.progressCurrent, 3);
   });
 
   test('a regular quest row has isBoss 0', () async {
     await repo.ensureCurrentWeekQuests(
+      profileId: _profileId,
       definitions: [_def('water_goal_5_of_7')],
       now: now,
     );
-    final row = (await repo.watchCurrentWeek(weekKey: '2026-W32').first).single;
+    final row =
+        (await repo
+                .watchCurrentWeek(profileId: _profileId, weekKey: '2026-W32')
+                .first)
+            .single;
     expect(row.isBoss, 0);
   });
 }

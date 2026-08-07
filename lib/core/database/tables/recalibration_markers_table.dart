@@ -21,6 +21,13 @@ class RecalibrationMarkersTable extends Table {
   IntColumn get consecutiveDismissals =>
       integer().withDefault(const Constant(0))();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support. Part of the primary key since
+  /// [moduleId] alone is no longer unique once each profile has its own
+  /// recalibration marker.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
-  Set<Column> get primaryKey => {moduleId};
+  Set<Column> get primaryKey => {moduleId, profileId};
 }

@@ -12,8 +12,9 @@ import 'package:habit_tracker/features/medicine/domain/usecases/calculate_adhere
 List<QuestDefinition> medicineQuestDefinitions(
   HabitModule module,
   MedicineRepository repository,
-  DateRange weekRange,
-) => [
+  DateRange weekRange, {
+  required String profileId,
+}) => [
   QuestDefinition(
     questKey: 'medicine_perfect_week',
     moduleId: 'medicine',
@@ -36,6 +37,7 @@ List<QuestDefinition> medicineQuestDefinitions(
       final doses = await repository.dosesInRange(
         weekRange.start,
         weekRange.end,
+        profileId: profileId,
       );
       final stats = calculateAdherence(doses: doses, now: clock.now());
       if (stats.total == 0) return 0;

@@ -7,6 +7,7 @@ import 'package:habit_tracker/core/notifications/notification_service.dart';
 import 'package:habit_tracker/core/nudges/last_activity_repository.dart';
 import 'package:habit_tracker/core/nudges/reengagement_nudge.dart';
 import 'package:habit_tracker/core/nudges/reengagement_trigger.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 
@@ -60,6 +61,7 @@ Future<void> checkReEngagementNudge(WidgetRef ref) async {
       snoozeCount: 0,
     );
 
+    final profile = await ref.read(activeProfileProvider.future);
     await ledgerRepo.insertScheduled(
       id: nudge.id,
       moduleId: 'system',
@@ -70,6 +72,7 @@ Future<void> checkReEngagementNudge(WidgetRef ref) async {
       scheduledFor: nudge.scheduledAt,
       deepLinkRoute: nudge.deepLinkRoute,
       originalScheduledFor: nudge.scheduledAt,
+      profileId: profile.id,
     );
 
     // Record nudge timestamp to prevent re-nudging.

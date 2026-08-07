@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/gamification/avatar/avatar_equipped_repositor
 import 'package:habit_tracker/core/gamification/avatar/avatar_piece_catalog.dart';
 import 'package:habit_tracker/core/gamification/avatar/avatar_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/avatar/presentation/avatar_piece_icons.dart';
 import 'package:habit_tracker/features/dashboard/presentation/widgets/avatar_display.dart';
 
@@ -88,12 +89,18 @@ class _PieceGrid extends ConsumerWidget {
             child: GestureDetector(
               onTap: locked
                   ? null
-                  : () => ref
-                        .read(avatarEquippedRepositoryProvider)
-                        .equip(
-                          slot: slot,
-                          pieceId: isEquipped ? null : piece.id,
-                        ),
+                  : () async {
+                      final profileId = (await ref.read(
+                        activeProfileProvider.future,
+                      )).id;
+                      await ref
+                          .read(avatarEquippedRepositoryProvider)
+                          .equip(
+                            slot: slot,
+                            pieceId: isEquipped ? null : piece.id,
+                            profileId: profileId,
+                          );
+                    },
               child: Column(
                 children: [
                   Container(

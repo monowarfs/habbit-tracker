@@ -51,6 +51,7 @@ void main() {
   testWidgets('shows progress within the current level', (tester) async {
     final repository = XpRepository(db);
     await repository.awardXp(
+      profileId: 'system',
       moduleId: 'water',
       eventType: 'action',
       amount: 150,
@@ -71,6 +72,7 @@ void main() {
     expect(find.text('Level 1'), findsOneWidget);
 
     await XpRepository(db).awardXp(
+      profileId: 'system',
       moduleId: 'water',
       eventType: 'day_complete',
       amount: 100,

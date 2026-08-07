@@ -103,7 +103,12 @@ void main() {
 
     test("has 2 quests with the plan's targets", () {
       final module = _FakeModule('medicine', const {});
-      final defs = medicineQuestDefinitions(module, repository, _weekRange);
+      final defs = medicineQuestDefinitions(
+        module,
+        repository,
+        _weekRange,
+        profileId: 'system',
+      );
       expect(defs.map((d) => d.questKey), [
         'medicine_perfect_week',
         'medicine_90_percent',
@@ -114,7 +119,11 @@ void main() {
 
     test('90_percent computes on-time+late as a percentage of total', () async {
       when(
-        () => repository.dosesInRange(_weekRange.start, _weekRange.end),
+        () => repository.dosesInRange(
+          _weekRange.start,
+          _weekRange.end,
+          profileId: 'system',
+        ),
       ).thenAnswer(
         (_) async => [
           MedicineDose(
@@ -146,17 +155,31 @@ void main() {
         ],
       );
       final module = _FakeModule('medicine', const {});
-      final defs = medicineQuestDefinitions(module, repository, _weekRange);
+      final defs = medicineQuestDefinitions(
+        module,
+        repository,
+        _weekRange,
+        profileId: 'system',
+      );
       // 2 of 3 doses taken -> 67%.
       expect(await defs[1].progressEvaluator(), 67);
     });
 
     test('90_percent is 0 when there are no doses this week', () async {
       when(
-        () => repository.dosesInRange(_weekRange.start, _weekRange.end),
+        () => repository.dosesInRange(
+          _weekRange.start,
+          _weekRange.end,
+          profileId: 'system',
+        ),
       ).thenAnswer((_) async => []);
       final module = _FakeModule('medicine', const {});
-      final defs = medicineQuestDefinitions(module, repository, _weekRange);
+      final defs = medicineQuestDefinitions(
+        module,
+        repository,
+        _weekRange,
+        profileId: 'system',
+      );
       expect(await defs[1].progressEvaluator(), 0);
     });
   });

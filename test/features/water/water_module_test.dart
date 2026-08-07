@@ -34,13 +34,15 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   bool? capturedReminderEnabled;
 
   @override
-  Stream<WaterSettings> watchSettings() => Stream.value(_settings);
+  Stream<WaterSettings> watchSettings({required String profileId}) =>
+      Stream.value(_settings);
 
   @override
   Stream<List<WaterEntry>> watchEntriesInRange(
     LocalDate start,
-    LocalDate end,
-  ) => Stream.value(
+    LocalDate end, {
+    required String profileId,
+  }) => Stream.value(
     _entries.where((e) {
       final day = localDayKey(e.loggedAt);
       return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
@@ -48,16 +50,18 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   );
 
   @override
-  Future<List<WaterGoal>> allGoals() async => _goals;
+  Future<List<WaterGoal>> allGoals({required String profileId}) async => _goals;
 
   @override
-  Future<List<WaterEntry>> allEntries() async => _entries;
+  Future<List<WaterEntry>> allEntries({required String profileId}) async =>
+      _entries;
 
   @override
   Future<Result<WaterEntry>> addEntry({
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    required String profileId,
     String? notes,
   }) async {
     capturedAmountMl = amountMl;
@@ -73,10 +77,14 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
   }
 
   @override
-  Future<void> wipeAll() async => wipeAllCalled = true;
+  Future<void> wipeAll({required String profileId}) async =>
+      wipeAllCalled = true;
 
   @override
-  Future<Result<void>> updateQuickAddAmounts(List<int> amountsMl) async {
+  Future<Result<void>> updateQuickAddAmounts(
+    List<int> amountsMl, {
+    required String profileId,
+  }) async {
     capturedQuickAddAmounts = amountsMl;
     return const Result.success(null);
   }
@@ -88,6 +96,7 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
     required LocalTime windowStart,
     required LocalTime windowEnd,
     required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
+    required String profileId,
   }) async {
     capturedReminderEnabled = enabled;
     return const Result.success(null);
@@ -99,7 +108,8 @@ class _FakePrayerRepository extends Fake implements PrayerRepository {
   final PrayerSettings _settings;
 
   @override
-  Future<PrayerSettings> getSettings() async => _settings;
+  Future<PrayerSettings> getSettings({required String profileId}) async =>
+      _settings;
 }
 
 class _FakeSettingsRepository extends Fake implements SettingsRepository {

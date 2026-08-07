@@ -5,6 +5,8 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_entry.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late WaterRepositoryImpl repo;
@@ -21,13 +23,18 @@ void main() {
       amountMl: 250,
       loggedAt: DateTime.utc(2026, 6),
       source: WaterEntrySource.quick,
+      profileId: _profileId,
     );
-    await repo.setGoal(2000, effectiveFrom: DateTime.utc(2026, 6));
-    await repo.updateQuickAddAmounts([100, 200]);
+    await repo.setGoal(
+      2000,
+      effectiveFrom: DateTime.utc(2026, 6),
+      profileId: _profileId,
+    );
+    await repo.updateQuickAddAmounts([100, 200], profileId: _profileId);
 
-    await repo.wipeAll();
+    await repo.wipeAll(profileId: _profileId);
 
-    expect(await repo.allEntries(), isEmpty);
+    expect(await repo.allEntries(profileId: _profileId), isEmpty);
     final goalRows = await db.select(db.waterGoalsTable).get();
     expect(goalRows, isEmpty);
     final settingsRows = await db.select(db.waterSettingsTable).get();
@@ -38,17 +45,19 @@ void main() {
     'weather nudge defaults to off with no cache, persists a toggle, and '
     'persists a cached reading',
     () async {
-      final firstRead = await repo.watchSettings().first;
+      final firstRead = await repo.watchSettings(profileId: _profileId).first;
       expect(firstRead.weatherNudgeEnabled, isFalse);
       expect(firstRead.lastWeatherTemperatureCelsius, isNull);
       expect(firstRead.lastWeatherFetchedAt, isNull);
 
       final toggleResult = await repo.updateWeatherNudgeEnabled(
         enabled: true,
+        profileId: _profileId,
       );
       expect(toggleResult, isA<Success<void>>());
       expect(
-        (await repo.watchSettings().first).weatherNudgeEnabled,
+        (await repo.watchSettings(profileId: _profileId).first)
+            .weatherNudgeEnabled,
         isTrue,
       );
 
@@ -56,9 +65,10 @@ void main() {
       final cacheResult = await repo.updateWeatherCache(
         temperatureCelsius: 34.5,
         fetchedAt: fetchedAt,
+        profileId: _profileId,
       );
       expect(cacheResult, isA<Success<void>>());
-      final afterCache = await repo.watchSettings().first;
+      final afterCache = await repo.watchSettings(profileId: _profileId).first;
       expect(afterCache.lastWeatherTemperatureCelsius, 34.5);
       expect(afterCache.lastWeatherFetchedAt, fetchedAt);
     },

@@ -2848,5 +2848,47 @@
   "commonPreviousMonth": "Previous month",
   "@commonPreviousMonth": {"description": "Screen-reader label/tooltip for a calendar's previous-month navigation button."},
   "commonNextMonth": "Next month",
-  "@commonNextMonth": {"description": "Screen-reader label/tooltip for a calendar's next-month navigation button."}
+  "@commonNextMonth": {"description": "Screen-reader label/tooltip for a calendar's next-month navigation button."},
+  "profileSwitcherTooltip": "Active profile: {name}. Tap to switch.",
+  "@profileSwitcherTooltip": {
+    "description": "Tooltip on the app bar's profile switcher avatar button.",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "switchProfileSheetTitle": "Switch Profile",
+  "@switchProfileSheetTitle": {"description": "Title of the profile-switcher bottom sheet."},
+  "manageProfilesTitle": "Manage Profiles",
+  "@manageProfilesTitle": {"description": "Title of the manage-profiles screen, and the switcher sheet's link to it."},
+  "addProfileAction": "Add Profile",
+  "@addProfileAction": {"description": "Button that opens the add-profile dialog."},
+  "editProfileAction": "Edit",
+  "@editProfileAction": {"description": "Button/action to edit an existing profile."},
+  "deleteProfileAction": "Delete",
+  "@deleteProfileAction": {"description": "Button/action to delete a profile."},
+  "profileNameLabel": "Name",
+  "@profileNameLabel": {"description": "Label for the profile display-name text field."},
+  "profileColorLabel": "Color",
+  "@profileColorLabel": {"description": "Label for the profile avatar-color picker."},
+  "maxProfilesReachedMessage": "You've reached the limit of {max} profiles.",
+  "@maxProfilesReachedMessage": {
+    "description": "Shown when trying to add a profile past the maximum.",
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "deleteProfileConfirmTitle": "Delete {name}?",
+  "@deleteProfileConfirmTitle": {
+    "description": "Title of the delete-profile confirmation dialog.",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "deleteProfileConfirmBody": "This profile's data will no longer be shown, but existing data for other profiles is unaffected.",
+  "@deleteProfileConfirmBody": {"description": "Body text of the delete-profile confirmation dialog."},
+  "deleteProfileLastRemainingError": "Can't delete the last remaining profile.",
+  "@deleteProfileLastRemainingError": {"description": "Error shown when trying to delete the only remaining profile."},
+  "profileStorageUsageLabel": "{count} items",
+  "@profileStorageUsageLabel": {
+    "description": "Approximate per-profile storage/data usage shown on the manage-profiles screen.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "addProfileDialogTitle": "New Profile",
+  "@addProfileDialogTitle": {"description": "Title of the add-profile dialog."},
+  "profileNameRequiredError": "Enter a name.",
+  "@profileNameRequiredError": {"description": "Validation error when the profile name field is left empty."}
 }

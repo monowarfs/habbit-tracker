@@ -101,6 +101,7 @@ void main() {
         settingsRepository: settingsRepository,
         achievementRepository: achievementRepository,
         appVersion: '1.0.0',
+        profileId: 'system',
       );
 
       final applied = await applyImport(
@@ -154,6 +155,7 @@ void main() {
         settingsRepository: settingsRepository,
         achievementRepository: AchievementRepository(db),
         appVersion: '1.0.0',
+        profileId: 'system',
       );
       brokenEnvelope.modules['water']!['goals'] = [
         {'goalMl': 1000, 'effectiveFrom': 'not-a-date'},

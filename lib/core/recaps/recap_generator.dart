@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/recaps/recap_repository.dart';
@@ -36,6 +37,7 @@ class YearRecapGeneratorUseCase {
   Future<YearSummary?> execute(
     int yearNumber, {
     required LocalDate today,
+    required String profileId,
   }) async {
     final settings = await settingsRepository.watchSettings().first;
     final installDate = settings.installDate;
@@ -108,11 +110,16 @@ class YearRecapGeneratorUseCase {
         .into(db.recapsTable)
         .insertOnConflictUpdate(
           RecapsTableCompanion.insert(
-            id: 'year_$yearNumber',
+            // Profile-scoped id: `recaps.id` isn't a composite
+            // `{yearNumber, profileId}` key (unlike `weekly_quests`/
+            // `shop_unlocks`), so without the profile suffix two
+            // profiles' year-1 recaps would collide on the same row.
+            id: 'year_${yearNumber}_$profileId',
             yearNumber: yearNumber,
             installYear: installLocal.year,
             generatedAt: now,
             summaryJson: summaryJson,
+            profileId: Value(profileId),
           ),
         );
 

@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/error/result.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/prayer/data/location_resolver.dart';
@@ -29,13 +30,21 @@ LocalDate _today() => localDayKey(clock.now());
 /// The (auto-seeded) singleton settings row.
 @riverpod
 Stream<PrayerSettings> prayerSettings(Ref ref) {
-  return ref.watch(prayerRepositoryProvider).watchSettings();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(prayerRepositoryProvider)
+      .watchSettings(profileId: profileId);
 }
 
 /// The five Qadha counters.
 @riverpod
 Stream<List<PrayerQadhaCounter>> prayerQadhaCounters(Ref ref) {
-  return ref.watch(prayerRepositoryProvider).watchQadhaCounters();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(prayerRepositoryProvider)
+      .watchQadhaCounters(profileId: profileId);
 }
 
 /// The bundled city picker list, loaded once.
@@ -64,14 +73,21 @@ Future<List<PrayerRecord>> prayerRecordsInRange(
   Ref ref, {
   required LocalDate start,
   required LocalDate end,
-}) {
-  return ref.watch(prayerRepositoryProvider).recordsInRange(start, end);
+}) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
+  return ref
+      .watch(prayerRepositoryProvider)
+      .recordsInRange(start, end, profileId: profileId);
 }
 
 /// Today's five prayer records.
 @riverpod
 Stream<List<PrayerRecord>> todaysPrayerRecords(Ref ref) {
-  return ref.watch(prayerRepositoryProvider).watchRecordsForDay(_today());
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(prayerRepositoryProvider)
+      .watchRecordsForDay(_today(), profileId: profileId);
 }
 
 /// A prayer record paired with its live-derived status and Jumu'ah

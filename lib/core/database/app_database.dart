@@ -13,6 +13,7 @@ import 'package:habit_tracker/core/database/tables/notification_ledger_table.dar
 import 'package:habit_tracker/core/database/tables/onboarding_progress_table.dart';
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
 import 'package:habit_tracker/core/database/tables/personal_records_table.dart';
+import 'package:habit_tracker/core/database/tables/profiles_table.dart';
 import 'package:habit_tracker/core/database/tables/recalibration_markers_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/core/database/tables/shop_unlocks_table.dart';
@@ -81,6 +82,7 @@ part 'app_database.g.dart';
     XpBalanceTable,
     ShopUnlocksTable,
     PersonalRecordsTable,
+    ProfilesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -89,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 32;
+  int get schemaVersion => 33;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -333,6 +335,92 @@ class AppDatabase extends _$AppDatabase {
         // `docs/superpowers/specs/08-analytics/
         // 02-personal-record-tracking-IMPLEMENTATION-PLAN.md`).
         await m.createTable(personalRecordsTable);
+      }
+      if (from < 33) {
+        // Family/multi-profile (`docs/superpowers/specs/04-premium/
+        // 03-family-multi-profile-IMPLEMENTATION-PLAN.md`, Task 2).
+        // Every existing row across the app defaults to the `'system'`
+        // profile so pre-migration data is preserved unchanged.
+        await m.createTable(profilesTable);
+        await m.addColumn(
+          appSettingsTable,
+          appSettingsTable.activeProfileId,
+        );
+
+        await m.addColumn(
+          notificationLedgerTable,
+          notificationLedgerTable.profileId,
+        );
+        await m.addColumn(achievementsTable, achievementsTable.profileId);
+        await m.addColumn(
+          habitStackSuggestionsTable,
+          habitStackSuggestionsTable.profileId,
+        );
+        await m.addColumn(recapsTable, recapsTable.profileId);
+        await m.addColumn(pauseRangesTable, pauseRangesTable.profileId);
+        await m.addColumn(
+          recalibrationMarkersTable,
+          recalibrationMarkersTable.profileId,
+        );
+        await m.addColumn(moduleSettingsTable, moduleSettingsTable.profileId);
+        await m.addColumn(
+          cosmeticUnlocksTable,
+          cosmeticUnlocksTable.profileId,
+        );
+        await m.addColumn(
+          avatarEquippedTable,
+          avatarEquippedTable.profileId,
+        );
+        await m.addColumn(xpLedgerTable, xpLedgerTable.profileId);
+        await m.addColumn(xpBalanceTable, xpBalanceTable.profileId);
+        await m.addColumn(shopUnlocksTable, shopUnlocksTable.profileId);
+        await m.addColumn(
+          personalRecordsTable,
+          personalRecordsTable.profileId,
+        );
+        await m.addColumn(weeklyQuestsTable, weeklyQuestsTable.profileId);
+
+        await m.addColumn(waterGoalsTable, waterGoalsTable.profileId);
+        await m.addColumn(waterLogsTable, waterLogsTable.profileId);
+        await m.addColumn(waterSettingsTable, waterSettingsTable.profileId);
+
+        await m.addColumn(medicinesTable, medicinesTable.profileId);
+        await m.addColumn(
+          medicineSchedulesTable,
+          medicineSchedulesTable.profileId,
+        );
+        await m.addColumn(medicineDosesTable, medicineDosesTable.profileId);
+        await m.addColumn(
+          medicineStockEventsTable,
+          medicineStockEventsTable.profileId,
+        );
+
+        await m.addColumn(prayerSettingsTable, prayerSettingsTable.profileId);
+        await m.addColumn(prayerRecordsTable, prayerRecordsTable.profileId);
+        await m.addColumn(
+          prayerQadhaCountersTable,
+          prayerQadhaCountersTable.profileId,
+        );
+
+        await m.addColumn(sleepLogsTable, sleepLogsTable.profileId);
+        await m.addColumn(bpLogsTable, bpLogsTable.profileId);
+        await m.addColumn(moodLogsTable, moodLogsTable.profileId);
+        await m.addColumn(exerciseLogsTable, exerciseLogsTable.profileId);
+
+        // Seed the default profile every pre-existing row now points at.
+        final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+        await into(profilesTable).insert(
+          ProfilesTableCompanion.insert(
+            id: 'system',
+            displayName: 'Me',
+            avatarColor: 'teal',
+            createdAt: now,
+          ),
+        );
+        await customUpdate(
+          "UPDATE app_settings SET active_profile_id = 'system' "
+          'WHERE active_profile_id IS NULL',
+        );
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to

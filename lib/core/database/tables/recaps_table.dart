@@ -26,6 +26,11 @@ class RecapsTable extends Table {
   /// Whether the user has dismissed this recap from the full-screen view.
   BoolColumn get dismissed => boolean().withDefault(const Constant(false))();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

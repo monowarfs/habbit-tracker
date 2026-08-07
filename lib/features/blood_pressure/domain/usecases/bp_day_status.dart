@@ -32,8 +32,12 @@ Map<LocalDate, ModuleDayStatus> calculateBpDayStatus({
 }
 
 /// The current consecutive-days-logged streak, ending at [today].
-Future<int> currentBpStreak(BpRepository repository, LocalDate today) async {
-  final logs = await repository.allLogs();
+Future<int> currentBpStreak(
+  BpRepository repository,
+  LocalDate today, {
+  required String profileId,
+}) async {
+  final logs = await repository.allLogs(profileId: profileId);
   if (logs.isEmpty) return 0;
   final earliest = logs
       .map((l) => localDayKey(l.loggedAt))

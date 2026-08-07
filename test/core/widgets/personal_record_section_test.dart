@@ -50,7 +50,12 @@ void main() {
   ) async {
     await PersonalRecordRepository(
       db,
-    ).setRecord(moduleId: 'water', recordType: 'longest_streak', value: 20);
+    ).setRecord(
+      moduleId: 'water',
+      recordType: 'longest_streak',
+      value: 20,
+      profileId: 'system',
+    );
 
     await tester.pumpWidget(buildApp(currentStreak: 5));
     await tester.pumpAndSettle();
@@ -65,7 +70,12 @@ void main() {
     (tester) async {
       await PersonalRecordRepository(
         db,
-      ).setRecord(moduleId: 'water', recordType: 'longest_streak', value: 5);
+      ).setRecord(
+        moduleId: 'water',
+        recordType: 'longest_streak',
+        value: 5,
+        profileId: 'system',
+      );
 
       await tester.pumpWidget(buildApp(currentStreak: 8));
       await tester.pumpAndSettle();
@@ -83,9 +93,14 @@ void main() {
     await tester.pumpWidget(buildApp(currentStreak: 3));
     await tester.pumpAndSettle();
 
-    final record = await PersonalRecordRepository(
-      db,
-    ).getRecord(moduleId: 'water', recordType: 'longest_streak');
+    final record =
+        await PersonalRecordRepository(
+          db,
+        ).getRecord(
+          moduleId: 'water',
+          recordType: 'longest_streak',
+          profileId: 'system',
+        );
     expect(record!.recordValue, 3);
   });
 }

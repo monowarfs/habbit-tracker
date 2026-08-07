@@ -4,6 +4,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_award_helper.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/entities/medicine.dart';
@@ -21,6 +22,9 @@ class MedicineController extends _$MedicineController {
   @override
   void build() {}
 
+  Future<String> _activeProfileId() =>
+      ref.read(activeProfileProvider.future).then((p) => p.id);
+
   /// Creates a medicine with one initial schedule (FR-M-01).
   Future<void> createMedicine({
     required String name,
@@ -35,6 +39,7 @@ class MedicineController extends _$MedicineController {
     LocalDate? endDate,
     int graceWindowMinutes = 30,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(medicineRepositoryProvider);
     final medicineResult = await repository.createMedicine(
       name: name,
@@ -44,6 +49,7 @@ class MedicineController extends _$MedicineController {
       stockThreshold: stockThreshold,
       stopWhenStockDepleted: stopWhenStockDepleted,
       consumptionPerDose: consumptionPerDose,
+      profileId: profileId,
     );
     if (medicineResult case Failure(:final error)) {
       logException(error);
@@ -56,12 +62,13 @@ class MedicineController extends _$MedicineController {
       startDate: startDate,
       endDate: endDate,
       graceWindowMinutes: graceWindowMinutes,
+      profileId: profileId,
     );
     if (scheduleResult case Failure(:final error)) logException(error);
     if (scheduleResult case Success()) {
       await ref.read(recalibrationServiceProvider).onGoalEdited('medicine');
     }
-    await repository.materializeDoses(clock.now());
+    await repository.materializeDoses(clock.now(), profileId: profileId);
   }
 
   /// Adds an additional schedule to an existing medicine (D-02).
@@ -72,6 +79,7 @@ class MedicineController extends _$MedicineController {
     LocalDate? endDate,
     int graceWindowMinutes = 30,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(medicineRepositoryProvider);
     final result = await repository.createSchedule(
       medicineId: medicineId,
@@ -79,9 +87,10 @@ class MedicineController extends _$MedicineController {
       startDate: startDate,
       endDate: endDate,
       graceWindowMinutes: graceWindowMinutes,
+      profileId: profileId,
     );
     if (result case Failure(:final error)) logException(error);
-    await repository.materializeDoses(clock.now());
+    await repository.materializeDoses(clock.now(), profileId: profileId);
   }
 
   /// Marks a dose done (FR-M-07).
@@ -89,71 +98,92 @@ class MedicineController extends _$MedicineController {
     String doseId, {
     bool fromOtherSource = false,
   }) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .markDoseDone(doseId, fromOtherSource: fromOtherSource);
+        .markDoseDone(
+          doseId,
+          fromOtherSource: fromOtherSource,
+          profileId: profileId,
+        );
     if (result case Failure(:final error)) {
       logException(error);
       return;
     }
-    await ref.read(achievementEngineProvider).evaluate('medicine');
+    await ref
+        .read(achievementEngineProvider)
+        .evaluate('medicine', profileId: profileId);
     await ref
         .read(questEngineProvider)
-        .evaluateModule('medicine', now: clock.now());
-    await awardActionXp(ref, moduleId: 'medicine', actionSourceId: doseId);
+        .evaluateModule('medicine', now: clock.now(), profileId: profileId);
+    await awardActionXp(
+      ref,
+      moduleId: 'medicine',
+      actionSourceId: doseId,
+      profileId: profileId,
+    );
   }
 
   /// Marks a dose skipped (FR-M-07).
   Future<void> markDoseSkipped(String doseId) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .markDoseSkipped(doseId);
+        .markDoseSkipped(doseId, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Un-marks a done dose.
   Future<void> undoDose(String doseId) async {
-    final result = await ref.read(medicineRepositoryProvider).undoDose(doseId);
+    final profileId = await _activeProfileId();
+    final result = await ref
+        .read(medicineRepositoryProvider)
+        .undoDose(doseId, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Annotates a dose with a free-text note, independent of its status.
   Future<void> updateDoseNotes(String doseId, String? notes) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .updateDoseNotes(doseId, notes);
+        .updateDoseNotes(doseId, notes, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Archives a medicine (FR-M-10).
   Future<void> archiveMedicine(String id) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .archiveMedicine(id);
+        .archiveMedicine(id, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Updates a medicine's name.
   Future<void> updateMedicineName(String id, String name) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .updateMedicine(id, name: name);
+        .updateMedicine(id, name: name, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Restores an archived medicine.
   Future<void> restoreMedicine(String id) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .restoreMedicine(id);
+        .restoreMedicine(id, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 
   /// Adds stock via a manual refill.
   Future<void> refillStock(String medicineId, int amount) async {
+    final profileId = await _activeProfileId();
     final result = await ref
         .read(medicineRepositoryProvider)
-        .refillStock(medicineId, amount);
+        .refillStock(medicineId, amount, profileId: profileId);
     if (result case Failure(:final error)) logException(error);
   }
 }

@@ -46,7 +46,7 @@ void main() {
           currentWeekQuestsProvider.overrideWith(
             (ref) => ref
                 .watch(questRepositoryProvider)
-                .watchCurrentWeek(weekKey: '2026-W32'),
+                .watchCurrentWeek(weekKey: '2026-W32', profileId: 'system'),
           ),
         ],
         child: const MaterialApp(
@@ -80,12 +80,14 @@ void main() {
     await repository.ensureCurrentWeekQuests(
       definitions: [_def('water_goal_5_of_7')],
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'water_goal_5_of_7',
       weekKey: '2026-W32',
       current: 3,
       now: now,
+      profileId: 'system',
     );
 
     await pumpList(tester);
@@ -106,12 +108,14 @@ void main() {
       await repository.ensureCurrentWeekQuests(
         definitions: [_def('medicine_90_percent', target: 90)],
         now: now,
+        profileId: 'system',
       );
       await repository.updateProgress(
         questKey: 'medicine_90_percent',
         weekKey: '2026-W32',
         current: 67,
         now: now,
+        profileId: 'system',
       );
 
       await pumpList(tester);
@@ -130,12 +134,14 @@ void main() {
     await repository.ensureCurrentWeekQuests(
       definitions: [_def('water_goal_5_of_7')],
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'water_goal_5_of_7',
       weekKey: '2026-W32',
       current: 5,
       now: now,
+      profileId: 'system',
     );
 
     await pumpList(tester);
@@ -153,12 +159,14 @@ void main() {
     await repository.ensureCurrentWeekQuests(
       definitions: [_def('water_goal_5_of_7')],
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'water_goal_5_of_7',
       weekKey: '2026-W32',
       current: 5,
       now: now,
+      profileId: 'system',
     );
 
     await pumpList(tester);
@@ -169,7 +177,12 @@ void main() {
     // (same category of issue documented in
     // habit_stack_suggestion_card_test.dart) — exercise the same DB write
     // the handler performs instead of tapping through it.
-    await repository.claimReward('water_goal_5_of_7', '2026-W32', now: now);
+    await repository.claimReward(
+      'water_goal_5_of_7',
+      '2026-W32',
+      now: now,
+      profileId: 'system',
+    );
     await tester.pump();
     await tester.pump();
 
@@ -178,7 +191,9 @@ void main() {
 
     List<WeeklyQuestRow>? rows;
     await tester.runAsync(() async {
-      rows = await repository.watchCurrentWeek(weekKey: '2026-W32').first;
+      rows = await repository
+          .watchCurrentWeek(weekKey: '2026-W32', profileId: 'system')
+          .first;
     });
     expect(rows!.single.rewardClaimed, 1);
 
@@ -192,14 +207,21 @@ void main() {
     await repository.ensureCurrentWeekQuests(
       definitions: [_def('water_goal_5_of_7')],
       now: now,
+      profileId: 'system',
     );
     await repository.updateProgress(
       questKey: 'water_goal_5_of_7',
       weekKey: '2026-W32',
       current: 5,
       now: now,
+      profileId: 'system',
     );
-    await repository.claimReward('water_goal_5_of_7', '2026-W32', now: now);
+    await repository.claimReward(
+      'water_goal_5_of_7',
+      '2026-W32',
+      now: now,
+      profileId: 'system',
+    );
 
     await pumpList(tester);
 
@@ -220,6 +242,7 @@ void main() {
           _def('medicine_perfect_week', target: 7, moduleId: 'medicine'),
         ],
         now: now,
+        profileId: 'system',
       );
 
       // Only 'medicine' is in the active module list — 'water' isn't.
@@ -230,7 +253,7 @@ void main() {
             currentWeekQuestsProvider.overrideWith(
               (ref) => ref
                   .watch(questRepositoryProvider)
-                  .watchCurrentWeek(weekKey: '2026-W32'),
+                  .watchCurrentWeek(weekKey: '2026-W32', profileId: 'system'),
             ),
             habitModulesProvider.overrideWith(
               (ref) => [_FakeModule('medicine')],
@@ -261,11 +284,13 @@ void main() {
       await repository.ensureCurrentWeekQuests(
         definitions: [_def('water_goal_5_of_7')],
         now: now,
+        profileId: 'system',
       );
       await repository.ensureBossQuest(
         _def('boss_water_6_of_7', target: 6),
         weekKey: '2026-W32',
         now: now,
+        profileId: 'system',
       );
 
       await pumpList(tester);

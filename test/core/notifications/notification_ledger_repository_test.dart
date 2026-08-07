@@ -27,9 +27,10 @@ void main() {
       body: 'body',
       scheduledFor: scheduledFor,
       deepLinkRoute: '/water',
+      profileId: 'system',
     );
 
-    final pending = await repo.pendingRows();
+    final pending = await repo.pendingRows(profileId: 'system');
     expect(pending, hasLength(1));
     expect(pending.single.id, 'r1');
     expect(pending.single.title, 'Time to drink water');
@@ -40,11 +41,12 @@ void main() {
         'r1',
         action: 'done',
         actionAt: clock.now(),
+        profileId: 'system',
       ),
     );
 
-    expect(await repo.pendingRows(), isEmpty);
-    final row = await repo.rowById('r1');
+    expect(await repo.pendingRows(profileId: 'system'), isEmpty);
+    final row = await repo.rowById('r1', profileId: 'system');
     expect(row!.action, 'done');
   });
 
@@ -62,13 +64,22 @@ void main() {
         body: 'body',
         scheduledFor: scheduledFor,
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
       final rescheduled = scheduledFor.add(const Duration(minutes: 10));
-      await repo.recordSnooze('r1', rescheduledFor: rescheduled);
-      await repo.recordSnooze('r1', rescheduledFor: rescheduled);
+      await repo.recordSnooze(
+        'r1',
+        rescheduledFor: rescheduled,
+        profileId: 'system',
+      );
+      await repo.recordSnooze(
+        'r1',
+        rescheduledFor: rescheduled,
+        profileId: 'system',
+      );
 
-      final row = await repo.rowById('r1');
+      final row = await repo.rowById('r1', profileId: 'system');
       expect(row!.snoozeCount, 2);
       expect(row.action, isNull);
       expect(
@@ -76,7 +87,7 @@ void main() {
         rescheduled,
       );
       // still pending — snooze is not terminal.
-      expect(await repo.pendingRows(), hasLength(1));
+      expect(await repo.pendingRows(profileId: 'system'), hasLength(1));
     },
   );
 
@@ -95,11 +106,13 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 6, 20, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
       await repo.markActioned(
         'done-in-window',
         action: 'done',
         actionAt: DateTime.utc(2026, 6, 20, 8, 5),
+        profileId: 'system',
       );
 
       // In-window, still pending — excluded (not actioned).
@@ -112,6 +125,7 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 6, 21, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
       // In-window, done then cancelled — excluded (soft-deleted).
@@ -124,13 +138,15 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 6, 22, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
       await repo.markActioned(
         'done-deleted',
         action: 'done',
         actionAt: DateTime.utc(2026, 6, 22, 8, 5),
+        profileId: 'system',
       );
-      await repo.cancel('done-deleted');
+      await repo.cancel('done-deleted', profileId: 'system');
 
       // Outside the 30-day window — excluded.
       await repo.insertScheduled(
@@ -142,14 +158,20 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 5, 1, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
       await repo.markActioned(
         'done-out-of-window',
         action: 'done',
         actionAt: DateTime.utc(2026, 5, 1, 8, 5),
+        profileId: 'system',
       );
 
-      final result = await repo.actionedDoneRows(windowDays: 30, now: now);
+      final result = await repo.actionedDoneRows(
+        windowDays: 30,
+        now: now,
+        profileId: 'system',
+      );
 
       expect(result.map((r) => r.id), ['done-in-window']);
     },
@@ -171,6 +193,7 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 6, 20, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
       // In-window but scheduled in the future relative to now — excluded
@@ -184,6 +207,7 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 7, 1, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
       // Past scheduledFor but cancelled — excluded (soft-deleted).
@@ -196,8 +220,9 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 6, 22, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
-      await repo.cancel('past-deleted');
+      await repo.cancel('past-deleted', profileId: 'system');
 
       // Outside the 30-day window — excluded.
       await repo.insertScheduled(
@@ -209,9 +234,14 @@ void main() {
         body: 'body',
         scheduledFor: DateTime.utc(2026, 5, 1, 8),
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
-      final result = await repo.firedRows(windowDays: 30, now: now);
+      final result = await repo.firedRows(
+        windowDays: 30,
+        now: now,
+        profileId: 'system',
+      );
 
       expect(result.map((r) => r.id), ['past-in-window']);
     },
@@ -233,6 +263,7 @@ void main() {
         body: 'body',
         scheduledFor: now,
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
       await repo.insertScheduled(
         id: 'exactly-window-start',
@@ -243,9 +274,14 @@ void main() {
         body: 'body',
         scheduledFor: windowStart,
         deepLinkRoute: '/water',
+        profileId: 'system',
       );
 
-      final result = await repo.firedRows(windowDays: 30, now: now);
+      final result = await repo.firedRows(
+        windowDays: 30,
+        now: now,
+        profileId: 'system',
+      );
 
       expect(
         result.map((r) => r.id).toSet(),
@@ -264,11 +300,12 @@ void main() {
       body: 'body',
       scheduledFor: DateTime.utc(2026, 6, 1, 8),
       deepLinkRoute: '/water',
+      profileId: 'system',
     );
 
-    await repo.cancel('r1');
+    await repo.cancel('r1', profileId: 'system');
 
-    expect(await repo.pendingRows(), isEmpty);
-    expect(await repo.rowById('r1'), isNull);
+    expect(await repo.pendingRows(profileId: 'system'), isEmpty);
+    expect(await repo.rowById('r1', profileId: 'system'), isNull);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/sleep/data/repositories/sleep_repository_impl.dart';
@@ -19,7 +20,11 @@ SleepRepository sleepRepository(Ref ref) {
 /// Every log with `wakeTime` on [day].
 @riverpod
 Stream<List<SleepLog>> sleepLogsForDay(Ref ref, LocalDate day) {
-  return ref.watch(sleepRepositoryProvider).watchLogsForDay(day);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(sleepRepositoryProvider)
+      .watchLogsForDay(day, profileId: profileId);
 }
 
 /// Every log with `wakeTime` between [start] and [end] (inclusive).
@@ -29,17 +34,22 @@ Stream<List<SleepLog>> sleepLogsInRange(
   LocalDate start,
   LocalDate end,
 ) {
-  return ref.watch(sleepRepositoryProvider).watchLogsInRange(start, end);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(sleepRepositoryProvider)
+      .watchLogsInRange(start, end, profileId: profileId);
 }
 
 /// The most recent night's sleep log across the last 2 days (covers a
 /// wake time just after midnight not yet reflected in "today").
 @riverpod
 Future<SleepLog?> lastNightSleepLog(Ref ref) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   final today = localDayKey(clock.now());
   final logs = await ref
       .watch(sleepRepositoryProvider)
-      .watchLogsInRange(today.addDays(-1), today)
+      .watchLogsInRange(today.addDays(-1), today, profileId: profileId)
       .first;
   if (logs.isEmpty) return null;
   return logs.last;
@@ -47,7 +57,12 @@ Future<SleepLog?> lastNightSleepLog(Ref ref) async {
 
 /// The current consecutive-nights-logged streak, ending today.
 @riverpod
-Future<int> sleepCurrentStreak(Ref ref) {
+Future<int> sleepCurrentStreak(Ref ref) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   final today = localDayKey(clock.now());
-  return currentSleepStreak(ref.watch(sleepRepositoryProvider), today);
+  return currentSleepStreak(
+    ref.watch(sleepRepositoryProvider),
+    today,
+    profileId: profileId,
+  );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/pauses/pause_providers.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
 /// Card shown at the top of a module screen when an active pause exists.
@@ -15,9 +16,13 @@ class ActivePausesCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final profileId = ref.watch(activeProfileProvider).value?.id;
+    if (profileId == null) return const SizedBox.shrink();
 
     return FutureBuilder(
-      future: ref.read(pauseServiceProvider).activePauses(moduleId),
+      future: ref
+          .read(pauseServiceProvider)
+          .activePauses(moduleId, profileId: profileId),
       builder: (context, snapshot) {
         final pauses = snapshot.data;
         if (pauses == null || pauses.isEmpty) {
@@ -79,7 +84,10 @@ class ActivePausesCard extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      await ref.read(pauseServiceProvider).cancelPause(pauseId);
+      final profile = await ref.read(activeProfileProvider.future);
+      await ref
+          .read(pauseServiceProvider)
+          .cancelPause(pauseId, profileId: profile.id);
     }
   }
 }

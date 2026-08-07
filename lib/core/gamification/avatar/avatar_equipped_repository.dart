@@ -30,6 +30,12 @@ class EquippedAvatarPieces {
 }
 
 /// CRUD for the singleton `avatar_equipped` row.
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — `avatar_equipped`'s primary key is now
+/// composite `{id, profileId}` since `id` is always the literal
+/// `'singleton'`.
 class AvatarEquippedRepository {
   /// Creates a repository backed by the given database.
   const AvatarEquippedRepository(this._db);
@@ -38,10 +44,12 @@ class AvatarEquippedRepository {
 
   /// Reactive stream of the currently equipped pieces (seeds the base
   /// all-null row on first read).
-  Stream<EquippedAvatarPieces> watchEquipped() {
-    return Stream.fromFuture(_ensureSeeded()).asyncExpand((_) {
+  Stream<EquippedAvatarPieces> watchEquipped({required String profileId}) {
+    return Stream.fromFuture(_ensureSeeded(profileId)).asyncExpand((_) {
       final query = _db.select(_db.avatarEquippedTable)
-        ..where((t) => t.id.equals(_singletonId));
+        ..where(
+          (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+        );
       return query.watchSingle().map(
         (row) => EquippedAvatarPieces(
           headPieceId: row.headPieceId,
@@ -61,13 +69,18 @@ class AvatarEquippedRepository {
   Future<void> equip({
     required AvatarSlot slot,
     required String? pieceId,
+    required String profileId,
   }) async {
     if (pieceId != null) {
       final piece = avatarPieceCatalog.where((p) => p.id == pieceId);
       if (piece.isEmpty || piece.first.slot != slot) return;
-      if (!await CosmeticRepository(_db).isUnlocked(pieceId)) return;
+      if (!await CosmeticRepository(
+        _db,
+      ).isUnlocked(pieceId, profileId: profileId)) {
+        return;
+      }
     }
-    await _ensureSeeded();
+    await _ensureSeeded(profileId);
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     final companion = switch (slot) {
       AvatarSlot.head => AvatarEquippedTableCompanion(
@@ -87,15 +100,18 @@ class AvatarEquippedRepository {
         updatedAt: Value(now),
       ),
     };
-    await (_db.update(
-      _db.avatarEquippedTable,
-    )..where((t) => t.id.equals(_singletonId))).write(companion);
+    await (_db.update(_db.avatarEquippedTable)..where(
+          (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+        ))
+        .write(companion);
   }
 
-  Future<void> _ensureSeeded() async {
-    final existing = await (_db.select(
-      _db.avatarEquippedTable,
-    )..where((t) => t.id.equals(_singletonId))).getSingleOrNull();
+  Future<void> _ensureSeeded(String profileId) async {
+    final existing =
+        await (_db.select(_db.avatarEquippedTable)..where(
+              (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+            ))
+            .getSingleOrNull();
     if (existing != null) return;
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
@@ -105,6 +121,7 @@ class AvatarEquippedRepository {
             id: _singletonId,
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }

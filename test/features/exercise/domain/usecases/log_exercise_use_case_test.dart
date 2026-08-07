@@ -14,6 +14,7 @@ class _FakeExerciseRepository implements ExerciseRepository {
     required String exerciseType,
     required int durationMinutes,
     required DateTime loggedAt,
+    required String profileId,
     int? calories,
     String? notes,
   }) async {
@@ -31,24 +32,33 @@ class _FakeExerciseRepository implements ExerciseRepository {
   }
 
   @override
-  Future<List<ExerciseLog>> allLogs() async => [];
+  Future<List<ExerciseLog>> allLogs({required String profileId}) async => [];
 
   @override
-  Future<Result<void>> deleteLog(String id) async => const Result.success(null);
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async => const Result.success(null);
 
   @override
-  Future<ExerciseLog?> logById(String id) async => null;
+  Future<ExerciseLog?> logById(String id, {required String profileId}) async =>
+      null;
 
   @override
-  Stream<List<ExerciseLog>> watchLogsForDay(LocalDate day) =>
-      const Stream.empty();
+  Stream<List<ExerciseLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Stream<List<ExerciseLog>> watchLogsInRange(LocalDate start, LocalDate end) =>
-      const Stream.empty();
+  Stream<List<ExerciseLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Future<void> wipeAll() async {}
+  Future<void> wipeAll({required String profileId}) async {}
 }
 
 void main() {
@@ -57,7 +67,11 @@ void main() {
   test('rejects an empty exercise type', () async {
     final useCase = LogExerciseUseCase(_FakeExerciseRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(exerciseType: '   ', durationMinutes: 30);
+      return useCase.execute(
+        exerciseType: '   ',
+        durationMinutes: 30,
+        profileId: 'system',
+      );
     });
     expect(result, isA<Failure<ExerciseLog>>());
   });
@@ -65,7 +79,11 @@ void main() {
   test('rejects a zero or negative duration', () async {
     final useCase = LogExerciseUseCase(_FakeExerciseRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(exerciseType: 'Running', durationMinutes: 0);
+      return useCase.execute(
+        exerciseType: 'Running',
+        durationMinutes: 0,
+        profileId: 'system',
+      );
     });
     expect(result, isA<Failure<ExerciseLog>>());
   });
@@ -73,7 +91,11 @@ void main() {
   test('rejects a duration over 24 hours', () async {
     final useCase = LogExerciseUseCase(_FakeExerciseRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(exerciseType: 'Running', durationMinutes: 1441);
+      return useCase.execute(
+        exerciseType: 'Running',
+        durationMinutes: 1441,
+        profileId: 'system',
+      );
     });
     expect(result, isA<Failure<ExerciseLog>>());
   });
@@ -85,6 +107,7 @@ void main() {
         exerciseType: 'Running',
         durationMinutes: 30,
         calories: -5,
+        profileId: 'system',
       );
     });
     expect(result, isA<Failure<ExerciseLog>>());
@@ -97,6 +120,7 @@ void main() {
         exerciseType: 'Running',
         durationMinutes: 30,
         loggedAt: fixedNow.add(const Duration(hours: 1)),
+        profileId: 'system',
       );
     });
     expect(result, isA<Failure<ExerciseLog>>());
@@ -106,7 +130,11 @@ void main() {
     final repository = _FakeExerciseRepository();
     final useCase = LogExerciseUseCase(repository);
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(exerciseType: 'Cycling', durationMinutes: 45);
+      return useCase.execute(
+        exerciseType: 'Cycling',
+        durationMinutes: 45,
+        profileId: 'system',
+      );
     });
     expect(result, isA<Success<ExerciseLog>>());
     expect(repository.capturedDurationMinutes, 45);

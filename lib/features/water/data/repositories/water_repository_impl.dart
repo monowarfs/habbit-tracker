@@ -29,33 +29,47 @@ class WaterRepositoryImpl implements WaterRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<WaterEntry>> watchEntriesForDay(LocalDate day) {
+  Stream<List<WaterEntry>> watchEntriesForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
-    return _watchEntriesBetween(range.startUtc, range.endUtc);
+    return _watchEntriesBetween(range.startUtc, range.endUtc, profileId);
   }
 
   @override
-  Stream<List<WaterEntry>> watchEntriesInRange(LocalDate start, LocalDate end) {
+  Stream<List<WaterEntry>> watchEntriesInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
-    return _watchEntriesBetween(startUtc, endUtc);
+    return _watchEntriesBetween(startUtc, endUtc, profileId);
   }
 
   @override
-  Future<WaterEntry?> entryById(String id) async {
-    final row = await (_db.select(
-      _db.waterLogsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<WaterEntry?> entryById(String id, {required String profileId}) async {
+    final row =
+        await (_db.select(_db.waterLogsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _entryFromRow(row);
   }
 
   Stream<List<WaterEntry>> _watchEntriesBetween(
     DateTime startUtc,
     DateTime endUtc,
+    String profileId,
   ) {
     final query = _db.select(_db.waterLogsTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.loggedAt.isBiggerOrEqualValue(startUtc.millisecondsSinceEpoch) &
             t.loggedAt.isSmallerThanValue(endUtc.millisecondsSinceEpoch),
@@ -67,10 +81,15 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Stream<WaterGoal?> watchCurrentGoal() {
-    return Stream.fromFuture(_ensureGoalSeeded()).asyncExpand((_) {
+  Stream<WaterGoal?> watchCurrentGoal({required String profileId}) {
+    return Stream.fromFuture(_ensureGoalSeeded(profileId)).asyncExpand((_) {
       final query = _db.select(_db.waterGoalsTable)
-        ..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull())
+        ..where(
+          (t) =>
+              t.profileId.equals(profileId) &
+              t.deletedAt.isNull() &
+              t.archivedAt.isNull(),
+        )
         ..orderBy([(t) => OrderingTerm.desc(t.effectiveFrom)])
         ..limit(1);
       return query.watchSingleOrNull().map(
@@ -80,31 +99,38 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<List<WaterGoal>> allGoals() async {
-    await _ensureGoalSeeded();
-    final rows = await (_db.select(
-      _db.waterGoalsTable,
-    )..where((t) => t.deletedAt.isNull() & t.archivedAt.isNull())).get();
+  Future<List<WaterGoal>> allGoals({required String profileId}) async {
+    await _ensureGoalSeeded(profileId);
+    final rows =
+        await (_db.select(_db.waterGoalsTable)..where(
+              (t) =>
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull() &
+                  t.archivedAt.isNull(),
+            ))
+            .get();
     return rows.map(_goalFromRow).toList(growable: false);
   }
 
   @override
-  Future<List<WaterEntry>> allEntries() async {
+  Future<List<WaterEntry>> allEntries({required String profileId}) async {
     final query = _db.select(_db.waterLogsTable)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.loggedAt)]);
     final rows = await query.get();
     return rows.map(_entryFromRow).toList(growable: false);
   }
 
-  Future<void> _ensureGoalSeeded() async {
+  Future<void> _ensureGoalSeeded(String profileId) async {
     // Goals are append-only — any number of non-deleted rows can exist
     // over time, so this only checks "does at least one exist" (limit 1),
     // never "is there exactly one" (`getSingleOrNull` without a limit
     // would throw once a second goal has been set).
     final existing =
         await (_db.select(_db.waterGoalsTable)
-              ..where((t) => t.deletedAt.isNull())
+              ..where(
+                (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+              )
               ..limit(1))
             .getSingleOrNull();
     if (existing != null) return;
@@ -118,6 +144,7 @@ class WaterRepositoryImpl implements WaterRepository {
             effectiveFrom: now,
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }
@@ -127,6 +154,7 @@ class WaterRepositoryImpl implements WaterRepository {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    required String profileId,
     String? notes,
   }) async {
     try {
@@ -143,6 +171,7 @@ class WaterRepositoryImpl implements WaterRepository {
               notes: Value(notes),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -162,6 +191,7 @@ class WaterRepositoryImpl implements WaterRepository {
   @override
   Future<Result<void>> updateEntry(
     String id, {
+    required String profileId,
     int? amountMl,
     DateTime? loggedAt,
     Object? notes = unsetWaterNotes,
@@ -169,22 +199,23 @@ class WaterRepositoryImpl implements WaterRepository {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.waterLogsTable,
-          )..where((t) => t.id.equals(id))).write(
-            WaterLogsTableCompanion(
-              amountMl: amountMl == null
-                  ? const Value.absent()
-                  : Value(amountMl),
-              loggedAt: loggedAt == null
-                  ? const Value.absent()
-                  : Value(loggedAt.toUtc().millisecondsSinceEpoch),
-              notes: identical(notes, unsetWaterNotes)
-                  ? const Value.absent()
-                  : Value(notes as String?),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.waterLogsTable)..where(
+                (t) => t.id.equals(id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                WaterLogsTableCompanion(
+                  amountMl: amountMl == null
+                      ? const Value.absent()
+                      : Value(amountMl),
+                  loggedAt: loggedAt == null
+                      ? const Value.absent()
+                      : Value(loggedAt.toUtc().millisecondsSinceEpoch),
+                  notes: identical(notes, unsetWaterNotes)
+                      ? const Value.absent()
+                      : Value(notes as String?),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('WaterEntry', id));
       }
@@ -195,18 +226,22 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<Result<void>> deleteEntry(String id) async {
+  Future<Result<void>> deleteEntry(
+    String id, {
+    required String profileId,
+  }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.waterLogsTable,
-          )..where((t) => t.id.equals(id))).write(
-            WaterLogsTableCompanion(
-              deletedAt: Value(now),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.waterLogsTable)..where(
+                (t) => t.id.equals(id) & t.profileId.equals(profileId),
+              ))
+              .write(
+                WaterLogsTableCompanion(
+                  deletedAt: Value(now),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(AppException.notFound('WaterEntry', id));
       }
@@ -220,6 +255,7 @@ class WaterRepositoryImpl implements WaterRepository {
   Future<Result<void>> setGoal(
     int goalMl, {
     required DateTime effectiveFrom,
+    required String profileId,
   }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
@@ -232,6 +268,7 @@ class WaterRepositoryImpl implements WaterRepository {
               effectiveFrom: effectiveFrom.toUtc().millisecondsSinceEpoch,
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return const Result.success(null);
@@ -241,18 +278,27 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Stream<WaterSettings> watchSettings() {
-    return Stream.fromFuture(_ensureSettingsSeeded()).asyncExpand((_) {
+  Stream<WaterSettings> watchSettings({required String profileId}) {
+    return Stream.fromFuture(
+      _ensureSettingsSeeded(profileId),
+    ).asyncExpand((_) {
       final query = _db.select(_db.waterSettingsTable)
-        ..where((t) => t.id.equals(_settingsSingletonId));
+        ..where(
+          (t) =>
+              t.id.equals(_settingsSingletonId) & t.profileId.equals(profileId),
+        );
       return query.watchSingle().map(_settingsFromRow);
     });
   }
 
-  Future<void> _ensureSettingsSeeded() async {
-    final existing = await (_db.select(
-      _db.waterSettingsTable,
-    )..where((t) => t.id.equals(_settingsSingletonId))).getSingleOrNull();
+  Future<void> _ensureSettingsSeeded(String profileId) async {
+    final existing =
+        await (_db.select(_db.waterSettingsTable)..where(
+              (t) =>
+                  t.id.equals(_settingsSingletonId) &
+                  t.profileId.equals(profileId),
+            ))
+            .getSingleOrNull();
     if (existing != null) return;
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
@@ -263,23 +309,30 @@ class WaterRepositoryImpl implements WaterRepository {
             quickAddAmountsMl: jsonEncode(_defaultQuickAddAmountsMl),
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }
 
   @override
-  Future<Result<void>> updateQuickAddAmounts(List<int> amountsMl) async {
+  Future<Result<void>> updateQuickAddAmounts(
+    List<int> amountsMl, {
+    required String profileId,
+  }) async {
     try {
-      await _ensureSettingsSeeded();
+      await _ensureSettingsSeeded(profileId);
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterSettingsTable,
-      )..where((t) => t.id.equals(_settingsSingletonId))).write(
-        WaterSettingsTableCompanion(
-          quickAddAmountsMl: Value(jsonEncode(amountsMl)),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterSettingsTable)..where(
+            (t) =>
+                t.id.equals(_settingsSingletonId) &
+                t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterSettingsTableCompanion(
+              quickAddAmountsMl: Value(jsonEncode(amountsMl)),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
@@ -295,30 +348,34 @@ class WaterRepositoryImpl implements WaterRepository {
     required LocalTime windowStart,
     required LocalTime windowEnd,
     required Map<int, ({LocalTime start, LocalTime end})> windowOverrides,
+    required String profileId,
   }) async {
     try {
-      await _ensureSettingsSeeded();
+      await _ensureSettingsSeeded(profileId);
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterSettingsTable,
-      )..where((t) => t.id.equals(_settingsSingletonId))).write(
-        WaterSettingsTableCompanion(
-          reminderEnabled: Value(enabled),
-          reminderIntervalMinutes: Value(intervalMinutes),
-          reminderWindowStart: Value(windowStart.format()),
-          reminderWindowEnd: Value(windowEnd.format()),
-          reminderWindowOverrides: Value(
-            jsonEncode({
-              for (final entry in windowOverrides.entries)
-                '${entry.key}': {
-                  'start': entry.value.start.format(),
-                  'end': entry.value.end.format(),
-                },
-            }),
-          ),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterSettingsTable)..where(
+            (t) =>
+                t.id.equals(_settingsSingletonId) &
+                t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterSettingsTableCompanion(
+              reminderEnabled: Value(enabled),
+              reminderIntervalMinutes: Value(intervalMinutes),
+              reminderWindowStart: Value(windowStart.format()),
+              reminderWindowEnd: Value(windowEnd.format()),
+              reminderWindowOverrides: Value(
+                jsonEncode({
+                  for (final entry in windowOverrides.entries)
+                    '${entry.key}': {
+                      'start': entry.value.start.format(),
+                      'end': entry.value.end.format(),
+                    },
+                }),
+              ),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
@@ -328,27 +385,37 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.waterLogsTable).go();
-    await _db.delete(_db.waterGoalsTable).go();
-    await _db.delete(_db.waterSettingsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.waterLogsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.waterGoalsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.waterSettingsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   @override
   Future<Result<void>> updateWeatherNudgeEnabled({
     required bool enabled,
+    required String profileId,
   }) async {
     try {
-      await _ensureSettingsSeeded();
+      await _ensureSettingsSeeded(profileId);
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterSettingsTable,
-      )..where((t) => t.id.equals(_settingsSingletonId))).write(
-        WaterSettingsTableCompanion(
-          weatherNudgeEnabled: Value(enabled),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterSettingsTable)..where(
+            (t) =>
+                t.id.equals(_settingsSingletonId) &
+                t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterSettingsTableCompanion(
+              weatherNudgeEnabled: Value(enabled),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
@@ -361,21 +428,25 @@ class WaterRepositoryImpl implements WaterRepository {
   Future<Result<void>> updateWeatherCache({
     required double temperatureCelsius,
     required DateTime fetchedAt,
+    required String profileId,
   }) async {
     try {
-      await _ensureSettingsSeeded();
+      await _ensureSettingsSeeded(profileId);
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterSettingsTable,
-      )..where((t) => t.id.equals(_settingsSingletonId))).write(
-        WaterSettingsTableCompanion(
-          lastWeatherTemperatureCelsius: Value(temperatureCelsius),
-          lastWeatherFetchedAtMillis: Value(
-            fetchedAt.toUtc().millisecondsSinceEpoch,
-          ),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterSettingsTable)..where(
+            (t) =>
+                t.id.equals(_settingsSingletonId) &
+                t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterSettingsTableCompanion(
+              lastWeatherTemperatureCelsius: Value(temperatureCelsius),
+              lastWeatherFetchedAtMillis: Value(
+                fetchedAt.toUtc().millisecondsSinceEpoch,
+              ),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('update_weather_cache', e));
@@ -383,17 +454,21 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<Result<void>> archiveGoal(String goalId) async {
+  Future<Result<void>> archiveGoal(
+    String goalId, {
+    required String profileId,
+  }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterGoalsTable,
-      )..where((t) => t.id.equals(goalId))).write(
-        WaterGoalsTableCompanion(
-          archivedAt: Value(now),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterGoalsTable)..where(
+            (t) => t.id.equals(goalId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterGoalsTableCompanion(
+              archivedAt: Value(now),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('archive_goal', e));
@@ -401,17 +476,21 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<Result<void>> reviveGoal(String goalId) async {
+  Future<Result<void>> reviveGoal(
+    String goalId, {
+    required String profileId,
+  }) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.waterGoalsTable,
-      )..where((t) => t.id.equals(goalId))).write(
-        WaterGoalsTableCompanion(
-          archivedAt: const Value(null),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.waterGoalsTable)..where(
+            (t) => t.id.equals(goalId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            WaterGoalsTableCompanion(
+              archivedAt: const Value(null),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('revive_goal', e));
@@ -419,11 +498,14 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<List<WaterGoal>> archivedGoals() async {
+  Future<List<WaterGoal>> archivedGoals({required String profileId}) async {
     final rows =
         await (_db.select(_db.waterGoalsTable)
               ..where(
-                (t) => t.archivedAt.isNotNull() & t.deletedAt.isNull(),
+                (t) =>
+                    t.profileId.equals(profileId) &
+                    t.archivedAt.isNotNull() &
+                    t.deletedAt.isNull(),
               )
               ..orderBy([(t) => OrderingTerm.desc(t.archivedAt)]))
             .get();
@@ -431,12 +513,12 @@ class WaterRepositoryImpl implements WaterRepository {
   }
 
   @override
-  Future<bool> hasAnyGoals() async {
-    final result = await _db
-        .customSelect(
-          'SELECT 1 FROM water_goals LIMIT 1',
-        )
-        .getSingleOrNull();
+  Future<bool> hasAnyGoals({required String profileId}) async {
+    final result =
+        await (_db.select(_db.waterGoalsTable)
+              ..where((t) => t.profileId.equals(profileId))
+              ..limit(1))
+            .getSingleOrNull();
     return result != null;
   }
 

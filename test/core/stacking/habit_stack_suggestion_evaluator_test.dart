@@ -25,12 +25,14 @@ void main() {
     final medicineResult = await medicineRepo.createMedicine(
       name: 'Aspirin',
       stockEnabled: false,
+      profileId: 'system',
     );
     final medicine = (medicineResult as Success<Medicine>).value;
     final scheduleResult = await medicineRepo.createSchedule(
       medicineId: medicine.id,
       rule: const RepeatRule.fixedDaily(timesOfDay: [LocalTime(8, 0)]),
       startDate: const LocalDate(2026, 5, 20),
+      profileId: 'system',
     );
     return (scheduleResult as Success<MedicineSchedule>).value.id;
   }
@@ -42,7 +44,7 @@ void main() {
       final medicineRepo = MedicineRepositoryImpl(db);
       final waterRepo = WaterRepositoryImpl(db);
       final scheduleId = await seedMedicineSchedule(db);
-      final medicines = await medicineRepo.allMedicines();
+      final medicines = await medicineRepo.allMedicines(profileId: 'system');
       final medicineId = medicines.single.id;
 
       final today = DateTime.utc(2026, 6, 7);
@@ -64,11 +66,13 @@ void main() {
               5,
             ),
           ),
+          profileId: 'system',
         );
         await waterRepo.addEntry(
           amountMl: 250,
           loggedAt: DateTime.utc(day.year, day.month, day.day, 8, 25),
           source: WaterEntrySource.quick,
+          profileId: 'system',
         );
       }
 
@@ -80,7 +84,7 @@ void main() {
       );
 
       final repository = HabitStackSuggestionRepository(db);
-      final row = await repository.byId('medicine_water');
+      final row = await repository.byId('medicine_water', profileId: 'system');
       expect(row, isNotNull);
       expect(row!.status, 'pending');
       expect(row.sourceModuleId, 'medicine');
@@ -96,7 +100,9 @@ void main() {
       final medicineRepo = MedicineRepositoryImpl(db);
       final waterRepo = WaterRepositoryImpl(db);
       final scheduleId = await seedMedicineSchedule(db);
-      final medicineId = (await medicineRepo.allMedicines()).single.id;
+      final medicineId = (await medicineRepo.allMedicines(
+        profileId: 'system',
+      )).single.id;
       final today = DateTime.utc(2026, 6, 7);
 
       for (var i = 0; i < 7; i++) {
@@ -117,11 +123,13 @@ void main() {
               5,
             ),
           ),
+          profileId: 'system',
         );
         await waterRepo.addEntry(
           amountMl: 250,
           loggedAt: DateTime.utc(day.year, day.month, day.day, 8, 25),
           source: WaterEntrySource.quick,
+          profileId: 'system',
         );
       }
 
@@ -132,6 +140,7 @@ void main() {
       final repository = HabitStackSuggestionRepository(db);
       final firstEvaluatedAt = (await repository.byId(
         'medicine_water',
+        profileId: 'system',
       ))!.lastEvaluatedAt;
 
       // Adds a same-day water log that would otherwise change the
@@ -140,6 +149,7 @@ void main() {
         amountMl: 100,
         loggedAt: today.add(const Duration(hours: 10)),
         source: WaterEntrySource.quick,
+        profileId: 'system',
       );
       await withClock(
         Clock.fixed(firstRun.add(const Duration(hours: 1))),
@@ -148,7 +158,7 @@ void main() {
         },
       );
 
-      final row = await repository.byId('medicine_water');
+      final row = await repository.byId('medicine_water', profileId: 'system');
       expect(row!.lastEvaluatedAt, firstEvaluatedAt);
     },
   );
@@ -160,7 +170,10 @@ void main() {
     });
 
     final repository = HabitStackSuggestionRepository(db);
-    expect(await repository.byId('medicine_water'), isNull);
-    expect(await repository.byId('prayer_water'), isNull);
+    expect(
+      await repository.byId('medicine_water', profileId: 'system'),
+      isNull,
+    );
+    expect(await repository.byId('prayer_water', profileId: 'system'), isNull);
   });
 }

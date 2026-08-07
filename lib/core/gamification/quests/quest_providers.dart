@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/gamification/quests/quest_engine.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_repository.dart';
 import 'package:habit_tracker/core/gamification/quests/week_utils.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -36,8 +37,12 @@ QuestEngine questEngine(Ref ref) {
 /// pre-existing `AchievementRow` too, so this is a generator limitation
 /// with any Drift row type, not something specific to this table).
 final currentWeekQuestsProvider = StreamProvider<List<WeeklyQuestRow>>((ref) {
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
   final weekKey = weekKeyForDate(localDayKey(clock.now()));
-  return ref.watch(questRepositoryProvider).watchCurrentWeek(weekKey: weekKey);
+  return ref
+      .watch(questRepositoryProvider)
+      .watchCurrentWeek(weekKey: weekKey, profileId: profileId);
 });
 
 /// This week's quests that haven't been completed yet.

@@ -59,7 +59,10 @@ class CosmeticUnlockEngine {
   /// Checks if [achievementKey] maps to a cosmetic unlock.
   /// If so, records it in the cosmetic_unlocks table — tagging the row
   /// with its [AvatarSlot] when the cosmetic is an avatar piece.
-  Future<void> onAchievementUnlocked(String achievementKey) async {
+  Future<void> onAchievementUnlocked(
+    String achievementKey, {
+    required String profileId,
+  }) async {
     final cosmeticKey = achievementToCosmetic[achievementKey];
     if (cosmeticKey == null) return;
     final piece = _avatarPieceById(cosmeticKey);
@@ -67,12 +70,13 @@ class CosmeticUnlockEngine {
       achievementKey: achievementKey,
       cosmeticKey: cosmeticKey,
       slot: piece?.slot.name,
+      profileId: profileId,
     );
   }
 
   /// All unlocked cosmetic keys.
-  Future<Set<String>> unlockedCosmetics() {
-    return cosmeticRepository.unlockedKeys();
+  Future<Set<String>> unlockedCosmetics({required String profileId}) {
+    return cosmeticRepository.unlockedKeys(profileId: profileId);
   }
 }
 

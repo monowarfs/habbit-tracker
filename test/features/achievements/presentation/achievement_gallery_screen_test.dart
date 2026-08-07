@@ -101,6 +101,7 @@ void main() {
       final repository = AchievementRepository(db);
       final now = DateTime(2026, 8, 7);
       await repository.upsertProgress(
+        profileId: 'system',
         moduleId: 'water',
         key: 'water_streak_30',
         current: 30,
@@ -108,6 +109,7 @@ void main() {
         now: now,
       );
       await repository.upsertProgress(
+        profileId: 'system',
         moduleId: 'water',
         key: 'water_streak_7',
         current: 7,

@@ -42,11 +42,15 @@ class PrayerRecordsTable extends Table {
   /// Optional free-text annotation on this specific prayer record.
   TextColumn get notes => text().nullable()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support.
+  TextColumn get profileId => text().withDefault(const Constant('system'))();
+
   @override
   Set<Column> get primaryKey => {id};
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {prayerDate, prayerName},
+    {prayerDate, prayerName, profileId},
   ];
 }

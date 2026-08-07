@@ -9,6 +9,7 @@ import 'package:habit_tracker/core/gamification/xp_providers.dart';
 import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Dashboard card showing the current week's quests, one progress bar per
 /// quest, with a claim button once a quest is complete (Task 7). Renders
@@ -133,10 +134,16 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
     if (_claiming) return;
     setState(() => _claiming = true);
     final now = clock.now();
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     await ref
         .read(questRepositoryProvider)
-        .claimReward(widget.quest.questKey, widget.quest.weekKey, now: now);
-    final leveledUpTo = await _awardXp(now);
+        .claimReward(
+          widget.quest.questKey,
+          widget.quest.weekKey,
+          now: now,
+          profileId: profileId,
+        );
+    final leveledUpTo = await _awardXp(now, profileId);
     if (!mounted) return;
     // Deliberately not resetting `_claiming` back to false here: the
     // claim celebration overlay doesn't block input (`streak_celebration
@@ -160,13 +167,14 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
   /// `hasAwarded` guards against a stale/duplicate claim re-triggering
   /// this (defense in depth alongside the `_claiming` reentrancy guard).
   /// Returns the new level if this award crossed a level threshold.
-  Future<int?> _awardXp(DateTime now) async {
+  Future<int?> _awardXp(DateTime now, String profileId) async {
     final xpRepository = ref.read(xpRepositoryProvider);
     final sourceId = '${widget.quest.questKey}_${widget.quest.weekKey}';
     final alreadyAwarded = await xpRepository.hasAwarded(
       moduleId: widget.quest.moduleId,
       eventType: 'weekly_quest_complete',
       sourceId: sourceId,
+      profileId: profileId,
     );
     if (alreadyAwarded) return null;
     final result = await xpRepository.awardXp(
@@ -175,6 +183,7 @@ class _QuestTileState extends ConsumerState<_QuestTile> {
       amount: XpValues.weeklyQuestComplete,
       now: now,
       sourceId: sourceId,
+      profileId: profileId,
     );
     return result.leveledUpTo;
   }

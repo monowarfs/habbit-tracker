@@ -33,10 +33,14 @@ class CalculateAdaptiveOffsetUseCase {
 
   /// Computes one [ReminderAdjustment] per `(moduleId, sourceType)` group
   /// with enough samples, as of [now].
-  Future<List<ReminderAdjustment>> execute({required DateTime now}) async {
+  Future<List<ReminderAdjustment>> execute({
+    required DateTime now,
+    required String profileId,
+  }) async {
     final rows = await _ledgerRepository.actionedDoneRows(
       windowDays: windowDays,
       now: now,
+      profileId: profileId,
     );
 
     final offsetsByGroup = <(String, String), List<int>>{};

@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Generates the current week's quests if they don't exist yet — called
 /// from the app lifecycle on cold start and foreground resume (mirrors
@@ -17,6 +18,9 @@ import 'package:habit_tracker/core/gamification/quests/quest_providers.dart';
 /// showing the now-frozen previous week's quests until the app was
 /// force-killed (PR #77 review finding).
 Future<void> checkAndResetWeeklyQuests(WidgetRef ref) async {
-  await ref.read(questEngineProvider).generateWeek(now: clock.now());
+  final profileId = (await ref.read(activeProfileProvider.future)).id;
+  await ref
+      .read(questEngineProvider)
+      .generateWeek(now: clock.now(), profileId: profileId);
   ref.invalidate(currentWeekQuestsProvider);
 }

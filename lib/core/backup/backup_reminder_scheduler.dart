@@ -6,6 +6,7 @@ import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/notifications/notification_ledger_repository.dart';
 import 'package:habit_tracker/core/notifications/notification_service.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/locale_controller.dart';
 
@@ -66,6 +67,7 @@ Future<void> checkBackupReminder(WidgetRef ref) async {
     moduleId: 'system',
     snoozeCount: 0,
   );
+  final profile = await ref.read(activeProfileProvider.future);
   await NotificationLedgerRepository(db).insertScheduled(
     id: reminder.id,
     moduleId: 'system',
@@ -76,5 +78,6 @@ Future<void> checkBackupReminder(WidgetRef ref) async {
     scheduledFor: reminder.scheduledAt,
     deepLinkRoute: reminder.deepLinkRoute,
     originalScheduledFor: reminder.scheduledAt,
+    profileId: profile.id,
   );
 }

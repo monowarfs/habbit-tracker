@@ -5,6 +5,8 @@ import 'package:habit_tracker/core/analytics/record_detection_use_case.dart';
 import 'package:habit_tracker/core/analytics/record_integration.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late RecordDetectionUseCase useCase;
@@ -18,6 +20,7 @@ void main() {
 
   test('checkRecordsAfterStreak returns an event for a new record', () async {
     final event = await checkRecordsAfterStreak(
+      profileId: _profileId,
       recordDetectionUseCase: useCase,
       moduleId: 'medicine',
       currentStreak: 30,
@@ -31,11 +34,13 @@ void main() {
   test('checkRecordsAfterStreak returns null when the streak does not beat '
       'the persisted record', () async {
     await checkRecordsAfterStreak(
+      profileId: _profileId,
       recordDetectionUseCase: useCase,
       moduleId: 'medicine',
       currentStreak: 30,
     );
     final event = await checkRecordsAfterStreak(
+      profileId: _profileId,
       recordDetectionUseCase: useCase,
       moduleId: 'medicine',
       currentStreak: 12,

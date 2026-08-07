@@ -10,6 +10,8 @@ import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/features/medicine/domain/repositories/medicine_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+const _profileId = 'system';
+
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id, this._byDay);
   @override
@@ -45,7 +47,11 @@ void main() {
     db = AppDatabase(NativeDatabase.memory());
     medicineRepository = _MockMedicineRepository();
     when(
-      () => medicineRepository.dosesInRange(any(), any()),
+      () => medicineRepository.dosesInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => []);
   });
 
@@ -62,10 +68,10 @@ void main() {
       modules: modules,
       medicineRepository: medicineRepository,
     );
-    await engine.generateWeek(now: now);
+    await engine.generateWeek(now: now, profileId: _profileId);
     final rows = await QuestRepository(
       db,
-    ).watchCurrentWeek(weekKey: '2026-W32').first;
+    ).watchCurrentWeek(weekKey: '2026-W32', profileId: _profileId).first;
     // 2 water + 2 medicine + 2 prayer + 1 boss (prayer is 2026-W32's
     // spotlighted module, week 32 % 3 == 2) = 7.
     expect(rows, hasLength(7));
@@ -81,11 +87,11 @@ void main() {
       modules: modules,
       medicineRepository: medicineRepository,
     );
-    await engine.generateWeek(now: now);
-    await engine.generateWeek(now: now);
+    await engine.generateWeek(now: now, profileId: _profileId);
+    await engine.generateWeek(now: now, profileId: _profileId);
     final rows = await QuestRepository(
       db,
-    ).watchCurrentWeek(weekKey: '2026-W32').first;
+    ).watchCurrentWeek(weekKey: '2026-W32', profileId: _profileId).first;
     expect(rows, hasLength(2)); // 2 regular water quests, no duplicates.
   });
 
@@ -106,11 +112,11 @@ void main() {
       modules: modules,
       medicineRepository: medicineRepository,
     );
-    await engine.evaluateModule('water', now: now);
+    await engine.evaluateModule('water', now: now, profileId: _profileId);
 
     final rows = await QuestRepository(
       db,
-    ).watchCurrentWeek(weekKey: '2026-W32').first;
+    ).watchCurrentWeek(weekKey: '2026-W32', profileId: _profileId).first;
     final waterGoal = rows.firstWhere(
       (r) => r.questKey == 'water_goal_5_of_7',
     );
@@ -146,10 +152,10 @@ void main() {
         medicineRepository: medicineRepository,
       );
       // No prior generateWeek() call.
-      await engine.evaluateModule('water', now: now);
+      await engine.evaluateModule('water', now: now, profileId: _profileId);
       final rows = await QuestRepository(
         db,
-      ).watchCurrentWeek(weekKey: '2026-W32').first;
+      ).watchCurrentWeek(weekKey: '2026-W32', profileId: _profileId).first;
       expect(rows, hasLength(2)); // 2 regular water quests.
     },
   );

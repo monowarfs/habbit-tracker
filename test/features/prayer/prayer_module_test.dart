@@ -14,6 +14,8 @@ import 'package:habit_tracker/features/settings/domain/entities/app_settings.dar
 import 'package:habit_tracker/features/settings/domain/repositories/settings_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+const _profileId = 'system';
+
 class _MockPrayerRepository extends Mock implements PrayerRepository {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
@@ -69,17 +71,29 @@ void main() {
         storedStatus: PrayerStatus.upcoming,
       );
 
-      when(() => repo.watchSettings()).thenAnswer(
-        (_) => Stream.value(settings),
-      );
       when(
-        () => repo.sweepMissedPrayers(any(), any()),
+        () => repo.watchSettings(profileId: any(named: 'profileId')),
+      ).thenAnswer((_) => Stream.value(settings));
+      when(
+        () => repo.sweepMissedPrayers(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.materializeRecords(any(), any()),
+        () => repo.materializeRecords(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {
@@ -90,8 +104,8 @@ void main() {
       });
 
       verifyInOrder([
-        () => repo.sweepMissedPrayers(any(), any()),
-        () => repo.materializeRecords(any(), any()),
+        () => repo.sweepMissedPrayers(any(), any(), profileId: _profileId),
+        () => repo.materializeRecords(any(), any(), profileId: _profileId),
       ]);
     },
   );
@@ -113,16 +127,28 @@ void main() {
       );
 
       when(
-        () => repo.watchSettings(),
+        () => repo.watchSettings(profileId: any(named: 'profileId')),
       ).thenAnswer((_) => Stream.value(settingsWithReminder));
       when(
-        () => repo.sweepMissedPrayers(any(), any()),
+        () => repo.sweepMissedPrayers(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.materializeRecords(any(), any()),
+        () => repo.materializeRecords(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {
@@ -179,16 +205,28 @@ void main() {
       );
 
       when(
-        () => repo.watchSettings(),
+        () => repo.watchSettings(profileId: any(named: 'profileId')),
       ).thenAnswer((_) => Stream.value(settings));
       when(
-        () => repo.sweepMissedPrayers(any(), any()),
+        () => repo.sweepMissedPrayers(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.materializeRecords(any(), any()),
+        () => repo.materializeRecords(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [fajr, maghrib]);
 
       await withClock(Clock.fixed(now), () async {
@@ -209,12 +247,22 @@ void main() {
     'onNotificationAction(done) marks the record prayed, forced on time',
     () async {
       when(
-        () => repo.markPrayed(any(), forceOnTime: any(named: 'forceOnTime')),
+        () => repo.markPrayed(
+          any(),
+          forceOnTime: any(named: 'forceOnTime'),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => const Result.success(null));
 
       await module.onNotificationAction('r1', NotificationActionType.done);
 
-      verify(() => repo.markPrayed('r1', forceOnTime: true)).called(1);
+      verify(
+        () => repo.markPrayed(
+          'r1',
+          forceOnTime: true,
+          profileId: _profileId,
+        ),
+      ).called(1);
     },
   );
 
@@ -223,19 +271,28 @@ void main() {
     'via markMissedBySkip',
     () async {
       when(
-        () => repo.markMissedBySkip(any()),
+        () => repo.markMissedBySkip(
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => const Result.success(null));
 
       await module.onNotificationAction('r1', NotificationActionType.skip);
 
-      verify(() => repo.markMissedBySkip('r1')).called(1);
+      verify(
+        () => repo.markMissedBySkip('r1', profileId: _profileId),
+      ).called(1);
     },
   );
 
   test('onNotificationAction(snooze) never mutates record data', () async {
     await module.onNotificationAction('r1', NotificationActionType.snooze);
-    verifyNever(() => repo.markPrayed(any()));
-    verifyNever(() => repo.markMissedBySkip(any()));
+    verifyNever(
+      () => repo.markPrayed(any(), profileId: any(named: 'profileId')),
+    );
+    verifyNever(
+      () => repo.markMissedBySkip(any(), profileId: any(named: 'profileId')),
+    );
   });
 
   test('onQuickAction marks the earliest due prayer prayed', () async {
@@ -262,20 +319,32 @@ void main() {
       storedStatus: PrayerStatus.upcoming,
     );
 
-    when(() => repo.watchSettings()).thenAnswer(
-      (_) => Stream.value(settings),
-    );
     when(
-      () => repo.sweepMissedPrayers(any(), any()),
+      () => repo.watchSettings(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) => Stream.value(settings));
+    when(
+      () => repo.sweepMissedPrayers(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async {});
     when(
-      () => repo.materializeRecords(any(), any()),
+      () => repo.materializeRecords(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async {});
     when(
-      () => repo.recordsInRange(any(), any()),
+      () => repo.recordsInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => [asr, dhuhr, fajr]);
     when(
-      () => repo.markPrayed(any()),
+      () => repo.markPrayed(any(), profileId: any(named: 'profileId')),
     ).thenAnswer((_) async => const Result.success(null));
 
     await withClock(Clock.fixed(now), () async {
@@ -285,24 +354,42 @@ void main() {
     // fajr (5am) is past its cutoff (dhuhr's 8am start) -> missed, not due.
     // dhuhr (8am) is past its own start but before asr's 12pm cutoff -> due.
     // asr (12pm) hasn't started yet -> upcoming.
-    verify(() => repo.markPrayed('r-dhuhr')).called(1);
+    verify(
+      () => repo.markPrayed('r-dhuhr', profileId: _profileId),
+    ).called(1);
   });
 
   test('onQuickAction no-ops when nothing is due', () async {
-    when(() => repo.watchSettings()).thenAnswer(
-      (_) => Stream.value(settings),
-    );
     when(
-      () => repo.sweepMissedPrayers(any(), any()),
+      () => repo.watchSettings(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) => Stream.value(settings));
+    when(
+      () => repo.sweepMissedPrayers(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async {});
     when(
-      () => repo.materializeRecords(any(), any()),
+      () => repo.materializeRecords(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async {});
-    when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async => []);
+    when(
+      () => repo.recordsInRange(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
+    ).thenAnswer((_) async => []);
 
     await module.onQuickAction();
 
-    verifyNever(() => repo.markPrayed(any()));
+    verifyNever(
+      () => repo.markPrayed(any(), profileId: any(named: 'profileId')),
+    );
   });
 
   test(
@@ -322,7 +409,11 @@ void main() {
       const range = DateRange(start: day, end: day);
 
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.prayed));
       expect(
         (await module.dayStatus(range))[day]!.kind,
@@ -330,14 +421,24 @@ void main() {
       );
 
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => recordsWith((_) => PrayerStatus.missed));
       expect(
         (await module.dayStatus(range))[day]!.kind,
         ModuleDayStatusKind.missed,
       );
 
-      when(() => repo.recordsInRange(any(), any())).thenAnswer(
+      when(
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
+      ).thenAnswer(
         (_) async => recordsWith(
           (i) => i == 0 ? PrayerStatus.prayed : PrayerStatus.missed,
         ),
@@ -354,9 +455,15 @@ void main() {
   });
 
   test('exportData includes qadhaCounters', () async {
-    when(() => repo.watchSettings()).thenAnswer((_) => Stream.value(settings));
-    when(() => repo.allRecords()).thenAnswer((_) async => const []);
-    when(() => repo.allQadhaCounters()).thenAnswer(
+    when(
+      () => repo.watchSettings(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) => Stream.value(settings));
+    when(
+      () => repo.allRecords(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => repo.allQadhaCounters(profileId: any(named: 'profileId')),
+    ).thenAnswer(
       (_) async => [
         PrayerQadhaCounter(
           id: 'q1',
@@ -378,6 +485,7 @@ void main() {
   test('importData restores records and Qadha balances', () async {
     when(
       () => repo.updateSettings(
+        profileId: any(named: 'profileId'),
         calculationMethod: any(named: 'calculationMethod'),
         asrMethod: any(named: 'asrMethod'),
         observesJumuah: any(named: 'observesJumuah'),
@@ -387,9 +495,15 @@ void main() {
         manualTimezone: any(named: 'manualTimezone'),
       ),
     ).thenAnswer((_) async => const Result.success(null));
-    when(() => repo.restoreRecord(any())).thenAnswer((_) async {});
     when(
-      () => repo.setQadhaBalance(any(), any()),
+      () => repo.restoreRecord(any(), profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.setQadhaBalance(
+        any(),
+        any(),
+        profileId: any(named: 'profileId'),
+      ),
     ).thenAnswer((_) async => const Result.success(null));
 
     await module.importData(
@@ -411,20 +525,28 @@ void main() {
     );
 
     final capturedRecords = verify(
-      () => repo.restoreRecord(captureAny()),
+      () => repo.restoreRecord(captureAny(), profileId: _profileId),
     ).captured;
     expect(capturedRecords, hasLength(1));
     expect(
       (capturedRecords.single as PrayerRecord).storedStatus,
       PrayerStatus.prayed,
     );
-    verify(() => repo.setQadhaBalance(PrayerName.dhuhr, 2)).called(1);
+    verify(
+      () => repo.setQadhaBalance(
+        PrayerName.dhuhr,
+        2,
+        profileId: _profileId,
+      ),
+    ).called(1);
   });
 
   test('wipeData delegates to the repository', () async {
-    when(() => repo.wipeAll()).thenAnswer((_) async {});
+    when(
+      () => repo.wipeAll(profileId: any(named: 'profileId')),
+    ).thenAnswer((_) async {});
     await module.wipeData();
-    verify(() => repo.wipeAll()).called(1);
+    verify(() => repo.wipeAll(profileId: _profileId)).called(1);
   });
 
   group('widgetSummary', () {
@@ -438,16 +560,28 @@ void main() {
         storedStatus: PrayerStatus.upcoming,
       );
       when(
-        () => repo.watchSettings(),
+        () => repo.watchSettings(profileId: any(named: 'profileId')),
       ).thenAnswer((_) => Stream.value(settings));
       when(
-        () => repo.sweepMissedPrayers(any(), any()),
+        () => repo.sweepMissedPrayers(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.materializeRecords(any(), any()),
+        () => repo.materializeRecords(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {
@@ -477,18 +611,32 @@ void main() {
           storedStatus: PrayerStatus.upcoming,
         );
         when(
-          () => repo.watchSettings(),
+          () => repo.watchSettings(profileId: any(named: 'profileId')),
         ).thenAnswer((_) => Stream.value(settings));
         when(
-          () => repo.sweepMissedPrayers(any(), any()),
+          () => repo.sweepMissedPrayers(
+            any(),
+            any(),
+            profileId: any(named: 'profileId'),
+          ),
         ).thenAnswer((_) async {});
         when(
-          () => repo.materializeRecords(any(), any()),
+          () => repo.materializeRecords(
+            any(),
+            any(),
+            profileId: any(named: 'profileId'),
+          ),
         ).thenAnswer((_) async {});
         // First call (today only) returns only Isha (prayed)
         // Second call (today+tomorrow) returns both records.
         var callCount = 0;
-        when(() => repo.recordsInRange(any(), any())).thenAnswer((_) async {
+        when(
+          () => repo.recordsInRange(
+            any(),
+            any(),
+            profileId: any(named: 'profileId'),
+          ),
+        ).thenAnswer((_) async {
           callCount++;
           if (callCount == 1) return [todayRecord];
           return [todayRecord, tomorrowRecord];
@@ -516,16 +664,28 @@ void main() {
         storedStatus: PrayerStatus.prayed,
       );
       when(
-        () => repo.watchSettings(),
+        () => repo.watchSettings(profileId: any(named: 'profileId')),
       ).thenAnswer((_) => Stream.value(settings));
       when(
-        () => repo.sweepMissedPrayers(any(), any()),
+        () => repo.sweepMissedPrayers(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.materializeRecords(any(), any()),
+        () => repo.materializeRecords(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async {});
       when(
-        () => repo.recordsInRange(any(), any()),
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
       ).thenAnswer((_) async => [record]);
 
       await withClock(Clock.fixed(now), () async {

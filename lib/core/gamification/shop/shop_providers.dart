@@ -1,6 +1,7 @@
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_repository.dart';
 import 'package:habit_tracker/core/gamification/xp_providers.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'shop_providers.g.dart';
@@ -14,7 +15,11 @@ ShopRepository shopRepository(Ref ref) {
 /// Reactive stream of unlocked shop item ids.
 @riverpod
 Stream<Set<String>> unlockedShopItems(Ref ref) {
-  return ref.watch(shopRepositoryProvider).watchUnlockedItems();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(shopRepositoryProvider)
+      .watchUnlockedItems(profileId: profileId);
 }
 
 /// The current XP balance, live-updating (mirrors [totalXpProvider] — the

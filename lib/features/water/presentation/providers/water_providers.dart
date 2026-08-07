@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/features/water/data/repositories/water_repository_impl.dart';
@@ -35,42 +36,58 @@ WaterRepository waterRepository(Ref ref) {
 /// "today" concept has without a dedicated midnight-rollover timer).
 LocalDate _today() => localDayKey(clock.now());
 
-/// Every (non-deleted) entry logged on [day].
+/// Every (non-deleted) entry logged on [day]. Empty (never emitting)
+/// until the active profile resolves — Riverpod rebuilds this
+/// automatically once it does, since [activeProfileProvider] is watched.
 @riverpod
 Stream<List<WaterEntry>> waterEntriesForDay(Ref ref, LocalDate day) {
-  return ref.watch(waterRepositoryProvider).watchEntriesForDay(day);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(waterRepositoryProvider)
+      .watchEntriesForDay(day, profileId: profileId);
 }
 
 /// A single entry by id, for the edit-entry screen.
 @riverpod
-Future<WaterEntry?> waterEntryById(Ref ref, String id) {
-  return ref.watch(waterRepositoryProvider).entryById(id);
+Future<WaterEntry?> waterEntryById(Ref ref, String id) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
+  return ref.watch(waterRepositoryProvider).entryById(id, profileId: profileId);
 }
 
 /// Every (non-deleted) entry logged within [range], inclusive.
 @riverpod
 Stream<List<WaterEntry>> waterEntriesInRange(Ref ref, WaterDateRange range) {
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
   return ref
       .watch(waterRepositoryProvider)
-      .watchEntriesInRange(range.start, range.end);
+      .watchEntriesInRange(range.start, range.end, profileId: profileId);
 }
 
 /// The current (latest) goal.
 @riverpod
 Stream<WaterGoal?> currentWaterGoal(Ref ref) {
-  return ref.watch(waterRepositoryProvider).watchCurrentGoal();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref
+      .watch(waterRepositoryProvider)
+      .watchCurrentGoal(profileId: profileId);
 }
 
 /// The full goal history, oldest first.
 @riverpod
-Future<List<WaterGoal>> allWaterGoals(Ref ref) {
-  return ref.watch(waterRepositoryProvider).allGoals();
+Future<List<WaterGoal>> allWaterGoals(Ref ref) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
+  return ref.watch(waterRepositoryProvider).allGoals(profileId: profileId);
 }
 
 /// The module's own settings (quick-add presets, reminder prefs).
 @riverpod
 Stream<WaterSettings> waterSettings(Ref ref) {
-  return ref.watch(waterRepositoryProvider).watchSettings();
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
+  return ref.watch(waterRepositoryProvider).watchSettings(profileId: profileId);
 }
 
 /// Today's total vs. goal, or `null` while the underlying streams are

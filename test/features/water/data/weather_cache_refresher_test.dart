@@ -7,6 +7,8 @@ import 'package:habit_tracker/features/water/data/weather_cache_refresher.dart';
 
 import '../../../support/test_database.dart';
 
+const _profileId = 'system';
+
 void main() {
   test(
     'no-ops (never resolves location) when weatherNudgeEnabled is false',
@@ -20,7 +22,11 @@ void main() {
         resolveLocation: () async => fail('should not be called'),
       );
 
-      expect((await repo.watchSettings().first).lastWeatherFetchedAt, isNull);
+      expect(
+        (await repo.watchSettings(profileId: _profileId).first)
+            .lastWeatherFetchedAt,
+        isNull,
+      );
     },
   );
 
@@ -33,10 +39,14 @@ void main() {
       final now = DateTime.utc(2026, 6, 1, 12);
 
       await withClock(Clock.fixed(now), () async {
-        await repo.updateWeatherNudgeEnabled(enabled: true);
+        await repo.updateWeatherNudgeEnabled(
+          enabled: true,
+          profileId: _profileId,
+        );
         await repo.updateWeatherCache(
           temperatureCelsius: 30,
           fetchedAt: now.subtract(const Duration(hours: 1)),
+          profileId: _profileId,
         );
 
         await refreshWeatherCacheIfStale(
@@ -45,7 +55,8 @@ void main() {
         );
 
         expect(
-          (await repo.watchSettings().first).lastWeatherTemperatureCelsius,
+          (await repo.watchSettings(profileId: _profileId).first)
+              .lastWeatherTemperatureCelsius,
           30,
         );
       });
@@ -59,7 +70,10 @@ void main() {
     final now = DateTime.utc(2026, 6, 1, 12);
 
     await withClock(Clock.fixed(now), () async {
-      await repo.updateWeatherNudgeEnabled(enabled: true);
+      await repo.updateWeatherNudgeEnabled(
+        enabled: true,
+        profileId: _profileId,
+      );
 
       await refreshWeatherCacheIfStale(
         db,
@@ -69,7 +83,7 @@ void main() {
             Result.success((temperatureCelsius: 32.0, fetchedAt: now)),
       );
 
-      final settings = await repo.watchSettings().first;
+      final settings = await repo.watchSettings(profileId: _profileId).first;
       expect(settings.lastWeatherTemperatureCelsius, 32.0);
       expect(settings.lastWeatherFetchedAt, now);
     });
@@ -80,7 +94,7 @@ void main() {
     addTearDown(db.close);
     final repo = WaterRepositoryImpl(db);
 
-    await repo.updateWeatherNudgeEnabled(enabled: true);
+    await repo.updateWeatherNudgeEnabled(enabled: true, profileId: _profileId);
 
     await refreshWeatherCacheIfStale(
       db,
@@ -89,7 +103,8 @@ void main() {
     );
 
     expect(
-      (await repo.watchSettings().first).lastWeatherTemperatureCelsius,
+      (await repo.watchSettings(profileId: _profileId).first)
+          .lastWeatherTemperatureCelsius,
       isNull,
     );
   });

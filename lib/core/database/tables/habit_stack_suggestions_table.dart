@@ -60,6 +60,13 @@ class HabitStackSuggestionsTable extends Table {
   /// UTC epoch millis, bumped on every write.
   IntColumn get updatedAt => integer()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support. Part of the primary key since
+  /// [id] is deterministic per module pair (`'medicine_water'` etc.) —
+  /// each profile needs its own suggestion row for the same pair.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
-  Set<Column> get primaryKey => {id};
+  Set<Column> get primaryKey => {id, profileId};
 }

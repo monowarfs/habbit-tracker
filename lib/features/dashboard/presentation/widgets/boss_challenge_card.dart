@@ -11,6 +11,7 @@ import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 
 String? _bossQuestDescription(AppLocalizations l10n, String questKey) =>
@@ -195,10 +196,16 @@ class _ClaimButtonState extends ConsumerState<_ClaimButton> {
     if (_claiming) return;
     setState(() => _claiming = true);
     final now = clock.now();
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     await ref
         .read(questRepositoryProvider)
-        .claimReward(widget.quest.questKey, widget.quest.weekKey, now: now);
-    final leveledUpTo = await _awardXp(now);
+        .claimReward(
+          widget.quest.questKey,
+          widget.quest.weekKey,
+          now: now,
+          profileId: profileId,
+        );
+    final leveledUpTo = await _awardXp(now, profileId);
     if (!mounted) return;
     // Deliberately not resetting `_claiming` — same reasoning as
     // `WeeklyQuestList._QuestTileState._claim` (PR #77 second-review
@@ -218,13 +225,14 @@ class _ClaimButtonState extends ConsumerState<_ClaimButton> {
   /// `hasAwarded` guards against a stale/duplicate claim re-triggering
   /// this (defense in depth alongside the `_claiming` reentrancy guard).
   /// Returns the new level if this award crossed a level threshold.
-  Future<int?> _awardXp(DateTime now) async {
+  Future<int?> _awardXp(DateTime now, String profileId) async {
     final xpRepository = ref.read(xpRepositoryProvider);
     final sourceId = '${widget.quest.questKey}_${widget.quest.weekKey}';
     final alreadyAwarded = await xpRepository.hasAwarded(
       moduleId: widget.quest.moduleId,
       eventType: 'boss_cleared',
       sourceId: sourceId,
+      profileId: profileId,
     );
     if (alreadyAwarded) return null;
     final result = await xpRepository.awardXp(
@@ -233,6 +241,7 @@ class _ClaimButtonState extends ConsumerState<_ClaimButton> {
       amount: XpValues.bossCleared,
       now: now,
       sourceId: sourceId,
+      profileId: profileId,
     );
     return result.leveledUpTo;
   }

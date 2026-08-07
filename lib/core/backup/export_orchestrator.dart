@@ -16,6 +16,7 @@ Future<BackupEnvelope> buildExport({
   required SettingsRepository settingsRepository,
   required AchievementRepository achievementRepository,
   required String appVersion,
+  required String profileId,
 }) async {
   final moduleExports = <String, Map<String, dynamic>>{};
   for (final module in modules) {
@@ -23,7 +24,9 @@ Future<BackupEnvelope> buildExport({
     moduleExports[module.id] = export.payload;
   }
   final settings = await settingsRepository.watchSettings().first;
-  final achievements = await achievementRepository.watchAll().first;
+  final achievements = await achievementRepository
+      .watchAll(profileId: profileId)
+      .first;
   return BackupEnvelope(
     schemaVersion: BackupEnvelope.currentSchemaVersion,
     exportedAt: clock.now(),

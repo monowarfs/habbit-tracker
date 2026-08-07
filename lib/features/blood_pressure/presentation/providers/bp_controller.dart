@@ -1,6 +1,7 @@
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/entities/bp_log.dart';
 import 'package:habit_tracker/features/blood_pressure/domain/usecases/log_bp_use_case.dart';
 import 'package:habit_tracker/features/blood_pressure/presentation/providers/bp_providers.dart';
@@ -16,6 +17,9 @@ class BpController extends _$BpController {
   @override
   void build() {}
 
+  Future<String> _activeProfileId() =>
+      ref.read(activeProfileProvider.future).then((p) => p.id);
+
   /// Logs a reading. Returns the [Result] so the screen can show the
   /// specific validation message instead of closing as if it had
   /// actually saved, or showing a generic error for every failure reason.
@@ -26,10 +30,12 @@ class BpController extends _$BpController {
     int? pulse,
     String? notes,
   }) async {
+    final profileId = await _activeProfileId();
     final repository = ref.read(bpRepositoryProvider);
     final result = await LogBpUseCase(repository).execute(
       systolic: systolic,
       diastolic: diastolic,
+      profileId: profileId,
       loggedAt: loggedAt,
       pulse: pulse,
       notes: notes,
@@ -38,13 +44,18 @@ class BpController extends _$BpController {
       logException(error);
       return result;
     }
-    await ref.read(achievementEngineProvider).evaluate('blood_pressure');
+    await ref
+        .read(achievementEngineProvider)
+        .evaluate('blood_pressure', profileId: profileId);
     return result;
   }
 
   /// Deletes a reading.
   Future<bool> deleteLog(String id) async {
-    final result = await ref.read(bpRepositoryProvider).deleteLog(id);
+    final profileId = await _activeProfileId();
+    final result = await ref
+        .read(bpRepositoryProvider)
+        .deleteLog(id, profileId: profileId);
     if (result case Failure(:final error)) {
       logException(error);
       return false;

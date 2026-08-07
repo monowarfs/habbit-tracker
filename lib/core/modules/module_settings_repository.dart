@@ -3,6 +3,11 @@ import 'package:drift/drift.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 
 /// CRUD for the `module_settings` table — enable/disable per module.
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — `module_settings`'s primary key is now
+/// composite `{moduleId, profileId}`.
 class ModuleSettingsRepository {
   /// Creates a repository backed by the given database.
   const ModuleSettingsRepository(this._db);
@@ -11,19 +16,24 @@ class ModuleSettingsRepository {
 
   /// Whether [moduleId] is enabled. Defaults to `true` for Water,
   /// `false` for others if no row exists.
-  Future<bool> isEnabled(String moduleId) async {
+  Future<bool> isEnabled(String moduleId, {required String profileId}) async {
     final row =
         await (_db.select(_db.moduleSettingsTable)
-              ..where((t) => t.moduleId.equals(moduleId))
+              ..where(
+                (t) =>
+                    t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+              )
               ..limit(1))
             .getSingleOrNull();
     return row?.enabled ?? (moduleId == 'water');
   }
 
   /// Stream of enabled state for [moduleId].
-  Stream<bool> watchEnabled(String moduleId) {
+  Stream<bool> watchEnabled(String moduleId, {required String profileId}) {
     return (_db.select(_db.moduleSettingsTable)
-          ..where((t) => t.moduleId.equals(moduleId))
+          ..where(
+            (t) => t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+          )
           ..limit(1))
         .watchSingleOrNull()
         .map(
@@ -32,22 +42,30 @@ class ModuleSettingsRepository {
   }
 
   /// Enables or disables [moduleId].
-  Future<void> setEnabled(String moduleId, {required bool enabled}) async {
+  Future<void> setEnabled(
+    String moduleId, {
+    required bool enabled,
+    required String profileId,
+  }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     final existing =
         await (_db.select(_db.moduleSettingsTable)
-              ..where((t) => t.moduleId.equals(moduleId))
+              ..where(
+                (t) =>
+                    t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+              )
               ..limit(1))
             .getSingleOrNull();
     if (existing != null) {
-      await (_db.update(
-        _db.moduleSettingsTable,
-      )..where((t) => t.moduleId.equals(moduleId))).write(
-        ModuleSettingsTableCompanion(
-          enabled: Value(enabled),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.moduleSettingsTable)..where(
+            (t) => t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            ModuleSettingsTableCompanion(
+              enabled: Value(enabled),
+              updatedAt: Value(now),
+            ),
+          );
     } else {
       await _db
           .into(_db.moduleSettingsTable)
@@ -57,37 +75,50 @@ class ModuleSettingsRepository {
               enabled: Value(enabled),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
     }
   }
 
   /// All enabled module ids.
-  Future<Set<String>> enabledModuleIds() async {
-    final rows = await (_db.select(
-      _db.moduleSettingsTable,
-    )..where((t) => t.enabled.equals(true))).get();
+  Future<Set<String>> enabledModuleIds({required String profileId}) async {
+    final rows =
+        await (_db.select(_db.moduleSettingsTable)..where(
+              (t) => t.enabled.equals(true) & t.profileId.equals(profileId),
+            ))
+            .get();
     return rows.map((r) => r.moduleId).toSet();
   }
 
   /// Marks a module's suggestion as dismissed.
-  Future<void> dismissSuggestion(String moduleId) async {
+  Future<void> dismissSuggestion(
+    String moduleId, {
+    required String profileId,
+  }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
-    await (_db.update(
-      _db.moduleSettingsTable,
-    )..where((t) => t.moduleId.equals(moduleId))).write(
-      ModuleSettingsTableCompanion(
-        suggestionDismissed: const Value(true),
-        updatedAt: Value(now),
-      ),
-    );
+    await (_db.update(_db.moduleSettingsTable)..where(
+          (t) => t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+        ))
+        .write(
+          ModuleSettingsTableCompanion(
+            suggestionDismissed: const Value(true),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
   /// Whether a module's suggestion has been dismissed.
-  Future<bool> isSuggestionDismissed(String moduleId) async {
+  Future<bool> isSuggestionDismissed(
+    String moduleId, {
+    required String profileId,
+  }) async {
     final row =
         await (_db.select(_db.moduleSettingsTable)
-              ..where((t) => t.moduleId.equals(moduleId))
+              ..where(
+                (t) =>
+                    t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+              )
               ..limit(1))
             .getSingleOrNull();
     return row?.suggestionDismissed ?? false;

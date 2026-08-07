@@ -19,7 +19,7 @@ void main() {
 
     final row = await container
         .read(achievementRepositoryProvider)
-        .byKey('water_first_log');
+        .byKey('water_first_log', profileId: 'system');
     expect(row, isNotNull);
     expect(row!.progressCurrent, 1);
     expect(row.unlockedAt, isNotNull);

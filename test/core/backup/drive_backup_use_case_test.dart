@@ -45,6 +45,7 @@ void main() {
         appVersion: '1.0.0',
         driveTarget: driveTarget,
         backupRepository: backupRepository,
+        profileId: 'system',
       );
 
       expect(result, isA<Success<void>>());
@@ -70,6 +71,7 @@ void main() {
         appVersion: '1.0.0',
         driveTarget: driveTarget,
         backupRepository: backupRepository,
+        profileId: 'system',
       );
 
       expect(result, isA<Failure<void>>());
@@ -144,6 +146,7 @@ void main() {
         settingsRepository: settingsRepository,
         achievementRepository: achievementRepository,
         appVersion: '1.0.0',
+        profileId: 'system',
       );
 
       expect(result, isA<Success<void>>());

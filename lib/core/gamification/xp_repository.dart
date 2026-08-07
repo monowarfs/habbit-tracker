@@ -15,6 +15,11 @@ typedef AwardResult = ({int totalXp, int? leveledUpTo});
 /// Drift-backed XP ledger + running balance. `xp_balance`'s singleton row
 /// is lazily seeded on first read/write (mirrors `SettingsRepositoryImpl`
 /// `_ensureSeeded()`), not via a migration-time insert.
+///
+/// Every method takes `profileId` (family/multi-profile,
+/// `docs/superpowers/specs/04-premium/03-family-multi-profile-
+/// IMPLEMENTATION-PLAN.md`) — `xp_balance`'s primary key is now composite
+/// `{id, profileId}` since `id` is always the literal `'singleton'`.
 class XpRepository {
   /// Creates a repository backed by [_db].
   XpRepository(this._db);
@@ -29,13 +34,14 @@ class XpRepository {
     required String eventType,
     required int amount,
     required DateTime now,
+    required String profileId,
     String? sourceId,
   }) async {
     final nowMillis = now.millisecondsSinceEpoch;
     late final int newTotal;
     late final int levelBefore;
     await _db.transaction(() async {
-      await _ensureSeeded(nowMillis);
+      await _ensureSeeded(nowMillis, profileId);
       await _db
           .into(_db.xpLedgerTable)
           .insert(
@@ -46,21 +52,26 @@ class XpRepository {
               xpAmount: amount,
               sourceId: Value(sourceId),
               createdAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
-      final balance = await (_db.select(
-        _db.xpBalanceTable,
-      )..where((t) => t.id.equals(_singletonId))).getSingle();
+      final balance =
+          await (_db.select(_db.xpBalanceTable)..where(
+                (t) =>
+                    t.id.equals(_singletonId) & t.profileId.equals(profileId),
+              ))
+              .getSingle();
       levelBefore = LevelCurve.levelForXp(balance.totalXp);
       newTotal = balance.totalXp + amount;
-      await (_db.update(
-        _db.xpBalanceTable,
-      )..where((t) => t.id.equals(_singletonId))).write(
-        XpBalanceTableCompanion(
-          totalXp: Value(newTotal),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.xpBalanceTable)..where(
+            (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            XpBalanceTableCompanion(
+              totalXp: Value(newTotal),
+              updatedAt: Value(nowMillis),
+            ),
+          );
     });
     final levelAfter = LevelCurve.levelForXp(newTotal);
     return (
@@ -80,6 +91,7 @@ class XpRepository {
     required String moduleId,
     required String eventType,
     required String sourceId,
+    required String profileId,
   }) async {
     final row =
         await (_db.select(_db.xpLedgerTable)
@@ -87,7 +99,8 @@ class XpRepository {
                 (t) =>
                     t.moduleId.equals(moduleId) &
                     t.eventType.equals(eventType) &
-                    t.sourceId.equals(sourceId),
+                    t.sourceId.equals(sourceId) &
+                    t.profileId.equals(profileId),
               )
               ..limit(1))
             .getSingleOrNull();
@@ -95,22 +108,25 @@ class XpRepository {
   }
 
   /// Current total XP.
-  Future<int> totalXp() async {
-    await _ensureSeeded(clock.now().millisecondsSinceEpoch);
-    final row = await (_db.select(
-      _db.xpBalanceTable,
-    )..where((t) => t.id.equals(_singletonId))).getSingle();
+  Future<int> totalXp({required String profileId}) async {
+    await _ensureSeeded(clock.now().millisecondsSinceEpoch, profileId);
+    final row =
+        await (_db.select(_db.xpBalanceTable)..where(
+              (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+            ))
+            .getSingle();
     return row.totalXp;
   }
 
   /// Stream of total XP, for reactive UI.
-  Stream<int> watchTotalXp() {
+  Stream<int> watchTotalXp({required String profileId}) {
     return Stream.fromFuture(
-      _ensureSeeded(clock.now().millisecondsSinceEpoch),
+      _ensureSeeded(clock.now().millisecondsSinceEpoch, profileId),
     ).asyncExpand((_) {
-      final query = _db.select(
-        _db.xpBalanceTable,
-      )..where((t) => t.id.equals(_singletonId));
+      final query = _db.select(_db.xpBalanceTable)
+        ..where(
+          (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+        );
       return query.watchSingle().map((row) => row.totalXp);
     });
   }
@@ -126,13 +142,17 @@ class XpRepository {
     required int amount,
     required DateTime now,
     required String reason,
+    required String profileId,
   }) async {
     final nowMillis = now.millisecondsSinceEpoch;
     await _db.transaction(() async {
-      await _ensureSeeded(nowMillis);
-      final balance = await (_db.select(
-        _db.xpBalanceTable,
-      )..where((t) => t.id.equals(_singletonId))).getSingle();
+      await _ensureSeeded(nowMillis, profileId);
+      final balance =
+          await (_db.select(_db.xpBalanceTable)..where(
+                (t) =>
+                    t.id.equals(_singletonId) & t.profileId.equals(profileId),
+              ))
+              .getSingle();
       if (balance.totalXp < amount) {
         throw StateError(
           'Insufficient XP: have ${balance.totalXp}, need $amount',
@@ -148,32 +168,40 @@ class XpRepository {
               xpAmount: -amount,
               sourceId: Value(reason),
               createdAt: nowMillis,
+              profileId: Value(profileId),
             ),
           );
-      await (_db.update(
-        _db.xpBalanceTable,
-      )..where((t) => t.id.equals(_singletonId))).write(
-        XpBalanceTableCompanion(
-          totalXp: Value(balance.totalXp - amount),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.xpBalanceTable)..where(
+            (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            XpBalanceTableCompanion(
+              totalXp: Value(balance.totalXp - amount),
+              updatedAt: Value(nowMillis),
+            ),
+          );
     });
   }
 
   /// Most recent [limit] ledger rows, newest first — the XP-history
   /// screen's source, paginated rather than loading the whole ledger.
-  Future<List<XpLedgerRow>> recentLedger({int limit = 50}) {
+  Future<List<XpLedgerRow>> recentLedger({
+    required String profileId,
+    int limit = 50,
+  }) {
     return (_db.select(_db.xpLedgerTable)
+          ..where((t) => t.profileId.equals(profileId))
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])
           ..limit(limit))
         .get();
   }
 
-  Future<void> _ensureSeeded(int nowMillis) async {
-    final existing = await (_db.select(
-      _db.xpBalanceTable,
-    )..where((t) => t.id.equals(_singletonId))).getSingleOrNull();
+  Future<void> _ensureSeeded(int nowMillis, String profileId) async {
+    final existing =
+        await (_db.select(_db.xpBalanceTable)..where(
+              (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+            ))
+            .getSingleOrNull();
     if (existing != null) return;
     await _db
         .into(_db.xpBalanceTable)
@@ -183,6 +211,7 @@ class XpRepository {
             totalXp: 0,
             createdAt: nowMillis,
             updatedAt: nowMillis,
+            profileId: Value(profileId),
           ),
         );
   }

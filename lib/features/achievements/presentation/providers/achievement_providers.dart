@@ -1,6 +1,7 @@
 import 'package:habit_tracker/core/achievements/achievement_providers.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'achievement_providers.g.dart';
@@ -21,8 +22,10 @@ Stream<List<AchievementView>> achievementViews(Ref ref) {
   // Premium-filtered: the badge gallery shouldn't advertise a gated
   // module's achievement ladder to a user who can't earn any of it.
   final modules = ref.watch(visibleHabitModulesProvider);
+  final profileId = ref.watch(activeProfileProvider).value?.id;
+  if (profileId == null) return const Stream.empty();
   final repository = ref.watch(achievementRepositoryProvider);
-  return repository.watchAll().map((rows) {
+  return repository.watchAll(profileId: profileId).map((rows) {
     final rowsByKey = {for (final row in rows) row.key: row};
     return [
       for (final module in modules)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/water/domain/entities/water_goal.dart';
 import 'package:habit_tracker/features/water/presentation/providers/water_providers.dart';
 
@@ -21,12 +22,19 @@ class _ArchivedGoalsScreenState extends ConsumerState<ArchivedGoalsScreen> {
   @override
   void initState() {
     super.initState();
-    _future = ref.read(waterRepositoryProvider).archivedGoals();
+    _future = _loadArchivedGoals();
+  }
+
+  Future<List<WaterGoal>> _loadArchivedGoals() async {
+    final profile = await ref.read(activeProfileProvider.future);
+    return ref
+        .read(waterRepositoryProvider)
+        .archivedGoals(profileId: profile.id);
   }
 
   void _refresh() {
     setState(() {
-      _future = ref.read(waterRepositoryProvider).archivedGoals();
+      _future = _loadArchivedGoals();
     });
   }
 
@@ -114,7 +122,10 @@ class _ArchivedGoalsScreenState extends ConsumerState<ArchivedGoalsScreen> {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref.read(waterRepositoryProvider).reviveGoal(goal.id);
+    final profile = await ref.read(activeProfileProvider.future);
+    final result = await ref
+        .read(waterRepositoryProvider)
+        .reviveGoal(goal.id, profileId: profile.id);
     switch (result) {
       case Success():
         if (mounted) {

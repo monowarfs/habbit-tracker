@@ -38,6 +38,7 @@ class XpAwardListener {
           amount: XpValues.streakMilestone,
           now: clock.now(),
           sourceId: event.key,
+          profileId: event.profileId,
         ),
       );
     });

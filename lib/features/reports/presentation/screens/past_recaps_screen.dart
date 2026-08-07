@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recaps/recap_providers.dart';
 import 'package:habit_tracker/core/recaps/year_summary.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
@@ -19,80 +20,86 @@ class PastRecapsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final recapRepo = ref.watch(recapRepositoryProvider);
+    final profileId = ref.watch(activeProfileProvider).value?.id;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.pastRecapsTitle)),
-      body: FutureBuilder<List<RecapRow>>(
-        future: recapRepo.allRecaps(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: profileId == null
+          ? const Center(child: CircularProgressIndicator())
+          : FutureBuilder<List<RecapRow>>(
+              future: recapRepo.allRecaps(profileId: profileId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          final recaps = snapshot.data ?? [];
-          if (recaps.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.celebration_outlined,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline,
+                final recaps = snapshot.data ?? [];
+                if (recaps.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.celebration_outlined,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.pastRecapsEmpty,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.pastRecapsEmpty,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+                  );
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: recaps.length,
-            itemBuilder: (context, index) {
-              final recap = recaps[index];
-              final generatedDate = DateTime.fromMillisecondsSinceEpoch(
-                recap.generatedAt,
-                isUtc: true,
-              ).toLocal();
-              final month = generatedDate.month.toString().padLeft(2, '0');
-              final day = generatedDate.day.toString().padLeft(2, '0');
-              final dateStr = '${generatedDate.year}-$month-$day';
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.emoji_events),
-                  title: Text(
-                    l10n.yearlyRecapYearLabel(recap.yearNumber),
-                  ),
-                  subtitle: Text(dateStr),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    final summary = _deserializeSummary(
-                      recap.summaryJson,
-                      recap.yearNumber,
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: recaps.length,
+                  itemBuilder: (context, index) {
+                    final recap = recaps[index];
+                    final generatedDate = DateTime.fromMillisecondsSinceEpoch(
+                      recap.generatedAt,
+                      isUtc: true,
+                    ).toLocal();
+                    final month = generatedDate.month.toString().padLeft(
+                      2,
+                      '0',
                     );
-                    if (summary == null) return;
-                    unawaited(
-                      context.push(
-                        '/reports/recap',
-                        extra: summary,
+                    final day = generatedDate.day.toString().padLeft(2, '0');
+                    final dateStr = '${generatedDate.year}-$month-$day';
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.emoji_events),
+                        title: Text(
+                          l10n.yearlyRecapYearLabel(recap.yearNumber),
+                        ),
+                        subtitle: Text(dateStr),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          final summary = _deserializeSummary(
+                            recap.summaryJson,
+                            recap.yearNumber,
+                          );
+                          if (summary == null) return;
+                          unawaited(
+                            context.push(
+                              '/reports/recap',
+                              extra: summary,
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
-                ),
-              );
-            },
-          );
-        },
-      ),
+                );
+              },
+            ),
     );
   }
 

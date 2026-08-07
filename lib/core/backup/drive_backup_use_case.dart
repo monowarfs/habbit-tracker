@@ -30,6 +30,7 @@ Future<Result<void>> performBackup({
   required String appVersion,
   required GoogleDriveBackupTarget driveTarget,
   required DriveBackupRepository backupRepository,
+  required String profileId,
 }) async {
   const fileName = 'habit_tracker_backup.json';
   final backupId = await backupRepository.markInProgress(
@@ -43,6 +44,7 @@ Future<Result<void>> performBackup({
       settingsRepository: settingsRepository,
       achievementRepository: achievementRepository,
       appVersion: appVersion,
+      profileId: profileId,
     );
     final json = const JsonEncoder.withIndent('  ').convert(envelope.toJson());
     final file = File(p.join(Directory.systemTemp.path, fileName));
@@ -96,6 +98,7 @@ Future<Result<void>> applyDriveRestore({
   required SettingsRepository settingsRepository,
   required AchievementRepository achievementRepository,
   required String appVersion,
+  required String profileId,
 }) async {
   try {
     final safetyEnvelope = await buildExport(
@@ -103,6 +106,7 @@ Future<Result<void>> applyDriveRestore({
       settingsRepository: settingsRepository,
       achievementRepository: achievementRepository,
       appVersion: appVersion,
+      profileId: profileId,
     );
     final safetyFile = File(
       p.join(

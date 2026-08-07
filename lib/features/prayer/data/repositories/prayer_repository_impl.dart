@@ -49,27 +49,33 @@ class PrayerRepositoryImpl implements PrayerRepository {
       _isBangladeshLocale() ? AsrMethod.hanafi : AsrMethod.standard;
 
   @override
-  Stream<PrayerSettings> watchSettings() {
-    return Stream.fromFuture(_ensureSeeded()).asyncExpand((_) {
+  Stream<PrayerSettings> watchSettings({required String profileId}) {
+    return Stream.fromFuture(_ensureSeeded(profileId)).asyncExpand((_) {
       final query = _db.select(_db.prayerSettingsTable)
-        ..where((t) => t.id.equals(_singletonId));
+        ..where(
+          (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+        );
       return query.watchSingle().map(_settingsFromRow);
     });
   }
 
   @override
-  Future<PrayerSettings> getSettings() async {
-    await _ensureSeeded();
-    final row = await (_db.select(
-      _db.prayerSettingsTable,
-    )..where((t) => t.id.equals(_singletonId))).getSingle();
+  Future<PrayerSettings> getSettings({required String profileId}) async {
+    await _ensureSeeded(profileId);
+    final row =
+        await (_db.select(_db.prayerSettingsTable)..where(
+              (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+            ))
+            .getSingle();
     return _settingsFromRow(row);
   }
 
-  Future<void> _ensureSeeded() async {
-    final existing = await (_db.select(
-      _db.prayerSettingsTable,
-    )..where((t) => t.id.equals(_singletonId))).getSingleOrNull();
+  Future<void> _ensureSeeded(String profileId) async {
+    final existing =
+        await (_db.select(_db.prayerSettingsTable)..where(
+              (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+            ))
+            .getSingleOrNull();
     if (existing == null) {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       await _db
@@ -82,14 +88,17 @@ class PrayerRepositoryImpl implements PrayerRepository {
               locationMode: LocationMode.auto.toDb(),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
     }
-    await _ensureQadhaCountersSeeded();
+    await _ensureQadhaCountersSeeded(profileId);
   }
 
-  Future<void> _ensureQadhaCountersSeeded() async {
-    final existing = await _db.select(_db.prayerQadhaCountersTable).get();
+  Future<void> _ensureQadhaCountersSeeded(String profileId) async {
+    final existing = await (_db.select(
+      _db.prayerQadhaCountersTable,
+    )..where((t) => t.profileId.equals(profileId))).get();
     final existingNames = existing.map((r) => r.prayerName).toSet();
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     for (final name in PrayerName.values) {
@@ -101,6 +110,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
               id: generateId(),
               prayerName: name.toDb(),
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
     }
@@ -108,6 +118,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
 
   @override
   Future<Result<void>> updateSettings({
+    required String profileId,
     CalculationMethod? calculationMethod,
     AsrMethod? asrMethod,
     bool? observesJumuah,
@@ -121,49 +132,50 @@ class PrayerRepositoryImpl implements PrayerRepository {
     int? preReminderOffsetMinutes,
   }) async {
     try {
-      await _ensureSeeded();
+      await _ensureSeeded(profileId);
       final now = clock.now();
       final nowMillis = now.toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.prayerSettingsTable,
-      )..where((t) => t.id.equals(_singletonId))).write(
-        PrayerSettingsTableCompanion(
-          calculationMethod: calculationMethod == null
-              ? const Value.absent()
-              : Value(calculationMethod.toDb()),
-          asrMethod: asrMethod == null
-              ? const Value.absent()
-              : Value(asrMethod.toDb()),
-          observesJumuah: observesJumuah == null
-              ? const Value.absent()
-              : Value(observesJumuah),
-          locationMode: locationMode == null
-              ? const Value.absent()
-              : Value(locationMode.toDb()),
-          manualLatitude: manualLatitude == null
-              ? const Value.absent()
-              : Value(manualLatitude),
-          manualLongitude: manualLongitude == null
-              ? const Value.absent()
-              : Value(manualLongitude),
-          manualTimezone: manualTimezone == null
-              ? const Value.absent()
-              : Value(manualTimezone),
-          ishaDayRolloverTime: ishaDayRolloverTime == null
-              ? const Value.absent()
-              : Value(ishaDayRolloverTime.format()),
-          notificationsEnabled: notificationsEnabled == null
-              ? const Value.absent()
-              : Value(notificationsEnabled),
-          preReminderEnabled: preReminderEnabled == null
-              ? const Value.absent()
-              : Value(preReminderEnabled),
-          preReminderOffsetMinutes: preReminderOffsetMinutes == null
-              ? const Value.absent()
-              : Value(preReminderOffsetMinutes),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+      await (_db.update(_db.prayerSettingsTable)..where(
+            (t) => t.id.equals(_singletonId) & t.profileId.equals(profileId),
+          ))
+          .write(
+            PrayerSettingsTableCompanion(
+              calculationMethod: calculationMethod == null
+                  ? const Value.absent()
+                  : Value(calculationMethod.toDb()),
+              asrMethod: asrMethod == null
+                  ? const Value.absent()
+                  : Value(asrMethod.toDb()),
+              observesJumuah: observesJumuah == null
+                  ? const Value.absent()
+                  : Value(observesJumuah),
+              locationMode: locationMode == null
+                  ? const Value.absent()
+                  : Value(locationMode.toDb()),
+              manualLatitude: manualLatitude == null
+                  ? const Value.absent()
+                  : Value(manualLatitude),
+              manualLongitude: manualLongitude == null
+                  ? const Value.absent()
+                  : Value(manualLongitude),
+              manualTimezone: manualTimezone == null
+                  ? const Value.absent()
+                  : Value(manualTimezone),
+              ishaDayRolloverTime: ishaDayRolloverTime == null
+                  ? const Value.absent()
+                  : Value(ishaDayRolloverTime.format()),
+              notificationsEnabled: notificationsEnabled == null
+                  ? const Value.absent()
+                  : Value(notificationsEnabled),
+              preReminderEnabled: preReminderEnabled == null
+                  ? const Value.absent()
+                  : Value(preReminderEnabled),
+              preReminderOffsetMinutes: preReminderOffsetMinutes == null
+                  ? const Value.absent()
+                  : Value(preReminderOffsetMinutes),
+              updatedAt: Value(nowMillis),
+            ),
+          );
 
       // FR-P-01: a location/method change recalculates all *future* prayer
       // times immediately — soft-delete future `upcoming` records so the
@@ -180,6 +192,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
       if (locationOrMethodChanged) {
         await (_db.update(_db.prayerRecordsTable)..where(
               (t) =>
+                  t.profileId.equals(profileId) &
                   t.status.equals('upcoming') &
                   t.scheduledFor.isBiggerThanValue(
                     now.toUtc().millisecondsSinceEpoch,
@@ -201,25 +214,31 @@ class PrayerRepositoryImpl implements PrayerRepository {
   }
 
   @override
-  Stream<List<PrayerQadhaCounter>> watchQadhaCounters() {
-    return Stream.fromFuture(_ensureSeeded()).asyncExpand((_) {
-      return _db
-          .select(_db.prayerQadhaCountersTable)
-          .watch()
-          .map(
-            (rows) => rows.map(_qadhaFromRow).toList(growable: false),
-          );
+  Stream<List<PrayerQadhaCounter>> watchQadhaCounters({
+    required String profileId,
+  }) {
+    return Stream.fromFuture(_ensureSeeded(profileId)).asyncExpand((_) {
+      return (_db.select(
+        _db.prayerQadhaCountersTable,
+      )..where((t) => t.profileId.equals(profileId))).watch().map(
+        (rows) => rows.map(_qadhaFromRow).toList(growable: false),
+      );
     });
   }
 
   @override
-  Future<Result<void>> markQadhaMakeup(PrayerName prayerName) async {
+  Future<Result<void>> markQadhaMakeup(
+    PrayerName prayerName, {
+    required String profileId,
+  }) async {
     try {
-      await _ensureSeeded();
+      await _ensureSeeded(profileId);
       final row =
-          await (_db.select(
-                _db.prayerQadhaCountersTable,
-              )..where((t) => t.prayerName.equals(prayerName.toDb())))
+          await (_db.select(_db.prayerQadhaCountersTable)..where(
+                (t) =>
+                    t.prayerName.equals(prayerName.toDb()) &
+                    t.profileId.equals(profileId),
+              ))
               .getSingleOrNull();
       if (row == null) {
         return Result.failure(
@@ -228,14 +247,15 @@ class PrayerRepositoryImpl implements PrayerRepository {
       }
       final newCount = applyQadhaMakeup(_qadhaFromRow(row));
       final now = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.prayerQadhaCountersTable,
-      )..where((t) => t.id.equals(row.id))).write(
-        PrayerQadhaCountersTableCompanion(
-          count: Value(newCount),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.prayerQadhaCountersTable)..where(
+            (t) => t.id.equals(row.id) & t.profileId.equals(profileId),
+          ))
+          .write(
+            PrayerQadhaCountersTableCompanion(
+              count: Value(newCount),
+              updatedAt: Value(now),
+            ),
+          );
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(AppException.storage('mark_qadha_makeup', e));
@@ -243,20 +263,27 @@ class PrayerRepositoryImpl implements PrayerRepository {
   }
 
   @override
-  Future<Result<void>> setQadhaBalance(PrayerName prayerName, int count) async {
+  Future<Result<void>> setQadhaBalance(
+    PrayerName prayerName,
+    int count, {
+    required String profileId,
+  }) async {
     try {
-      await _ensureSeeded();
+      await _ensureSeeded(profileId);
       final clamped = count < 0 ? 0 : count;
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
-          await (_db.update(
-            _db.prayerQadhaCountersTable,
-          )..where((t) => t.prayerName.equals(prayerName.toDb()))).write(
-            PrayerQadhaCountersTableCompanion(
-              count: Value(clamped),
-              updatedAt: Value(now),
-            ),
-          );
+          await (_db.update(_db.prayerQadhaCountersTable)..where(
+                (t) =>
+                    t.prayerName.equals(prayerName.toDb()) &
+                    t.profileId.equals(profileId),
+              ))
+              .write(
+                PrayerQadhaCountersTableCompanion(
+                  count: Value(clamped),
+                  updatedAt: Value(now),
+                ),
+              );
       if (rowsAffected == 0) {
         return Result.failure(
           AppException.notFound('PrayerQadhaCounter', prayerName.toDb()),
@@ -271,12 +298,17 @@ class PrayerRepositoryImpl implements PrayerRepository {
   @override
   Future<void> materializeRecords(
     DateTime now,
-    ResolvedLocation location,
-  ) async {
+    ResolvedLocation location, {
+    required String profileId,
+  }) async {
     final windowStart = LocalDate.fromDateTime(now.toUtc());
     final windowEnd = windowStart.addDays(_materializationWindowDays - 1);
-    final settings = await watchSettings().first;
-    final existing = await recordsInRange(windowStart, windowEnd);
+    final settings = await watchSettings(profileId: profileId).first;
+    final existing = await recordsInRange(
+      windowStart,
+      windowEnd,
+      profileId: profileId,
+    );
 
     final planned = planPrayerMaterialization(
       settings: settings,
@@ -300,6 +332,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
             status: 'upcoming',
             createdAt: nowMillis,
             updatedAt: nowMillis,
+            profileId: Value(profileId),
           ),
           // `(prayerDate, prayerName)` is a unique key, and a settings
           // change (see `updateSettings`) soft-deletes future `upcoming`
@@ -316,16 +349,21 @@ class PrayerRepositoryImpl implements PrayerRepository {
   @override
   Future<void> sweepMissedPrayers(
     DateTime now,
-    ResolvedLocation location,
-  ) async {
+    ResolvedLocation location, {
+    required String profileId,
+  }) async {
     final today = LocalDate.fromDateTime(
       now.toUtc(),
     );
     final scanStart = today.addDays(-1);
-    final records = await recordsInRange(scanStart, today);
+    final records = await recordsInRange(
+      scanStart,
+      today,
+      profileId: profileId,
+    );
     if (records.isEmpty) return;
 
-    final settings = await watchSettings().first;
+    final settings = await watchSettings(profileId: profileId).first;
     final byDay = <LocalDate, List<PrayerRecord>>{};
     for (final record in records) {
       byDay.putIfAbsent(record.prayerDate, () => []).add(record);
@@ -343,40 +381,58 @@ class PrayerRepositoryImpl implements PrayerRepository {
           ianaTimezone: location.ianaTimezone,
         );
         if (!now.isAfter(cutoff)) continue;
-        await (_db.update(
-          _db.prayerRecordsTable,
-        )..where((t) => t.id.equals(record.id))).write(
-          PrayerRecordsTableCompanion(
-            status: const Value('missed'),
-            statusChangedAt: Value(nowMillis),
-            updatedAt: Value(nowMillis),
-          ),
-        );
-        await _bumpQadha(record.prayerName, now);
+        await (_db.update(_db.prayerRecordsTable)..where(
+              (t) => t.id.equals(record.id) & t.profileId.equals(profileId),
+            ))
+            .write(
+              PrayerRecordsTableCompanion(
+                status: const Value('missed'),
+                statusChangedAt: Value(nowMillis),
+                updatedAt: Value(nowMillis),
+              ),
+            );
+        await _bumpQadha(record.prayerName, now, profileId);
       }
     }
   }
 
-  Future<void> _bumpQadha(PrayerName prayerName, DateTime now) async {
-    final row = await (_db.select(
-      _db.prayerQadhaCountersTable,
-    )..where((t) => t.prayerName.equals(prayerName.toDb()))).getSingleOrNull();
+  Future<void> _bumpQadha(
+    PrayerName prayerName,
+    DateTime now,
+    String profileId,
+  ) async {
+    final row =
+        await (_db.select(_db.prayerQadhaCountersTable)..where(
+              (t) =>
+                  t.prayerName.equals(prayerName.toDb()) &
+                  t.profileId.equals(profileId),
+            ))
+            .getSingleOrNull();
     if (row == null) return;
     final nowMillis = now.toUtc().millisecondsSinceEpoch;
-    await (_db.update(
-      _db.prayerQadhaCountersTable,
-    )..where((t) => t.id.equals(row.id))).write(
-      PrayerQadhaCountersTableCompanion(
-        count: Value(row.count + 1),
-        updatedAt: Value(nowMillis),
-      ),
-    );
+    await (_db.update(_db.prayerQadhaCountersTable)..where(
+          (t) => t.id.equals(row.id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          PrayerQadhaCountersTableCompanion(
+            count: Value(row.count + 1),
+            updatedAt: Value(nowMillis),
+          ),
+        );
   }
 
   @override
-  Stream<List<PrayerRecord>> watchRecordsForDay(LocalDate day) {
+  Stream<List<PrayerRecord>> watchRecordsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final query = _db.select(_db.prayerRecordsTable)
-      ..where((t) => t.deletedAt.isNull() & t.prayerDate.equals(day.toIso()))
+      ..where(
+        (t) =>
+            t.profileId.equals(profileId) &
+            t.deletedAt.isNull() &
+            t.prayerDate.equals(day.toIso()),
+      )
       ..orderBy([(t) => OrderingTerm.asc(t.scheduledFor)]);
     return query.watch().map(
       (rows) => rows.map(_recordFromRow).toList(growable: false),
@@ -386,11 +442,13 @@ class PrayerRepositoryImpl implements PrayerRepository {
   @override
   Future<List<PrayerRecord>> recordsInRange(
     LocalDate start,
-    LocalDate end,
-  ) async {
+    LocalDate end, {
+    required String profileId,
+  }) async {
     final rows =
         await (_db.select(_db.prayerRecordsTable)..where(
               (t) =>
+                  t.profileId.equals(profileId) &
                   t.deletedAt.isNull() &
                   t.prayerDate.isBiggerOrEqualValue(start.toIso()) &
                   t.prayerDate.isSmallerOrEqualValue(end.toIso()),
@@ -402,24 +460,30 @@ class PrayerRepositoryImpl implements PrayerRepository {
   @override
   Future<Result<void>> markPrayed(
     String recordId, {
+    required String profileId,
     bool forceOnTime = false,
   }) => _resolveRecord(
-        recordId,
-        guard: (record) => record.storedStatus != PrayerStatus.missed,
-        apply: (record, nowMillis) => PrayerRecordsTableCompanion(
-          status: const Value('prayed'),
-          statusChangedAt: Value(
-            forceOnTime
-                ? record.scheduledFor.toUtc().millisecondsSinceEpoch
-                : nowMillis,
-          ),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+    recordId,
+    profileId: profileId,
+    guard: (record) => record.storedStatus != PrayerStatus.missed,
+    apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+      status: const Value('prayed'),
+      statusChangedAt: Value(
+        forceOnTime
+            ? record.scheduledFor.toUtc().millisecondsSinceEpoch
+            : nowMillis,
+      ),
+      updatedAt: Value(nowMillis),
+    ),
+  );
 
   @override
-  Future<Result<void>> unmarkPrayed(String recordId) => _resolveRecord(
+  Future<Result<void>> unmarkPrayed(
+    String recordId, {
+    required String profileId,
+  }) => _resolveRecord(
     recordId,
+    profileId: profileId,
     guard: (record) => record.storedStatus == PrayerStatus.prayed,
     apply: (record, nowMillis) => PrayerRecordsTableCompanion(
       status: const Value('upcoming'),
@@ -429,9 +493,13 @@ class PrayerRepositoryImpl implements PrayerRepository {
   );
 
   @override
-  Future<Result<void>> markMissedBySkip(String recordId) async {
+  Future<Result<void>> markMissedBySkip(
+    String recordId, {
+    required String profileId,
+  }) async {
     final result = await _resolveRecord(
       recordId,
+      profileId: profileId,
       guard: (record) => record.storedStatus == PrayerStatus.upcoming,
       apply: (record, nowMillis) => PrayerRecordsTableCompanion(
         status: const Value('missed'),
@@ -440,27 +508,38 @@ class PrayerRepositoryImpl implements PrayerRepository {
       ),
     );
     if (result case Success()) {
-      final record = await _recordById(recordId);
-      if (record != null) await _bumpQadha(record.prayerName, clock.now());
+      final record = await _recordById(recordId, profileId);
+      if (record != null) {
+        await _bumpQadha(record.prayerName, clock.now(), profileId);
+      }
     }
     return result;
   }
 
   @override
-  Future<Result<void>> updatePrayerNotes(String recordId, String? notes) =>
-      _resolveRecord(
-        recordId,
-        guard: (_) => true,
-        apply: (record, nowMillis) => PrayerRecordsTableCompanion(
-          notes: Value(notes),
-          updatedAt: Value(nowMillis),
-        ),
-      );
+  Future<Result<void>> updatePrayerNotes(
+    String recordId,
+    String? notes, {
+    required String profileId,
+  }) => _resolveRecord(
+    recordId,
+    profileId: profileId,
+    guard: (_) => true,
+    apply: (record, nowMillis) => PrayerRecordsTableCompanion(
+      notes: Value(notes),
+      updatedAt: Value(nowMillis),
+    ),
+  );
 
-  Future<PrayerRecord?> _recordById(String id) async {
-    final row = await (_db.select(
-      _db.prayerRecordsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<PrayerRecord?> _recordById(String id, String profileId) async {
+    final row =
+        await (_db.select(_db.prayerRecordsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _recordFromRow(row);
   }
 
@@ -468,6 +547,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
   /// the three checklist/notification mark-action methods above.
   Future<Result<void>> _resolveRecord(
     String recordId, {
+    required String profileId,
     required bool Function(PrayerRecord record) guard,
     required PrayerRecordsTableCompanion Function(
       PrayerRecord record,
@@ -476,7 +556,7 @@ class PrayerRepositoryImpl implements PrayerRepository {
     apply,
   }) async {
     try {
-      final record = await _recordById(recordId);
+      final record = await _recordById(recordId, profileId);
       if (record == null) {
         return Result.failure(AppException.notFound('PrayerRecord', recordId));
       }
@@ -489,9 +569,10 @@ class PrayerRepositoryImpl implements PrayerRepository {
         );
       }
       final nowMillis = clock.now().toUtc().millisecondsSinceEpoch;
-      await (_db.update(
-        _db.prayerRecordsTable,
-      )..where((t) => t.id.equals(recordId))).write(apply(record, nowMillis));
+      await (_db.update(_db.prayerRecordsTable)..where(
+            (t) => t.id.equals(recordId) & t.profileId.equals(profileId),
+          ))
+          .write(apply(record, nowMillis));
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
@@ -501,21 +582,30 @@ class PrayerRepositoryImpl implements PrayerRepository {
   }
 
   @override
-  Future<List<PrayerRecord>> allRecords() async {
-    final rows = await (_db.select(
-      _db.prayerRecordsTable,
-    )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<PrayerRecord>> allRecords({required String profileId}) async {
+    final rows =
+        await (_db.select(_db.prayerRecordsTable)..where(
+              (t) => t.profileId.equals(profileId) & t.deletedAt.isNull(),
+            ))
+            .get();
     return rows.map(_recordFromRow).toList(growable: false);
   }
 
   @override
-  Future<List<PrayerQadhaCounter>> allQadhaCounters() async {
-    final rows = await _db.select(_db.prayerQadhaCountersTable).get();
+  Future<List<PrayerQadhaCounter>> allQadhaCounters({
+    required String profileId,
+  }) async {
+    final rows = await (_db.select(
+      _db.prayerQadhaCountersTable,
+    )..where((t) => t.profileId.equals(profileId))).get();
     return rows.map(_qadhaFromRow).toList(growable: false);
   }
 
   @override
-  Future<void> restoreRecord(PrayerRecord record) async {
+  Future<void> restoreRecord(
+    PrayerRecord record, {
+    required String profileId,
+  }) async {
     final now = clock.now().toUtc().millisecondsSinceEpoch;
     await _db
         .into(_db.prayerRecordsTable)
@@ -532,15 +622,22 @@ class PrayerRepositoryImpl implements PrayerRepository {
             notes: Value(record.notes),
             createdAt: now,
             updatedAt: now,
+            profileId: Value(profileId),
           ),
         );
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.prayerRecordsTable).go();
-    await _db.delete(_db.prayerQadhaCountersTable).go();
-    await _db.delete(_db.prayerSettingsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.prayerRecordsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.prayerQadhaCountersTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
+    await (_db.delete(
+      _db.prayerSettingsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   PrayerSettings _settingsFromRow(PrayerSettingsRow row) => PrayerSettings(

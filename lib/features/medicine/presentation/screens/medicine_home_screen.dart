@@ -11,6 +11,7 @@ import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/pauses/presentation/active_pauses_card.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/recalibration/presentation/widgets/recalibration_card.dart';
 import 'package:habit_tracker/core/recalibration/recalibration_providers.dart';
 import 'package:habit_tracker/core/widgets/haptic_feedback_helper.dart';
@@ -133,8 +134,11 @@ Future<void> _markDoneAndCelebrate(
   // Captured synchronously (not re-read inside the deferred `onUndo`
   // below, which can fire after this widget's element is disposed).
   final controller = ref.read(medicineControllerProvider.notifier);
+  final profileId = (await ref.read(activeProfileProvider.future)).id;
   final repository = ref.read(achievementRepositoryProvider);
-  final before = await repository.watchByModule('medicine').first;
+  final before = await repository
+      .watchByModule('medicine', profileId: profileId)
+      .first;
   final unlockedBefore = before
       .where((r) => r.unlockedAt != null)
       .map((r) => r.key)
@@ -170,7 +174,9 @@ Future<void> _markDoneAndCelebrate(
   if (wasUndone || !context.mounted) return;
   showXpGainToast(context, amount: XpValues.medicineAction);
 
-  final after = await repository.watchByModule('medicine').first;
+  final after = await repository
+      .watchByModule('medicine', profileId: profileId)
+      .first;
   final newlyUnlocked = after.where(
     (r) => r.unlockedAt != null && !unlockedBefore.contains(r.key),
   );

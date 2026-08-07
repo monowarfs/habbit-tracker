@@ -18,9 +18,15 @@ Future<void> evaluateTenureBadges(AppDatabase db) async {
     isUtc: true,
   );
 
+  // App-resume trigger, no Ref — pinned to the 'system' profile for the
+  // same reason as `notification_planner.dart`'s `planAndApplyNotifications`
+  // (`WaterModule`'s `_fixedProfileId` doc comment). Family/multi-profile's
+  // Task 8/9 give this its own profile-aware entry point later.
+  const profileId = 'system';
   final repository = AchievementRepository(db);
   await evaluateTenureMilestones(
     installDate: installDate,
     repository: repository,
+    profileId: profileId,
   );
 }

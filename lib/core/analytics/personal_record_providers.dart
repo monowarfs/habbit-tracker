@@ -2,6 +2,7 @@ import 'package:habit_tracker/core/analytics/personal_record_repository.dart';
 import 'package:habit_tracker/core/analytics/record_detection_use_case.dart';
 import 'package:habit_tracker/core/analytics/record_integration.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'personal_record_providers.g.dart';
@@ -44,15 +45,18 @@ Future<PersonalRecordStatus> personalRecordStatus(
   required String moduleId,
   required int currentValue,
 }) async {
+  final profileId = (await ref.watch(activeProfileProvider.future)).id;
   final repo = ref.watch(personalRecordRepositoryProvider);
   final existing = await repo.getRecord(
     moduleId: moduleId,
     recordType: 'longest_streak',
+    profileId: profileId,
   );
   final event = await checkRecordsAfterStreak(
     recordDetectionUseCase: ref.watch(recordDetectionUseCaseProvider),
     moduleId: moduleId,
     currentStreak: currentValue,
+    profileId: profileId,
   );
   return (
     value: event?.newValue ?? existing?.recordValue ?? 0,

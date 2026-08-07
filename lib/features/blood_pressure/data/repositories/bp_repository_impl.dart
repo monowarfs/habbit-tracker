@@ -19,22 +19,34 @@ class BpRepositoryImpl implements BpRepository {
   final AppDatabase _db;
 
   @override
-  Stream<List<BpLog>> watchLogsForDay(LocalDate day) {
+  Stream<List<BpLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) {
     final range = localDayRangeUtc(day);
-    return _watchLogsBetween(range.startUtc, range.endUtc);
+    return _watchLogsBetween(range.startUtc, range.endUtc, profileId);
   }
 
   @override
-  Stream<List<BpLog>> watchLogsInRange(LocalDate start, LocalDate end) {
+  Stream<List<BpLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) {
     final startUtc = localDayRangeUtc(start).startUtc;
     final endUtc = localDayRangeUtc(end).endUtc;
-    return _watchLogsBetween(startUtc, endUtc);
+    return _watchLogsBetween(startUtc, endUtc, profileId);
   }
 
-  Stream<List<BpLog>> _watchLogsBetween(DateTime startUtc, DateTime endUtc) {
+  Stream<List<BpLog>> _watchLogsBetween(
+    DateTime startUtc,
+    DateTime endUtc,
+    String profileId,
+  ) {
     final query = _db.select(_db.bpLogsTable)
       ..where(
         (t) =>
+            t.profileId.equals(profileId) &
             t.deletedAt.isNull() &
             t.loggedAt.isBiggerOrEqualValue(startUtc.millisecondsSinceEpoch) &
             t.loggedAt.isSmallerThanValue(endUtc.millisecondsSinceEpoch),
@@ -46,17 +58,22 @@ class BpRepositoryImpl implements BpRepository {
   }
 
   @override
-  Future<BpLog?> logById(String id) async {
-    final row = await (_db.select(
-      _db.bpLogsTable,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+  Future<BpLog?> logById(String id, {required String profileId}) async {
+    final row =
+        await (_db.select(_db.bpLogsTable)..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _logFromRow(row);
   }
 
   @override
-  Future<List<BpLog>> allLogs() async {
+  Future<List<BpLog>> allLogs({required String profileId}) async {
     final query = _db.select(_db.bpLogsTable)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.profileId.equals(profileId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.loggedAt)]);
     final rows = await query.get();
     return rows.map(_logFromRow).toList(growable: false);
@@ -67,6 +84,7 @@ class BpRepositoryImpl implements BpRepository {
     required int systolic,
     required int diastolic,
     required DateTime loggedAt,
+    required String profileId,
     int? pulse,
     String? notes,
   }) async {
@@ -90,6 +108,7 @@ class BpRepositoryImpl implements BpRepository {
               notes: Value(notes),
               createdAt: now,
               updatedAt: now,
+              profileId: Value(profileId),
             ),
           );
       return Result.success(
@@ -109,12 +128,15 @@ class BpRepositoryImpl implements BpRepository {
   }
 
   @override
-  Future<Result<void>> deleteLog(String id) async {
+  Future<Result<void>> deleteLog(String id, {required String profileId}) async {
     try {
       final now = clock.now().toUtc().millisecondsSinceEpoch;
       final rowsAffected =
           await (_db.update(_db.bpLogsTable)..where(
-                (t) => t.id.equals(id) & t.deletedAt.isNull(),
+                (t) =>
+                    t.id.equals(id) &
+                    t.profileId.equals(profileId) &
+                    t.deletedAt.isNull(),
               ))
               .write(
                 BpLogsTableCompanion(
@@ -132,8 +154,10 @@ class BpRepositoryImpl implements BpRepository {
   }
 
   @override
-  Future<void> wipeAll() async {
-    await _db.delete(_db.bpLogsTable).go();
+  Future<void> wipeAll({required String profileId}) async {
+    await (_db.delete(
+      _db.bpLogsTable,
+    )..where((t) => t.profileId.equals(profileId))).go();
   }
 
   BpLog _logFromRow(BpLogRow row) => BpLog(

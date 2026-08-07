@@ -287,6 +287,9 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
 
 /// Checks if any tenure achievements unlocked cosmetic rewards.
 Future<void> _checkCosmeticUnlocks(AppDatabase db) async {
+  // App-resume trigger, no Ref — pinned to the 'system' profile for the
+  // same reason as `tenure_check.dart`'s `evaluateTenureBadges`.
+  const profileId = 'system';
   final repository = CosmeticRepository(db);
   final engine = CosmeticUnlockEngine(cosmeticRepository: repository);
 
@@ -294,12 +297,18 @@ Future<void> _checkCosmeticUnlocks(AppDatabase db) async {
   for (final entry in achievementToCosmetic.entries) {
     final achievementKey = entry.key;
     final cosmeticKey = entry.value;
-    if (!await repository.isUnlocked(cosmeticKey)) {
+    if (!await repository.isUnlocked(cosmeticKey, profileId: profileId)) {
       // Check if the achievement exists and is unlocked.
       final achievementRepo = AchievementRepository(db);
-      final achievement = await achievementRepo.byKey(achievementKey);
+      final achievement = await achievementRepo.byKey(
+        achievementKey,
+        profileId: profileId,
+      );
       if (achievement != null && achievement.unlockedAt != null) {
-        await engine.onAchievementUnlocked(achievementKey);
+        await engine.onAchievementUnlocked(
+          achievementKey,
+          profileId: profileId,
+        );
       }
     }
   }

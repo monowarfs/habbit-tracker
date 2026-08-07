@@ -10,6 +10,8 @@ import 'package:habit_tracker/core/modules/habit_module.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
+const _profileId = 'system';
+
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id, this._kind);
   @override
@@ -47,13 +49,16 @@ void main() {
       xpRepository: XpRepository(db),
     );
 
-    final event = await emitter.checkAndEmit(now: now);
+    final event = await emitter.checkAndEmit(now: now, profileId: _profileId);
 
     expect(event, isNotNull);
     expect(event!.modulesCompleted, 2);
     expect(event.totalActiveModules, 2);
     expect(event.date, const LocalDate(2026, 8, 5));
-    expect(await XpRepository(db).totalXp(), XpValues.comboBonus);
+    expect(
+      await XpRepository(db).totalXp(profileId: _profileId),
+      XpValues.comboBonus,
+    );
   });
 
   test('a non-combo day returns null and awards nothing', () async {
@@ -67,10 +72,10 @@ void main() {
       xpRepository: XpRepository(db),
     );
 
-    final event = await emitter.checkAndEmit(now: now);
+    final event = await emitter.checkAndEmit(now: now, profileId: _profileId);
 
     expect(event, isNull);
-    expect(await XpRepository(db).totalXp(), 0);
+    expect(await XpRepository(db).totalXp(profileId: _profileId), 0);
   });
 
   test(
@@ -86,13 +91,19 @@ void main() {
         xpRepository: XpRepository(db),
       );
 
-      final first = await emitter.checkAndEmit(now: now);
-      final second = await emitter.checkAndEmit(now: now);
+      final first = await emitter.checkAndEmit(now: now, profileId: _profileId);
+      final second = await emitter.checkAndEmit(
+        now: now,
+        profileId: _profileId,
+      );
 
       expect(first, isNotNull);
       expect(second, isNull);
       // Only one award, not two.
-      expect(await XpRepository(db).totalXp(), XpValues.comboBonus);
+      expect(
+        await XpRepository(db).totalXp(profileId: _profileId),
+        XpValues.comboBonus,
+      );
     },
   );
 
@@ -104,7 +115,7 @@ void main() {
       xpRepository: XpRepository(db),
     );
 
-    expect(await emitter.checkAndEmit(now: now), isNull);
+    expect(await emitter.checkAndEmit(now: now, profileId: _profileId), isNull);
   });
 
   test('the next day can combo again independently', () async {
@@ -119,12 +130,16 @@ void main() {
       xpRepository: xpRepository,
     );
 
-    await emitter.checkAndEmit(now: now);
+    await emitter.checkAndEmit(now: now, profileId: _profileId);
     final tomorrow = await emitter.checkAndEmit(
       now: now.add(const Duration(days: 1)),
+      profileId: _profileId,
     );
 
     expect(tomorrow, isNotNull);
-    expect(await xpRepository.totalXp(), XpValues.comboBonus * 2);
+    expect(
+      await xpRepository.totalXp(profileId: _profileId),
+      XpValues.comboBonus * 2,
+    );
   });
 }

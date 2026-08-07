@@ -12,6 +12,7 @@ import 'package:habit_tracker/core/error/result.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/logging/app_logger.dart';
 import 'package:habit_tracker/core/modules/module_registry.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/features/settings/presentation/providers/app_settings_providers.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/data_longevity_guarantee_card.dart';
 import 'package:habit_tracker/features/settings/presentation/widgets/data_privacy_reassurance_card.dart';
@@ -37,6 +38,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
     setState(() => _busy = true);
     try {
       final packageInfo = await PackageInfo.fromPlatform();
+      final profileId = (await ref.read(activeProfileProvider.future)).id;
       final envelope = await buildExport(
         modules: ref.read(habitModulesProvider),
         settingsRepository: ref.read(settingsRepositoryProvider),
@@ -44,6 +46,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
           ref.read(databaseProvider),
         ),
         appVersion: packageInfo.version,
+        profileId: profileId,
       );
       final dir = await getTemporaryDirectory();
       final file = File(p.join(dir.path, 'habit_tracker_backup.json'));

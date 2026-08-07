@@ -8,6 +8,8 @@ import 'package:habit_tracker/core/gamification/xp_repository.dart';
 import 'package:habit_tracker/core/gamification/xp_values.dart';
 import 'package:habit_tracker/core/modules/habit_module.dart';
 
+const _profileId = 'system';
+
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id, this.achievementDefinitions);
   @override
@@ -48,12 +50,15 @@ void main() {
       final subscription = listener.listen();
       addTearDown(subscription.cancel);
 
-      await achievementEngine.evaluate('water');
+      await achievementEngine.evaluate('water', profileId: _profileId);
       // The event stream is async — let it flush.
       await Future<void>.delayed(Duration.zero);
 
-      expect(await xpRepository.totalXp(), XpValues.streakMilestone);
-      final ledger = await xpRepository.recentLedger();
+      expect(
+        await xpRepository.totalXp(profileId: _profileId),
+        XpValues.streakMilestone,
+      );
+      final ledger = await xpRepository.recentLedger(profileId: _profileId);
       expect(ledger, hasLength(1));
       expect(ledger.single.sourceId, 'water_streak_7');
       expect(ledger.single.eventType, 'streak_milestone');
@@ -78,12 +83,15 @@ void main() {
       final subscription = listener.listen();
       addTearDown(subscription.cancel);
 
-      await achievementEngine.evaluate('water');
+      await achievementEngine.evaluate('water', profileId: _profileId);
       await Future<void>.delayed(Duration.zero);
-      await achievementEngine.evaluate('water');
+      await achievementEngine.evaluate('water', profileId: _profileId);
       await Future<void>.delayed(Duration.zero);
 
-      expect(await xpRepository.totalXp(), XpValues.streakMilestone);
+      expect(
+        await xpRepository.totalXp(profileId: _profileId),
+        XpValues.streakMilestone,
+      );
     },
   );
 }

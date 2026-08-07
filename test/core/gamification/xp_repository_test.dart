@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 import 'package:habit_tracker/core/gamification/xp_repository.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late XpRepository repo;
@@ -16,19 +18,20 @@ void main() {
   tearDown(() => db.close());
 
   test('totalXp is 0 before any award (lazy-seeded singleton)', () async {
-    expect(await repo.totalXp(), 0);
+    expect(await repo.totalXp(profileId: _profileId), 0);
   });
 
   test('awardXp inserts a ledger row and increments the balance', () async {
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: 5,
       now: now,
     );
-    expect(await repo.totalXp(), 5);
+    expect(await repo.totalXp(profileId: _profileId), 5);
 
-    final ledger = await repo.recentLedger();
+    final ledger = await repo.recentLedger(profileId: _profileId);
     expect(ledger, hasLength(1));
     expect(ledger.single.moduleId, 'water');
     expect(ledger.single.eventType, 'action');
@@ -37,31 +40,37 @@ void main() {
 
   test('multiple awards accumulate', () async {
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: 5,
       now: now,
     );
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'medicine',
       eventType: 'action',
       amount: 3,
       now: now,
     );
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'prayer',
       eventType: 'action',
       amount: 2,
       now: now,
     );
-    expect(await repo.totalXp(), 10);
+    expect(await repo.totalXp(profileId: _profileId), 10);
   });
 
   test('watchTotalXp emits the running total reactively', () async {
     final values = <int>[];
-    final subscription = repo.watchTotalXp().listen(values.add);
+    final subscription = repo
+        .watchTotalXp(profileId: _profileId)
+        .listen(values.add);
     await Future<void>.delayed(Duration.zero);
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: 5,
@@ -75,6 +84,7 @@ void main() {
   test('hasAwarded is false before an award, true after', () async {
     expect(
       await repo.hasAwarded(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'day_complete',
         sourceId: '2026-08-05',
@@ -82,6 +92,7 @@ void main() {
       isFalse,
     );
     await repo.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'day_complete',
       amount: 15,
@@ -90,6 +101,7 @@ void main() {
     );
     expect(
       await repo.hasAwarded(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'day_complete',
         sourceId: '2026-08-05',
@@ -102,6 +114,7 @@ void main() {
     'hasAwarded is scoped to the exact moduleId/eventType/sourceId',
     () async {
       await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'day_complete',
         amount: 15,
@@ -110,6 +123,7 @@ void main() {
       );
       expect(
         await repo.hasAwarded(
+          profileId: _profileId,
           moduleId: 'medicine',
           eventType: 'day_complete',
           sourceId: '2026-08-05',
@@ -118,6 +132,7 @@ void main() {
       );
       expect(
         await repo.hasAwarded(
+          profileId: _profileId,
           moduleId: 'water',
           eventType: 'day_complete',
           sourceId: '2026-08-06',
@@ -130,13 +145,14 @@ void main() {
   test('recentLedger returns newest first and respects limit', () async {
     for (var i = 0; i < 3; i++) {
       await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: i,
         now: now.add(Duration(minutes: i)),
       );
     }
-    final ledger = await repo.recentLedger(limit: 2);
+    final ledger = await repo.recentLedger(profileId: _profileId, limit: 2);
     expect(ledger, hasLength(2));
     expect(ledger.first.xpAmount, 2); // most recent first.
     expect(ledger.last.xpAmount, 1);
@@ -145,6 +161,7 @@ void main() {
   group('awardXp AwardResult', () {
     test('leveledUpTo is null when the award stays within the level', () async {
       final result = await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: 50,
@@ -157,6 +174,7 @@ void main() {
     test('leveledUpTo is the new level when a threshold is crossed', () async {
       // Level 2 starts at 100 XP.
       final result = await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: 100,
@@ -168,12 +186,14 @@ void main() {
 
     test('leveledUpTo is null once already past the threshold', () async {
       await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: 150,
         now: now,
       );
       final result = await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: 10,
@@ -189,6 +209,7 @@ void main() {
         // Level 3 starts at 300 XP — a single big award (e.g. boss_cleared)
         // can jump straight past level 2's threshold too.
         final result = await repo.awardXp(
+          profileId: _profileId,
           moduleId: 'water',
           eventType: 'boss_cleared',
           amount: 350,
@@ -204,19 +225,21 @@ void main() {
       'deducts from the balance and records a negative ledger row',
       () async {
         await repo.awardXp(
+          profileId: _profileId,
           moduleId: 'water',
           eventType: 'action',
           amount: 500,
           now: now,
         );
         await repo.deductXp(
+          profileId: _profileId,
           amount: 300,
           now: now.add(const Duration(minutes: 1)),
           reason: 'shop_purchase_x',
         );
-        expect(await repo.totalXp(), 200);
+        expect(await repo.totalXp(profileId: _profileId), 200);
 
-        final ledger = await repo.recentLedger();
+        final ledger = await repo.recentLedger(profileId: _profileId);
         expect(ledger.first.moduleId, 'system');
         expect(ledger.first.eventType, 'shop_purchase');
         expect(ledger.first.xpAmount, -300);
@@ -226,16 +249,22 @@ void main() {
 
     test('throws when balance is less than the deduction amount', () async {
       await repo.awardXp(
+        profileId: _profileId,
         moduleId: 'water',
         eventType: 'action',
         amount: 100,
         now: now,
       );
       await expectLater(
-        repo.deductXp(amount: 200, now: now, reason: 'shop_purchase_x'),
+        repo.deductXp(
+          profileId: _profileId,
+          amount: 200,
+          now: now,
+          reason: 'shop_purchase_x',
+        ),
         throwsStateError,
       );
-      expect(await repo.totalXp(), 100);
+      expect(await repo.totalXp(profileId: _profileId), 100);
     });
   });
 }

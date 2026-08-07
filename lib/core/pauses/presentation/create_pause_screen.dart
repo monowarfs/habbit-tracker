@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/pauses/pause_providers.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
 /// Screen for creating a new pause for a module.
@@ -150,11 +151,13 @@ class _CreatePauseScreenState extends ConsumerState<CreatePauseScreen> {
     }
 
     // Check for overlaps first.
+    final profile = await ref.read(activeProfileProvider.future);
     final repo = ref.read(pauseRepositoryProvider);
     final overlaps = await repo.overlapping(
       moduleId: widget.moduleId,
       start: _startDate,
       end: _endDate,
+      profileId: profile.id,
     );
     if (overlaps.isNotEmpty) {
       setState(() => _error = l10n.pauseOverlapError);
@@ -167,6 +170,7 @@ class _CreatePauseScreenState extends ConsumerState<CreatePauseScreen> {
           moduleId: widget.moduleId,
           startDate: _startDate,
           endDate: _endDate,
+          profileId: profile.id,
         );
     if (!mounted) return;
     Navigator.of(context).pop();

@@ -10,20 +10,30 @@ class PauseRepository {
   final AppDatabase _db;
 
   /// All pauses for [moduleId], ordered by start date.
-  Future<List<PauseRangeRow>> forModule(String moduleId) async {
+  Future<List<PauseRangeRow>> forModule(
+    String moduleId, {
+    required String profileId,
+  }) async {
     return (_db.select(_db.pauseRangesTable)
-          ..where((t) => t.moduleId.equals(moduleId))
+          ..where(
+            (t) =>
+                t.moduleId.equals(moduleId) & t.profileId.equals(profileId),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.startDate)]))
         .get();
   }
 
   /// All active (not yet ended) pauses for [moduleId].
-  Future<List<PauseRangeRow>> activeForModule(String moduleId) async {
+  Future<List<PauseRangeRow>> activeForModule(
+    String moduleId, {
+    required String profileId,
+  }) async {
     final today = LocalDate.fromDateTime(DateTime.now()).toIso();
     return (_db.select(_db.pauseRangesTable)
           ..where(
             (t) =>
                 t.moduleId.equals(moduleId) &
+                t.profileId.equals(profileId) &
                 t.endDate.isBiggerOrEqualValue(today),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.startDate)]))
@@ -35,6 +45,7 @@ class PauseRepository {
     required String moduleId,
     required LocalDate start,
     required LocalDate end,
+    required String profileId,
     String? excludeId,
   }) async {
     final startIso = start.toIso();
@@ -42,6 +53,7 @@ class PauseRepository {
     return (_db.select(_db.pauseRangesTable)..where(
           (t) =>
               t.moduleId.equals(moduleId) &
+              t.profileId.equals(profileId) &
               t.startDate.isSmallerOrEqualValue(endIso) &
               t.endDate.isBiggerOrEqualValue(startIso) &
               (excludeId != null
@@ -57,16 +69,18 @@ class PauseRepository {
   }
 
   /// Cancels/deletes a pause by id.
-  Future<void> cancel(String id) async {
-    await (_db.delete(
-      _db.pauseRangesTable,
-    )..where((t) => t.id.equals(id))).go();
+  Future<void> cancel(String id, {required String profileId}) async {
+    await (_db.delete(_db.pauseRangesTable)..where(
+          (t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .go();
   }
 
   /// All pauses across all modules.
-  Future<List<PauseRangeRow>> all() async {
-    return (_db.select(
-      _db.pauseRangesTable,
-    )..orderBy([(t) => OrderingTerm.desc(t.startDate)])).get();
+  Future<List<PauseRangeRow>> all({required String profileId}) async {
+    return (_db.select(_db.pauseRangesTable)
+          ..where((t) => t.profileId.equals(profileId))
+          ..orderBy([(t) => OrderingTerm.desc(t.startDate)]))
+        .get();
   }
 }

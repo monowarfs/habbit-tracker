@@ -14,6 +14,7 @@ class _FakeSleepRepository implements SleepRepository {
   Future<Result<SleepLog>> addLog({
     required DateTime bedTime,
     required DateTime wakeTime,
+    required String profileId,
     int? quality,
     String? notes,
   }) async {
@@ -32,23 +33,33 @@ class _FakeSleepRepository implements SleepRepository {
   }
 
   @override
-  Future<List<SleepLog>> allLogs() async => [];
+  Future<List<SleepLog>> allLogs({required String profileId}) async => [];
 
   @override
-  Future<Result<void>> deleteLog(String id) async => const Result.success(null);
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async => const Result.success(null);
 
   @override
-  Future<SleepLog?> logById(String id) async => null;
+  Future<SleepLog?> logById(String id, {required String profileId}) async =>
+      null;
 
   @override
-  Stream<List<SleepLog>> watchLogsForDay(LocalDate day) => const Stream.empty();
+  Stream<List<SleepLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Stream<List<SleepLog>> watchLogsInRange(LocalDate start, LocalDate end) =>
-      const Stream.empty();
+  Stream<List<SleepLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Future<void> wipeAll() async {}
+  Future<void> wipeAll({required String profileId}) async {}
 }
 
 void main() {
@@ -60,6 +71,7 @@ void main() {
       return useCase.execute(
         bedTime: DateTime.utc(2026, 6, 15),
         wakeTime: DateTime.utc(2026, 6, 14),
+        profileId: 'system',
       );
     });
     expect(result, isA<Failure<SleepLog>>());
@@ -71,6 +83,7 @@ void main() {
       return useCase.execute(
         bedTime: DateTime.utc(2026, 6, 15),
         wakeTime: DateTime.utc(2026, 6, 16),
+        profileId: 'system',
       );
     });
     expect(result, isA<Failure<SleepLog>>());
@@ -82,6 +95,7 @@ void main() {
       return useCase.execute(
         bedTime: DateTime.utc(2026, 6, 14, 22),
         wakeTime: DateTime.utc(2026, 6, 15, 6),
+        profileId: 'system',
         quality: 6,
       );
     });
@@ -95,6 +109,7 @@ void main() {
       return useCase.execute(
         bedTime: DateTime.utc(2026, 6, 14, 22),
         wakeTime: DateTime.utc(2026, 6, 15, 6),
+        profileId: 'system',
         quality: 4,
       );
     });

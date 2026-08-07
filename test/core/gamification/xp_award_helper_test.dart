@@ -11,6 +11,8 @@ import 'package:habit_tracker/core/modules/module_registry.dart';
 import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 
+const _profileId = 'system';
+
 class _FakeModule extends Fake implements HabitModule {
   _FakeModule(this.id, this._kind);
   @override
@@ -37,12 +39,13 @@ final _testProvider = FutureProvider.autoDispose.family<void, _Args>((
   ref,
   args,
 ) {
-      return awardActionXp(
-        ref,
-        moduleId: args.moduleId,
-        actionSourceId: args.sourceId,
-      );
-    });
+  return awardActionXp(
+    ref,
+    moduleId: args.moduleId,
+    actionSourceId: args.sourceId,
+    profileId: _profileId,
+  );
+});
 
 void main() {
   late AppDatabase db;
@@ -73,7 +76,7 @@ void main() {
       // below for why a second .read alone wouldn't actually re-run this.
       container.invalidate(provider);
       await container.read(provider.future);
-      final total = await XpRepository(db).totalXp();
+      final total = await XpRepository(db).totalXp(profileId: _profileId);
       expect(total, XpValues.waterAction * 2);
     },
   );
@@ -90,7 +93,7 @@ void main() {
     // actually exercising the dedup path.
     container.invalidate(provider);
     await container.read(provider.future);
-    final total = await XpRepository(db).totalXp();
+    final total = await XpRepository(db).totalXp(profileId: _profileId);
     expect(total, XpValues.medicineAction); // only the first call counted.
   });
 
@@ -106,7 +109,7 @@ void main() {
       await container.read(
         _testProvider((moduleId: 'medicine', sourceId: 'dose-2')).future,
       );
-      final total = await XpRepository(db).totalXp();
+      final total = await XpRepository(db).totalXp(profileId: _profileId);
       expect(total, XpValues.medicineAction * 2);
     },
   );
@@ -121,7 +124,7 @@ void main() {
       await container.read(provider.future);
       container.invalidate(provider);
       await container.read(provider.future);
-      final ledger = await XpRepository(db).recentLedger();
+      final ledger = await XpRepository(db).recentLedger(profileId: _profileId);
       final dayCompleteAwards = ledger.where(
         (r) => r.eventType == 'day_complete',
       );
@@ -137,7 +140,7 @@ void main() {
     await container.read(
       _testProvider((moduleId: 'water', sourceId: null)).future,
     );
-    final ledger = await XpRepository(db).recentLedger();
+    final ledger = await XpRepository(db).recentLedger(profileId: _profileId);
     expect(ledger.where((r) => r.eventType == 'day_complete'), isEmpty);
   });
 
@@ -149,7 +152,7 @@ void main() {
       await container.read(
         _testProvider((moduleId: 'water', sourceId: null)).future,
       );
-      final total = await XpRepository(db).totalXp();
+      final total = await XpRepository(db).totalXp(profileId: _profileId);
       expect(total, XpValues.waterAction);
     },
   );

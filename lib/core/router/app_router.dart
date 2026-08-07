@@ -30,6 +30,7 @@ import 'package:habit_tracker/features/settings/presentation/screens/about_scree
 import 'package:habit_tracker/features/settings/presentation/screens/backup_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/data_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/language_settings_screen.dart';
+import 'package:habit_tracker/features/settings/presentation/screens/manage_profiles_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_set_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/pin_settings_screen.dart';
 import 'package:habit_tracker/features/settings/presentation/screens/priority_support_screen.dart';
@@ -109,6 +110,9 @@ class AppRoutes {
 
   /// Point-shop screen.
   static const String settingsShop = '/settings/shop';
+
+  /// Manage-profiles screen (family/multi-profile).
+  static const String settingsProfiles = '/settings/profiles';
 
   /// Sleep module home screen (premium-gated; no permanent bottom-nav
   /// tab — see `SleepModule`'s doc comment).
@@ -303,6 +307,10 @@ GoRouter buildAppRouter(
                   GoRoute(
                     path: 'shop',
                     builder: (context, state) => const ShopScreen(),
+                  ),
+                  GoRoute(
+                    path: 'profiles',
+                    builder: (context, state) => const ManageProfilesScreen(),
                   ),
                   GoRoute(
                     path: 'sleep',

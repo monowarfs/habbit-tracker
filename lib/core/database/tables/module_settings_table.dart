@@ -22,6 +22,13 @@ class ModuleSettingsTable extends Table {
   /// UTC epoch millis, bumped on every write.
   IntColumn get updatedAt => integer()();
 
+  /// Multi-profile scoping (`core/profiles/`); defaults to `'system'` for
+  /// rows that pre-date profile support. Part of the primary key since
+  /// [moduleId] alone is no longer unique once each profile has its own
+  /// per-module enable/disable state.
+  TextColumn get profileId =>
+      text().withDefault(const Constant('system'))();
+
   @override
-  Set<Column> get primaryKey => {moduleId};
+  Set<Column> get primaryKey => {moduleId, profileId};
 }

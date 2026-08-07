@@ -16,6 +16,7 @@ class _FakeBpRepository implements BpRepository {
     required int systolic,
     required int diastolic,
     required DateTime loggedAt,
+    required String profileId,
     int? pulse,
     String? notes,
   }) async {
@@ -34,23 +35,32 @@ class _FakeBpRepository implements BpRepository {
   }
 
   @override
-  Future<List<BpLog>> allLogs() async => [];
+  Future<List<BpLog>> allLogs({required String profileId}) async => [];
 
   @override
-  Future<Result<void>> deleteLog(String id) async => const Result.success(null);
+  Future<Result<void>> deleteLog(
+    String id, {
+    required String profileId,
+  }) async => const Result.success(null);
 
   @override
-  Future<BpLog?> logById(String id) async => null;
+  Future<BpLog?> logById(String id, {required String profileId}) async => null;
 
   @override
-  Stream<List<BpLog>> watchLogsForDay(LocalDate day) => const Stream.empty();
+  Stream<List<BpLog>> watchLogsForDay(
+    LocalDate day, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Stream<List<BpLog>> watchLogsInRange(LocalDate start, LocalDate end) =>
-      const Stream.empty();
+  Stream<List<BpLog>> watchLogsInRange(
+    LocalDate start,
+    LocalDate end, {
+    required String profileId,
+  }) => const Stream.empty();
 
   @override
-  Future<void> wipeAll() async {}
+  Future<void> wipeAll({required String profileId}) async {}
 }
 
 void main() {
@@ -63,7 +73,11 @@ void main() {
   test('diastolic >= systolic tags the diastolic field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(systolic: 110, diastolic: 115);
+      return useCase.execute(
+        systolic: 110,
+        diastolic: 115,
+        profileId: 'system',
+      );
     });
     final error = (result as Failure<BpLog>).error;
     expect((error as ValidationException).field, 'diastolic');
@@ -72,7 +86,7 @@ void main() {
   test('out-of-range systolic tags the systolic field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(systolic: 20, diastolic: 10);
+      return useCase.execute(systolic: 20, diastolic: 10, profileId: 'system');
     });
     final error = (result as Failure<BpLog>).error;
     expect((error as ValidationException).field, 'systolic');
@@ -81,7 +95,12 @@ void main() {
   test('out-of-range pulse tags the pulse field', () async {
     final useCase = LogBpUseCase(_FakeBpRepository());
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(systolic: 120, diastolic: 80, pulse: 400);
+      return useCase.execute(
+        systolic: 120,
+        diastolic: 80,
+        pulse: 400,
+        profileId: 'system',
+      );
     });
     final error = (result as Failure<BpLog>).error;
     expect((error as ValidationException).field, 'pulse');
@@ -94,6 +113,7 @@ void main() {
         systolic: 120,
         diastolic: 80,
         loggedAt: fixedNow.add(const Duration(hours: 1)),
+        profileId: 'system',
       );
     });
     final error = (result as Failure<BpLog>).error;
@@ -104,7 +124,12 @@ void main() {
     final repository = _FakeBpRepository();
     final useCase = LogBpUseCase(repository);
     final result = await withClock(Clock.fixed(fixedNow), () {
-      return useCase.execute(systolic: 118, diastolic: 76, pulse: 68);
+      return useCase.execute(
+        systolic: 118,
+        diastolic: 76,
+        pulse: 68,
+        profileId: 'system',
+      );
     });
     expect(result, isA<Success<BpLog>>());
     expect(repository.capturedSystolic, 118);

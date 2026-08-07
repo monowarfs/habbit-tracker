@@ -15,11 +15,11 @@ Future<void> _pumpMedicineList(WidgetTester tester, AppDatabase db) async {
     ProviderScope(
       overrides: [databaseProvider.overrideWithValue(db)],
       child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(extensions: const [ModuleThemeAccents.defaults]),
-      home: const MedicineListScreen(),
-    ),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: ThemeData(extensions: const [ModuleThemeAccents.defaults]),
+        home: const MedicineListScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -53,7 +53,11 @@ void main() {
   testWidgets('populated active tab: the empty-state message no longer '
       'shows', (tester) async {
     final repo = MedicineRepositoryImpl(db);
-    await repo.createMedicine(name: 'Amoxicillin', stockEnabled: false);
+    await repo.createMedicine(
+      name: 'Amoxicillin',
+      stockEnabled: false,
+      profileId: 'system',
+    );
 
     await _pumpMedicineList(tester, db);
 

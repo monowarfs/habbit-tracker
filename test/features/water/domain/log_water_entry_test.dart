@@ -16,6 +16,7 @@ class _FakeWaterRepository extends Fake implements WaterRepository {
     required int amountMl,
     required DateTime loggedAt,
     required WaterEntrySource source,
+    required String profileId,
     String? notes,
   }) async {
     capturedAmountMl = amountMl;
@@ -42,6 +43,7 @@ void main() {
       final result = await useCase.execute(
         amountMl: 0,
         source: WaterEntrySource.custom,
+        profileId: 'system',
       );
 
       expect(
@@ -63,6 +65,7 @@ void main() {
         amountMl: 250,
         source: WaterEntrySource.custom,
         loggedAt: DateTime.utc(2026, 6, 1, 13),
+        profileId: 'system',
       );
       expect(
         result,
@@ -82,6 +85,7 @@ void main() {
       final result = await useCase.execute(
         amountMl: 250,
         source: WaterEntrySource.quick,
+        profileId: 'system',
       );
       expect(result, isA<Success<WaterEntry>>());
     });

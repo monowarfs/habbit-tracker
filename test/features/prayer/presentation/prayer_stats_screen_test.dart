@@ -74,9 +74,15 @@ void main() {
     'shows the on-time/late/missed split computed from the fetched records',
     (tester) async {
       when(
-        () => repo.watchQadhaCounters(),
+        () => repo.watchQadhaCounters(profileId: any(named: 'profileId')),
       ).thenAnswer((_) => Stream.value(const []));
-      when(() => repo.recordsInRange(any(), any())).thenAnswer(
+      when(
+        () => repo.recordsInRange(
+          any(),
+          any(),
+          profileId: any(named: 'profileId'),
+        ),
+      ).thenAnswer(
         (_) async => [
           record(
             name: PrayerName.fajr,

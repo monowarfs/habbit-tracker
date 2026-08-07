@@ -4,6 +4,8 @@ import 'package:habit_tracker/core/analytics/personal_record_repository.dart';
 import 'package:habit_tracker/core/analytics/record_detection_use_case.dart';
 import 'package:habit_tracker/core/database/app_database.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late RecordDetectionUseCase useCase;
@@ -17,6 +19,7 @@ void main() {
 
   test('checkRecord returns an event and persists on a new record', () async {
     final event = await useCase.checkRecord(
+      profileId: _profileId,
       moduleId: 'water',
       recordType: 'longest_streak',
       currentValue: 14,
@@ -31,11 +34,13 @@ void main() {
     'checkRecord returns null when the value does not beat the record',
     () async {
       await useCase.checkRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         currentValue: 14,
       );
       final event = await useCase.checkRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         currentValue: 10,
@@ -48,11 +53,13 @@ void main() {
     'checkRecord returns an event again when a later value beats it',
     () async {
       await useCase.checkRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         currentValue: 14,
       );
       final event = await useCase.checkRecord(
+        profileId: _profileId,
         moduleId: 'water',
         recordType: 'longest_streak',
         currentValue: 20,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_catalog.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_providers.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Shows an item's name, cost, and Buy/Owned button state.
 class ShopItemCard extends ConsumerStatefulWidget {
@@ -77,9 +78,10 @@ class _ShopItemCardState extends ConsumerState<ShopItemCard> {
 
     setState(() => _purchasing = true);
     try {
+      final profileId = (await ref.read(activeProfileProvider.future)).id;
       await ref
           .read(shopRepositoryProvider)
-          .purchaseItem(item: item, now: clock.now());
+          .purchaseItem(item: item, now: clock.now(), profileId: profileId);
       // Deliberately not resetting `_purchasing` back to false on
       // success: the stream-driven `owned` rebuild that hides the Buy
       // button entirely lags a beat behind this write completing (same

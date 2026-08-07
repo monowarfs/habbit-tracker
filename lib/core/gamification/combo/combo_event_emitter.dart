@@ -32,7 +32,10 @@ class ComboEventEmitter {
   /// Checks today's combo status and, if it's a fresh combo day (not
   /// already awarded), records the XP and returns the event. Returns
   /// `null` if today isn't a combo day, or already was awarded.
-  Future<ComboEvent?> checkAndEmit({required DateTime now}) async {
+  Future<ComboEvent?> checkAndEmit({
+    required DateTime now,
+    required String profileId,
+  }) async {
     final today = localDayKey(now);
     final isCombo = await comboDetector.isComboDay(
       date: today,
@@ -45,6 +48,7 @@ class ComboEventEmitter {
       moduleId: 'core',
       eventType: 'combo_bonus',
       sourceId: sourceId,
+      profileId: profileId,
     );
     if (alreadyAwarded) return null;
 
@@ -54,6 +58,7 @@ class ComboEventEmitter {
       amount: XpValues.comboBonus,
       now: now,
       sourceId: sourceId,
+      profileId: profileId,
     );
 
     return ComboEvent(

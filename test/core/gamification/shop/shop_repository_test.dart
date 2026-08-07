@@ -5,6 +5,8 @@ import 'package:habit_tracker/core/gamification/shop/shop_catalog.dart';
 import 'package:habit_tracker/core/gamification/shop/shop_repository.dart';
 import 'package:habit_tracker/core/gamification/xp_repository.dart';
 
+const _profileId = 'system';
+
 void main() {
   late AppDatabase db;
   late ShopRepository shopRepository;
@@ -22,70 +24,99 @@ void main() {
 
   test('currentBalance mirrors XpRepository.totalXp', () async {
     await xpRepository.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: 400,
       now: now,
     );
-    expect(await shopRepository.currentBalance(), 400);
+    expect(await shopRepository.currentBalance(profileId: _profileId), 400);
   });
 
   test('unlockedItemIds is empty before any purchase', () async {
-    expect(await shopRepository.unlockedItemIds(), isEmpty);
+    expect(
+      await shopRepository.unlockedItemIds(profileId: _profileId),
+      isEmpty,
+    );
   });
 
   test('purchaseItem deducts XP and records the unlock', () async {
     await xpRepository.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: item.costXp,
       now: now,
     );
-    await shopRepository.purchaseItem(item: item, now: now);
+    await shopRepository.purchaseItem(
+      profileId: _profileId,
+      item: item,
+      now: now,
+    );
 
-    expect(await shopRepository.currentBalance(), 0);
-    expect(await shopRepository.unlockedItemIds(), {item.id});
+    expect(await shopRepository.currentBalance(profileId: _profileId), 0);
+    expect(await shopRepository.unlockedItemIds(profileId: _profileId), {
+      item.id,
+    });
   });
 
   test('purchaseItem throws on insufficient XP, no partial state', () async {
     await expectLater(
-      shopRepository.purchaseItem(item: item, now: now),
+      shopRepository.purchaseItem(profileId: _profileId, item: item, now: now),
       throwsStateError,
     );
-    expect(await shopRepository.currentBalance(), 0);
-    expect(await shopRepository.unlockedItemIds(), isEmpty);
+    expect(await shopRepository.currentBalance(profileId: _profileId), 0);
+    expect(
+      await shopRepository.unlockedItemIds(profileId: _profileId),
+      isEmpty,
+    );
   });
 
   test('purchaseItem throws when the item is already owned', () async {
     await xpRepository.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: item.costXp * 2,
       now: now,
     );
-    await shopRepository.purchaseItem(item: item, now: now);
+    await shopRepository.purchaseItem(
+      profileId: _profileId,
+      item: item,
+      now: now,
+    );
 
     await expectLater(
-      shopRepository.purchaseItem(item: item, now: now),
+      shopRepository.purchaseItem(profileId: _profileId, item: item, now: now),
       throwsStateError,
     );
     // Balance untouched by the rejected second purchase.
-    expect(await shopRepository.currentBalance(), item.costXp);
+    expect(
+      await shopRepository.currentBalance(profileId: _profileId),
+      item.costXp,
+    );
   });
 
   test('watchUnlockedItems emits reactively after a purchase', () async {
     await xpRepository.awardXp(
+      profileId: _profileId,
       moduleId: 'water',
       eventType: 'action',
       amount: item.costXp,
       now: now,
     );
     final values = <Set<String>>[];
-    final subscription = shopRepository.watchUnlockedItems().listen(
-      values.add,
-    );
+    final subscription = shopRepository
+        .watchUnlockedItems(profileId: _profileId)
+        .listen(
+          values.add,
+        );
     await Future<void>.delayed(Duration.zero);
-    await shopRepository.purchaseItem(item: item, now: now);
+    await shopRepository.purchaseItem(
+      profileId: _profileId,
+      item: item,
+      now: now,
+    );
     await Future<void>.delayed(Duration.zero);
     await subscription.cancel();
     expect(values.last, {item.id});

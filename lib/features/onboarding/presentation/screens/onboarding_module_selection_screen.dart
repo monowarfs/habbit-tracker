@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habit_tracker/core/database/database_provider.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/modules/module_settings_repository.dart';
+import 'package:habit_tracker/core/profiles/active_profile_provider.dart';
 
 /// Module selection screen for the onboarding flow.
 class OnboardingModuleSelectionScreen extends ConsumerStatefulWidget {
@@ -92,6 +93,7 @@ class _OnboardingModuleSelectionScreenState
   }
 
   Future<void> _continue() async {
+    final profileId = (await ref.read(activeProfileProvider.future)).id;
     final db = ref.read(databaseProvider);
     final repo = ModuleSettingsRepository(db);
     final modules = [
@@ -100,7 +102,7 @@ class _OnboardingModuleSelectionScreenState
       ('prayer', _prayerEnabled),
     ];
     for (final (id, enabled) in modules) {
-      await repo.setEnabled(id, enabled: enabled);
+      await repo.setEnabled(id, enabled: enabled, profileId: profileId);
     }
     if (mounted) unawaited(context.push('/onboarding/complete'));
   }

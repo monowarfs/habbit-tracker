@@ -17,6 +17,7 @@ class LogBpUseCase {
   Future<Result<BpLog>> execute({
     required int systolic,
     required int diastolic,
+    required String profileId,
     DateTime? loggedAt,
     int? pulse,
     String? notes,
@@ -60,6 +61,7 @@ class LogBpUseCase {
       systolic: systolic,
       diastolic: diastolic,
       loggedAt: at,
+      profileId: profileId,
       pulse: pulse,
       notes: notes,
     );

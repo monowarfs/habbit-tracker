@@ -59,6 +59,17 @@ class WaterModule implements HabitModule {
   final PrayerRepository? _prayerRepository;
   final PauseService? _pauseService;
 
+  /// `HabitModule` contract methods take no `Ref`
+  /// (`core/modules/habit_module.dart`'s doc comment), so they can't read
+  /// `activeProfileProvider` — they run from background isolates,
+  /// WorkManager, and the notification engine, none of which have a
+  /// widget tree. Family/multi-profile's Task 8/9 give the notification
+  /// planner and widget refresher their own profile-aware entry points;
+  /// everything else here (export/import/wipe/dashboard aggregation)
+  /// still operates on the system profile only until a later pass thread
+  /// a profile id through the `HabitModule` contract itself.
+  static const _fixedProfileId = 'system';
+
   @override
   String get id => 'water';
 
@@ -162,7 +173,9 @@ class WaterModule implements HabitModule {
 
   @override
   Future<List<PendingNotification>> pendingNotifications() async {
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(profileId: _fixedProfileId)
+        .first;
     if (!settings.reminderEnabled) return [];
 
     final appSettings = _settingsRepository == null
@@ -258,7 +271,9 @@ class WaterModule implements HabitModule {
     WaterSettings settings,
   ) async {
     final userWindow = _weekdayWindow(day, settings);
-    final prayerSettings = await _prayerRepository!.getSettings();
+    final prayerSettings = await _prayerRepository!.getSettings(
+      profileId: _fixedProfileId,
+    );
     final locationResult = await resolveLocation(prayerSettings);
     if (locationResult case Failure()) return [userWindow];
     final location = (locationResult as Success<ResolvedLocation>).value;
@@ -317,7 +332,9 @@ class WaterModule implements HabitModule {
     // Snooze/Skip never mutate Water data (`strategies/notifications.md`'s
     // "streak effect: none" note) — only Done logs an entry.
     if (action != NotificationActionType.done) return;
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(profileId: _fixedProfileId)
+        .first;
     final amountMl = settings.quickAddAmountsMl.isEmpty
         ? 250
         : settings.quickAddAmountsMl.first;
@@ -325,12 +342,15 @@ class WaterModule implements HabitModule {
       amountMl: amountMl,
       loggedAt: clock.now(),
       source: WaterEntrySource.quick,
+      profileId: _fixedProfileId,
     );
   }
 
   @override
   Future<void> onQuickAction() async {
-    final settings = await _repository.watchSettings().first;
+    final settings = await _repository
+        .watchSettings(profileId: _fixedProfileId)
+        .first;
     final amountMl = settings.quickAddAmountsMl.isEmpty
         ? 250
         : settings.quickAddAmountsMl.first;
@@ -338,15 +358,20 @@ class WaterModule implements HabitModule {
       amountMl: amountMl,
       loggedAt: clock.now(),
       source: WaterEntrySource.quick,
+      profileId: _fixedProfileId,
     );
   }
 
   @override
   Future<Map<LocalDate, ModuleDayStatus>> dayStatus(DateRange range) async {
     final entries = await _repository
-        .watchEntriesInRange(range.start, range.end)
+        .watchEntriesInRange(
+          range.start,
+          range.end,
+          profileId: _fixedProfileId,
+        )
         .first;
-    final goals = await _repository.allGoals();
+    final goals = await _repository.allGoals(profileId: _fixedProfileId);
     final totalsByDay = <LocalDate, int>{};
     for (final entry in entries) {
       final day = localDayKey(entry.loggedAt);
@@ -357,12 +382,18 @@ class WaterModule implements HabitModule {
     // Check if the user ever had goals (active or archived). If they
     // archived all goals, the module is paused. If they never set any,
     // the module is simply inactive (none).
-    final hasAnyGoals = await _repository.hasAnyGoals();
+    final hasAnyGoals = await _repository.hasAnyGoals(
+      profileId: _fixedProfileId,
+    );
     final isArchived = hasAnyGoals && goals.isEmpty;
     // Fetch pause-aware days for this module.
     final pauseSvc = _pauseService;
     final pausedDays = pauseSvc != null
-        ? await pauseSvc.pausedDaysInRange(moduleId: 'water', range: range)
+        ? await pauseSvc.pausedDaysInRange(
+            moduleId: 'water',
+            range: range,
+            profileId: _fixedProfileId,
+          )
         : <LocalDate>{};
     var day = range.start;
     while (day.compareTo(range.end) <= 0) {
@@ -434,7 +465,9 @@ class WaterModule implements HabitModule {
       descriptionKey: 'achievementWaterFirstLogDescription',
       target: 1,
       currentProgress: () async {
-        final entries = await _repository.allEntries();
+        final entries = await _repository.allEntries(
+          profileId: _fixedProfileId,
+        );
         return entries.isEmpty ? 0 : 1;
       },
     ),
@@ -476,14 +509,14 @@ class WaterModule implements HabitModule {
   ];
 
   Future<int> _currentWaterStreak() async {
-    final goals = await _repository.allGoals();
+    final goals = await _repository.allGoals(profileId: _fixedProfileId);
     if (goals.isEmpty) return 0;
     final today = localDayKey(clock.now());
     final earliest = goals
         .map((g) => localDayKey(g.effectiveFrom))
         .reduce((a, b) => a.compareTo(b) <= 0 ? a : b);
     final entries = await _repository
-        .watchEntriesInRange(earliest, today)
+        .watchEntriesInRange(earliest, today, profileId: _fixedProfileId)
         .first;
     final totals = <LocalDate, int>{};
     for (final entry in entries) {
@@ -512,9 +545,11 @@ class WaterModule implements HabitModule {
 
   @override
   Future<ModuleExport> exportData() async {
-    final goals = await _repository.allGoals();
-    final entries = await _repository.allEntries();
-    final settings = await _repository.watchSettings().first;
+    final goals = await _repository.allGoals(profileId: _fixedProfileId);
+    final entries = await _repository.allEntries(profileId: _fixedProfileId);
+    final settings = await _repository
+        .watchSettings(profileId: _fixedProfileId)
+        .first;
     return ModuleExport({
       'goals': goals.map(_goalToJson).toList(),
       'logs': entries.map(_entryToJson).toList(),
@@ -530,6 +565,7 @@ class WaterModule implements HabitModule {
       await _repository.setGoal(
         json['goalMl'] as int,
         effectiveFrom: DateTime.parse(json['effectiveFrom'] as String),
+        profileId: _fixedProfileId,
       );
     }
     final logs = (data.payload['logs'] as List<dynamic>? ?? [])
@@ -542,12 +578,14 @@ class WaterModule implements HabitModule {
             ? WaterEntrySource.quick
             : WaterEntrySource.custom,
         notes: json['notes'] as String?,
+        profileId: _fixedProfileId,
       );
     }
     final settingsJson = data.payload['settings'] as Map<String, dynamic>?;
     if (settingsJson != null) {
       await _repository.updateQuickAddAmounts(
         (settingsJson['quickAddAmountsMl'] as List<dynamic>).cast<int>(),
+        profileId: _fixedProfileId,
       );
       final overridesJson =
           settingsJson['reminderWindowOverrides'] as Map<String, dynamic>? ??
@@ -572,21 +610,26 @@ class WaterModule implements HabitModule {
               ),
             ),
         },
+        profileId: _fixedProfileId,
       );
     }
   }
 
   @override
-  Future<void> wipeData() => _repository.wipeAll();
+  Future<void> wipeData() => _repository.wipeAll(profileId: _fixedProfileId);
 
   @override
   Future<WidgetSummaryData?> widgetSummary() async {
-    final settings = await _repository.watchSettings().first;
-    final goals = await _repository.allGoals();
+    final settings = await _repository
+        .watchSettings(profileId: _fixedProfileId)
+        .first;
+    final goals = await _repository.allGoals(profileId: _fixedProfileId);
     if (goals.isEmpty) return null;
     final today = localDayKey(clock.now());
     final goal = const ResolveGoalForDateUseCase().execute(goals, today);
-    final entries = await _repository.watchEntriesInRange(today, today).first;
+    final entries = await _repository
+        .watchEntriesInRange(today, today, profileId: _fixedProfileId)
+        .first;
     final totalMl = entries.fold(0, (sum, e) => sum + e.amountMl);
     final amountMl = settings.quickAddAmountsMl.isEmpty
         ? 250
@@ -637,11 +680,15 @@ class WaterModule implements HabitModule {
   @override
   Future<ModuleYearStats?> yearAggregation(DateRange yearRange) async {
     final entries = await _repository
-        .watchEntriesInRange(yearRange.start, yearRange.end)
+        .watchEntriesInRange(
+          yearRange.start,
+          yearRange.end,
+          profileId: _fixedProfileId,
+        )
         .first;
     if (entries.isEmpty) return null;
 
-    final goals = await _repository.allGoals();
+    final goals = await _repository.allGoals(profileId: _fixedProfileId);
     const resolveGoal = ResolveGoalForDateUseCase();
 
     final totalsByDay = <LocalDate, int>{};
