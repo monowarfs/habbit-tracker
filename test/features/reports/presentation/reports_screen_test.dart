@@ -70,6 +70,27 @@ void main() {
     });
   });
 
+  testWidgets('shows a "Year at a Glance" entry point to the heatmap screen', (
+    tester,
+  ) async {
+    await withClock(Clock.fixed(DateTime.utc(2026, 6, 15)), () async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            habitModulesProvider.overrideWith((ref) => [_EmptyModule()]),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ReportsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Year at a Glance'), findsOneWidget);
+    });
+  });
+
   testWidgets(
     'the share-month button is disabled for week/year, and enabled once '
     "switched to month with a module that has this period's data",
