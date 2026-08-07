@@ -835,5 +835,15 @@
   "deleteProfileLastRemainingError": "শেষ প্রোফাইলটি মুছে ফেলা যাবে না।",
   "profileStorageUsageLabel": "{count}টি আইটেম",
   "addProfileDialogTitle": "নতুন প্রোফাইল",
-  "profileNameRequiredError": "একটি নাম লিখুন।"
+  "profileNameRequiredError": "একটি নাম লিখুন।",
+  "leaderboardTitle": "পারিবারিক লিডারবোর্ড",
+  "leaderboardRank": "র‍্যাঙ্ক #{position}",
+  "leaderboardYouLabel": "(আপনি)",
+  "leaderboardOptOut": "লিডারবোর্ড থেকে লুকান",
+  "leaderboardSingleProfile": "তুলনা করতে আরেকটি প্রোফাইল যোগ করুন",
+  "leaderboardNoOverlap": "তুলনাযোগ্য তথ্য নেই",
+  "leaderboardMetricStreak": "বর্তমান ধারা",
+  "leaderboardMetricWeekly": "সাপ্তাহিক সম্পূর্ণতা",
+  "leaderboardMetricLevel": "লেভেল",
+  "leaderboardTied": "সমান"
 }

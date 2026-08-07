@@ -2890,5 +2890,28 @@
   "addProfileDialogTitle": "New Profile",
   "@addProfileDialogTitle": {"description": "Title of the add-profile dialog."},
   "profileNameRequiredError": "Enter a name.",
-  "@profileNameRequiredError": {"description": "Validation error when the profile name field is left empty."}
+  "@profileNameRequiredError": {"description": "Validation error when the profile name field is left empty."},
+  "leaderboardTitle": "Household Leaderboard",
+  "@leaderboardTitle": {"description": "Title of the household leaderboard screen."},
+  "leaderboardRank": "Rank #{position}",
+  "@leaderboardRank": {
+    "description": "Accessibility label for a leaderboard entry's rank badge.",
+    "placeholders": {"position": {"type": "int"}}
+  },
+  "leaderboardYouLabel": "(You)",
+  "@leaderboardYouLabel": {"description": "Suffix appended to the current profile's name on the leaderboard."},
+  "leaderboardOptOut": "Hide from leaderboard",
+  "@leaderboardOptOut": {"description": "Per-profile toggle on the manage-profiles screen to exclude a profile from the household leaderboard."},
+  "leaderboardSingleProfile": "Add another profile to compare",
+  "@leaderboardSingleProfile": {"description": "Shown instead of the leaderboard list when only one profile exists on the device."},
+  "leaderboardNoOverlap": "No comparable data",
+  "@leaderboardNoOverlap": {"description": "Shown for a leaderboard entry whose active modules don't overlap with any other profile's, so its score isn't comparable."},
+  "leaderboardMetricStreak": "Current Streak",
+  "@leaderboardMetricStreak": {"description": "Leaderboard ranking-metric selector option: current streak."},
+  "leaderboardMetricWeekly": "Weekly Completion",
+  "@leaderboardMetricWeekly": {"description": "Leaderboard ranking-metric selector option: weekly completion percentage."},
+  "leaderboardMetricLevel": "Level",
+  "@leaderboardMetricLevel": {"description": "Leaderboard ranking-metric selector option: XP level."},
+  "leaderboardTied": "Tied",
+  "@leaderboardTied": {"description": "Shown under a leaderboard entry that shares its rank with another profile."}
 }
