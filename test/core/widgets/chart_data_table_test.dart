@@ -1,5 +1,6 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/core/l10n/app_localizations.dart';
 import 'package:habit_tracker/core/widgets/chart_data_table.dart';
@@ -86,14 +87,14 @@ void main() {
     await tester.pumpWidget(_wrap(const ChartDataTable(points: points)));
 
     final periodHeaderSemantics = tester.getSemantics(find.text('Period'));
-    expect(periodHeaderSemantics.hasFlag(SemanticsFlag.isHeader), isTrue);
+    expect(periodHeaderSemantics.flagsCollection.isHeader, isTrue);
   });
 
   group('ChartDataTableToggle', () {
     testWidgets('shows the chart by default, table hidden', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          ChartDataTableToggle(
+          const ChartDataTableToggle(
             points: points,
             color: Colors.blue,
             chartSemanticsLabel: 'Test chart',
@@ -110,7 +111,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          ChartDataTableToggle(
+          const ChartDataTableToggle(
             points: points,
             color: Colors.blue,
             chartSemanticsLabel: 'Test chart',
@@ -129,7 +130,7 @@ void main() {
     testWidgets('toggle button announces its toggled state', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          ChartDataTableToggle(
+          const ChartDataTableToggle(
             points: points,
             color: Colors.blue,
             chartSemanticsLabel: 'Test chart',
@@ -138,13 +139,13 @@ void main() {
       );
 
       final before = tester.getSemantics(find.byType(IconButton));
-      expect(before.hasFlag(SemanticsFlag.isToggled), isFalse);
+      expect(before.flagsCollection.isToggled, Tristate.isFalse);
 
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
 
       final after = tester.getSemantics(find.byType(IconButton));
-      expect(after.hasFlag(SemanticsFlag.isToggled), isTrue);
+      expect(after.flagsCollection.isToggled, Tristate.isTrue);
     });
   });
 }

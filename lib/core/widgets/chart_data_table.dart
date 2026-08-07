@@ -5,7 +5,7 @@ import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
 import 'package:intl/intl.dart';
 
 /// Accessible tabular fallback for [PeriodBarChart] — `fl_chart`'s
-/// [BarChart] exposes no accessibility tree of its own beyond the single
+/// `BarChart` exposes no accessibility tree of its own beyond the single
 /// summary label a caller passes as [PeriodBarChart.semanticsLabel], so
 /// this renders the same [points] as a plain, screen-reader-navigable
 /// table (`docs/superpowers/specs/07-accessibility/
