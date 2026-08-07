@@ -98,6 +98,31 @@ follow this workflow exactly:
 9. Stop there — wait for the user's own review and merge before starting
    the next spec/feature.
 
+## Multi-spec agent workflow
+
+For working through the backlog in `docs/IMPLEMENTATION-ORDER.md` (as
+opposed to a single handed-you spec), follow this procedure:
+
+1. **Task selection**: read `docs/IMPLEMENTATION-ORDER.md`, pick the
+   first task (lowest serial number) not yet merged to `dev`, and locate
+   its instruction file in `docs/superpowers/specs/`.
+2. **Environment setup**: `git checkout dev && git pull origin dev`, then
+   `git checkout -b feature/<task-name>`. Don't delete local or remote
+   feature branches unless explicitly instructed.
+3. **Implementation loop**: implement in small increments, follow the
+   task's `IMPLEMENTATION-PLAN.md` strictly, commit frequently with
+   descriptive messages (one commit per sub-task/major change).
+4. **Testing**: run unit/integration tests only for the current task; if
+   a test takes longer than 10s, kill it, fix the underlying issue, retry.
+5. **PR & review loop**: push the feature branch and open a PR to `dev`.
+   Do two self-review passes — critically analyze for bugs/edge
+   cases/architectural alignment, fix what you find, commit/push after
+   each pass.
+6. **Documentation & merging**: summarize review findings and the work
+   as a PR comment, merge `feature/<task-name>` into `dev`, push `dev`,
+   mark the task complete in `docs/IMPLEMENTATION-ORDER.md`, then move to
+   the next task in the list.
+
 ## Commands
 
 ```
