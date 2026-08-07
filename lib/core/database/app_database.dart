@@ -12,6 +12,7 @@ import 'package:habit_tracker/core/database/tables/module_settings_table.dart';
 import 'package:habit_tracker/core/database/tables/notification_ledger_table.dart';
 import 'package:habit_tracker/core/database/tables/onboarding_progress_table.dart';
 import 'package:habit_tracker/core/database/tables/pause_ranges_table.dart';
+import 'package:habit_tracker/core/database/tables/personal_records_table.dart';
 import 'package:habit_tracker/core/database/tables/recalibration_markers_table.dart';
 import 'package:habit_tracker/core/database/tables/recaps_table.dart';
 import 'package:habit_tracker/core/database/tables/shop_unlocks_table.dart';
@@ -79,6 +80,7 @@ part 'app_database.g.dart';
     XpLedgerTable,
     XpBalanceTable,
     ShopUnlocksTable,
+    PersonalRecordsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -87,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -325,6 +327,12 @@ class AppDatabase extends _$AppDatabase {
         // PLAN.md`) — default `true`, matching the column's own default
         // for fresh installs.
         await m.addColumn(appSettingsTable, appSettingsTable.audioCuesEnabled);
+      }
+      if (from < 32) {
+        // Personal-record tracking (Task 2,
+        // `docs/superpowers/specs/08-analytics/
+        // 02-personal-record-tracking-IMPLEMENTATION-PLAN.md`).
+        await m.createTable(personalRecordsTable);
       }
       // Seam: when schemaVersion increments further, add
       // `if (from < N) ...` blocks here — no other file needs to
