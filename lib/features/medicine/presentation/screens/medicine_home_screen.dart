@@ -169,8 +169,12 @@ class _SimpleDoseCard extends StatelessWidget {
     final resolved =
         view.effectiveStatus == MedicineDoseStatus.done ||
         view.effectiveStatus == MedicineDoseStatus.skipped;
+    final (statusLabel, statusColor) = doseStatusLabelAndColor(
+      context,
+      view.effectiveStatus,
+    );
     return SemanticLabels.wrap(
-      label: view.medicine.name,
+      label: '${view.medicine.name} — $statusLabel',
       child: Card(
         child: Padding(
           padding: simpleModePadding,
@@ -180,6 +184,14 @@ class _SimpleDoseCard extends StatelessWidget {
               Text(
                 view.medicine.name,
                 style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                statusLabel,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               if (!resolved) ...[
                 const SizedBox(height: 16),

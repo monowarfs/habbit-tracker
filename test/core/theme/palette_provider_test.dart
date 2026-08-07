@@ -40,6 +40,7 @@ void main() {
             updatedAt: now,
             activePaletteId: 'teal',
             activeIconPackId: 'default',
+            simpleModeEnabled: false,
             lastRecapYear: 0,
           ),
         );

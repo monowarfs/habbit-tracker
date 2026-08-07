@@ -151,8 +151,10 @@ class _SimplePrayerCard extends StatelessWidget {
         : _labelFor(l10n, view.record.prayerName);
     final canToggle = view.effectiveStatus != PrayerStatus.missed;
     final prayed = view.effectiveStatus == PrayerStatus.prayed;
+    final statusLabel = prayerStatusLabel(l10n, view.effectiveStatus);
+    final success = Theme.of(context).semanticColors.success;
     return SemanticLabels.wrap(
-      label: label,
+      label: '$label — $statusLabel',
       child: Card(
         child: Padding(
           padding: simpleModePadding,
@@ -160,6 +162,14 @@ class _SimplePrayerCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(label, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 4),
+              Text(
+                statusLabel,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: prayed ? success : null,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               if (canToggle) ...[
                 const SizedBox(height: 16),
                 SizedBox(

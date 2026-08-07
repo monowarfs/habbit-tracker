@@ -6,6 +6,49 @@ import 'package:habit_tracker/features/medicine/domain/entities/medicine_dose.da
 import 'package:habit_tracker/features/medicine/presentation/providers/medicine_providers.dart';
 import 'package:intl/intl.dart';
 
+/// The localized status text and its semantic color for [status] — shared
+/// by [DoseTile] and Simple Mode's own dose card so both surfaces agree
+/// on wording/color (FR-M-06's "visually distinct" status requirement).
+(String, Color) doseStatusLabelAndColor(
+  BuildContext context,
+  MedicineDoseStatus status,
+) {
+  final theme = Theme.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  // ponytail: nullable, not `!` — a raw `MaterialApp` (as in tests) has
+  // no `AppSemanticColors` extension registered; other Water widgets
+  // (`water_progress_ring.dart`, `streak_card.dart`) use the same
+  // `?? fallback` pattern for this reason.
+  final semantic = theme.extension<AppSemanticColors>();
+  return switch (status) {
+    MedicineDoseStatus.upcoming => (
+      l10n.medicineDoseStatusUpcoming,
+      theme.colorScheme.outline,
+    ),
+    MedicineDoseStatus.due => (
+      l10n.medicineDoseStatusDue,
+      theme.colorScheme.primary,
+    ),
+    MedicineDoseStatus.done => (
+      l10n.medicineDoseStatusDone,
+      semantic?.success ?? Colors.green,
+    ),
+    MedicineDoseStatus.missed => (
+      l10n.medicineDoseStatusMissed,
+      // ponytail: `missed` gets the same neutral treatment as `skipped`
+      // below — the guilt signal this app's copy pass found was carried
+      // by color (error/red = "you did something wrong"), not by the
+      // word "Missed" itself (docs/superpowers/specs/02-delightful/
+      // 03-gentle-no-guilt-missed-dose-copy-pass-design.md).
+      theme.colorScheme.outline,
+    ),
+    MedicineDoseStatus.skipped => (
+      l10n.medicineDoseStatusSkipped,
+      theme.colorScheme.outline,
+    ),
+  };
+}
+
 /// One row in the today's-dose timeline.
 class DoseTile extends StatelessWidget {
   /// Creates a dose tile for [view].
@@ -37,39 +80,10 @@ class DoseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    // ponytail: nullable, not `!` — a raw `MaterialApp` (as in tests) has
-    // no `AppSemanticColors` extension registered; other Water widgets
-    // (`water_progress_ring.dart`, `streak_card.dart`) use the same
-    // `?? fallback` pattern for this reason.
-    final semantic = theme.extension<AppSemanticColors>();
-    final (label, color) = switch (view.effectiveStatus) {
-      MedicineDoseStatus.upcoming => (
-        l10n.medicineDoseStatusUpcoming,
-        theme.colorScheme.outline,
-      ),
-      MedicineDoseStatus.due => (
-        l10n.medicineDoseStatusDue,
-        theme.colorScheme.primary,
-      ),
-      MedicineDoseStatus.done => (
-        l10n.medicineDoseStatusDone,
-        semantic?.success ?? Colors.green,
-      ),
-      MedicineDoseStatus.missed => (
-        l10n.medicineDoseStatusMissed,
-        // ponytail: `missed` gets the same neutral treatment as
-        // `skipped` two lines below — the guilt signal this app's copy
-        // pass found was carried by color (error/red = "you did
-        // something wrong"), not by the word "Missed" itself
-        // (docs/superpowers/specs/02-delightful/
-        // 03-gentle-no-guilt-missed-dose-copy-pass-design.md).
-        theme.colorScheme.outline,
-      ),
-      MedicineDoseStatus.skipped => (
-        l10n.medicineDoseStatusSkipped,
-        theme.colorScheme.outline,
-      ),
-    };
+    final (label, color) = doseStatusLabelAndColor(
+      context,
+      view.effectiveStatus,
+    );
     final resolved =
         view.effectiveStatus == MedicineDoseStatus.done ||
         view.effectiveStatus == MedicineDoseStatus.skipped;

@@ -253,4 +253,8 @@ class _StubSettingsRepo implements SettingsRepository {
   @override
   Future<Result<void>> updateActiveIconPackId(String iconPackId) =>
       Future.value(const Result.success(null));
+
+  @override
+  Future<Result<void>> updateSimpleModeEnabled({required bool enabled}) =>
+      Future.value(const Result.success(null));
 }
