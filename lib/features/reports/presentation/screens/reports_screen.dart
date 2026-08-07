@@ -19,6 +19,7 @@ import 'package:habit_tracker/core/utils/date_range.dart';
 import 'package:habit_tracker/core/utils/local_date.dart';
 import 'package:habit_tracker/core/utils/local_day.dart';
 import 'package:habit_tracker/core/widgets/charts/period_bar_chart.dart';
+import 'package:habit_tracker/features/analytics/presentation/providers/year_comparison_provider.dart';
 import 'package:habit_tracker/features/reports/presentation/providers/reports_providers.dart';
 import 'package:habit_tracker/features/reports/presentation/recap_share_usecase.dart';
 import 'package:habit_tracker/features/reports/presentation/widgets/monthly_recap_card.dart';
@@ -365,14 +366,29 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => context.push(AppRoutes.heatmap),
-                icon: const Icon(Icons.grid_view),
-                label: Text(l10n.heatmapTitle),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Wrap(
+              children: [
+                TextButton.icon(
+                  onPressed: () => context.push(AppRoutes.heatmap),
+                  icon: const Icon(Icons.grid_view),
+                  label: Text(l10n.heatmapTitle),
+                ),
+                TextButton.icon(
+                  onPressed: () => context.push(AppRoutes.comparison),
+                  // A full year of history is a hard prerequisite for the
+                  // comparison to mean anything (design doc) - the button
+                  // still opens the screen either way, which shows
+                  // `comparisonEmptyState` itself rather than silently
+                  // hiding, but the lock-clock icon hints why up front.
+                  icon: Icon(
+                    ref.watch(yearComparisonEligibleProvider)
+                        ? Icons.compare_arrows
+                        : Icons.lock_clock,
+                  ),
+                  label: Text(l10n.comparisonTitle),
+                ),
+              ],
             ),
           ),
           SegmentedButton<ReportPeriod>(
