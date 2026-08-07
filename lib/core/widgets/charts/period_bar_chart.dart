@@ -75,11 +75,22 @@ class PeriodBarChart extends StatelessWidget {
                   if (index < 0 || index >= points.length) {
                     return const SizedBox.shrink();
                   }
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      points[index].label,
-                      style: Theme.of(context).textTheme.labelSmall,
+                  // fl_chart reserves a fixed pixel height for this slot
+                  // (SideTitles.reservedSize) — it doesn't grow with the
+                  // device text scale, so scaled label text would overflow
+                  // it every frame. Axis labels stay a fixed, dense size
+                  // regardless of the app's accessibility text-scale
+                  // setting, same as other chart libraries.
+                  return MediaQuery(
+                    data: const MediaQueryData(
+                      textScaler: TextScaler.noScaling,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        points[index].label,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                     ),
                   );
                 },

@@ -27,17 +27,21 @@ class StreakCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _StreakStat(
-                icon: Icons.local_fire_department,
-                iconColor: semanticColors?.success,
-                value: streak.current,
-                label: 'Current streak',
+              Expanded(
+                child: _StreakStat(
+                  icon: Icons.local_fire_department,
+                  iconColor: semanticColors?.success,
+                  value: streak.current,
+                  label: 'Current streak',
+                ),
               ),
-              _StreakStat(
-                icon: Icons.emoji_events,
-                iconColor: Theme.of(context).moduleAccents.water,
-                value: streak.longest,
-                label: 'Longest streak',
+              Expanded(
+                child: _StreakStat(
+                  icon: Icons.emoji_events,
+                  iconColor: Theme.of(context).moduleAccents.water,
+                  value: streak.longest,
+                  label: 'Longest streak',
+                ),
               ),
             ],
           ),
